@@ -1,0 +1,8 @@
+Current Release:
+[b] Version 3.0.7 [/b] - Fix resume / add plex GDM   
+[b] Version 3.0.6 [/b] - Fix watched flags / skin views / resume / tidy 
+
+Selected Release Highlights..
+[b] Version 2.1 [/b] Most recent Eden release
+[b] Version 1.9.9.6 [/b] Last release for Dharma
+
