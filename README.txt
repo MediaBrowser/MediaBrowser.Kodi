@@ -1,58 +1,20 @@
-PleXBMC - Use XBMC to play media from Plex Media Server
+Okay, like I said this is a total hack right now. 
 
-This is an XBMC addon that allows media and metadata stored in the Plex Media 
-Server (PMS) to be viewed and played using XBMC.
+But... If you want to play, download and install PleXBMC. 
 
-INSTALLATION
-------------
+Go into the plugin settings and turn auto discover off, specify your MB3 ip and port.
 
-1. Download this zip file, placing it where is can be found by XBMC.
-2. Install using "Install from zip file", which can be found in 
-   Settings -right arrow-> Addons
-or
-   Settings -click-> Addons -> Install from Zip
-   
-3. Browse for the plugin zip file, select and install
-4. If your PMS is installed on a seperate server, then configure the addon 
-   with the IP address.
+Then go to my repository here:
 
-Go to Video -> Addon and you should be able to browse the PMS data structure 
-and select the media you want to play
+https://github.com/xnappo/plugin.video.plexbmc
 
-USING PLEXBMC
----------------
-PleXBMC should work "out of the box" in most cases, as the default allows for automatic server discovery.
-If this doesn't work, then discovery can be switched off, and a manually entered hostname or IP address can be used.
+Replace default.py with the one in my repo.
 
-In addition, plexBMC can utilise myPlex to find remote and local servers.  To use myplex, simply type in your username and password.
+Search for any occurrences of: 81452d964095cf6c18af19ac559f08c5 and replace with the 'id' found here: http://localhost:8096/Mediabrowser/Users
+Search for any occurrences of: 4a9b8f589564a0bb2dc7fbe54c1e3ff1 and replace with the 'id' found here: http://localhost:8096/Mediabrowser/Users/{id from above}/Items/Root
 
-PLAYING OPTIONS
----------------
+If all goes well, you will be able to browse your library (in a very boring way).
 
-PleXBMC will attempt to select the best play options for you:
+I am totally booked this weekend, I hope to spend some more time on it next weekend and make more progress since I sort-of understand what is needed now Smile.
 
-1. PMS will first check if the file patch can be found locally.  This will use
-   the same location as found on the PMS server.  So if the file is:
-       /Volumes/media/path/to/file.mkv
-   then the addon will use this path to find the file.
-   
-2. If the file cannot be found, then the addon will default to streaming via the
-   PMS web server.  This does not transcode any file, and it will be played as
-   normal.
-   
-You can override these by choosing either "http", "smb" or "AFP" in the "Stream from PMS"
-setting.  "auto" is the default and will choose the best option.
-
-PLAYING MEDIA LOCALLY
----------------------
-If you want XBMC to make use of a local copy of the media (usually shared via SMB
-or samba from a NAS) then you need to do *one* of the following:
-
-1. Mount the PMS server filesystem on the client, so that they are available at all 
-   times.  This is done outside of XBMC.
-
-   or
-
-2. Within XBMC, add the network filesystems as sources.  You do not need to set a
-   content or scan these locations into the library - they simply need to be sources
-
+A quick and easy thing to help with is to grab that id stuff automatically. The MB3 API docs have more info...
