@@ -129,8 +129,8 @@ _SUB_AUDIO_PLEX_CONTROL="1"
 _SUB_AUDIO_NEVER_SHOW="2"
 
 #Check debug first...
-#g_debug = __settings__.getSetting('debug')
-g_debug = "true"
+g_debug = __settings__.getSetting('debug')
+#g_debug = "true"
 def printDebug( msg, functionname=True ):
     if g_debug == "true":
         if functionname is False:
@@ -343,8 +343,6 @@ def getAllSections( server_list = None ):
     printDebug("Using servers list: " + str(server_list))
 
     section_list=[]
-#    myplex_section_list=[]
-#    myplex_complete=False
     local_complete=False
     
     for server in server_list.itervalues():
@@ -370,14 +368,11 @@ def getURL( url, suppress=True, type="GET", popup=0 ):
         server=url.split('/')[serversplit]
         urlPath="/"+"/".join(url.split('/')[urlsplit:])
 
-        #authHeader=getAuthDetails({'token':_PARAM_TOKEN}, False)
-
         printDebug("url = "+url)
         printDebug("server = "+str(server))
         printDebug("urlPath = "+str(urlPath))
-        #printDebug("header = "+str(authHeader))
-        conn = httplib.HTTPConnection(server)#,timeout=5)
-        conn.request(type, urlPath) #, headers=authHeader)
+        conn = httplib.HTTPConnection(server)
+        conn.request(type, urlPath)
         data = conn.getresponse()
         if int(data.status) == 200:
             link=data.read()
@@ -551,12 +546,14 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         #Create the URL to pass to the item
         if ( not folder) and ( extraData['type'] == "image" ):
              u=url
-             u=sys.argv[0]+"?url=\\\\jupiter\e\Video\Movies\Man of Steel (2013)\man.of.steel.2013.720p.bluray.x264-felony.mkv"
+             u=sys.argv[0]+"?url=\\\\jupiter\e\Video\Movies\Man of Steel (2013)\man.of.steel.2013.720p.bluray.x264-felony.mkv&mode=" + str(_MODE_BASICPLAY)
         elif url.startswith('http') or url.startswith('file'):
             u=sys.argv[0]+"?url="+urllib.quote(url)+mode
         else:
-            u=sys.argv[0]+"?url="+str(url)+mode
-            u=sys.argv[0]+"?url=\\\\jupiter\e\Video\Movies\Man of Steel (2013)\man.of.steel.2013.720p.bluray.x264-felony.mkv"
+            #u=sys.argv[0]+"?url="+str(url)+mode
+            u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+            u=u.replace("\\\\","smb://")
+            u=u.replace("\\","/")
         
         #if extraData.get('parameters'):
             #for argument, value in extraData.get('parameters').items():
@@ -730,38 +727,6 @@ def displaySections( filter=None, shared=False ):
         #For each of the servers we have identified
         allservers=ds_servers
         numOfServers=len(allservers)
-
-            
-        if __settings__.getSetting('myplex_user') != '':
-            addGUIItem('http://myplexqueue', {'title':'myplex Queue'},{'type':'Video' , 'mode' : _MODE_MYPLEXQUEUE})
-
-        for server in allservers.itervalues():
-
-            #Plex plugin handling
-            if (filter is not None) and (filter != "plugins"):
-                continue
-
-            if numOfServers > 1:
-                prefix=server['serverName']+": "
-            else:
-                prefix=""
-
-            details={'title' : prefix+"Channels" }
-            extraData={'type' : "Video",
-                       'token' : server.get('token',None) }
-
-            extraData['mode']=_MODE_CHANNELVIEW
-            u="http://"+server['server']+":"+server['port']+"/system/plugins/all" 
-            addGUIItem(u,details,extraData)
-
-            #Create plexonline link
-            details['title']=prefix+"Plex Online"
-            extraData['type']="file"
-
-            extraData['mode']=_MODE_PLEXONLINE
-
-            u="http://"+server['server']+":"+server['port']+"/system/plexonline"
-            addGUIItem(u,details,extraData)
 
         #All XML entries have been parsed and we are ready to allow the user to browse around.  So end the screen listing.
         xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
@@ -1362,14 +1327,27 @@ def PLAY( url ):
             if '?' in url:
                 playurl=url+getAuthDetails({'token':_PARAM_TOKEN})
             else:
-                playurl=url+getAuthDetails({'token':_PARAM_TOKEN},prefix="?")
+                playurl=url
         else:
             playurl=url
         #playurl=("smb://jupiter/e/Video/Movies/Man of Steel (2013)/man.of.steel.2013.720p.bluray.x264-felony.mkv")
-        playurl=("\\\\jupiter\e\Video\Movies\Man of Steel (2013)\man.of.steel.2013.720p.bluray.x264-felony.mkv")
+        #playurl=("\\\\jupiter\e\Video\Movies\Man of Steel (2013)\man.of.steel.2013.720p.bluray.x264-felony.mkv")
         item = xbmcgui.ListItem(path=playurl)
-        xbmc.Player().play(playurl)
-        return xbmcplugin.setResolvedUrl(pluginhandle, True, item)
+        xbmc.Player().play(urllib.unquote(playurl))
+        #Set a loop to wait for positive confirmation of playback
+        count = 0
+        while not xbmc.Player().isPlaying():
+            printDebug( "Not playing yet...sleep for 2")
+            count = count + 2
+            if count >= 20:
+                return
+            else:
+                time.sleep(2)
+        while xbmc.Player().isPlaying():
+                dont_worry=1
+                #currentTime = int(xbmc.Player().getTime())
+        #return xbmcplugin.setResolvedUrl(pluginhandle, True, item)
+        return
 
 def videoPluginPlay( vids, prefix=None, indirect=None ):
     '''
@@ -1622,7 +1600,13 @@ def processDirectory( url, tree=None ):
             extraData['thumb']=extraData['fanart_image']
 
         extraData['mode']=_MODE_GETCONTENT
-        u='%s' % ( getLinkURL(url,directory,server))
+        id=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text).encode('utf-8')
+        printDebug('server: http://'+server+'/mediabrowser/Items/'+str(id) +'&format=xml')
+        html=getURL(('http://'+server+'/mediabrowser/Users/81452d964095cf6c18af19ac559f08c5/Items/'+str(id) +'?format=xml') , suppress=False, popup=1 )
+        printDebug('Details html:' + html)
+        u= etree.fromstring(html).find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Path").text
+        printDebug('u:' +u)
+        #u=('http://'+server+'/mediabrowser/Items/'+str(id)+'/File')
         #details=""
         #extraData=""
         addGUIItem(u,details,extraData)

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon  id="plugin.video.plexbmc" 
-        name="PleXBMC" 
+        name="XBMB3C" 
         version="3.1.5" 
-        provider-name="Hippojay (plexbmc@h-jay.com)">
+        provider-name="xnappo">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>
