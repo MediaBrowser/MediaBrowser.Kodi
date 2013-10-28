@@ -1,58 +1,39 @@
-PleXBMC - Use XBMC to play media from Plex Media Server
 
-This is an XBMC addon that allows media and metadata stored in the Plex Media 
-Server (PMS) to be viewed and played using XBMC.
+!!!!!!![EDIT] NEED TO SYNC TO GIT, IGNORE BELOW FOR NOW [EDIT] !!!!!!!!!!!!!!!!!!!!!
 
-INSTALLATION
-------------
+Basic Movie functionality is working now.
 
-1. Download this zip file, placing it where is can be found by XBMC.
-2. Install using "Install from zip file", which can be found in 
-   Settings -right arrow-> Addons
-or
-   Settings -click-> Addons -> Install from Zip
-   
-3. Browse for the plugin zip file, select and install
-4. If your PMS is installed on a seperate server, then configure the addon 
-   with the IP address.
+If you want to play, download and install PleXBMC. 
 
-Go to Video -> Addon and you should be able to browse the PMS data structure 
-and select the media you want to play
+Go into the plugin settings and turn auto discover off, specify your MB3 ip and port.
+Replace default.py with the one in my repo.
 
-USING PLEXBMC
----------------
-PleXBMC should work "out of the box" in most cases, as the default allows for automatic server discovery.
-If this doesn't work, then discovery can be switched off, and a manually entered hostname or IP address can be used.
+Search for any occurrences of: 81452d964095cf6c18af19ac559f08c5 and replace with the 'id' found here: http://localhost:8096/Mediabrowser/Users
+Search for any occurrences of: 4a9b8f589564a0bb2dc7fbe54c1e3ff1 and replace with the 'id' found here: http://localhost:8096/Mediabrowser/Users/{id from above}/Items/Root
 
-In addition, plexBMC can utilise myPlex to find remote and local servers.  To use myplex, simply type in your username and password.
+If all goes well, you will be able to browse your library and play movies (TV not working yet). 
 
-PLAYING OPTIONS
----------------
+NOTE: When first going into your library it will take a long time as it needs to cache all images locally right now.  Only an issue on first entry.
 
-PleXBMC will attempt to select the best play options for you:
+To do list (in no particular order):
 
-1. PMS will first check if the file patch can be found locally.  This will use
-   the same location as found on the PMS server.  So if the file is:
-       /Volumes/media/path/to/file.mkv
-   then the addon will use this path to find the file.
-   
-2. If the file cannot be found, then the addon will default to streaming via the
-   PMS web server.  This does not transcode any file, and it will be played as
-   normal.
-   
-You can override these by choosing either "http", "smb" or "AFP" in the "Stream from PMS"
-setting.  "auto" is the default and will choose the best option.
-
-PLAYING MEDIA LOCALLY
----------------------
-If you want XBMC to make use of a local copy of the media (usually shared via SMB
-or samba from a NAS) then you need to do *one* of the following:
-
-1. Mount the PMS server filesystem on the client, so that they are available at all 
-   times.  This is done outside of XBMC.
-
-   or
-
-2. Within XBMC, add the network filesystems as sources.  You do not need to set a
-   content or scan these locations into the library - they simply need to be sources
-
+[ ] Grab user ID automatically
+[ ] Grab root directory automatically
+[ ] Support multiple users
+[ ] Support passwords
+[ ] Fix TV browsing
+[ ] Add item description metadata
+[ ] Add item details metadata (file type, resolution, playtime, etc)
+[ ] Add tracking of partial playback
+[ ] Add tracking of played items
+[ ] De-plexify code (remove all references to PLEXBMC, other than thanks to Hippojay)
+[ ] MB3-ify - add MB3 artwork collateral etc
+[ ] Document how to add root entry points from main menu to the add-on
+[ ] Add 'recently added' support
+[ ] Add sorting support
+[ ] Add delete support
+[ ] Setup repo/addon config so installing PLEXBMC is not required first
+[ ] Find server automatically
+[ ] Cache more locally (full etree?)
+[ ] Determine whether cached is valid (changed on server - add version to cached filename?)
+[ ] Work with XMBC devs and MB3 devs to fix chunked-encoding image grabbing (maybe not needed?)
