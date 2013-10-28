@@ -30,4 +30,7 @@ To do list (in no particular order):
 [ ] Add sorting support
 [ ] Add delete support
 [ ] Setup repo/addon config so installing PLEXBMC is not required first
+[ ] Find server automatically
+[ ] Cache more locally (full etree?)
+[ ] Determine whether cached is valid (changed on server - add version to cached filename?)
 [ ] Work with XMBC devs and MB3 devs to fix chunked-encoding image grabbing (maybe not needed?)
