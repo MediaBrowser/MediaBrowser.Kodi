@@ -1592,7 +1592,8 @@ def processDirectory( url, tree=None ):
     server=getServerFromURL(url)
     setWindowHeading(tree)
     for directory in tree:
-        details={'title' : (str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Name').text)).encode('utf-8') }
+        tempTitle=(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Name').text).encode('utf-8')
+        details={'title' : tempTitle }
         extraData={'thumb'        : getThumb(directory, server) ,
                    'fanart_image' : getFanart(directory, server) }
 
@@ -2106,7 +2107,7 @@ def trackTag( server, tree, track ):
                'thumb'        : getThumb(track, server) ,
                'ratingKey'    : track.get('key','') }
 
-    if '/resources/plex.png' in extraData['thumb']:
+    if '/resources/mb3.png' in extraData['thumb']:
         printDebug("thumb is default")
         extraData['thumb']=getThumb(tree, server)
 
@@ -2271,7 +2272,7 @@ def getThumb( data, server, transcode=False, width=None, height=None ):
 
 
     if thumbnail == '':
-        return g_loc+'/resources/plex.png'
+        return g_loc+'/resources/mb3.png'
 
     elif thumbnail[0:4] == "http" :
         return thumbnail
@@ -2283,7 +2284,7 @@ def getThumb( data, server, transcode=False, width=None, height=None ):
             return 'http://'+server+thumbnail
 
     else:
-        return g_loc+'/resources/plex.png'
+        return g_loc+'/resources/mb3.png'
 
 def getFanart( data, server, transcode=False ):
     '''
