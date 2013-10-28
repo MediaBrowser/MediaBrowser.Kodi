@@ -1,4 +1,4 @@
-Basic Movie functinality is working now.
+Basic Movie functionality is working now.
 
 If you want to play, download and install PleXBMC. 
 
