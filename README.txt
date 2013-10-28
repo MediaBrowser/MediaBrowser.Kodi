@@ -1,3 +1,6 @@
+
+!!!!!!![EDIT] NEED TO SYNC TO GIT, IGNORE BELOW FOR NOW [EDIT] !!!!!!!!!!!!!!!!!!!!!
+
 Basic Movie functionality is working now.
 
 If you want to play, download and install PleXBMC. 
