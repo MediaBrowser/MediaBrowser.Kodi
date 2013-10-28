@@ -25,7 +25,7 @@ To do list (in no particular order):
 [ ] Add tracking of played items
 [ ] De-plexify code (remove all references to PLEXBMC, other than thanks to Hippojay)
 [ ] MB3-ify - add MB3 artwork collateral etc
-[ ] Document how to to root entry points from main menu to the add-on
+[ ] Document how to add root entry points from main menu to the add-on
 [ ] Add 'recently added' support
 [ ] Add sorting support
 [ ] Add delete support
