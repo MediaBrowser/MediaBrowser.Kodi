@@ -41,6 +41,7 @@ import inspect
 import base64
 #import hashlib
 import random
+from urlparse import urlparse
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.plexbmc')
 __cwd__ = __settings__.getAddonInfo('path')
@@ -130,7 +131,7 @@ _SUB_AUDIO_NEVER_SHOW="2"
 
 #Check debug first...
 g_debug = __settings__.getSetting('debug')
-#g_debug = "true"
+g_debug = "true"
 def printDebug( msg, functionname=True ):
     if g_debug == "true":
         if functionname is False:
@@ -269,7 +270,15 @@ def discoverAllServers( ):
         printDebug( "PleXBMC -> Adding myplex as a server location", False)
 
     return das_servers
-
+def getUserId( ip_address, port ):
+    html = getURL(ip_address+":"+port+"/mediabrowser/Users?format=xml")
+    #printDebug("userhtml:" + html)
+    tree= etree.fromstring(html).getiterator('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}UserDto')
+    for UserDto in tree:
+        userid=str(UserDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text)
+    printDebug("userid:" + userid)
+    return userid
+    
 def getLocalServers( ip_address, port ):
     '''
         Connect to the defined local server (either direct or via bonjour discovery)
@@ -278,8 +287,7 @@ def getLocalServers( ip_address, port ):
         @return: a list of servers (as Dict)
     '''
     printDebug("== ENTER: getLocalServers ==", False)
-    
-    url_path="/mediabrowser/Users/81452d964095cf6c18af19ac559f08c5/items?format=xml"
+    url_path="/mediabrowser/Users/" + getUserId( ip_address, port) + "/items?format=xml"
     html = getURL(ip_address+":"+port+url_path)
 
     if html is False:
@@ -299,14 +307,19 @@ def getLocalServers( ip_address, port ):
                                        
 def getServerSections ( ip_address, port, name, uuid):
     printDebug("== ENTER: getServerSections ==", False)
-    
-    html=getURL('http://%s:%s/mediabrowser/Users/81452d964095cf6c18af19ac559f08c5/items?ParentId=4a9b8f589564a0bb2dc7fbe54c1e3ff1&format=xml' % ( ip_address, port))
+    userid=str(getUserId( ip_address, port))
+    html = getURL(ip_address+":"+port+"/mediabrowser/Users/"+userid+"/Items/Root?format=xml")
+    printDebug("html:" + html)
+    tree= etree.fromstring(html).getiterator('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}BaseItemDto')
+    for BaseItemDto in tree:
+        parentid=str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text)
+    htmlpath=("http://%s:%s/mediabrowser/Users/" % ( ip_address, port))
+    html=getURL(htmlpath + userid + "/items?ParentId=" + parentid + "&format=xml")
 
     if html is False:
         return {}
 
-    printDebug("getServerSections Past html test" + html, False)
-
+    
     tree = etree.fromstring(html).getiterator("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}BaseItemDto")
     temp_list=[]
     for BaseItemDto in tree:
@@ -314,7 +327,7 @@ def getServerSections ( ip_address, port, name, uuid):
                 'address'    : ip_address+":"+port ,
                 'serverName' : name ,
                 'uuid'       : uuid ,
-                'path'       : '/mediabrowser/Users/81452d964095cf6c18af19ac559f08c5/items?ParentId=' + str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text) + '&SortBy=Name&format=xml' ,
+                'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text) + '&SortBy=Name&format=xml') ,
                 'token'      : str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text)  ,
                 'location'   : "local" ,
                 'art'        : str(BaseItemDto.text) ,
@@ -545,8 +558,9 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
 
         #Create the URL to pass to the item
         if ( not folder) and ( extraData['type'] == "image" ):
-             u=url
-             u=sys.argv[0]+"?url=\\\\jupiter\e\Video\Movies\Man of Steel (2013)\man.of.steel.2013.720p.bluray.x264-felony.mkv&mode=" + str(_MODE_BASICPLAY)
+            u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+            u=u.replace("\\\\","smb://")
+            u=u.replace("\\","/")
         elif url.startswith('http') or url.startswith('file'):
             u=sys.argv[0]+"?url="+urllib.quote(url)+mode
         else:
@@ -558,7 +572,6 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         #if extraData.get('parameters'):
             #for argument, value in extraData.get('parameters').items():
                 #u="%s&%s=%s" % ( u, argument, urllib.quote(value) )
-        #u="plugin://plugin.video.plexbmc/?url=http://192.168.1.6:8096/mediabrowser/Users/81452d964095cf6c18af19ac559f08c5/items?ParentId=9a4eda0fced3feacee8e4ce78148d909"
         printDebug("URL to use for listing: " + u)
 
         #Create the ListItem that will be displayed
@@ -1586,13 +1599,16 @@ def getContent( url ):
 
 def processDirectory( url, tree=None ):
     printDebug("== ENTER: processDirectory ==", False)
+    parsed = urlparse(url)
+    parsedserver,parsedport=parsed.netloc.split(':')
+    userid=getUserId(parsedserver,parsedport)
     printDebug("Processing secondary menus")
     xbmcplugin.setContent(pluginhandle, 'movies')
 
     server=getServerFromURL(url)
     setWindowHeading(tree)
     for directory in tree:
-        tempTitle=(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Name').text).encode('utf-8')
+        tempTitle=((directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Name').text)).encode('ascii')
         details={'title' : tempTitle }
         extraData={'thumb'        : getThumb(directory, server) ,
                    'fanart_image' : getFanart(directory, server) }
@@ -1603,8 +1619,8 @@ def processDirectory( url, tree=None ):
         extraData['mode']=_MODE_GETCONTENT
         id=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text).encode('utf-8')
         printDebug('server: http://'+server+'/mediabrowser/Items/'+str(id) +'&format=xml')
-        html=getURL(('http://'+server+'/mediabrowser/Users/81452d964095cf6c18af19ac559f08c5/Items/'+str(id) +'?format=xml') , suppress=False, popup=1 )
-        printDebug('Details html:' + html)
+        html=getURL(('http://'+server+'/mediabrowser/Users/' + userid + '/Items/'+str(id) +'?format=xml') , suppress=False, popup=1 )
+        #printDebug('Details html:' + html)
         u= etree.fromstring(html).find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Path").text
         printDebug('u:' +u)
         #u=('http://'+server+'/mediabrowser/Items/'+str(id)+'/File')
