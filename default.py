@@ -131,7 +131,7 @@ _SUB_AUDIO_NEVER_SHOW="2"
 
 #Check debug first...
 g_debug = __settings__.getSetting('debug')
-g_debug = "true"
+#g_debug = "true"
 def printDebug( msg, functionname=True ):
     if g_debug == "true":
         if functionname is False:
@@ -1608,7 +1608,7 @@ def processDirectory( url, tree=None ):
     server=getServerFromURL(url)
     setWindowHeading(tree)
     for directory in tree:
-        tempTitle=((directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Name').text)).encode('ascii')
+        tempTitle=((directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Name').text)).encode('utf-8')
         details={'title' : tempTitle }
         extraData={'thumb'        : getThumb(directory, server) ,
                    'fanart_image' : getFanart(directory, server) }
