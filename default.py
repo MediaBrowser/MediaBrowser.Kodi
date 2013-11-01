@@ -2,7 +2,7 @@
     @document   : default.py
     @package    : XBMB3C add-on
     @author     : xnappo
-    @copyright  : 2013, Hippojay
+    @copyleft   : 2013, xnappo
     @version    : 0.1 (frodo)
 
     @license    : Gnu General Public License - see LICENSE.TXT
