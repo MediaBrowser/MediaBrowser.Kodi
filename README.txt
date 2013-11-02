@@ -1,9 +1,14 @@
 Basic Movie functionality is working now.
 
-If you want to play, download and install PleXBMC. 
-
-Go into the plugin settings and turn auto discover off, specify your MB3 ip and port.
-Replace default.py with the one in my repo.
+To Install:
+1. Download the GIT zip file(look to the right of this), placing it where is can be found by XBMC.
+2. Install using "Install from zip file", which can be found in 
+   Settings -right arrow-> Addons
+or
+   Settings -click-> Addons -> Install from Zip
+   
+3. Browse for the plugin zip file, select and install
+4. Go into the plugin settings and turn auto discover off, specify your MB3 ip and port.
 
 If all goes well, you will be able to browse your library and play movies (TV not working yet). 
 
