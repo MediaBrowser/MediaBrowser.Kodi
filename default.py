@@ -45,9 +45,9 @@ import base64
 import random
 from urlparse import urlparse
 
-__settings__ = xbmcaddon.Addon(id='plugin.video.plexbmc')
+__settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
-__addon__       = xbmcaddon.Addon(id='plugin.video.plexbmc')
+__addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') ) 
 BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
 PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
@@ -125,7 +125,6 @@ _MODE_SHARED_PHOTOS=27
 
 _SUB_AUDIO_XBMC_CONTROL="0"
 _SUB_AUDIO_XBMC_CONTROL="0"
-_SUB_AUDIO_PLEX_CONTROL="1"
 _SUB_AUDIO_NEVER_SHOW="2"
 
 #Check debug first...
@@ -188,8 +187,6 @@ if g_debug == "true":
     print "XBMB3C -> Setting debug to " + g_debug
     if g_streamControl == _SUB_AUDIO_XBMC_CONTROL:
         print "XBMB3C -> Setting stream Control to : XBMC CONTROL (%s)" % g_streamControl
-    elif g_streamControl == _SUB_AUDIO_PLEX_CONTROL:
-        print "XBMB3C -> Setting stream Control to : PLEX CONTROL (%s)" % g_streamControl
     elif g_streamControl == _SUB_AUDIO_NEVER_SHOW:
         print "XBMB3C -> Setting stream Control to : NEVER SHOW (%s)" % g_streamControl
 
@@ -874,12 +871,12 @@ def buildContextMenu( url, itemData ):
     context.append(('Rescan library section', libraryRefresh , ))
 
     #Mark media unwatched
-    unwatchURL="http://"+server+"/:/unscrobble?key="+ID+"&identifier=com.plexapp.plugins.library"+getAuthDetails(itemData)
+    unwatchURL="http://"+server+"/:/unscrobble?key="+ID+"&identifier=com.fixme.plugins.library"+getAuthDetails(itemData)
     unwatched=plugin_url+"watch, " + unwatchURL + ")"
     context.append(('Mark as Unwatched', unwatched , ))
 
     #Mark media watched
-    watchURL="http://"+server+"/:/scrobble?key="+ID+"&identifier=com.plexapp.plugins.library"+getAuthDetails(itemData)
+    watchURL="http://"+server+"/:/scrobble?key="+ID+"&identifier=com.fixme.plugins.library"+getAuthDetails(itemData)
     watched=plugin_url+"watch, " + watchURL + ")"
     context.append(('Mark as Watched', watched , ))
 
@@ -1301,14 +1298,14 @@ def monitorPlayback( id, server ):
         #If we are less than 95% completem, store resume time
         elif progress < 95:
             printDebug( "Movies played time: %s secs of %s @ %s%%" % ( currentTime, totalTime, progress) )
-            getURL("http://"+server+"/:/progress?key="+id+"&identifier=com.plexapp.plugins.library&time="+str(currentTime*1000),suppress=True)
+            getURL("http://"+server+"/:/progress?key="+id+"&identifier=com.fixme.plugins.library&time="+str(currentTime*1000),suppress=True)
             complete=0
 
         #Otherwise, mark as watched
         else:
             if complete == 0:
                 printDebug( "Movie marked as watched. Over 95% complete")
-                getURL("http://"+server+"/:/scrobble?key="+id+"&identifier=com.plexapp.plugins.library",suppress=True)
+                getURL("http://"+server+"/:/scrobble?key="+id+"&identifier=com.fixme.plugins.library",suppress=True)
                 complete=1
 
         time.sleep(5)
@@ -2012,7 +2009,7 @@ def getServerFromURL( url ):
     @ input: url, woth or without protocol
     @ return: the URL server
     '''
-    if url[0:4] == "http" or url[0:4] == "plex":
+    if url[0:4] == "http":
         return url.split('/')[2]
     else:
         return url.split('/')[0]
@@ -2042,21 +2039,8 @@ def getLinkURL( url, pathData, server ):
         printDebug("Detected base path link")
         return 'http://%s%s' % ( server, path )
 
-    #If key starts with plex:// then it requires transcoding
-    elif path[0:5] == "plex:":
-        printDebug("Detected plex link")
-        components=path.split('&')
-        for i in components:
-            if 'prefix=' in i:
-                del components[components.index(i)]
-                break
-        if pathData.get('identifier',None):
-            components.append('identifier='+pathData['identifier'])
-
-        path='&'.join(components)
-        return 'plex://'+server+'/'+'/'.join(path.split('/')[3:])
     elif path[0:5] == "rtmp:":
-        printDebug("Detected plex link")
+        printDebug("Detected  link")
         return path
 
     #Any thing else is assumed to be a relative path and is built on existing url
@@ -2081,7 +2065,7 @@ def install( url, name ):
         #If we find an install option, switch to a yes/no dialog box
         if operations[i].lower() == "install":
             printDebug("Not installed.  Print dialog")
-            ret = xbmcgui.Dialog().yesno("Plex Online","About to install " + name)
+            ret = xbmcgui.Dialog().yesno("XBMB3C","About to install " + name)
 
             if ret:
                 printDebug("Installing....")
@@ -2090,7 +2074,7 @@ def install( url, name ):
 
                 msg=tree.get('message','(blank)')
                 printDebug(msg)
-                xbmcgui.Dialog().ok("Plex Online",msg)
+                xbmcgui.Dialog().ok("XBMB3C",msg)
             return
 
         i+=1
@@ -2110,7 +2094,7 @@ def install( url, name ):
 
     msg=tree.get('message')
     printDebug(msg)
-    xbmcgui.Dialog().ok("Plex Online",msg)
+    xbmcgui.Dialog().ok("XBMB3C",msg)
     xbmc.executebuiltin("Container.Refresh")
 
 
