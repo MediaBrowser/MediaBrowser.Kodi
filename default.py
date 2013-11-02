@@ -124,6 +124,7 @@ _MODE_SHARED_MUSIC=26
 _MODE_SHARED_PHOTOS=27
 
 _SUB_AUDIO_XBMC_CONTROL="0"
+_SUB_AUDIO_XBMC_CONTROL="0"
 _SUB_AUDIO_PLEX_CONTROL="1"
 _SUB_AUDIO_NEVER_SHOW="2"
 
@@ -2215,8 +2216,9 @@ def setMasterServer () :
     printDebug("Setting master server to: %s" % (servers[result]['name'],))
     __settings__.setSetting('masterServer',servers[result]['name'])
     return
-  
-##So this is where we really start the plugin.
+###########################################################################  
+##Start of Main
+###########################################################################
 printDebug( "XBMB3C -> Script argument is " + str(sys.argv[1]), False)
 
 try:
