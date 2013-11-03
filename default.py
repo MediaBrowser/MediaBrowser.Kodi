@@ -318,18 +318,19 @@ def getServerSections ( ip_address, port, name, uuid):
     tree = etree.fromstring(html).getiterator("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}BaseItemDto")
     temp_list=[]
     for BaseItemDto in tree:
-        temp_list.append( {'title'      : (str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Name').text)).encode('utf-8'),
-                'address'    : ip_address+":"+port ,
-                'serverName' : name ,
-                'uuid'       : uuid ,
-                'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text) + '&SortBy=Name&format=xml') ,
-                'token'      : str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text)  ,
-                'location'   : "local" ,
-                'art'        : str(BaseItemDto.text) ,
-                'local'      : '1' ,
-                'type'       : "movie",
-                'owned'      : '1' })
-        printDebug("Title " + str(BaseItemDto.tag))
+        if(str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}RecursiveItemCount').text)!='0'):
+            temp_list.append( {'title'      : (str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Name').text)).encode('utf-8'),
+                    'address'    : ip_address+":"+port ,
+                    'serverName' : name ,
+                    'uuid'       : uuid ,
+                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text) + '&SortBy=Name&format=xml') ,
+                    'token'      : str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text)  ,
+                    'location'   : "local" ,
+                    'art'        : str(BaseItemDto.text) ,
+                    'local'      : '1' ,
+                    'type'       : "movie",
+                    'owned'      : '1' })
+            printDebug("Title " + str(BaseItemDto.tag))
 
     for item in temp_list:
         printDebug ("temp_list: " + str(item))
@@ -580,7 +581,10 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
 
         #Set the properties of the item, such as summary, name, season, etc
         liz.setInfo( type=extraData.get('type','Video'), infoLabels=details )
-
+#        if extraData.get('plot',None) is not None:
+#            liz.setProperty('Plot', (str(extraData.get('plot','').encode('utf-8'))))
+#            liz.setProperty('PlotOutline', (str(extraData.get('plot','').encode('utf-8'))))
+#            printDebug('Found a plot:' + (str(extraData.get('plot','').encode('utf-8'))))
         #Music related tags
         if extraData.get('type','').lower() == "music":
             liz.setProperty('Artist_Genre', details.get('genre',''))
@@ -592,7 +596,7 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
             liz.setProperty('IsPlayable', 'true')
 
             if extraData.get('type','video').lower() == "video":
-                liz.setProperty('TotalTime', str(extraData.get('duration')))
+                #liz.setProperty('TotalTime', str(extraData.get('duration')))
                 liz.setProperty('ResumeTime', str(extraData.get('resume')))
             
                 if g_skipmediaflags == "false":
@@ -1468,10 +1472,12 @@ def processDirectory( url, tree=None ):
     setWindowHeading(tree)
     for directory in tree:
         tempTitle=((directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Name').text)).encode('utf-8')
-#        IndexNumber=((directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}IndexNumber').text))
-#        if(IndexNumber != None):
-#            tempTitle=IndexNumber.encode('utf-8')+' '+tempTitle
-        details={'title' : tempTitle }
+        id=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text).encode('utf-8')
+        isFolder=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}IsFolder').text).encode('utf-8')
+        #printDebug('server: http://'+server+'/mediabrowser/Items/'+str(id) +'&format=xml')
+        html=getURL(('http://'+server+'/mediabrowser/Users/' + userid + '/Items/'+str(id) +'?format=xml') , suppress=False, popup=1 )
+        details={'title' : tempTitle,
+                 'plot'  : etree.fromstring(html).find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Overview").text }
         extraData={'thumb'        : getThumb(directory, server) ,
                    'fanart_image' : getFanart(directory, server) }
 
@@ -1479,14 +1485,12 @@ def processDirectory( url, tree=None ):
             extraData['thumb']=extraData['fanart_image']
 
         extraData['mode']=_MODE_GETCONTENT
-        id=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text).encode('utf-8')
-        isFolder=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}IsFolder').text).encode('utf-8')
-        #printDebug('server: http://'+server+'/mediabrowser/Items/'+str(id) +'&format=xml')
-        html=getURL(('http://'+server+'/mediabrowser/Users/' + userid + '/Items/'+str(id) +'?format=xml') , suppress=False, popup=1 )
+
         #printDebug('Details html:' + html)
         if isFolder=='true':
             u= 'http://192.168.1.6:8096/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&SortBy=SortName&format=xml'
-            addGUIItem(u,details,extraData)
+            if (str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}RecursiveItemCount').text).encode('utf-8')!='0'):
+                addGUIItem(u,details,extraData)
         else:
             u= etree.fromstring(html).find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Path").text
             if u == None:
