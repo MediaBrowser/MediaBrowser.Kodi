@@ -15,3 +15,5 @@ If all goes well, you will be able to browse your library and play movies (TV no
 NOTE: When first going into your library it will take a long time as it needs to cache all images locally right now.  Only an issue on first entry.
 
 Please check the issues and add as needed.
+
+THANK YOU to HippoJay for the PleXBMC plugin on which this code is based
