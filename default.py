@@ -539,7 +539,7 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         printDebug("Adding Dir for [%s]" % details.get('title','Unknown'))
         printDebug("Passed details: " + str(details))
         printDebug("Passed extraData: " + str(extraData))
-
+        #printDebug("urladdgui:" + str(url))
         if details.get('title','') == '':
             return
 
@@ -564,7 +564,7 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         #if extraData.get('parameters'):
             #for argument, value in extraData.get('parameters').items():
                 #u="%s&%s=%s" % ( u, argument, urllib.quote(value) )
-        #printDebug("URL to use for listing: " + u)
+        #printDebug("URL to use for listing: " + urllib.quote(u))
 
         #Create the ListItem that will be displayed
         thumb=str(extraData.get('thumb',''))
@@ -1385,7 +1385,7 @@ def get_params( paramstring ):
 
 def getContent( url ):
     '''
-        This function takes teh URL, gets the XML and determines what the content is
+        This function takes the URL, gets the XML and determines what the content is
         This XML is then redirected to the best processing function.
         If a search term is detected, then show keyboard and run search query
         @input: URL of XML page
@@ -1396,7 +1396,8 @@ def getContent( url ):
     server=getServerFromURL(url)
     lastbit=url.split('/')[-1]
     printDebug("URL suffix: " + str(lastbit))
-
+    printDebug("server: " + str(server))
+    printDebug("URL: " + str(url))    
     #Catch search requests, as we need to process input before getting results.
     if lastbit.startswith('search'):
         printDebug("This is a search URL.  Bringing up keyboard")
@@ -1415,7 +1416,7 @@ def getContent( url ):
     if html is False:
         return
     tree = etree.fromstring(html).getiterator("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}BaseItemDto")
-    #tree=etree.fromstring(html)
+    #tree=etree.fromstring(html).getiterator()
 
     WINDOW = xbmcgui.Window( xbmcgui.getCurrentWindowId() )
     #WINDOW.setProperty("heading", tree.get('title2',tree.get('title1','')))
@@ -1467,6 +1468,9 @@ def processDirectory( url, tree=None ):
     setWindowHeading(tree)
     for directory in tree:
         tempTitle=((directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Name').text)).encode('utf-8')
+#        IndexNumber=((directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}IndexNumber').text))
+#        if(IndexNumber != None):
+#            tempTitle=IndexNumber.encode('utf-8')+' '+tempTitle
         details={'title' : tempTitle }
         extraData={'thumb'        : getThumb(directory, server) ,
                    'fanart_image' : getFanart(directory, server) }
@@ -1476,15 +1480,25 @@ def processDirectory( url, tree=None ):
 
         extraData['mode']=_MODE_GETCONTENT
         id=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text).encode('utf-8')
+        isFolder=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}IsFolder').text).encode('utf-8')
         #printDebug('server: http://'+server+'/mediabrowser/Items/'+str(id) +'&format=xml')
         html=getURL(('http://'+server+'/mediabrowser/Users/' + userid + '/Items/'+str(id) +'?format=xml') , suppress=False, popup=1 )
         #printDebug('Details html:' + html)
-        u= etree.fromstring(html).find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Path").text
-        #printDebug('u:' +u)
+        if isFolder=='true':
+            u= 'http://192.168.1.6:8096/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&SortBy=SortName&format=xml'
+            addGUIItem(u,details,extraData)
+        else:
+            u= etree.fromstring(html).find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Path").text
+            if u == None:
+                printDebug('NotReallyThere')
+                u=""
+            else:
+                addGUIItem(u,details,extraData)
+        
         #u=('http://'+server+'/mediabrowser/Items/'+str(id)+'/File')
         #details=""
         #extraData=""
-        addGUIItem(u,details,extraData)
+        #addGUIItem(u,details,extraData)
 
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
 
