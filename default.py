@@ -1476,8 +1476,21 @@ def processDirectory( url, tree=None ):
         isFolder=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}IsFolder').text).encode('utf-8')
         #printDebug('server: http://'+server+'/mediabrowser/Items/'+str(id) +'&format=xml')
         html=getURL(('http://'+server+'/mediabrowser/Users/' + userid + '/Items/'+str(id) +'?format=xml') , suppress=False, popup=1 )
+        episode=(etree.fromstring(html).find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}IndexNumber").text)
+        if episode is None:
+            episode='0'
+        season=(etree.fromstring(html).find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}ParentIndexNumber").text)
+        if season is None:
+            season='0'
+        printDebug("Season/Ep" + season + '/' + episode)
+        #if episode == None:
+        #    episode=""
         details={'title' : tempTitle,
-                 'plot'  : etree.fromstring(html).find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Overview").text }
+                 'plot'  : etree.fromstring(html).find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Overview").text,
+                 'episode'     : int(episode) ,
+                 #'aired'       : episode.get('originallyAvailableAt','') ,
+                 #'tvshowtitle' : episode.get('grandparentTitle',tree.get('grandparentTitle','')).encode('utf-8') ,
+                 'season'      : int(season) }
         extraData={'thumb'        : getThumb(directory, server) ,
                    'fanart_image' : getFanart(directory, server) }
 
@@ -1488,7 +1501,7 @@ def processDirectory( url, tree=None ):
 
         #printDebug('Details html:' + html)
         if isFolder=='true':
-            u= 'http://192.168.1.6:8096/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&SortBy=SortName&format=xml'
+            u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&SortBy=SortName&format=xml'
             if (str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}RecursiveItemCount').text).encode('utf-8')!='0'):
                 addGUIItem(u,details,extraData)
         else:
@@ -1994,23 +2007,6 @@ def getFanart( data, server, transcode=False ):
         return ''
     id=data.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text
     fanart=('http://'+server+'/mediabrowser/Items/'+str(id)+'/Images/Backdrop?Format=png')
-    #hack!
-    #fanart=data.get('art','').encode('utf-8')
-    #fanart=""
-
-    #if fanart == '':
-    #    return ''
-
-    #elif fanart[0:4] == "http" :
-    #    return fanart
-
-    #elif fanart[0] == '/':
-    #    if transcode:
-    #        return photoTranscode(server,'http://localhost:32400'+fanart,1280,720)
-    #   else:
-    #        return 'http://%s%s' % (server, fanart)
-    #else:
-    #    return ''
     from urllib import urlretrieve
     try:
       with open(__addondir__+'fanart_' + id + '.png'):
