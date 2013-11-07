@@ -1,4 +1,4 @@
-Basic Movie functionality is working now.
+Basic Movie and TV functionality is working now.
 
 To Install:
 1. Download the GIT zip file(look to the right of this), placing it where is can be found by XBMC.
@@ -14,6 +14,6 @@ If all goes well, you will be able to browse your library and play movies (TV no
 
 NOTE: When first going into your library it will take a long time as it needs to cache all images locally right now.  Only an issue on first entry.
 
-Please check the issues and add as needed.
+* Please check the issues and add as needed. *
 
 THANK YOU to HippoJay for the PleXBMC plugin on which this code is based
