@@ -2450,3 +2450,361 @@ def TVEpisodes( url, tree=None ):
 
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
 
+def mediaType( partData, server, dvdplayback=False ):
+    printDebug("== ENTER: mediaType ==", False)
+    stream=partData['key']
+    file=partData['file']
+
+    global g_stream
+
+    if ( file is None ) or ( g_stream == "1" ):
+        printDebug( "Selecting stream")
+        return "http://"+server+stream
+
+    #First determine what sort of 'file' file is
+
+    if file[0:2] == "\\\\":
+        printDebug("Looks like a UNC")
+        type="UNC"
+    elif file[0:1] == "/" or file[0:1] == "\\":
+        printDebug("looks like a unix file")
+        type="nixfile"
+    elif file[1:3] == ":\\" or file[1:2] == ":/":
+        printDebug("looks like a windows file")
+        type="winfile"
+    else:
+        printDebug("uknown file type")
+        printDebug(str(file))
+        type="notsure"
+
+    # 0 is auto select.  basically check for local file first, then stream if not found
+    if g_stream == "0":
+        #check if the file can be found locally
+        if type == "nixfile" or type == "winfile":
+            try:
+                printDebug("Checking for local file")
+                exists = open(file, 'r')
+                printDebug("Local file found, will use this")
+                exists.close()
+                return "file:"+file
+            except: pass
+
+        printDebug("No local file")
+        if dvdplayback:
+            printDebug("Forcing SMB for DVD playback")
+            g_stream="2"
+        else:
+            return "http://"+server+stream
+
+
+    # 2 is use SMB
+    elif g_stream == "2" or g_stream == "3":
+        if g_stream == "2":
+            protocol="smb"
+        else:
+            protocol="afp"
+
+        printDebug( "Selecting smb/unc")
+        if type=="UNC":
+            filelocation=protocol+":"+file.replace("\\","/")
+        else:
+            #Might be OSX type, in which case, remove Volumes and replace with server
+            server=server.split(':')[0]
+            loginstring=""
+
+            if g_nasoverride == "true":
+                if not g_nasoverrideip == "":
+                    server=g_nasoverrideip
+                    printDebug("Overriding server with: " + server)
+
+                nasuser=__settings__.getSetting('nasuserid')
+                if not nasuser == "":
+                    loginstring=__settings__.getSetting('nasuserid')+":"+__settings__.getSetting('naspass')+"@"
+                    printDebug("Adding AFP/SMB login info for user " + nasuser)
+
+
+            if file.find('Volumes') > 0:
+                filelocation=protocol+":/"+file.replace("Volumes",loginstring+server)
+            else:
+                if type == "winfile":
+                    filelocation=protocol+"://"+loginstring+server+"/"+file[3:]
+                else:
+                    #else assume its a file local to server available over smb/samba (now we have linux PMS).  Add server name to file path.
+                    filelocation=protocol+"://"+loginstring+server+file
+
+        if g_nasoverride == "true" and g_nasroot != "":
+            #Re-root the file path
+            printDebug("Altering path " + filelocation + " so root is: " +  g_nasroot)
+            if '/'+g_nasroot+'/' in filelocation:
+                components = filelocation.split('/')
+                index = components.index(g_nasroot)
+                for i in range(3,index):
+                    components.pop(3)
+                filelocation='/'.join(components)
+    else:
+        printDebug( "No option detected, streaming is safest to choose" )
+        filelocation="http://"+server+stream
+
+    printDebug("Returning URL: " + filelocation)
+    return filelocation
+
+def enforceSkinView(mode):
+    '''
+        Ensure that the views are consistance across plugin usage, depending
+        upon view selected by user
+        @input: User view selection
+        @return: view id for skin
+    '''
+    printDebug("== ENTER: enforceSkinView ==", False)
+
+    if __settings__.getSetting('skinoverride') == "false":
+        return None
+
+    skinname = __settings__.getSetting('skinname')
+
+    current_skin_name = xbmc.getSkinDir()
+
+    skin_map = { '2' : 'skin.confluence' ,
+                 '0' : 'skin.quartz' ,
+                 '1' : 'skin.quartz3' }
+    
+    if skin_map[skinname] not in current_skin_name:
+        printDebug("Do not have the correct skin [%s] selected in settings [%s] - ignoring" % (current_skin_name, skin_map[skinname]))
+        return None
+    
+    if mode == "movie":
+        printDebug("Looking for movie skin settings")
+        viewname = __settings__.getSetting('mo_view_%s' % skinname)
+
+    elif mode == "tv":
+        printDebug("Looking for tv skin settings")
+        viewname = __settings__.getSetting('tv_view_%s' % skinname)
+
+    elif mode == "music":
+        printDebug("Looking for music skin settings")
+        viewname = __settings__.getSetting('mu_view_%s' % skinname)
+
+    elif mode == "episode":
+        printDebug("Looking for music skin settings")
+        viewname = __settings__.getSetting('ep_view_%s' % skinname)
+
+    elif mode == "season":
+        printDebug("Looking for music skin settings")
+        viewname = __settings__.getSetting('se_view_%s' % skinname)
+
+    else:
+        viewname = "None"
+
+    printDebug("view name is %s" % viewname)
+
+    if viewname == "None":
+        return None
+
+    QuartzV3_views={ 'List' : 50,
+                     'Big List' : 51,
+                     'MediaInfo' : 52,
+                     'MediaInfo 2' : 54,
+                     'Big Icons' : 501,
+                     'Icons': 53,
+                     'Panel' : 502,
+                     'Wide' : 55,
+                     'Fanart 1' : 57,
+                     'Fanart 2' : 59,
+                     'Fanart 3' : 500 }
+
+    Quartz_views={ 'List' : 50,
+                   'MediaInfo' : 51,
+                   'MediaInfo 2' : 52,
+                   'Icons': 53,
+                   'Wide' : 54,
+                   'Big Icons' : 55,
+                   'Icons 2' : 56 ,
+                   'Panel' : 57,
+                   'Fanart' : 58,
+                   'Fanart 2' : 59 }
+
+    Confluence_views={ 'List' : 50,
+                       'Big List' : 51,
+                       'Thumbnail' : 500,
+                       'Poster Wrap': 501,
+                       'Fanart' : 508,
+                       'Media Info' : 504,
+                       'Media Info 2' : 503,
+                       'Wide Icons' : 505 }
+
+    skin_list={"0" : Quartz_views ,
+               "1" : QuartzV3_views,
+               "2" : Confluence_views}
+
+    printDebug("Using skin view: %s" % skin_list[skinname][viewname])
+
+    try:
+        return skin_list[skinname][viewname]
+    except:
+        print "XBMB3C -> skin name or view name error"
+        return None
+
+def Movies( url, tree=None ):
+    printDebug("== ENTER: Movies() ==", False)
+    xbmcplugin.setContent(pluginhandle, 'movies')
+
+    #get the server name from the URL, which was passed via the on screen listing..
+    tree=getXML(url,tree)
+    if tree is None:
+        return
+
+    server=getServerFromURL(url)
+
+    setWindowHeading(tree)
+    randomNumber=str(random.randint(1000000000,9999999999))
+    #Find all the video tags, as they contain the data we need to link to a file.
+    MovieTags=tree.findall('Video')
+    fullList=[]
+    for movie in MovieTags:
+
+        movieTag(url, server, tree, movie, randomNumber)
+
+    printDebug ("Skin override is: %s" % __settings__.getSetting('skinoverride'))
+    view_id = enforceSkinView('movie')
+    if view_id:
+        xbmc.executebuiltin("Container.SetViewMode(%s)" % view_id)
+
+    xbmcplugin.endOfDirectory(pluginhandle)
+def playLibraryMedia( vids, override=False, force=None, full_data=False ):
+    printDebug("== ENTER: playLibraryMedia ==", False)
+
+    getTranscodeSettings(override)
+
+    server=getServerFromURL(vids)
+
+    id=vids.split('?')[0].split('&')[0].split('/')[-1]
+
+    if force:
+        full_data = True
+        
+    streams=getAudioSubtitlesMedia(server,id, full_data)
+    url=selectMedia(streams, server)
+
+    if url is None:
+        return
+
+    protocol=url.split(':',1)[0]
+
+    if protocol == "file":
+        printDebug( "We are playing a local file")
+        playurl=url.split(':',1)[1]
+    elif protocol == "http":
+        printDebug( "We are playing a stream")
+        if g_transcode == "true":
+            printDebug( "We will be transcoding the stream")
+            playurl=transcode(id,url)+getAuthDetails({'token':_PARAM_TOKEN})
+
+        else:
+            playurl=url+getAuthDetails({'token':_PARAM_TOKEN},prefix="?")
+    else:
+        playurl=url
+
+    resume=int(int(streams['media']['viewOffset'])/1000)
+    duration=int(int(streams['media']['duration'])/1000)
+
+    printDebug("Resume has been set to " + str(resume))
+
+    item = xbmcgui.ListItem(path=playurl)
+
+    if streams['full_data']:
+        item.setInfo( type='Video', infoLabels=streams['full_data'] )
+        item.setThumbnailImage(streams['full_data'].get('thumbnailImage',''))
+        item.setIconImage(streams['full_data'].get('thumbnailImage',''))
+    
+    if force:
+        
+        if int(force) > 0:
+            resume=int(int(force)/1000)
+        else:
+            resume=force
+        
+        if resume:
+            printDebug ("Playback from resume point")
+            item.setProperty('ResumeTime', str(resume) )
+            item.setProperty('TotalTime', str(duration) )
+
+    if override:
+        start=xbmc.Player().play(listitem=item)
+    else:
+        start = xbmcplugin.setResolvedUrl(pluginhandle, True, item)
+
+    #Set a loop to wait for positive confirmation of playback
+    count = 0
+    while not xbmc.Player().isPlaying():
+        printDebug( "Not playing yet...sleep for 2")
+        count = count + 2
+        if count >= 20:
+            return
+        else:
+            time.sleep(2)
+
+    if not (g_transcode == "true" ):
+        setAudioSubtitles(streams)
+
+    monitorPlayback(id,server)
+
+    return
+
+def monitorPlayback( id, server ):
+    printDebug("== ENTER: monitorPlayback ==", False)
+
+    if len(server.split(':')) == 1:
+        server=server
+
+    monitorCount=0
+    progress = 0
+    complete = 0
+    #Whilst the file is playing back
+    while xbmc.Player().isPlaying():
+        #Get the current playback time
+
+        currentTime = int(xbmc.Player().getTime())
+        totalTime = int(xbmc.Player().getTotalTime())
+        try:
+            progress = int(( float(currentTime) / float(totalTime) ) * 100)
+        except:
+            progress = 0
+
+        if currentTime < 30:
+            printDebug("Less that 30 seconds, will not set resume")
+
+        #If we are less than 95% completem, store resume time
+        elif progress < 95:
+            printDebug( "Movies played time: %s secs of %s @ %s%%" % ( currentTime, totalTime, progress) )
+            getURL("http://"+server+"/:/progress?key="+id+"&identifier=com.fixme.plugins.library&time="+str(currentTime*1000),suppress=True)
+            complete=0
+
+        #Otherwise, mark as watched
+        else:
+            if complete == 0:
+                printDebug( "Movie marked as watched. Over 95% complete")
+                getURL("http://"+server+"/:/scrobble?key="+id+"&identifier=com.fixme.plugins.library",suppress=True)
+                complete=1
+
+        time.sleep(5)
+
+    #If we get this far, playback has stopped
+    printDebug("Playback Stopped")
+
+    if g_sessionID is not None:
+        printDebug("Stopping PMS transcode job with session " + g_sessionID)
+        stopURL='http://'+server+'/video/:/transcode/segmented/stop?session='+g_sessionID
+        html=getURL(stopURL)
+
+    return
+
+def photoTranscode( server, url, width=1280, height=720 ):
+        return 'http://%s/photo/:/transcode?url=%s&width=%s&height=%s' % (server, urllib.quote_plus(url), width, height)
+
+def libraryRefresh( url ):
+    printDebug("== ENTER: libraryRefresh ==", False)
+    html=getURL(url)
+    printDebug ("Library refresh requested")
+    xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\",Library Refresh started,100)")
+    return
+
