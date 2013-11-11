@@ -50,7 +50,7 @@ BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'li
 PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
 sys.path.append(BASE_RESOURCE_PATH)
 XBMB3C_VERSION="0.0.1"
-
+import httplib2
 print "===== XBMB3C START ====="
 
 print "XBMB3C -> running Python: " + str(sys.version_info)
@@ -90,7 +90,7 @@ except ImportError:
 DEFAULT_PORT="32400"
 _MODE_GETCONTENT=0
 _MODE_TVSHOWS=1
-_MODE_MOVIES=2
+_MODE_MOVIES=0
 _MODE_ARTISTS=3
 _MODE_TVSEASONS=4
 _MODE_PLAYLIBRARY=5
@@ -305,7 +305,8 @@ def getServerSections ( ip_address, port, name, uuid):
                     'address'    : ip_address+":"+port ,
                     'serverName' : name ,
                     'uuid'       : uuid ,
-                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text) + '&ParentIndexNumber=0&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview&SortBy=Name&format=xml') ,
+                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview&SortBy=Name&format=xml') ,
+#                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text) + '&Fields=Path,Overview&format=xml') ,
                     'token'      : str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text)  ,
                     'location'   : "local" ,
                     'art'        : str(BaseItemDto.text) ,
@@ -361,63 +362,19 @@ def getURL( url, suppress=True, type="GET", popup=0 ):
         printDebug("url = "+url)
         printDebug("server = "+str(server))
         printDebug("urlPath = "+str(urlPath))
-        conn = httplib.HTTPConnection(server, timeout=20)
-        #head = {"Accept-Encoding" : "gzip,deflate", "Accept-Charset" : "UTF-8,*"} 
-        conn.request(type, urlPath)
-        data = conn.getresponse()
-        if int(data.status) == 200:
-            link=data.read()
-            printDebug("====== XML 200 returned =======")
-            printDebug(link, False)
-            printDebug("====== XML 200 finished ======")
-
-        elif ( int(data.status) == 301 ) or ( int(data.status) == 302 ):
-            try: conn.close()
-            except: pass
-            return data.getheader('Location')
-
-        elif int(data.status) >= 400:
-            error = "HTTP response error: " + str(data.status) + " " + str(data.reason)
-            print error
-            if suppress is False:
-                if popup == 0:
-                    xbmc.executebuiltin("XBMC.Notification(URL error: "+ str(data.reason) +",)")
-                else:
-                    xbmcgui.Dialog().ok("Error",server)
-            print error
-            try: conn.close()
-            except: pass
-            return False
+        
+        printDebug("cachetime = "+__settings__.getSetting("cachetime"))
+        if XBMB3C_PLATFORM=="Windows":
+            conn = httplib2.Http("c:\\temp\\" +".cache", timeout=20)
         else:
-            link=data.read()
-            printDebug("====== XML returned =======")
-            printDebug(link, False)
-            printDebug("====== XML finished ======")
-    except socket.gaierror :
-        error = 'Unable to lookup host: ' + server + "\nCheck host name is correct"
-        print error
-        if suppress is False:
-            if popup==0:
-                xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to find server,)")
-            else:
-                xbmcgui.Dialog().ok("","Unable to contact host")
-        print error
-        return False
-    except socket.error, msg :
-        error="Unable to connect to " + server +"\nReason: " + str(msg)
-        print error
-        if suppress is False:
-            if popup == 0:
-                xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to connect to server,)")
-            else:
-                xbmcgui.Dialog().ok("","Unable to connect to host")
-        print error
-        return False
-    else:
-        try: conn.close()
-        except: pass
-
-        return link
+            conn = httplib2.Http(__addondir__ +".cache", timeout=20)
+        headers={'Accept-encoding': 'gzip', 'Cache-Control' : 'max-age=' + (__settings__.getSetting("cachetime"))}
+        resp, link = conn.request("http://"+server+urlPath, "GET",headers=headers)
+    except:
+        error = "HTTP response error"
+    printDebug("Headers: " + str(resp))
+    printDebug("====== getURL finished ======")
+    return link
 
 def addGUIItem( url, details, extraData, context=None, folder=True ):
         printDebug("== ENTER: addGUIItem ==", False)
@@ -701,7 +658,7 @@ def PLAY( url ):
             else:
                 time.sleep(2)
         while xbmc.Player().isPlaying():
-                dont_worry=1
+                time.sleep(1)
                 #currentTime = int(xbmc.Player().getTime())
         #return xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         return
