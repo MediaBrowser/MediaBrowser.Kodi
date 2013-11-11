@@ -113,7 +113,6 @@ _SUB_AUDIO_NEVER_SHOW="2"
 
 #Check debug first...
 g_debug = __settings__.getSetting('debug')
-g_debug = "true"
 def printDebug( msg, functionname=True ):
     if g_debug == "true":
         if functionname is False:
@@ -191,10 +190,10 @@ if g_nasoverride == "true":
     g_nasroot = __settings__.getSetting('nasroot')
 
 #Get look and feel
-if __settings__.getSetting("contextreplace") == "true":
-    g_contextReplace=True
-else:
-    g_contextReplace=False
+#if __settings__.getSetting("contextreplace") == "true":
+g_contextReplace=True
+#else:
+#    g_contextReplace=False
 
 g_skipcontext = __settings__.getSetting("skipcontextmenus")
 g_skipmetadata= __settings__.getSetting("skipmetadata")
@@ -610,16 +609,6 @@ def buildContextMenu( url, itemData ):
     #Reload media section
     listingRefresh=plugin_url+"refresh)"
     context.append(('Reload Section', listingRefresh , ))
-
-    #alter audio
-    alterAudioURL="http://"+server+"/library/metadata/"+ID+getAuthDetails(itemData,prefix="?")
-    alterAudio=plugin_url+"audio, " + alterAudioURL + ")"
-    context.append(('Select Audio', alterAudio , ))
-
-    #alter subs
-    alterSubsURL="http://"+server+"/library/metadata/"+ID+getAuthDetails(itemData,prefix="?")
-    alterSubs=plugin_url+"subs, " + alterSubsURL + ")"
-    context.append(('Select Subtitle', alterSubs , ))
 
     printDebug("Using context menus " + str(context))
 
