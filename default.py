@@ -3,7 +3,7 @@
     @package    : XBMB3C add-on
     @author     : xnappo
     @copyleft   : 2013, xnappo
-    @version    : 0.1 (frodo)
+    @version    : 0.2 (frodo)
 
     @license    : Gnu General Public License - see LICENSE.TXT
     @description: XBMB3C XBMC add-on
@@ -49,7 +49,7 @@ __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') )
 BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
 PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
 sys.path.append(BASE_RESOURCE_PATH)
-XBMB3C_VERSION="0.0.1"
+XBMB3C_VERSION="0.2"
 import httplib2
 print "===== XBMB3C START ====="
 
@@ -702,7 +702,10 @@ def processDirectory( url, tree=None ):
     server=getServerFromURL(url)
     setWindowHeading(tree)
     for directory in tree:
-        tempTitle=((directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Name').text)).encode('utf-8')
+        try:
+            tempTitle=((directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Name').text)).encode('utf-8')
+        except TypeError:
+            tempTitle="Missing Title"
         id=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text).encode('utf-8')
         isFolder=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}IsFolder').text).encode('utf-8')
         type=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Type').text).encode('utf-8')
