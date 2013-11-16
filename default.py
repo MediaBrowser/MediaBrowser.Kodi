@@ -252,7 +252,6 @@ def getServerSections ( ip_address, port, name, uuid):
                     'serverName' : name ,
                     'uuid'       : uuid ,
                     'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview&SortBy=Name&format=xml') ,
-#                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text) + '&Fields=Path,Overview&format=xml') ,
                     'token'      : str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text)  ,
                     'location'   : "local" ,
                     'art'        : str(BaseItemDto.text) ,
@@ -344,7 +343,6 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         elif url.startswith('http') or url.startswith('file'):
             u=sys.argv[0]+"?url="+urllib.quote(url)+mode
         else:
-            #u=sys.argv[0]+"?url="+str(url)+mode
             u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
             u=u.replace("\\\\","smb://")
             u=u.replace("\\","/")
@@ -365,7 +363,8 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
             thumbPath=thumb
         liz=xbmcgui.ListItem(details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
         printDebug("Setting thumbnail as " + thumbPath)
-
+        liz.setInfo('VideoCodec', 'xvid')
+        liz.setInfo('director', 'director : Pappy')
         #Set the properties of the item, such as summary, name, season, etc
         liz.setInfo( type=extraData.get('type','Video'), infoLabels=details )
         #Music related tags
@@ -435,6 +434,11 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         context=[]
         context.append(('Rescan library section', 'displaySections' , ))
         liz.addContextMenuItems(context,g_contextReplace)
+        liz.setInfo('VideoCodec', 'xvid')
+        liz.setInfo('video', {'director' : 'Pappy'})
+        liz.setInfo('video', {'mpaa': extraData.get('mpaa')})
+        liz.setInfo('video', {'rating': extraData.get('rating')})
+        liz.addStreamInfo('video', {'duration': extraData.get('duration')})
         return xbmcplugin.addDirectoryItem(handle=pluginhandle,url=u,listitem=liz,isFolder=folder)
 
 def displaySections( filter=None, shared=False ):
@@ -456,11 +460,6 @@ def displaySections( filter=None, shared=False ):
             if len(ds_servers) > 1:
                 details['title']=section.get('serverName')+": "+details['title']
 
-            #extraData={ 'fanart_image' : getFanart(section, section.get('address')) ,
-            #            'type'         : "Video" ,
-            #            'thumb'        : getFanart(section, section.get('address'), False) ,
-            #            'token'        : section.get('token',None) }
-            #hack!
             extraData={ 'fanart_image' : '' ,
                         'type'         : "Video" ,
                         'thumb'        : '' ,
@@ -718,9 +717,15 @@ def processDirectory( url, tree=None ):
                  #'aired'       : episode.get('originallyAvailableAt','') ,
                  #'tvshowtitle' : episode.get('grandparentTitle',tree.get('grandparentTitle','')).encode('utf-8') ,
                  #'season'      : int(season) }
+        try:
+            tempDuration=str(int(directory.find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}RunTimeTicks").text)/10000000)
+        except TypeError:
+            tempDuration='0'
         extraData={'thumb'        : getThumb(directory, server) ,
-                   'fanart_image' : getFanart(directory, server) }
-
+                   'fanart_image' : getFanart(directory, server) ,
+                   'mpaa'         : directory.find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}OfficialRating").text ,
+                   'rating'       : directory.find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}CommunityRating").text, 
+                   'duration'     : tempDuration}
         if extraData['thumb'] == '':
             extraData['thumb']=extraData['fanart_image']
 
