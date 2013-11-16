@@ -140,65 +140,15 @@ def getPlatform( ):
 XBMB3C_PLATFORM=getPlatform()
 print "XBMB3C -> Platform: " + str(XBMB3C_PLATFORM)
 
-#Next Check the WOL status - lets give the servers as much time as possible to come up
-g_wolon = __settings__.getSetting('wolon')
-if g_wolon == "true":
-    from WOL import wake_on_lan
-    printDebug("XBMB3C -> Wake On LAN: " + g_wolon, False)
-    for i in range(1,12):
-        wakeserver = __settings__.getSetting('wol'+str(i))
-        if not wakeserver == "":
-            try:
-                printDebug ("XBMB3C -> Waking server " + str(i) + " with MAC: " + wakeserver, False)
-                wake_on_lan(wakeserver)
-            except ValueError:
-                printDebug("XBMB3C -> Incorrect MAC address format for server " + str(i), False)
-            except:
-                printDebug("XBMB3C -> Unknown wake on lan error", False)
-
-g_stream = __settings__.getSetting('streaming')
-g_secondary = __settings__.getSetting('secondary')
-g_streamControl = __settings__.getSetting('streamControl')
-g_channelview = __settings__.getSetting('channelview')
 g_flatten = __settings__.getSetting('flatten')
 printDebug("XBMB3C -> Flatten is: "+ g_flatten, False)
-g_forcedvd = __settings__.getSetting('forcedvd')
 
 if g_debug == "true":
-    print "XBMB3C -> Settings streaming: " + g_stream
-    print "XBMB3C -> Setting filter menus: " + g_secondary
     print "XBMB3C -> Setting debug to " + g_debug
-    if g_streamControl == _SUB_AUDIO_XBMC_CONTROL:
-        print "XBMB3C -> Setting stream Control to : XBMC CONTROL (%s)" % g_streamControl
-    elif g_streamControl == _SUB_AUDIO_NEVER_SHOW:
-        print "XBMB3C -> Setting stream Control to : NEVER SHOW (%s)" % g_streamControl
-
-    print "XBMB3C -> Force DVD playback: " + g_forcedvd
 else:
     print "XBMB3C -> Debug is turned off.  Running silent"
 
-#NAS Override
-g_nasoverride = __settings__.getSetting('nasoverride')
-printDebug("XBMB3C -> SMB IP Override: " + g_nasoverride, False)
-if g_nasoverride == "true":
-    g_nasoverrideip = __settings__.getSetting('nasoverrideip')
-    if g_nasoverrideip == "":
-        printDebug("XBMB3C -> No NAS IP Specified.  Ignoring setting")
-    else:
-        printDebug("XBMB3C -> NAS IP: " + g_nasoverrideip, False)
-
-    g_nasroot = __settings__.getSetting('nasroot')
-
-#Get look and feel
-#if __settings__.getSetting("contextreplace") == "true":
 g_contextReplace=True
-#else:
-#    g_contextReplace=False
-
-g_skipcontext = __settings__.getSetting("skipcontextmenus")
-g_skipmetadata= __settings__.getSetting("skipmetadata")
-g_skipmediaflags= __settings__.getSetting("skipflags")
-g_skipimages= __settings__.getSetting("skipimages")
 
 g_loc = "special://home/addons/plugin.video.XBMB3C"
 
@@ -243,14 +193,11 @@ def discoverAllServers( ):
         if local_server:
             das_servers[das_server_index] = local_server
             das_server_index = das_server_index + 1
-                                 
-    if __settings__.getSetting('myplex_user') != "":
-        printDebug( "XBMB3C -> Adding myplex as a server location", False)
 
     return das_servers
 def getUserId( ip_address, port ):
     html = getURL(ip_address+":"+port+"/mediabrowser/Users?format=xml")
-    #printDebug("userhtml:" + html)
+    printDebug("userhtml:" + html)
     tree= etree.fromstring(html).getiterator('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}UserDto')
     for UserDto in tree:
         userid=str(UserDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text)
@@ -485,7 +432,9 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         if context is not None:
             printDebug("Building Context Menus")
             liz.addContextMenuItems( context, g_contextReplace )
-
+        context=[]
+        context.append(('Rescan library section', 'displaySections' , ))
+        liz.addContextMenuItems(context,g_contextReplace)
         return xbmcplugin.addDirectoryItem(handle=pluginhandle,url=u,listitem=liz,isFolder=folder)
 
 def displaySections( filter=None, shared=False ):
@@ -545,21 +494,12 @@ def displaySections( filter=None, shared=False ):
                 printDebug("Ignoring section "+details['title']+" of type " + section.get('type') + " as unable to process")
                 continue
 
-            if g_secondary == "true":
-                mode=_MODE_GETCONTENT
-            else:
-                path=path+'/all'
+            path=path+'/all'
 
             extraData['mode']=mode
             s_url='http://%s%s' % ( section['address'], path)
 
-            if g_skipcontext == "false":
-                context=[]
-                refreshURL="http://"+section.get('address')+section.get('path')+"/refresh"
-                libraryRefresh = "XBMC.RunScript("+g_loc+"/default.py, update ," + refreshURL + ")"
-                context.append(('Refresh library section', libraryRefresh , ))
-            else:
-                context=None
+            context=None
 
             #Build that listing..
             printDebug("addGUIItem:"+str(s_url)+str(details)+str(extraData)+str(context))
@@ -646,8 +586,8 @@ def PLAY( url ):
                 return
             else:
                 time.sleep(2)
-        while xbmc.Player().isPlaying():
-                time.sleep(1)
+        #while xbmc.Player().isPlaying():
+                #time.sleep(1)
                 #currentTime = int(xbmc.Player().getTime())
         #return xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         return
@@ -831,9 +771,6 @@ def getThumb( data, server, transcode=False, width=None, height=None ):
         @ return formatted URL
     '''
     
-    if g_skipimages == "true":
-        return ''
-        
     printDebug('getThumb server:' + server)
     #hack!
     id=data.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text
@@ -846,11 +783,6 @@ def getThumb( data, server, transcode=False, width=None, height=None ):
          printDebug('Already there')
     except IOError:
          urlretrieve(thumbnail, (__addondir__ + id+ '.png'))
-    #printDebug('getThumb html:' + th)
-    #tree = etree.fromstring(html).getiterator('ImageType')
-    #printDebug("html: " + html)
-    #for stupidCrap in tree:
-    #thumbnail=tree.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Primary')
     thumbnail=(__addondir__ + id + '.png')
     printDebug('Thumb:' + thumbnail)
     return thumbnail
@@ -878,8 +810,6 @@ def getFanart( data, server, transcode=False ):
         @ input: elementTree element, server name
         @ return formatted URL for photo resizing
     '''
-    if g_skipimages == "true":
-        return ''
     id=data.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text
     fanart=('http://'+server+'/mediabrowser/Items/'+str(id)+'/Images/Backdrop?Format=png')
     from urllib import urlretrieve
@@ -1119,9 +1049,6 @@ elif sys.argv[1] == "setting":
         xbmc.executebuiltin("XBMC.ActivateWindow(Home)")
 elif sys.argv[1] == "refreshXBMB3C":
     server_list = discoverAllServers()
-    skin(server_list)
-    shelf(server_list)
-    shelfChannel(server_list)
 elif sys.argv[1] == "delete":
     url=sys.argv[2]
     deleteMedia(url)
