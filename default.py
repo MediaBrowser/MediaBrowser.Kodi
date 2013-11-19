@@ -48,6 +48,9 @@ __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') ) 
 BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
 PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
+sDto='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}'
+sEntities='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Entities}'
+sArrays='{http://schemas.microsoft.com/2003/10/Serialization/Arrays}'
 sys.path.append(BASE_RESOURCE_PATH)
 XBMB3C_VERSION="0.2"
 import httplib2
@@ -198,9 +201,9 @@ def discoverAllServers( ):
 def getUserId( ip_address, port ):
     html = getURL(ip_address+":"+port+"/mediabrowser/Users?format=xml")
     printDebug("userhtml:" + html)
-    tree= etree.fromstring(html).getiterator('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}UserDto')
+    tree= etree.fromstring(html).getiterator(sDto + 'UserDto')
     for UserDto in tree:
-        userid=str(UserDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text)
+        userid=str(UserDto.find(sDto + 'Id').text)
     printDebug("userid:" + userid)
     return userid
     
@@ -233,9 +236,9 @@ def getServerSections ( ip_address, port, name, uuid):
     userid=str(getUserId( ip_address, port))
     html = getURL(ip_address+":"+port+"/mediabrowser/Users/"+userid+"/Items/Root?format=xml")
     printDebug("html:" + html)
-    tree= etree.fromstring(html).getiterator('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}BaseItemDto')
+    tree= etree.fromstring(html).getiterator(sDto + 'BaseItemDto')
     for BaseItemDto in tree:
-        parentid=str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text)
+        parentid=str(BaseItemDto.find(sDto + 'Id').text)
     htmlpath=("http://%s:%s/mediabrowser/Users/" % ( ip_address, port))
     html=getURL(htmlpath + userid + "/items?ParentId=" + parentid + "&format=xml")
 
@@ -243,16 +246,16 @@ def getServerSections ( ip_address, port, name, uuid):
         return {}
 
     
-    tree = etree.fromstring(html).getiterator("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}BaseItemDto")
+    tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
     temp_list=[]
     for BaseItemDto in tree:
-        if(str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}RecursiveItemCount').text)!='0'):
-            temp_list.append( {'title'      : (str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Name').text)).encode('utf-8'),
+        if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
+            temp_list.append( {'title'      : (str(BaseItemDto.find(sDto + 'Name').text)).encode('utf-8'),
                     'address'    : ip_address+":"+port ,
                     'serverName' : name ,
                     'uuid'       : uuid ,
-                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview&SortBy=Name&format=xml') ,
-                    'token'      : str(BaseItemDto.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text)  ,
+                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortBy=Name&format=xml') ,
+                    'token'      : str(BaseItemDto.find(sDto + 'Id').text)  ,
                     'location'   : "local" ,
                     'art'        : str(BaseItemDto.text) ,
                     'local'      : '1' ,
@@ -347,11 +350,6 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
             u=u.replace("\\\\","smb://")
             u=u.replace("\\","/")
         
-        #if extraData.get('parameters'):
-            #for argument, value in extraData.get('parameters').items():
-                #u="%s&%s=%s" % ( u, argument, urllib.quote(value) )
-        #printDebug("URL to use for listing: " + urllib.quote(u))
-
         #Create the ListItem that will be displayed
         thumb=str(extraData.get('thumb',''))
         if thumb.startswith('http'):
@@ -363,15 +361,8 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
             thumbPath=thumb
         liz=xbmcgui.ListItem(details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
         printDebug("Setting thumbnail as " + thumbPath)
-        liz.setInfo('VideoCodec', 'xvid')
-        liz.setInfo('director', 'director : Pappy')
         #Set the properties of the item, such as summary, name, season, etc
         liz.setInfo( type=extraData.get('type','Video'), infoLabels=details )
-        #Music related tags
-        if extraData.get('type','').lower() == "music":
-            liz.setProperty('Artist_Genre', details.get('genre',''))
-            liz.setProperty('Artist_Description', extraData.get('plot',''))
-            liz.setProperty('Album_Description', extraData.get('plot',''))
 
         #For all end items    
         if ( not folder):
@@ -430,15 +421,23 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
 
         if context is not None:
             printDebug("Building Context Menus")
+            printDebug("Building Context Menus")
             liz.addContextMenuItems( context, g_contextReplace )
         context=[]
         context.append(('Rescan library section', 'displaySections' , ))
         liz.addContextMenuItems(context,g_contextReplace)
-        liz.setInfo('VideoCodec', 'xvid')
-        liz.setInfo('video', {'director' : 'Pappy'})
+        liz.setInfo('video', {'duration' : extraData.get('duration')})
+        liz.setInfo('video', {'director' : extraData.get('director')})
+        liz.setInfo('video', {'writer' : extraData.get('writer')})
+        liz.setInfo('video', {'year' : extraData.get('year')})
+        liz.setInfo('video', {'genre' : extraData.get('genre')})
+        liz.setInfo('video', {'cast' : ['paco, posta']})
+        liz.setInfo('episodes', {'episode': details.get('episode')})
+        liz.setInfo('episodes', {'season': details.get('season')})        
         liz.setInfo('video', {'mpaa': extraData.get('mpaa')})
         liz.setInfo('video', {'rating': extraData.get('rating')})
-        liz.addStreamInfo('video', {'duration': extraData.get('duration')})
+        liz.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspectratio': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
+        liz.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
         return xbmcplugin.addDirectoryItem(handle=pluginhandle,url=u,listitem=liz,isFolder=folder)
 
 def displaySections( filter=None, shared=False ):
@@ -572,8 +571,6 @@ def PLAY( url ):
                 playurl=url
         else:
             playurl=url
-        #playurl=("smb://jupiter/e/Video/Movies/Man of Steel (2013)/man.of.steel.2013.720p.bluray.x264-felony.mkv")
-        #playurl=("\\\\jupiter\e\Video\Movies\Man of Steel (2013)\man.of.steel.2013.720p.bluray.x264-felony.mkv")
         item = xbmcgui.ListItem(path=playurl)
         xbmc.Player().play(urllib.unquote(playurl))
         #Set a loop to wait for positive confirmation of playback
@@ -649,8 +646,7 @@ def getContent( url ):
 
     if html is False:
         return
-    tree = etree.fromstring(html).getiterator("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}BaseItemDto")
-    #tree=etree.fromstring(html).getiterator()
+    tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
 
     WINDOW = xbmcgui.Window( xbmcgui.getCurrentWindowId() )
     #WINDOW.setProperty("heading", tree.get('title2',tree.get('title1','')))
@@ -697,53 +693,109 @@ def processDirectory( url, tree=None ):
     userid=getUserId(parsedserver,parsedport)
     printDebug("Processing secondary menus")
     xbmcplugin.setContent(pluginhandle, 'movies')
+    #xbmcplugin.setContent(pluginhandle, 'episodes')
 
     server=getServerFromURL(url)
     setWindowHeading(tree)
     for directory in tree:
         try:
-            tempTitle=((directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Name').text)).encode('utf-8')
+            tempTitle=((directory.find(sDto + 'Name').text)).encode('utf-8')
         except TypeError:
             tempTitle="Missing Title"
-        id=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text).encode('utf-8')
-        isFolder=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}IsFolder').text).encode('utf-8')
-        type=str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Type').text).encode('utf-8')
-        #episode=(directory.find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}IndexNumber").text)
-        #season=(directory.find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}ParentIndexNumber").text)
-        #printDebug("Season/Ep" + season + '/' + episode)
-        details={'title' : tempTitle,
-                 'plot'  : directory.find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Overview").text}
-                 #'episode'     : int(episode) ,
+        id=str(directory.find(sDto + 'Id').text).encode('utf-8')
+        isFolder=str(directory.find(sDto + 'IsFolder').text).encode('utf-8')
+        type=str(directory.find(sDto + 'Type').text).encode('utf-8')
+        try:
+            tempEpisode=int(directory.find(sDto + "IndexNumber").text)
+            tempSeason=int(directory.find(sDto + "ParentIndexNumber").text)
+            #print("Season:"+tempSeason+"Episode"+tempEpisode)
+        except TypeError:
+            tempEpisode=0
+            tempSeason=0
+
+        channels=''
+        videocodec=''
+        audiocodec=''
+        height=''
+        width=''
+        aspectratio=''
+        MediaStreams=directory.find(sDto+'MediaStreams')
+        for MediaStream in MediaStreams.findall(sEntities + 'MediaStream'):
+            if(MediaStream.find(sEntities + 'Type').text=='Video'):
+                #print("Video Codec: " + MediaStream.find(sEntities + 'Codec').text)
+                videocodec=MediaStream.find(sEntities + 'Codec').text
+                height=MediaStream.find(sEntities + 'Height').text
+                width=MediaStream.find(sEntities + 'Width').text
+                aspectratio=MediaStream.find(sEntities + 'AspectRatio').text
+            if(MediaStream.find(sEntities + 'Type').text=='Audio'):
+                #print("Audio Codec: " + MediaStream.find(sEntities + 'Codec').text)
+                audiocodec=MediaStream.find(sEntities + 'Codec').text
+                channels=MediaStream.find(sEntities + 'Channels').text
+                #print("Channels: " + MediaStream.find(sEntities + 'Channels').text)
+
+        director=''
+        writer=''
+        cast=list()
+        People=directory.find(sDto+'People')
+        for BaseItemPerson in People.findall(sDto+'BaseItemPerson'):
+            if(BaseItemPerson.find(sDto+'Type').text=='Director'):
+                director=director + BaseItemPerson.find(sDto + 'Name').text + ' ' 
+                #print('Director: ' + BaseItemPerson.find(sDto + 'Name').text)
+            if(BaseItemPerson.find(sDto+'Type').text=='Writing'):
+                writer=(BaseItemPerson.find(sDto + 'Name').text)                
+            if(BaseItemPerson.find(sDto+'Type').text=='Actor'):
+                cast.append(BaseItemPerson.find(sDto + 'Name').text)
+                #print(str('Actor: ' + BaseItemPerson.find(sDto + 'Name').text))
+                
+        genre=''
+        Genres=directory.find(sDto+'Genres')
+        for string in Genres.findall(sArrays+'string'):
+            if genre=="": #Just take the first genre
+                genre=string.text
+
+        details={'title'        : tempTitle,
+                 'plot'         : directory.find(sDto + "Overview").text ,
+                 'episode'      : tempEpisode ,
                  #'aired'       : episode.get('originallyAvailableAt','') ,
                  #'tvshowtitle' : episode.get('grandparentTitle',tree.get('grandparentTitle','')).encode('utf-8') ,
-                 #'season'      : int(season) }
+                 'season'       : tempSeason}
         try:
-            tempDuration=str(int(directory.find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}RunTimeTicks").text)/10000000)
+            tempDuration=str(int(directory.find(sDto + "RunTimeTicks").text)/(10000000*60))
         except TypeError:
             tempDuration='0'
         extraData={'thumb'        : getThumb(directory, server) ,
                    'fanart_image' : getFanart(directory, server) ,
-                   'mpaa'         : directory.find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}OfficialRating").text ,
-                   'rating'       : directory.find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}CommunityRating").text, 
+                   'mpaa'         : directory.find(sDto + "OfficialRating").text ,
+                   'rating'       : directory.find(sDto + "CommunityRating").text,
+                   'year'         : directory.find(sDto + "ProductionYear").text,
+                   'genre'        : genre,
+                   'director'     : director,
+                   'writer'       : writer,
+                   'channels'     : channels,
+                   'videocodec'   : videocodec,
+                   'aspectratio'  : aspectratio,
+                   'audiocodec'   : audiocodec,
+                   'height'       : height,
+                   'width'        : width,
+                   'cast'         : cast,
                    'duration'     : tempDuration}
         if extraData['thumb'] == '':
             extraData['thumb']=extraData['fanart_image']
 
         extraData['mode']=_MODE_GETCONTENT
-
-        #printDebug('Details html:' + html)
+        
         if isFolder=='true':
             if type=='Season':
                 u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&Fields=Path,Overview&SortBy=SortName&format=xml'
-                if (str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}RecursiveItemCount').text).encode('utf-8')!='0'):
+                if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
             else:
                 u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&SortBy=SortName&format=xml'
-                if (str(directory.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}RecursiveItemCount').text).encode('utf-8')!='0'):
+                if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
 
         else:
-            u= directory.find("{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Path").text
+            u= directory.find(sDto + "Path").text
             if u == None:
                 printDebug('NotReallyThere')
                 u=""
@@ -780,9 +832,7 @@ def getThumb( data, server, transcode=False, width=None, height=None ):
     '''
     
     printDebug('getThumb server:' + server)
-    #hack!
-    id=data.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text
-    #thumbnail=getURL('http://'+server+'/mediabrowser/Items/'+str(id)+'/Images?Type=Primary&format=xml')
+    id=data.find(sDto + 'Id').text
     thumbnail=('http://'+server+'/mediabrowser/Items/'+str(id)+'/Images/Primary?Format=png')
     printDebug('The temp path is:' + __addondir__)
     from urllib import urlretrieve
@@ -818,7 +868,7 @@ def getFanart( data, server, transcode=False ):
         @ input: elementTree element, server name
         @ return formatted URL for photo resizing
     '''
-    id=data.find('{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}Id').text
+    id=data.find(sDto + 'Id').text
     fanart=('http://'+server+'/mediabrowser/Items/'+str(id)+'/Images/Backdrop?Format=png')
     from urllib import urlretrieve
     try:
