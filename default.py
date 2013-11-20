@@ -48,9 +48,11 @@ __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') ) 
 BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
 PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
+
 sDto='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}'
 sEntities='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Entities}'
-sArrays='{http://schemas.microsoft.com/2003/10/Serialization/Arrays}'
+sArrays='{http://schemas.microsoft.com/2003/10/Serialistation/Arrays}'
+
 sys.path.append(BASE_RESOURCE_PATH)
 XBMB3C_VERSION="0.2"
 import httplib2
@@ -359,67 +361,67 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
                 thumbPath=thumb.encode('utf-8') 
         else:
             thumbPath=thumb
-        liz=xbmcgui.ListItem(details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
+        list=xbmcgui.ListItem(details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
         printDebug("Setting thumbnail as " + thumbPath)
         #Set the properties of the item, such as summary, name, season, etc
-        liz.setInfo( type=extraData.get('type','Video'), infoLabels=details )
+        list.setInfo( type=extraData.get('type','Video'), infoLabels=details )
 
         #For all end items    
         if ( not folder):
-            liz.setProperty('IsPlayable', 'true')
+            list.setProperty('IsPlayable', 'true')
 
             if extraData.get('type','video').lower() == "video":
-                #liz.setProperty('TotalTime', str(extraData.get('duration')))
-                liz.setProperty('ResumeTime', str(extraData.get('resume')))
+                #list.setProperty('TotalTime', str(extraData.get('duration')))
+                list.setProperty('ResumeTime', str(extraData.get('resume')))
             
 
                 
         try:
             #Then set the number of watched and unwatched, which will be displayed per season
-            liz.setProperty('WatchedEpisodes', str(extraData['WatchedEpisodes']))
-            liz.setProperty('UnWatchedEpisodes', str(extraData['UnWatchedEpisodes']))
+            list.setProperty('WatchedEpisodes', str(extraData['WatchedEpisodes']))
+            list.setProperty('UnWatchedEpisodes', str(extraData['UnWatchedEpisodes']))
             
             #Hack to show partial flag for TV shows and seasons
             if extraData.get('partialTV') == 1:            
-                liz.setProperty('TotalTime', '100')
-                liz.setProperty('ResumeTime', '50')
+                list.setProperty('TotalTime', '100')
+                list.setProperty('ResumeTime', '50')
                 
         except: pass
 
         #Set the fanart image if it has been enabled
         fanart=str(extraData.get('fanart_image',''))
         if '?' in fanart:
-            liz.setProperty('fanart_image', fanart)
+            list.setProperty('fanart_image', fanart)
         else:
-            liz.setProperty('fanart_image', fanart)
+            list.setProperty('fanart_image', fanart)
 
         printDebug( "Setting fan art as " + fanart )
 
         if extraData.get('banner'):
-            liz.setProperty('banner', extraData.get('banner'))
+            list.setProperty('banner', extraData.get('banner'))
             printDebug( "Setting banner as " + extraData.get('banner'))
 
         if context is not None:
             printDebug("Building Context Menus")
             printDebug("Building Context Menus")
-            liz.addContextMenuItems( context, g_contextReplace )
+            list.addContextMenuItems( context, g_contextReplace )
         mycast=['paco','posta']
         context=[]
         context.append(('Rescan library section', 'displaySections' , ))
-        liz.addContextMenuItems(context,g_contextReplace)
-        liz.setInfo('video', {'duration' : extraData.get('duration')})
-        liz.setInfo('video', {'director' : extraData.get('director')})
-        liz.setInfo('video', {'writer' : extraData.get('writer')})
-        liz.setInfo('video', {'year' : extraData.get('year')})
-        liz.setInfo('video', {'genre' : extraData.get('genre')})
-        liz.setInfo('video', {'cast' : mycast})
-        liz.setInfo('episodes', {'episode': details.get('episode')})
-        liz.setInfo('episodes', {'season': details.get('season')})        
-        liz.setInfo('video', {'mpaa': extraData.get('mpaa')})
-        liz.setInfo('video', {'rating': extraData.get('rating')})
-        liz.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
-        liz.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
-        return xbmcplugin.addDirectoryItem(handle=pluginhandle,url=u,listitem=liz,isFolder=folder)
+        list.addContextMenuItems(context,g_contextReplace)
+        list.setInfo('video', {'duration' : extraData.get('duration')})
+        list.setInfo('video', {'director' : extraData.get('director')})
+        list.setInfo('video', {'writer' : extraData.get('writer')})
+        list.setInfo('video', {'year' : extraData.get('year')})
+        list.setInfo('video', {'genre' : extraData.get('genre')})
+        list.setInfo('video', {'cast' : mycast})
+        list.setInfo('episodes', {'episode': details.get('episode')})
+        list.setInfo('episodes', {'season': details.get('season')})        
+        list.setInfo('video', {'mpaa': extraData.get('mpaa')})
+        list.setInfo('video', {'rating': extraData.get('rating')})
+        list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
+        list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
+        return xbmcplugin.addDirectoryItem(handle=pluginhandle,url=u,listitem=list,isFolder=folder)
 
 def displaySections( filter=None, shared=False ):
         printDebug("== ENTER: displaySections() ==", False)
@@ -699,6 +701,7 @@ def processDirectory( url, tree=None ):
         height=''
         width=''
         aspectratio=''
+        aspectfloat=1.85
         MediaStreams=directory.find(sDto+'MediaStreams')
         for MediaStream in MediaStreams.findall(sEntities + 'MediaStream'):
             if(MediaStream.find(sEntities + 'Type').text=='Video'):
@@ -763,7 +766,7 @@ def processDirectory( url, tree=None ):
         
         if isFolder=='true':
             if type=='Season':
-                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&Fields=Path,Overview&SortBy=SortName&format=xml'
+                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&Fields=Path,Overview,Genres,People,MediaStreams&SortBy=SortName&format=xml'
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
             else:
@@ -780,26 +783,6 @@ def processDirectory( url, tree=None ):
                 addGUIItem(u,details,extraData)
         
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
-
-def getMediaData ( tag_dict ):
-    '''
-        Extra the media details from the XML
-        @input: dict of <media /> tag attributes
-        @output: dict of required values
-    '''
-    printDebug("== ENTER: getMediaData ==", False)
-
-    return     {'VideoResolution'    : tag_dict.get('videoResolution','') ,
-                'VideoCodec'         : tag_dict.get('videoCodec','') ,
-                'AudioCodec'         : tag_dict.get('audioCodec','') ,
-                'AudioChannels'      : tag_dict.get('audioChannels','') ,
-                'VideoAspect'        : tag_dict.get('aspectRatio','') ,
-                'xbmc_height'        : tag_dict.get('height') ,
-                'xbmc_width'         : tag_dict.get('width') ,
-                'xbmc_VideoCodec'    : tag_dict.get('videoCodec') ,
-                'xbmc_AudioCodec'    : tag_dict.get('audioCodec') ,
-                'xbmc_AudioChannels' : tag_dict.get('audioChannels') ,
-                'xbmc_VideoAspect'   : tag_dict.get('aspectRatio') }
 
 def getThumb( data, server, transcode=False, width=None, height=None ):
     '''
