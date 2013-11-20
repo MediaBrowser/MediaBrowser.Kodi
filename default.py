@@ -51,7 +51,7 @@ PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
 
 sDto='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}'
 sEntities='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Entities}'
-sArrays='{http://schemas.microsoft.com/2003/10/Serialistation/Arrays}'
+sArrays='{http://schemas.microsoft.com/2003/10/Serialization/Arrays}'
 
 sys.path.append(BASE_RESOURCE_PATH)
 XBMB3C_VERSION="0.2"
@@ -694,13 +694,13 @@ def processDirectory( url, tree=None ):
         except TypeError:
             tempEpisode=0
             tempSeason=0
-
+# Process MediaStreams
         channels=''
         videocodec=''
         audiocodec=''
         height=''
         width=''
-        aspectratio=''
+        aspectratio='1:1'
         aspectfloat=1.85
         MediaStreams=directory.find(sDto+'MediaStreams')
         for MediaStream in MediaStreams.findall(sEntities + 'MediaStream'):
@@ -709,12 +709,13 @@ def processDirectory( url, tree=None ):
                 height=MediaStream.find(sEntities + 'Height').text
                 width=MediaStream.find(sEntities + 'Width').text
                 aspectratio=MediaStream.find(sEntities + 'AspectRatio').text
-                aspectwidth,aspectheight=aspectratio.split(':')
-                aspectfloat=float(aspectwidth)/float(aspectheight)
+                if aspectratio != None:
+                    aspectwidth,aspectheight=aspectratio.split(':')
+                    aspectfloat=float(aspectwidth)/float(aspectheight)
             if(MediaStream.find(sEntities + 'Type').text=='Audio'):
                 audiocodec=MediaStream.find(sEntities + 'Codec').text
                 channels=MediaStream.find(sEntities + 'Channels').text
-
+# Process People
         director=''
         writer=''
         cast=list()
@@ -726,13 +727,15 @@ def processDirectory( url, tree=None ):
                 writer=(BaseItemPerson.find(sDto + 'Name').text)                
             if(BaseItemPerson.find(sDto+'Type').text=='Actor'):
                 cast.append(BaseItemPerson.find(sDto + 'Name').text)
-
+# Process Genres
         genre=''
         Genres=directory.find(sDto+'Genres')
         for string in Genres.findall(sArrays+'string'):
             if genre=="": #Just take the first genre
                 genre=string.text
-
+            else:
+                genre=genre+" / "+string.text
+# Populate the details list
         details={'title'        : tempTitle,
                  'plot'         : directory.find(sDto + "Overview").text ,
                  'episode'      : tempEpisode ,
@@ -743,6 +746,8 @@ def processDirectory( url, tree=None ):
             tempDuration=str(int(directory.find(sDto + "RunTimeTicks").text)/(10000000*60))
         except TypeError:
             tempDuration='0'
+
+# Populate the extraData list
         extraData={'thumb'        : getThumb(directory, server) ,
                    'fanart_image' : getFanart(directory, server) ,
                    'mpaa'         : directory.find(sDto + "OfficialRating").text ,
