@@ -372,27 +372,7 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
                 #liz.setProperty('TotalTime', str(extraData.get('duration')))
                 liz.setProperty('ResumeTime', str(extraData.get('resume')))
             
-                if g_skipmediaflags == "false":
-                    printDebug("Setting VrR as : %s" % extraData.get('VideoResolution',''))
-                    liz.setProperty('VideoResolution', extraData.get('VideoResolution',''))
-                    liz.setProperty('VideoCodec', extraData.get('VideoCodec',''))
-                    liz.setProperty('AudioCodec', extraData.get('AudioCodec',''))
-                    liz.setProperty('AudioChannels', extraData.get('AudioChannels',''))
-                    liz.setProperty('VideoAspect', extraData.get('VideoAspect',''))
 
-                    video_codec={}
-                    if extraData.get('xbmc_VideoCodec'): video_codec['codec'] = extraData.get('xbmc_VideoCodec')
-                    if extraData.get('xbmc_VideoAspect') : video_codec['aspect'] = float(extraData.get('xbmc_VideoAspect'))
-                    if extraData.get('xbmc_height') : video_codec['height'] = int(extraData.get('xbmc_height'))
-                    if extraData.get('xbmc_width') : video_codec['width'] = int(extraData.get('xbmc_height'))
-                    if extraData.get('duration') : video_codec['duration'] = int(extraData.get('duration'))
-
-                    audio_codec={}
-                    if extraData.get('xbmc_AudioCodec') : audio_codec['codec'] = extraData.get('xbmc_AudioCodec')
-                    if extraData.get('xbmc_AudioChannels') : audio_codec['channels'] = int(extraData.get('xbmc_AudioChannels'))
-
-                    liz.addStreamInfo('video', video_codec )
-                    liz.addStreamInfo('audio', audio_codec )
                 
         try:
             #Then set the number of watched and unwatched, which will be displayed per season
@@ -423,6 +403,7 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
             printDebug("Building Context Menus")
             printDebug("Building Context Menus")
             liz.addContextMenuItems( context, g_contextReplace )
+        mycast=['paco','posta']
         context=[]
         context.append(('Rescan library section', 'displaySections' , ))
         liz.addContextMenuItems(context,g_contextReplace)
@@ -431,12 +412,12 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         liz.setInfo('video', {'writer' : extraData.get('writer')})
         liz.setInfo('video', {'year' : extraData.get('year')})
         liz.setInfo('video', {'genre' : extraData.get('genre')})
-        liz.setInfo('video', {'cast' : ['paco, posta']})
+        liz.setInfo('video', {'cast' : mycast})
         liz.setInfo('episodes', {'episode': details.get('episode')})
         liz.setInfo('episodes', {'season': details.get('season')})        
         liz.setInfo('video', {'mpaa': extraData.get('mpaa')})
         liz.setInfo('video', {'rating': extraData.get('rating')})
-        liz.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspectratio': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
+        liz.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
         liz.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
         return xbmcplugin.addDirectoryItem(handle=pluginhandle,url=u,listitem=liz,isFolder=folder)
 
@@ -708,7 +689,6 @@ def processDirectory( url, tree=None ):
         try:
             tempEpisode=int(directory.find(sDto + "IndexNumber").text)
             tempSeason=int(directory.find(sDto + "ParentIndexNumber").text)
-            #print("Season:"+tempSeason+"Episode"+tempEpisode)
         except TypeError:
             tempEpisode=0
             tempSeason=0
@@ -722,16 +702,15 @@ def processDirectory( url, tree=None ):
         MediaStreams=directory.find(sDto+'MediaStreams')
         for MediaStream in MediaStreams.findall(sEntities + 'MediaStream'):
             if(MediaStream.find(sEntities + 'Type').text=='Video'):
-                #print("Video Codec: " + MediaStream.find(sEntities + 'Codec').text)
                 videocodec=MediaStream.find(sEntities + 'Codec').text
                 height=MediaStream.find(sEntities + 'Height').text
                 width=MediaStream.find(sEntities + 'Width').text
                 aspectratio=MediaStream.find(sEntities + 'AspectRatio').text
+                aspectwidth,aspectheight=aspectratio.split(':')
+                aspectfloat=float(aspectwidth)/float(aspectheight)
             if(MediaStream.find(sEntities + 'Type').text=='Audio'):
-                #print("Audio Codec: " + MediaStream.find(sEntities + 'Codec').text)
                 audiocodec=MediaStream.find(sEntities + 'Codec').text
                 channels=MediaStream.find(sEntities + 'Channels').text
-                #print("Channels: " + MediaStream.find(sEntities + 'Channels').text)
 
         director=''
         writer=''
@@ -740,13 +719,11 @@ def processDirectory( url, tree=None ):
         for BaseItemPerson in People.findall(sDto+'BaseItemPerson'):
             if(BaseItemPerson.find(sDto+'Type').text=='Director'):
                 director=director + BaseItemPerson.find(sDto + 'Name').text + ' ' 
-                #print('Director: ' + BaseItemPerson.find(sDto + 'Name').text)
             if(BaseItemPerson.find(sDto+'Type').text=='Writing'):
                 writer=(BaseItemPerson.find(sDto + 'Name').text)                
             if(BaseItemPerson.find(sDto+'Type').text=='Actor'):
                 cast.append(BaseItemPerson.find(sDto + 'Name').text)
-                #print(str('Actor: ' + BaseItemPerson.find(sDto + 'Name').text))
-                
+
         genre=''
         Genres=directory.find(sDto+'Genres')
         for string in Genres.findall(sArrays+'string'):
@@ -773,7 +750,7 @@ def processDirectory( url, tree=None ):
                    'writer'       : writer,
                    'channels'     : channels,
                    'videocodec'   : videocodec,
-                   'aspectratio'  : aspectratio,
+                   'aspectratio'  : aspectfloat,
                    'audiocodec'   : audiocodec,
                    'height'       : height,
                    'width'        : width,
