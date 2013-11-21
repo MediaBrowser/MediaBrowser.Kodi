@@ -371,22 +371,22 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
             list.setProperty('IsPlayable', 'true')
 
             if extraData.get('type','video').lower() == "video":
-                #list.setProperty('TotalTime', str(extraData.get('duration')))
+                list.setProperty('TotalTime', str(extraData.get('duration')))
                 list.setProperty('ResumeTime', str(extraData.get('resume')))
             
 
                 
-        try:
+        #try:
             #Then set the number of watched and unwatched, which will be displayed per season
-            list.setProperty('WatchedEpisodes', str(extraData['WatchedEpisodes']))
-            list.setProperty('UnWatchedEpisodes', str(extraData['UnWatchedEpisodes']))
+            #list.setProperty('WatchedEpisodes', str(extraData['WatchedEpisodes']))
+            #list.setProperty('UnWatchedEpisodes', str(extraData['UnWatchedEpisodes']))
             
             #Hack to show partial flag for TV shows and seasons
-            if extraData.get('partialTV') == 1:            
-                list.setProperty('TotalTime', '100')
-                list.setProperty('ResumeTime', '50')
+            #if extraData.get('partialTV') == 1:            
+            #    list.setProperty('TotalTime', '100')
+            #    list.setProperty('ResumeTime', '50')
                 
-        except: pass
+        #except: pass
 
         #Set the fanart image if it has been enabled
         fanart=str(extraData.get('fanart_image',''))
@@ -410,13 +410,19 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         context.append(('Rescan library section', 'displaySections' , ))
         list.addContextMenuItems(context,g_contextReplace)
         list.setInfo('video', {'duration' : extraData.get('duration')})
+        #list.setInfo('video', {'playcount' : extraData.get('playcount')})
+        #list.setProperty('playcount','1')
+        #list.setProperty('ResumeTime',"18")
+        #list.setProperty('TotalTime',"18")
         list.setInfo('video', {'director' : extraData.get('director')})
         list.setInfo('video', {'writer' : extraData.get('writer')})
         list.setInfo('video', {'year' : extraData.get('year')})
         list.setInfo('video', {'genre' : extraData.get('genre')})
+        #list.setProperty('overlay','8')
         list.setInfo('video', {'cast' : mycast})
-        list.setInfo('episodes', {'episode': details.get('episode')})
-        list.setInfo('episodes', {'season': details.get('season')})        
+        list.setInfo('video', {'credits' : extraData.get('writer')})
+        list.setInfo('video', {'episode': details.get('episode')})
+        list.setInfo('video', {'season': details.get('season')})        
         list.setInfo('video', {'mpaa': extraData.get('mpaa')})
         list.setInfo('video', {'rating': extraData.get('rating')})
         list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
@@ -426,6 +432,7 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
 def displaySections( filter=None, shared=False ):
         printDebug("== ENTER: displaySections() ==", False)
         xbmcplugin.setContent(pluginhandle, 'movies')
+        #xbmcplugin.setContent(pluginhandle, 'video')
 
         ds_servers=discoverAllServers()
         numOfServers=len(ds_servers)
@@ -676,7 +683,7 @@ def processDirectory( url, tree=None ):
     userid=getUserId(parsedserver,parsedport)
     printDebug("Processing secondary menus")
     xbmcplugin.setContent(pluginhandle, 'movies')
-    #xbmcplugin.setContent(pluginhandle, 'episodes')
+    #xbmcplugin.setContent(pluginhandle, 'video')
 
     server=getServerFromURL(url)
     setWindowHeading(tree)
@@ -735,17 +742,31 @@ def processDirectory( url, tree=None ):
                 genre=string.text
             else:
                 genre=genre+" / "+string.text
+                
+# Process UserData
+        UserData=directory.find(sDto+'UserData')
+        if UserData.find(sDto + "PlayCount") != 0:
+            overlay=7
+            watched='true'
+        else:
+            overlay=0
+            watched='false'
+
 # Populate the details list
         details={'title'        : tempTitle,
                  'plot'         : directory.find(sDto + "Overview").text ,
-                 'episode'      : tempEpisode ,
+                 #'episode'      : tempEpisode ,
+                 'watched'      : watched,
+                 'overlay'      : overlay,
+                 #'playcount'    : UserData.find(sDto + "PlayCount")
                  #'aired'       : episode.get('originallyAvailableAt','') ,
                  #'tvshowtitle' : episode.get('grandparentTitle',tree.get('grandparentTitle','')).encode('utf-8') ,
-                 'season'       : tempSeason}
+                 #'season'       : tempSeason
+                 }
         try:
             tempDuration=str(int(directory.find(sDto + "RunTimeTicks").text)/(10000000*60))
         except TypeError:
-            tempDuration='0'
+            tempDuration='100'
 
 # Populate the extraData list
         extraData={'thumb'        : getThumb(directory, server) ,
@@ -754,6 +775,7 @@ def processDirectory( url, tree=None ):
                    'rating'       : directory.find(sDto + "CommunityRating").text,
                    'year'         : directory.find(sDto + "ProductionYear").text,
                    'genre'        : genre,
+                   'playcount'    : UserData.find(sDto + "PlayCount").text,
                    'director'     : director,
                    'writer'       : writer,
                    'channels'     : channels,
@@ -775,7 +797,7 @@ def processDirectory( url, tree=None ):
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
             else:
-                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&SortBy=SortName&format=xml'
+                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&Fields=Path,Overview,Genres,People,MediaStreams&SortBy=SortName&format=xml'
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
 

@@ -8,7 +8,7 @@
   </requires>
   <extension    point="xbmc.python.pluginsource"
                 library="default.py">
-        <provides>video audio image</provides>
+        <provides>executable video audio image</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
