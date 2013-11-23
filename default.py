@@ -3,7 +3,7 @@
     @package    : XBMB3C add-on
     @author     : xnappo
     @copyleft   : 2013, xnappo
-    @version    : 0.2 (frodo)
+    @version    : 0.3.0 (frodo)
 
     @license    : Gnu General Public License - see LICENSE.TXT
     @description: XBMB3C XBMC add-on
@@ -54,7 +54,7 @@ sEntities='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Entities}
 sArrays='{http://schemas.microsoft.com/2003/10/Serialization/Arrays}'
 
 sys.path.append(BASE_RESOURCE_PATH)
-XBMB3C_VERSION="0.2"
+XBMB3C_VERSION="0.3.0"
 import httplib2
 print "===== XBMB3C START ====="
 
@@ -410,16 +410,16 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         context.append(('Rescan library section', 'displaySections' , ))
         list.addContextMenuItems(context,g_contextReplace)
         list.setInfo('video', {'duration' : extraData.get('duration')})
-        #list.setInfo('video', {'playcount' : extraData.get('playcount')})
-        #list.setProperty('playcount','1')
+        list.setInfo('video', {'playcount' : extraData.get('playcount')})
+        #list.setProperty('playcount',)
         #list.setProperty('ResumeTime',"18")
         #list.setProperty('TotalTime',"18")
         list.setInfo('video', {'director' : extraData.get('director')})
         list.setInfo('video', {'writer' : extraData.get('writer')})
         list.setInfo('video', {'year' : extraData.get('year')})
         list.setInfo('video', {'genre' : extraData.get('genre')})
-        #list.setProperty('overlay','8')
         list.setInfo('video', {'cast' : mycast})
+        list.setInfo('video', {'castandrole' : mycast})
         list.setInfo('video', {'credits' : extraData.get('writer')})
         list.setInfo('video', {'episode': details.get('episode')})
         list.setInfo('video', {'season': details.get('season')})        
@@ -432,7 +432,8 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
 def displaySections( filter=None, shared=False ):
         printDebug("== ENTER: displaySections() ==", False)
         xbmcplugin.setContent(pluginhandle, 'movies')
-        #xbmcplugin.setContent(pluginhandle, 'video')
+        #xbmcplugin.setContent(pluginhandle, 'episodes')
+        #xbmcplugin.setContent(pluginhandle, 'files')
 
         ds_servers=discoverAllServers()
         numOfServers=len(ds_servers)
@@ -682,11 +683,11 @@ def processDirectory( url, tree=None ):
     parsedserver,parsedport=parsed.netloc.split(':')
     userid=getUserId(parsedserver,parsedport)
     printDebug("Processing secondary menus")
+    #xbmcplugin.setContent(pluginhandle, 'files')
     xbmcplugin.setContent(pluginhandle, 'movies')
-    #xbmcplugin.setContent(pluginhandle, 'video')
 
     server=getServerFromURL(url)
-    setWindowHeading(tree)
+    setWindowHeading(url)
     for directory in tree:
         try:
             tempTitle=((directory.find(sDto + 'Name').text)).encode('utf-8')
@@ -696,11 +697,11 @@ def processDirectory( url, tree=None ):
         isFolder=str(directory.find(sDto + 'IsFolder').text).encode('utf-8')
         type=str(directory.find(sDto + 'Type').text).encode('utf-8')
         try:
-            tempEpisode=int(directory.find(sDto + "IndexNumber").text)
-            tempSeason=int(directory.find(sDto + "ParentIndexNumber").text)
+            tempEpisode=directory.find(sDto + "IndexNumber").text
+            tempSeason=directory.find(sDto + "ParentIndexNumber").text
         except TypeError:
-            tempEpisode=0
-            tempSeason=0
+            tempEpisode='0'
+            tempSeason='0'
 # Process MediaStreams
         channels=''
         videocodec=''
@@ -745,23 +746,23 @@ def processDirectory( url, tree=None ):
                 
 # Process UserData
         UserData=directory.find(sDto+'UserData')
-        if UserData.find(sDto + "PlayCount") != 0:
-            overlay=7
+        if UserData.find(sDto + "PlayCount").text != '0':
+            overlay='7'
             watched='true'
         else:
-            overlay=0
+            overlay='6'
             watched='false'
 
 # Populate the details list
         details={'title'        : tempTitle,
                  'plot'         : directory.find(sDto + "Overview").text ,
-                 #'episode'      : tempEpisode ,
-                 'watched'      : watched,
-                 'overlay'      : overlay,
-                 #'playcount'    : UserData.find(sDto + "PlayCount")
+                 'episode'      : tempEpisode,
+                 #'watched'      : watched,
+                 'Overlay'      : overlay,
+                 'playcount'    : UserData.find(sDto + "PlayCount").text,
                  #'aired'       : episode.get('originallyAvailableAt','') ,
                  #'tvshowtitle' : episode.get('grandparentTitle',tree.get('grandparentTitle','')).encode('utf-8') ,
-                 #'season'       : tempSeason
+                 'season'       : tempSeason
                  }
         try:
             tempDuration=str(int(directory.find(sDto + "RunTimeTicks").text)/(10000000*60))
@@ -1024,9 +1025,17 @@ def deleteMedia( url ):
 
     return True
 
-def setWindowHeading(tree) :
+def setWindowHeading(url) :
     WINDOW = xbmcgui.Window( xbmcgui.getCurrentWindowId() )
-    #WINDOW.setProperty("heading", tree.get('title2',tree.get('title1','')))
+    if url.find('ParentId'):
+        dirUrl=url.replace('items?ParentId=','Items/')
+        splitUrl=dirUrl.split('&')
+        dirUrl=splitUrl[0]+'?format=xml'
+        html=getURL(dirUrl)
+        tree= etree.fromstring(html).getiterator(sDto + 'BaseItemDto')
+        for BaseItemDto in tree:
+            title=(BaseItemDto.find(sDto + 'Name').text)
+        WINDOW.setProperty("heading", title)
 
 def setMasterServer () :
     printDebug("== ENTER: setmasterserver ==", False)
