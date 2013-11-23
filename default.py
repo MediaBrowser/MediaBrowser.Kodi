@@ -420,7 +420,7 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         list.setInfo('video', {'genre' : extraData.get('genre')})
         list.setInfo('video', {'cast' : mycast})
         list.setInfo('video', {'castandrole' : mycast})
-        list.setInfo('video', {'credits' : extraData.get('writer')})
+        list.setInfo('video', {'plotoutline' : extraData.get('cast')})
         list.setInfo('video', {'episode': details.get('episode')})
         list.setInfo('video', {'season': details.get('season')})        
         list.setInfo('video', {'mpaa': extraData.get('mpaa')})
@@ -726,7 +726,7 @@ def processDirectory( url, tree=None ):
 # Process People
         director=''
         writer=''
-        cast=list()
+        cast=''
         People=directory.find(sDto+'People')
         for BaseItemPerson in People.findall(sDto+'BaseItemPerson'):
             if(BaseItemPerson.find(sDto+'Type').text=='Director'):
@@ -734,7 +734,14 @@ def processDirectory( url, tree=None ):
             if(BaseItemPerson.find(sDto+'Type').text=='Writing'):
                 writer=(BaseItemPerson.find(sDto + 'Name').text)                
             if(BaseItemPerson.find(sDto+'Type').text=='Actor'):
-                cast.append(BaseItemPerson.find(sDto + 'Name').text)
+                Name=(BaseItemPerson.find(sDto + 'Name').text)
+                Role=(BaseItemPerson.find(sDto + 'Role').text)
+                if Role==None:
+                    Role=''
+                if cast=='':
+                    cast=Name+' as '+Role
+                else:
+                    cast=cast+'\n'+Name+' as '+Role
 # Process Genres
         genre=''
         Genres=directory.find(sDto+'Genres')
@@ -1175,15 +1182,6 @@ else:
 
     elif mode == _MODE_VIDEOPLUGINPLAY:
         videoPluginPlay(param_url,param_identifier,param_indirect)
-
-    elif mode == _MODE_CHANNELINSTALL:
-        install(param_url,param_name)
-
-    elif mode == _MODE_CHANNELVIEW:
-        channelView(param_url)
-
-    elif mode == _MODE_DISPLAYSERVERS:
-        displayServers(param_url)
 
 print "===== XBMB3C STOP ====="
 
