@@ -443,16 +443,16 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         watched=extraData.get('watched')
         if watched != None:
             argsToPass = 'markWatched,' + extraData.get('watched')
-            scriptToRun = "special://home/addons/plugin.video.xbmb3c/default.py"
+            scriptToRun = PLUGINPATH + "/default.py"
             commands.append(( "Mark Watched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'markUnwatched,' + extraData.get('watched')
-            scriptToRun = "special://home/addons/plugin.video.xbmb3c/default.py"
+            scriptToRun = PLUGINPATH + "/default.py"
             commands.append(( "Mark Unwatched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'refresh'
-            scriptToRun = "special://home/addons/plugin.video.xbmb3c/default.py"
+            scriptToRun = PLUGINPATH + "/default.py"
             commands.append(( "Refresh", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'delete,' + extraData.get('delete')
-            scriptToRun = "special://home/addons/plugin.video.xbmb3c/default.py"
+            scriptToRun = PLUGINPATH + "/default.py"
             commands.append(( "Delete", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             list.addContextMenuItems( commands, g_contextReplace )
 
@@ -1096,7 +1096,7 @@ def setMasterServer () :
 ##Start of Main
 ###########################################################################
 printDebug( "XBMB3C -> Script argument is " + str(sys.argv[1]), False)
-
+print('mything:' + PLUGINPATH)
 try:
     params=get_params(sys.argv[2])
 except:
