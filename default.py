@@ -306,6 +306,7 @@ def markWatched (url):
         headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"},
         body='watched',
     )
+    xbmc.executebuiltin("Container.Refresh")
 
 def markUnwatched (url):
     conn = Http()
@@ -314,8 +315,23 @@ def markUnwatched (url):
         uri=url,
         method='DELETE',
         headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"},
-        body='watched',
+        body='unwatched',
     )
+    xbmc.executebuiltin("Container.Refresh")
+
+def delete (url):
+    conn = Http()
+    return_value = xbmcgui.Dialog().yesno("Confirm file delete?","Delete this item? This action will delete media and associated data files.")
+    if return_value:
+        printDebug('Deleting via URL: ' + url)
+        resp, content = conn.request(
+            uri=url,
+            method='DELETE',
+            headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"},
+            body='unwatched',
+        )
+        time.sleep(5)
+        xbmc.executebuiltin("Container.Refresh")
 
 def getURL( url, suppress=True, type="GET", popup=0 ):
     printDebug("== ENTER: getURL ==", False)
@@ -432,6 +448,12 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
             argsToPass = 'markUnwatched,' + extraData.get('watched')
             scriptToRun = "special://home/addons/plugin.video.xbmb3c/default.py"
             commands.append(( "Mark Unwatched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            argsToPass = 'refresh'
+            scriptToRun = "special://home/addons/plugin.video.xbmb3c/default.py"
+            commands.append(( "Refresh", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            argsToPass = 'delete,' + extraData.get('delete')
+            scriptToRun = "special://home/addons/plugin.video.xbmb3c/default.py"
+            commands.append(( "Delete", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             list.addContextMenuItems( commands, g_contextReplace )
 
         #context=[]
@@ -441,7 +463,7 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         list.setInfo('video', {'playcount' : extraData.get('playcount')})
         #list.setProperty('playcount',)
         #list.setProperty('ResumeTime',"18")
-        #list.setProperty('TotalTime',"18")
+        #list.setProperty('TotalTime',"36")
         list.setInfo('video', {'director' : extraData.get('director')})
         list.setInfo('video', {'writer' : extraData.get('writer')})
         list.setInfo('video', {'year' : extraData.get('year')})
@@ -821,6 +843,8 @@ def processDirectory( url, tree=None ):
                    'width'        : width,
                    'cast'         : cast,
                    'watched'      : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
+                   'delete'       : 'http://' + server + '/mediabrowser/Items/' + id,                   
+                   'parenturl'    : url,
                    'duration'     : tempDuration}
         if extraData['thumb'] == '':
             extraData['thumb']=extraData['fanart_image']
@@ -996,20 +1020,6 @@ def install( url, name ):
     xbmcgui.Dialog().ok("XBMB3C",msg)
     xbmc.executebuiltin("Container.Refresh")
 
-
-    return
-
-def watched( url ):
-    printDebug("== ENTER: watched ==", False)
-
-    if url.find("unscrobble") > 0:
-        printDebug ("Marking as unwatched with: " + url)
-    else:
-        printDebug ("Marking as watched with: " + url)
-
-    html=getURL(url)
-    xbmc.executebuiltin("Container.Refresh")
-
     return
 
 def displayServers( url ):
@@ -1046,19 +1056,6 @@ def displayServers( url ):
         addGUIItem(s_url, details, extraData )
 
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
-
-def deleteMedia( url ):
-    printDebug("== ENTER: deleteMedia ==", False)
-    printDebug ("deleteing media at: " + url)
-
-    return_value = xbmcgui.Dialog().yesno("Confirm file delete?","Delete this item? This action will delete media and associated data files.")
-
-    if return_value:
-        printDebug("Deleting....")
-        installed = getURL(url,type="DELETE")
-        xbmc.executebuiltin("Container.Refresh")
-
-    return True
 
 def setWindowHeading(url) :
     WINDOW = xbmcgui.Window( xbmcgui.getCurrentWindowId() )
@@ -1139,11 +1136,11 @@ elif sys.argv[1] == "setting":
     if WINDOW == 10000:
         printDebug("Currently in home - refreshing to allow new settings to be taken")
         xbmc.executebuiltin("XBMC.ActivateWindow(Home)")
-elif sys.argv[1] == "refreshXBMB3C":
+elif sys.argv[1] == "refresh":
     server_list = discoverAllServers()
 elif sys.argv[1] == "delete":
     url=sys.argv[2]
-    deleteMedia(url)
+    delete(url)
 elif sys.argv[1] == "refresh":
     xbmc.executebuiltin("Container.Refresh")
 elif sys.argv[1] == "subs":
