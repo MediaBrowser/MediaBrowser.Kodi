@@ -301,20 +301,21 @@ def markWatched (url):
     conn = Http()
     printDebug('Marking watched via URL: ' + url)
     resp, content = conn.request(
-        uri=url,
+        #uri=url,
+        uri="http://192.168.1.6:8096/mediabrowser/Users/81452d964095cf6c18af19ac559f08c5/PlayedItems/7adef045e59fbc30c808e206fba1ede3",
         method='POST',
-        headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"},
-        body='watched',
+        headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"81452d964095cf6c18af19ac559f08c5"},
+#        headers={'Accept-encoding': 'gzip', 'Cache-Control' : 'max-age=' + (__settings__.getSetting("cachetime"))},
+        body='test',
     )
 
-def markUnwatched (url):
+def markUnwatched ():
     conn = Http()
-    printDebug('Marking watched via URL: ' + url)
     resp, content = conn.request(
-        uri=url,
+        uri="http://192.168.1.6:8096/mediabrowser/Users/81452d964095cf6c18af19ac559f08c5/PlayedItems/7adef045e59fbc30c808e206fba1ede3",
         method='DELETE',
-        headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"},
-        body='watched',
+        headers={'Accept-encoding': 'gzip', 'Cache-Control' : 'max-age=' + (__settings__.getSetting("cachetime"))},
+        body='',
     )
 
 def getURL( url, suppress=True, type="GET", popup=0 ):
@@ -426,12 +427,9 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         commands = []
         watched=extraData.get('watched')
         if watched != None:
-            argsToPass = 'markWatched,' + extraData.get('watched')
+            argsToPass = 'watch,' + extraData.get('watched')
             scriptToRun = "special://home/addons/plugin.video.xbmb3c/default.py"
             commands.append(( "Mark Watched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            argsToPass = 'markUnwatched,' + extraData.get('watched')
-            scriptToRun = "special://home/addons/plugin.video.xbmb3c/default.py"
-            commands.append(( "Mark Unwatched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             list.addContextMenuItems( commands, g_contextReplace )
 
         #context=[]
@@ -1127,12 +1125,9 @@ elif str(sys.argv[1]) == "channelShelf":
 elif sys.argv[1] == "update":
     url=sys.argv[2]
     libraryRefresh(url)
-elif sys.argv[1] == "markWatched":
+elif sys.argv[1] == "watch":
     url=sys.argv[2]
     markWatched(url)
-elif sys.argv[1] == "markUnwatched":
-    url=sys.argv[2]
-    markUnwatched(url)
 elif sys.argv[1] == "setting":
     __settings__.openSettings()
     WINDOW = xbmcgui.getCurrentWindowId()
