@@ -440,28 +440,21 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
 
         printDebug("Building Context Menus")
         commands = []
-        watched=extraData.get('watched')
+        watched=extraData.get('watchedurl')
         if watched != None:
-            argsToPass = 'markWatched,' + extraData.get('watched')
             scriptToRun = PLUGINPATH + "/default.py"
+            argsToPass = 'markWatched,' + extraData.get('watchedurl')
             commands.append(( "Mark Watched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            argsToPass = 'markUnwatched,' + extraData.get('watched')
-            scriptToRun = PLUGINPATH + "/default.py"
+            argsToPass = 'markUnwatched,' + extraData.get('watchedurl')
             commands.append(( "Mark Unwatched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'refresh'
-            scriptToRun = PLUGINPATH + "/default.py"
             commands.append(( "Refresh", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            argsToPass = 'delete,' + extraData.get('delete')
-            scriptToRun = PLUGINPATH + "/default.py"
+            argsToPass = 'delete,' + extraData.get('deleteurl')
             commands.append(( "Delete", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             list.addContextMenuItems( commands, g_contextReplace )
 
-        #context=[]
-        #context.append(('Rescan library section', 'displaySections' , ))
-        #list.addContextMenuItems(context,g_contextReplace)
         list.setInfo('video', {'duration' : extraData.get('duration')})
         list.setInfo('video', {'playcount' : extraData.get('playcount')})
-        #list.setProperty('playcount',)
         #list.setProperty('ResumeTime',"18")
         #list.setProperty('TotalTime',"36")
         list.setInfo('video', {'director' : extraData.get('director')})
@@ -470,7 +463,7 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         list.setInfo('video', {'genre' : extraData.get('genre')})
         #list.setInfo('video', {'cast' : extraData.get('cast')}) --- Broken in Frodo
         #list.setInfo('video', {'castandrole' : extraData.get('cast')}) --- Broken in Frodo
-        list.setInfo('video', {'plotoutline' : extraData.get('cast')})
+        list.setInfo('video', {'plotoutline' : extraData.get('cast')}) # Hack to get cast data into skin
         list.setInfo('video', {'episode': details.get('episode')})
         list.setInfo('video', {'season': details.get('season')})        
         list.setInfo('video', {'mpaa': extraData.get('mpaa')})
@@ -481,9 +474,9 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
 
 def displaySections( filter=None, shared=False ):
         printDebug("== ENTER: displaySections() ==", False)
-        xbmcplugin.setContent(pluginhandle, 'movies')
+        #xbmcplugin.setContent(pluginhandle, 'movies')
         #xbmcplugin.setContent(pluginhandle, 'episodes')
-        #xbmcplugin.setContent(pluginhandle, 'files')
+        xbmcplugin.setContent(pluginhandle, 'files')
         ds_servers=discoverAllServers()
         numOfServers=len(ds_servers)
         printDebug( "Using list of "+str(numOfServers)+" servers: " +  str(ds_servers))
@@ -553,44 +546,6 @@ def displaySections( filter=None, shared=False ):
 
         #All XML entries have been parsed and we are ready to allow the user to browse around.  So end the screen listing.
         xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
-
-def buildContextMenu( url, itemData ):
-    context=[]
-    server=getServerFromURL(url)
-    refreshURL=url.replace("/all", "/refresh")
-    plugin_url="XBMC.RunScript("+g_loc+"/default.py, "
-    ID=itemData.get('ratingKey','0')
-
-    #Initiate Library refresh
-    libraryRefresh = plugin_url+"update, " + refreshURL.split('?')[0]+getAuthDetails(itemData,prefix="?") + ")"
-    context.append(('Rescan library section', libraryRefresh , ))
-
-    #Mark media unwatched
-    unwatchURL="http://"+server+"/:/unscrobble?key="+ID+"&identifier=com.fixme.plugins.library"+getAuthDetails(itemData)
-    unwatched=plugin_url+"watch, " + unwatchURL + ")"
-    context.append(('Mark as Unwatched', unwatched , ))
-
-    #Mark media watched
-    watchURL="http://"+server+"/:/scrobble?key="+ID+"&identifier=com.fixme.plugins.library"+getAuthDetails(itemData)
-    watched=plugin_url+"watch, " + watchURL + ")"
-    context.append(('Mark as Watched', watched , ))
-
-    #Delete media from Library
-    deleteURL="http://"+server+"/library/metadata/"+ID+getAuthDetails(itemData,prefix="?")
-    removed=plugin_url+"delete, " + deleteURL + ")"
-    context.append(('Delete media', removed , ))
-
-    #Display plugin setting menu
-    settingDisplay=plugin_url+"setting)"
-    context.append(('XBMB3C settings', settingDisplay , ))
-
-    #Reload media section
-    listingRefresh=plugin_url+"refresh)"
-    context.append(('Reload Section', listingRefresh , ))
-
-    printDebug("Using context menus " + str(context))
-
-    return context
 
 def remove_html_tags( data ):
     p = re.compile(r'<.*?>')
@@ -687,7 +642,6 @@ def getContent( url ):
     if html is False:
         return
     tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
-
     WINDOW = xbmcgui.Window( xbmcgui.getCurrentWindowId() )
     #WINDOW.setProperty("heading", tree.get('title2',tree.get('title1','')))
 
@@ -733,6 +687,7 @@ def processDirectory( url, tree=None ):
     userid=getUserId(parsedserver,parsedport)
     printDebug("Processing secondary menus")
     #xbmcplugin.setContent(pluginhandle, 'files')
+    #xbmcplugin.setContent(pluginhandle, 'episodes')
     xbmcplugin.setContent(pluginhandle, 'movies')
 
     server=getServerFromURL(url)
@@ -747,10 +702,19 @@ def processDirectory( url, tree=None ):
         type=str(directory.find(sDto + 'Type').text).encode('utf-8')
         try:
             tempEpisode=directory.find(sDto + "IndexNumber").text
+            if int(tempEpisode)<10:
+                tempEpisode='0'+tempEpisode
             tempSeason=directory.find(sDto + "ParentIndexNumber").text
         except TypeError:
-            tempEpisode='0'
-            tempSeason='0'
+            tempEpisode=''
+            tempSeason=''
+        if directory.find(sDto + "DisplayMediaType").text=='Episode':
+            tempTitle=tempEpisode+' - '+tempTitle
+            xbmcplugin.setContent(pluginhandle, 'tvshows')
+        if directory.find(sDto + "DisplayMediaType").text=='Season':
+            xbmcplugin.setContent(pluginhandle, 'tvshows')
+        if directory.find(sDto + "DisplayMediaType").text=='Series':
+            xbmcplugin.setContent(pluginhandle, 'tvshows')            
 # Process MediaStreams
         channels=''
         videocodec=''
@@ -842,8 +806,8 @@ def processDirectory( url, tree=None ):
                    'height'       : height,
                    'width'        : width,
                    'cast'         : cast,
-                   'watched'      : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
-                   'delete'       : 'http://' + server + '/mediabrowser/Items/' + id,                   
+                   'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
+                   'deleteurl'    : 'http://' + server + '/mediabrowser/Items/' + id,                   
                    'parenturl'    : url,
                    'duration'     : tempDuration}
         if extraData['thumb'] == '':
