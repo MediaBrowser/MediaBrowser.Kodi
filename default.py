@@ -455,8 +455,10 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
 
         list.setInfo('video', {'duration' : extraData.get('duration')})
         list.setInfo('video', {'playcount' : extraData.get('playcount')})
-        #list.setProperty('ResumeTime',"18")
-        #list.setProperty('TotalTime',"36")
+        if extraData.get('totaltime') != None:
+            list.setProperty('TotalTime', extraData.get('totaltime'))
+            list.setProperty('ResumeTime', extraData.get('resumetime'))
+        list.setProperty('FolderName',"HIYA")
         list.setInfo('video', {'director' : extraData.get('director')})
         list.setInfo('video', {'writer' : extraData.get('writer')})
         list.setInfo('video', {'year' : extraData.get('year')})
@@ -643,7 +645,7 @@ def getContent( url ):
         return
     tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
     WINDOW = xbmcgui.Window( xbmcgui.getCurrentWindowId() )
-    #WINDOW.setProperty("heading", tree.get('title2',tree.get('title1','')))
+    WINDOW.setProperty("heading", "myheading")
 
 
     if lastbit == "folder":
@@ -772,6 +774,10 @@ def processDirectory( url, tree=None ):
         else:
             overlay='6'
             watched='false'
+        if UserData.find(sDto + "PlaybackPositionTicks").text != None:
+            PlaybackPositionTicks=str(UserData.find(sDto + "PlaybackPositionTicks").text)
+        else:
+            PlaybackPositionTicks='100'
 
 # Populate the details list
         details={'title'        : tempTitle,
@@ -786,8 +792,10 @@ def processDirectory( url, tree=None ):
                  }
         try:
             tempDuration=str(int(directory.find(sDto + "RunTimeTicks").text)/(10000000*60))
+            RunTimeTicks=str(directory.find(sDto + "RunTimeTicks").text)
         except TypeError:
             tempDuration='100'
+            RunTimeTicks='100'
 
 # Populate the extraData list
         extraData={'thumb'        : getThumb(directory, server) ,
@@ -809,6 +817,8 @@ def processDirectory( url, tree=None ):
                    'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
                    'deleteurl'    : 'http://' + server + '/mediabrowser/Items/' + id,                   
                    'parenturl'    : url,
+                   'resumetime'   : PlaybackPositionTicks,
+                   'totaltime'    : RunTimeTicks,
                    'duration'     : tempDuration}
         if extraData['thumb'] == '':
             extraData['thumb']=extraData['fanart_image']
@@ -1060,7 +1070,6 @@ def setMasterServer () :
 ##Start of Main
 ###########################################################################
 printDebug( "XBMB3C -> Script argument is " + str(sys.argv[1]), False)
-print('mything:' + PLUGINPATH)
 try:
     params=get_params(sys.argv[2])
 except:
