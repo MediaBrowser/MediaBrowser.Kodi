@@ -1032,7 +1032,7 @@ def displayServers( url ):
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
 
 def setWindowHeading(url) :
-    WINDOW = xbmcgui.Window( xbmcgui.getCurrentWindowId() )
+    WINDOW = xbmcgui.Window( 10000 )
     if url.find('ParentId'):
         dirUrl=url.replace('items?ParentId=','Items/')
         splitUrl=dirUrl.split('&')
