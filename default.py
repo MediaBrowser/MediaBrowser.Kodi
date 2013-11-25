@@ -1128,7 +1128,7 @@ else:
 
     pluginhandle = int(sys.argv[1])
 
-    WINDOW = xbmcgui.Window( xbmcgui.getCurrentWindowId() )
+    WINDOW = xbmcgui.Window( 10000 )
     WINDOW.clearProperty("heading")
     #mode=_MODE_BASICPLAY
     if g_debug == "true":
