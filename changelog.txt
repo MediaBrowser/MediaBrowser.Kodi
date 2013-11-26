@@ -1,3 +1,14 @@
-0.3.0 - Fixes boxsets, added meta-data
-0.2.0 - Added caching, removed more plex stuff, XBMB3C-specific settings
+0.4.0 - Added section title
+      - Display correct list type for category
+      - Implemented context menus for delete/mark watched/mark unwatched. 
+      - Added episode numbers
+      - Added cast info
+      
+0.3.0 - Fixes boxsets
+      - Added meta-data
+
+0.2.0 - Added caching
+      - Removed more plex stuff
+      - XBMB3C-specific settings
+
 0.1.0 - Initial release

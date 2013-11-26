@@ -3,7 +3,7 @@
     @package    : XBMB3C add-on
     @author     : xnappo
     @copyleft   : 2013, xnappo
-    @version    : 0.3.0 (frodo)
+    @version    : 0.4.0 (frodo)
 
     @license    : Gnu General Public License - see LICENSE.TXT
     @description: XBMB3C XBMC add-on
@@ -54,7 +54,7 @@ sEntities='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Entities}
 sArrays='{http://schemas.microsoft.com/2003/10/Serialization/Arrays}'
 
 sys.path.append(BASE_RESOURCE_PATH)
-XBMB3C_VERSION="0.3.0"
+XBMB3C_VERSION="0.4.0"
 import httplib2
 from httplib2 import Http
 print "===== XBMB3C START ====="
