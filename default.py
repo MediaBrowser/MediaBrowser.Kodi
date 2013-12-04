@@ -266,6 +266,33 @@ def getServerSections ( ip_address, port, name, uuid):
                     'owned'      : '1' })
             printDebug("Title " + str(BaseItemDto.tag))
 
+# Add recent movies
+    temp_list.append( {'title'      : 'Recently Added Movies',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=20&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'owned'      : '1' })
+            
+# Add recent Episodes
+    temp_list.append( {'title'      : 'Recently Added Episodes',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=20&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsNotFolder&IncludeItemTypes=Episode&format=xml') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'owned'      : '1' })            
+    #printDebug("Title " + str(BaseItemDto.tag))
+
     for item in temp_list:
         printDebug ("temp_list: " + str(item))
     return temp_list
@@ -398,7 +425,12 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
                 thumbPath=thumb.encode('utf-8') 
         else:
             thumbPath=thumb
-        list=xbmcgui.ListItem(details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
+        
+        WINDOW = xbmcgui.Window( 10000 )
+        if WINDOW.getProperty("addshowname") == "true":
+            list=xbmcgui.ListItem(details.get('SeriesName','')+" - " +details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
+        else:
+            list=xbmcgui.ListItem(details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
         printDebug("Setting thumbnail as " + thumbPath)
         #Set the properties of the item, such as summary, name, season, etc
         list.setInfo( type=extraData.get('type','Video'), infoLabels=details )
@@ -458,7 +490,6 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         if extraData.get('totaltime') != None:
             list.setProperty('TotalTime', extraData.get('totaltime'))
             list.setProperty('ResumeTime', extraData.get('resumetime'))
-        list.setProperty('FolderName',"HIYA")
         list.setInfo('video', {'director' : extraData.get('director')})
         list.setInfo('video', {'writer' : extraData.get('writer')})
         list.setInfo('video', {'year' : extraData.get('year')})
@@ -787,7 +818,10 @@ def processDirectory( url, tree=None ):
                  'Overlay'      : overlay,
                  'playcount'    : UserData.find(sDto + "PlayCount").text,
                  #'aired'       : episode.get('originallyAvailableAt','') ,
-                 #'tvshowtitle' : episode.get('grandparentTitle',tree.get('grandparentTitle','')).encode('utf-8') ,
+                 'SeriesName'  :  directory.find(sDto + "SeriesName").text
+                 
+                 
+                 ,
                  'season'       : tempSeason
                  }
         try:
@@ -854,6 +888,8 @@ def getThumb( data, server, transcode=False, width=None, height=None ):
     
     printDebug('getThumb server:' + server)
     id=data.find(sDto + 'Id').text
+    if data.find(sDto + 'DisplayMediaType').text == 'Episode':
+        id=data.find(sDto + 'SeriesId').text
     thumbnail=('http://'+server+'/mediabrowser/Items/'+str(id)+'/Images/Primary?Format=png')
     printDebug('The temp path is:' + __addondir__)
     from urllib import urlretrieve
@@ -890,6 +926,8 @@ def getFanart( data, server, transcode=False ):
         @ return formatted URL for photo resizing
     '''
     id=data.find(sDto + 'Id').text
+    if data.find(sDto + 'DisplayMediaType').text == 'Episode' or data.find(sDto + 'DisplayMediaType').text == 'Season':
+        id=data.find(sDto + 'SeriesId').text    
     fanart=('http://'+server+'/mediabrowser/Items/'+str(id)+'/Images/Backdrop?Format=png')
     from urllib import urlretrieve
     try:
@@ -1033,7 +1071,8 @@ def displayServers( url ):
 
 def setWindowHeading(url) :
     WINDOW = xbmcgui.Window( 10000 )
-    if url.find('ParentId'):
+    WINDOW.setProperty("addshowname", "false")
+    if 'ParentId' in url:
         dirUrl=url.replace('items?ParentId=','Items/')
         splitUrl=dirUrl.split('&')
         dirUrl=splitUrl[0]+'?format=xml'
@@ -1042,6 +1081,8 @@ def setWindowHeading(url) :
         for BaseItemDto in tree:
             title=(BaseItemDto.find(sDto + 'Name').text)
         WINDOW.setProperty("heading", title)
+    elif 'IncludeItemTypes=Episode' in url:
+        WINDOW.setProperty("addshowname", "true")
 
 def setMasterServer () :
     printDebug("== ENTER: setmasterserver ==", False)
@@ -1087,7 +1128,8 @@ param_transcodeOverride=int(params.get('transcode',0))
 param_identifier=params.get('identifier',None)
 param_indirect=params.get('indirect',None)
 force=params.get('force')
-
+WINDOW = xbmcgui.Window( 10000 )
+WINDOW.setProperty("addshowname","false")
 if str(sys.argv[1]) == "skin":
      skin()
 elif str(sys.argv[1]) == "shelf":
