@@ -271,7 +271,7 @@ def getServerSections ( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=20&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=20&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed&IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -284,7 +284,7 @@ def getServerSections ( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=20&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsNotFolder&IncludeItemTypes=Episode&format=xml') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=20&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed&IsNotFolder&IncludeItemTypes=Episode&format=xml') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -428,7 +428,7 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         
         WINDOW = xbmcgui.Window( 10000 )
         if WINDOW.getProperty("addshowname") == "true":
-            list=xbmcgui.ListItem(details.get('SeriesName','')+" - " +details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
+            list=xbmcgui.ListItem(details.get('SeriesName','')+" - " +"S"+details.get('season')+"E"+details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
             list=xbmcgui.ListItem(details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
         printDebug("Setting thumbnail as " + thumbPath)
