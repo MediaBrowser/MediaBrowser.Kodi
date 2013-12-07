@@ -3,7 +3,7 @@
     @package    : XBMB3C add-on
     @author     : xnappo
     @copyleft   : 2013, xnappo
-    @version    : 0.4.0 (frodo)
+    @version    : 0.4.5 (frodo)
 
     @license    : Gnu General Public License - see LICENSE.TXT
     @description: XBMB3C XBMC add-on
@@ -54,7 +54,7 @@ sEntities='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Entities}
 sArrays='{http://schemas.microsoft.com/2003/10/Serialization/Arrays}'
 
 sys.path.append(BASE_RESOURCE_PATH)
-XBMB3C_VERSION="0.4.0"
+XBMB3C_VERSION="0.4.5"
 import httplib2
 from httplib2 import Http
 print "===== XBMB3C START ====="
@@ -271,7 +271,7 @@ def getServerSections ( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed&IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -284,7 +284,7 @@ def getServerSections ( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed&IsNotFolder&IncludeItemTypes=Episode&format=xml') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=xml') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -296,7 +296,7 @@ def getServerSections ( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsFavorite&IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -309,13 +309,26 @@ def getServerSections ( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsFavorite&IsNotFolder&IncludeItemTypes=Episode&format=xml') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=xml') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
             'local'      : '1' ,
             'type'       : "movie",
-            'owned'      : '1' })                        
+            'owned'      : '1' })                       
+            
+# Add Upcoming TV
+    temp_list.append( {'title'      : 'Upcoming TV',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=xml') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'owned'      : '1' })                            
     #printDebug("Title " + str(BaseItemDto.tag))
 
     for item in temp_list:
@@ -475,7 +488,10 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         
         WINDOW = xbmcgui.Window( 10000 )
         if WINDOW.getProperty("addshowname") == "true":
-            list=xbmcgui.ListItem(details.get('SeriesName','')+" - " +"S"+details.get('season')+"E"+details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
+            if extraData.get('locationtype')== "Virtual":
+                list=xbmcgui.ListItem(extraData.get('premieredate')+" - "+details.get('SeriesName','')+" - " +"S"+details.get('season')+"E"+details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
+            else:
+                list=xbmcgui.ListItem(details.get('SeriesName','')+" - " +"S"+details.get('season')+"E"+details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
             list=xbmcgui.ListItem(details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
         printDebug("Setting thumbnail as " + thumbPath)
@@ -522,10 +538,12 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         watched=extraData.get('watchedurl')
         if watched != None:
             scriptToRun = PLUGINPATH + "/default.py"
-            argsToPass = 'markWatched,' + extraData.get('watchedurl')
-            commands.append(( "Mark Watched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            argsToPass = 'markUnwatched,' + extraData.get('watchedurl')
-            commands.append(( "Mark Unwatched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            if extraData.get('playcount')=='0':
+                argsToPass = 'markWatched,' + extraData.get('watchedurl')
+                commands.append(( "Mark Watched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            else:
+                argsToPass = 'markUnwatched,' + extraData.get('watchedurl')
+                commands.append(( "Mark Unwatched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             if extraData.get('favorite') != 'true':
                 argsToPass = 'markFavorite,' + extraData.get('favoriteurl')
                 commands.append(( "Add to Favorites", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
@@ -642,19 +660,21 @@ def remove_html_tags( data ):
 
 def PLAY( url ):
         printDebug("== ENTER: PLAY ==", False)
-
-        if url[0:4] == "file":
+        path, watchedurl = url.split("%2c")
+        if (__settings__.getSetting("markWatchedOnPlay")=='true'):
+            markWatched (urllib.unquote(watchedurl))
+        if path[0:4] == "file":
             printDebug( "We are playing a local file")
             #Split out the path from the URL
-            playurl=url.split(':',1)[1]
-        elif url[0:4] == "http":
+            playurl=path.split(':',1)[1]
+        elif path[0:4] == "http":
             printDebug( "We are playing a stream")
-            if '?' in url:
-                playurl=url+getAuthDetails({'token':_PARAM_TOKEN})
+            if '?' in path:
+                playurl=path+getAuthDetails({'token':_PARAM_TOKEN})
             else:
-                playurl=url
+                playurl=path
         else:
-            playurl=url
+            playurl=path
         item = xbmcgui.ListItem(path=playurl)
         xbmc.Player().play(urllib.unquote(playurl))
         #Set a loop to wait for positive confirmation of playback
@@ -799,7 +819,7 @@ def processDirectory( url, tree=None ):
             tempSeason=''
         if directory.find(sDto + "DisplayMediaType").text=='Episode':
             tempTitle=tempEpisode+' - '+tempTitle
-            xbmcplugin.setContent(pluginhandle, 'tvshows')
+            xbmcplugin.setContent(pluginhandle, 'episodes')
         if directory.find(sDto + "DisplayMediaType").text=='Season':
             xbmcplugin.setContent(pluginhandle, 'tvshows')
         if directory.find(sDto + "DisplayMediaType").text=='Series':
@@ -891,6 +911,12 @@ def processDirectory( url, tree=None ):
         except TypeError:
             tempDuration='100'
             RunTimeTicks='100'
+        
+        if((directory.find(sDto + "PremiereDate").text) != None):
+            premieredatelist=(directory.find(sDto + "PremiereDate").text).split("T")
+            premieredate=premieredatelist[0]
+        else:
+            premieredate=""
 
 # Populate the extraData list
         extraData={'thumb'        : getThumb(directory, server) ,
@@ -898,6 +924,8 @@ def processDirectory( url, tree=None ):
                    'mpaa'         : directory.find(sDto + "OfficialRating").text ,
                    'rating'       : directory.find(sDto + "CommunityRating").text,
                    'year'         : directory.find(sDto + "ProductionYear").text,
+                   'locationtype' : directory.find(sDto + "LocationType").text,
+                   'premieredate' : premieredate,
                    'genre'        : genre,
                    'playcount'    : UserData.find(sDto + "PlayCount").text,
                    'director'     : director,
@@ -935,10 +963,10 @@ def processDirectory( url, tree=None ):
         else:
             u= directory.find(sDto + "Path").text
             if u == None:
-                printDebug('NotReallyThere')
-                u=""
+                printDebug('Virtual Unaired')
+                addGUIItem("temp",details,extraData)
             else:
-                addGUIItem(u,details,extraData)
+                addGUIItem(u+','+extraData.get('watchedurl'),details,extraData)
         
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
 

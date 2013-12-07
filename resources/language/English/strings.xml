@@ -14,6 +14,7 @@
     <string id="30035">Database cache time (in seconds)</string>
     <string id="30036">Number of recent movies to show</string>    
     <string id="30037">Number of recent TV episodes to show</string>    
+    <string id="30038">Mark watched at start of playback</string>    
     <string id="30043">Flatten TV Shows</string>
     <string id="30058">If only one season</string>
     <string id="30059">All seasons</string>

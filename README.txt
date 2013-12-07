@@ -16,7 +16,7 @@ or
         plugin.video.xbmb3c\skin_diffs\skin.aeon.nox\1080i
    Make a backup of the originals!
    
-If all goes well, you will be able to browse your library and play movies (TV not working yet). 
+If all goes well, you will be able to browse your library and play TV and movies. 
 
 NOTE: When first going into your library it will take a long time as it needs to cache all images locally right now.  Only an issue on first entry.
 

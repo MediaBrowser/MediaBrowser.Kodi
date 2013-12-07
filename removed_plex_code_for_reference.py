@@ -1,6 +1,7 @@
 def pluginTranscodeMonitor( sessionID, server ):
     printDebug("== ENTER: pluginTranscodeMonitor ==", False)
 
+    #
     #Logic may appear backward, but this does allow for a failed start to be detected
     #First while loop waiting for start
 
