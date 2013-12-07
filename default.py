@@ -271,7 +271,7 @@ def getServerSections ( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=20&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed&IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed&IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -284,13 +284,38 @@ def getServerSections ( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=20&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed&IsNotFolder&IncludeItemTypes=Episode&format=xml') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed&IsNotFolder&IncludeItemTypes=Episode&format=xml') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
             'local'      : '1' ,
             'type'       : "movie",
             'owned'      : '1' })            
+# Add Favorite Movies
+    temp_list.append( {'title'      : 'Favorite Movies',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsFavorite&IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'owned'      : '1' })            
+
+# Add Favorite Episodes
+    temp_list.append( {'title'      : 'Favorite Episodes',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsFavorite&IsNotFolder&IncludeItemTypes=Episode&format=xml') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'owned'      : '1' })                        
     #printDebug("Title " + str(BaseItemDto.tag))
 
     for item in temp_list:
@@ -346,6 +371,28 @@ def markUnwatched (url):
     )
     xbmc.executebuiltin("Container.Refresh")
 
+def markFavorite (url):
+    conn = Http()
+    printDebug('Marking favorite via URL: ' + url)
+    resp, content = conn.request(
+        uri=url,
+        method='POST',
+        headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"},
+        body='unwatched',
+    )
+    xbmc.executebuiltin("Container.Refresh")
+    
+def unmarkFavorite (url):
+    conn = Http()
+    printDebug('Unmarking favorite via URL: ' + url)
+    resp, content = conn.request(
+        uri=url,
+        method='DELETE',
+        headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"},
+        body='unwatched',
+    )
+    xbmc.executebuiltin("Container.Refresh")
+    
 def delete (url):
     conn = Http()
     return_value = xbmcgui.Dialog().yesno("Confirm file delete?","Delete this item? This action will delete media and associated data files.")
@@ -479,6 +526,13 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
             commands.append(( "Mark Watched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'markUnwatched,' + extraData.get('watchedurl')
             commands.append(( "Mark Unwatched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            if extraData.get('favorite') != 'true':
+                argsToPass = 'markFavorite,' + extraData.get('favoriteurl')
+                commands.append(( "Add to Favorites", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            else:
+                argsToPass = 'unmarkFavorite,' + extraData.get('favoriteurl')
+                commands.append(( "Remove from Favorites", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+                
             argsToPass = 'refresh'
             commands.append(( "Refresh", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'delete,' + extraData.get('deleteurl')
@@ -487,6 +541,8 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
 
         list.setInfo('video', {'duration' : extraData.get('duration')})
         list.setInfo('video', {'playcount' : extraData.get('playcount')})
+        if extraData.get('favorite')=='true':
+            list.setInfo('video', {'top250' : '1'})
         if extraData.get('totaltime') != None:
             list.setProperty('TotalTime', extraData.get('totaltime'))
             list.setProperty('ResumeTime', extraData.get('resumetime'))
@@ -805,6 +861,11 @@ def processDirectory( url, tree=None ):
         else:
             overlay='6'
             watched='false'
+        if UserData.find(sDto + "IsFavorite").text == 'true':
+            overlay='5'
+            favorite='true'
+        else:
+            favorite='false'
         if UserData.find(sDto + "PlaybackPositionTicks").text != None:
             PlaybackPositionTicks=str(UserData.find(sDto + "PlaybackPositionTicks").text)
         else:
@@ -848,7 +909,9 @@ def processDirectory( url, tree=None ):
                    'height'       : height,
                    'width'        : width,
                    'cast'         : cast,
+                   'favorite'     : favorite,
                    'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
+                   'favoriteurl'  : 'http://' + server + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id,
                    'deleteurl'    : 'http://' + server + '/mediabrowser/Items/' + id,                   
                    'parenturl'    : url,
                    'resumetime'   : PlaybackPositionTicks,
@@ -1145,6 +1208,12 @@ elif sys.argv[1] == "markWatched":
 elif sys.argv[1] == "markUnwatched":
     url=sys.argv[2]
     markUnwatched(url)
+elif sys.argv[1] == "markFavorite":
+    url=sys.argv[2]
+    markFavorite(url)
+elif sys.argv[1] == "unmarkFavorite":
+    url=sys.argv[2]
+    unmarkFavorite(url)    
 elif sys.argv[1] == "setting":
     __settings__.openSettings()
     WINDOW = xbmcgui.getCurrentWindowId()
