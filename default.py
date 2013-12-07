@@ -660,9 +660,7 @@ def remove_html_tags( data ):
 
 def PLAY( url ):
         printDebug("== ENTER: PLAY ==", False)
-        path, watchedurl = url.split("%2c")
-        if (__settings__.getSetting("markWatchedOnPlay")=='true'):
-            markWatched (urllib.unquote(watchedurl))
+        path, watchedurl = url.split("5PL1T")
         if path[0:4] == "file":
             printDebug( "We are playing a local file")
             #Split out the path from the URL
@@ -686,7 +684,8 @@ def PLAY( url ):
                 return
             else:
                 time.sleep(2)
-        #while xbmc.Player().isPlaying():
+        if (__settings__.getSetting("markWatchedOnPlay")=='true'):
+            markWatched (urllib.unquote(watchedurl))#while xbmc.Player().isPlaying():
                 #time.sleep(1)
                 #currentTime = int(xbmc.Player().getTime())
         #return xbmcplugin.setResolvedUrl(pluginhandle, True, item)
@@ -952,11 +951,11 @@ def processDirectory( url, tree=None ):
         
         if isFolder=='true':
             if type=='Season':
-                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&Fields=Path,Overview,Genres,People,MediaStreams&SortBy=SortName&format=xml'
+                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy=SortName&format=xml'
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
             else:
-                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&Fields=Path,Overview,Genres,People,MediaStreams&SortBy=SortName&format=xml'
+                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy=SortName&format=xml'
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
 
@@ -966,7 +965,7 @@ def processDirectory( url, tree=None ):
                 printDebug('Virtual Unaired')
                 addGUIItem("temp",details,extraData)
             else:
-                addGUIItem(u+','+extraData.get('watchedurl'),details,extraData)
+                addGUIItem(u+'5PL1T'+extraData.get('watchedurl'),details,extraData)
         
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
 
