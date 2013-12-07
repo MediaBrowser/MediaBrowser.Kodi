@@ -10,7 +10,6 @@
         <setting id="cachetime" type="text" label="30035" default="0" visible="true" enable="true"/>
         <setting id="numRecentMovies" type="text" label="30036" default="20" visible="true" enable="true"/>
         <setting id="numRecentTV" type="text" label="30037" default="20" visible="true" enable="true"/>
-        <setting id="numFavorites" type="text" label="30038" default="20" visible="true" enable="true"/>        
 	</category>
 
     <category label="30022" > <!-- debug -->
