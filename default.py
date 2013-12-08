@@ -257,7 +257,7 @@ def getServerSections ( ip_address, port, name, uuid):
                     'address'    : ip_address+":"+port ,
                     'serverName' : name ,
                     'uuid'       : uuid ,
-                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortBy=Name&format=xml') ,
+                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+__settings__.getSetting('sortbyfor'+BaseItemDto.find(sDto + 'Name').text)+'&format=xml') ,
                     'token'      : str(BaseItemDto.find(sDto + 'Id').text)  ,
                     'location'   : "local" ,
                     'art'        : str(BaseItemDto.text) ,
@@ -405,6 +405,17 @@ def unmarkFavorite (url):
         body='unwatched',
     )
     xbmc.executebuiltin("Container.Refresh")
+
+def sortby ():
+    sortOptions=["Title","ProductionYear","PremiereDate","DateCreated","CriticRating","CommuityRating","PlayCount","Budget"]
+    sortOptionsText=["Title","Year","Premiere Date","Date Created","Critic Rating","Commuity Rating","Play Count","Budget"]
+    return_value=xbmcgui.Dialog().select("Sort By",sortOptionsText)
+    WINDOW = xbmcgui.Window( 10000 )
+    __settings__.setSetting('sortbyfor'+WINDOW.getProperty("heading"),sortOptions[return_value]+',SortName')
+    newurl=re.sub("SortBy\S+&","SortBy="+ sortOptions[return_value] + ",SortName&",WINDOW.getProperty("currenturl"))
+    WINDOW.setProperty("currenturl",newurl)
+    u=urllib.quote(newurl)+'&mode=0'
+    xbmc.executebuiltin("Container.Update(plugin://plugin.video.xbmb3c/?url="+u+",\"replace\")")#, WINDOW.getProperty('currenturl')
     
 def delete (url):
     conn = Http()
@@ -551,7 +562,10 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
                 argsToPass = 'unmarkFavorite,' + extraData.get('favoriteurl')
                 commands.append(( "Remove from Favorites", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
                 
+            argsToPass = 'sortby'
+            commands.append(( "Sort By ...", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'refresh'
+            #argsToPass = 'xbmc.Container.Update()'
             commands.append(( "Refresh", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'delete,' + extraData.get('deleteurl')
             commands.append(( "Delete", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
@@ -577,6 +591,9 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         list.setInfo('video', {'rating': extraData.get('rating')})
         list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
         list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
+        xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE  )
+        #xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_DATE  )
+        #xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_YEAR  )
         return xbmcplugin.addDirectoryItem(handle=pluginhandle,url=u,listitem=list,isFolder=folder)
 
 def displaySections( filter=None, shared=False ):
@@ -732,60 +749,12 @@ def getContent( url ):
     printDebug("URL suffix: " + str(lastbit))
     printDebug("server: " + str(server))
     printDebug("URL: " + str(url))    
-    #Catch search requests, as we need to process input before getting results.
-    if lastbit.startswith('search'):
-        printDebug("This is a search URL.  Bringing up keyboard")
-        kb = xbmc.Keyboard('', 'heading')
-        kb.setHeading('Enter search term')
-        kb.doModal()
-        if (kb.isConfirmed()):
-            text = kb.getText()
-            printDebug("Search term input: "+ text)
-            url=url+'&query='+urllib.quote(text)
-        else:
-            return
-
     html=getURL(url, suppress=False, popup=1 )
 
     if html is False:
         return
     tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
-    WINDOW = xbmcgui.Window( xbmcgui.getCurrentWindowId() )
-    WINDOW.setProperty("heading", "myheading")
-
-
-    if lastbit == "folder":
-        processXML(url,tree)
-        return
-
-    #view_group=tree.get('viewGroup',None)
-    view_group=""
-
-    if view_group == "movie":
-        printDebug( "This is movie XML, passing to Movies")
-        if not (lastbit.startswith('recently') or lastbit.startswith('newest')):
-            xbmcplugin.addSortMethod(pluginhandle,xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
-        Movies(url, tree)
-    elif view_group == "show":
-        printDebug( "This is tv show XML")
-        TVShows(url,tree)
-    elif view_group == "episode":
-        printDebug("This is TV episode XML")
-        TVEpisodes(url,tree)
-    elif view_group == 'artist':
-        printDebug( "This is music XML")
-        artist(url, tree)
-    elif view_group== 'album' or view_group == 'albums':
-        albums(url,tree)
-    elif view_group == "track":
-        printDebug("This is track XML")
-        tracks(url, tree)
-    elif view_group =="photo":
-        printDebug("This is a photo XML")
-        photo(url,tree)
-    else:
-        processDirectory(url,tree)
-
+    processDirectory(url,tree)
     return
 
 def processDirectory( url, tree=None ):
@@ -951,11 +920,11 @@ def processDirectory( url, tree=None ):
         
         if isFolder=='true':
             if type=='Season':
-                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy=SortName&format=xml'
+                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+__settings__.getSetting('sortby')+'&format=xml'
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
             else:
-                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy=SortName&format=xml'
+                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+__settings__.getSetting('sortby')+'&format=xml'
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
 
@@ -1162,6 +1131,8 @@ def displayServers( url ):
 def setWindowHeading(url) :
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("addshowname", "false")
+    WINDOW.setProperty("currenturl",url)
+    WINDOW.setProperty("currentpluginhandle",str(pluginhandle))
     if 'ParentId' in url:
         dirUrl=url.replace('items?ParentId=','Items/')
         splitUrl=dirUrl.split('&')
@@ -1220,6 +1191,8 @@ param_indirect=params.get('indirect',None)
 force=params.get('force')
 WINDOW = xbmcgui.Window( 10000 )
 WINDOW.setProperty("addshowname","false")
+if __settings__.getSetting("sortby")=="":
+    __settings__.setSetting("sortby","SortName")
 if str(sys.argv[1]) == "skin":
      skin()
 elif str(sys.argv[1]) == "shelf":
@@ -1247,13 +1220,16 @@ elif sys.argv[1] == "setting":
     if WINDOW == 10000:
         printDebug("Currently in home - refreshing to allow new settings to be taken")
         xbmc.executebuiltin("XBMC.ActivateWindow(Home)")
-elif sys.argv[1] == "refresh":
-    server_list = discoverAllServers()
+#elif sys.argv[1] == "refresh":
+#    server_list = discoverAllServers()
 elif sys.argv[1] == "delete":
     url=sys.argv[2]
     delete(url)
 elif sys.argv[1] == "refresh":
-    xbmc.executebuiltin("Container.Refresh")
+    WINDOW = xbmcgui.Window( 10000 )
+    #xbmc.executebuiltin("Container.Update(plugin://plugin.video.xbmb3c/?url="+WINDOW.getProperty('currenturl')+","replace")")
+elif sys.argv[1] == "sortby":
+    sortby()
 elif sys.argv[1] == "subs":
     url=sys.argv[2]
     alterSubs(url)
@@ -1286,7 +1262,7 @@ else:
         TVShows(param_url)
 
     elif mode == _MODE_MOVIES:
-        xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE )
+        #xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE )
         Movies(param_url)
 
     elif mode == _MODE_ARTISTS:
