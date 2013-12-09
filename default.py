@@ -257,7 +257,7 @@ def getServerSections ( ip_address, port, name, uuid):
                     'address'    : ip_address+":"+port ,
                     'serverName' : name ,
                     'uuid'       : uuid ,
-                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+__settings__.getSetting('sortbyfor'+BaseItemDto.find(sDto + 'Name').text)+'&format=xml') ,
+                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+BaseItemDto.find(sDto + 'Name').text)+'&SortBy='+__settings__.getSetting('sortbyfor'+BaseItemDto.find(sDto + 'Name').text)+'&format=xml') ,
                     'token'      : str(BaseItemDto.find(sDto + 'Id').text)  ,
                     'location'   : "local" ,
                     'art'        : str(BaseItemDto.text) ,
@@ -407,15 +407,28 @@ def unmarkFavorite (url):
     xbmc.executebuiltin("Container.Refresh")
 
 def sortby ():
-    sortOptions=["Title","ProductionYear","PremiereDate","DateCreated","CriticRating","CommuityRating","PlayCount","Budget"]
+    sortOptions=["SortName","ProductionYear","PremiereDate","DateCreated","CriticRating","CommuityRating","PlayCount","Budget"]
     sortOptionsText=["Title","Year","Premiere Date","Date Created","Critic Rating","Commuity Rating","Play Count","Budget"]
     return_value=xbmcgui.Dialog().select("Sort By",sortOptionsText)
     WINDOW = xbmcgui.Window( 10000 )
     __settings__.setSetting('sortbyfor'+WINDOW.getProperty("heading"),sortOptions[return_value]+',SortName')
-    newurl=re.sub("SortBy\S+&","SortBy="+ sortOptions[return_value] + ",SortName&",WINDOW.getProperty("currenturl"))
+    newurl=re.sub("SortBy.*?&","SortBy="+ sortOptions[return_value] + ",SortName&",WINDOW.getProperty("currenturl"))
     WINDOW.setProperty("currenturl",newurl)
     u=urllib.quote(newurl)+'&mode=0'
     xbmc.executebuiltin("Container.Update(plugin://plugin.video.xbmb3c/?url="+u+",\"replace\")")#, WINDOW.getProperty('currenturl')
+
+def sortorder ():
+    WINDOW = xbmcgui.Window( 10000 )
+    if(__settings__.getSetting('sortorderfor'+WINDOW.getProperty("heading"))=="Ascending"):
+        __settings__.setSetting('sortorderfor'+WINDOW.getProperty("heading"),'Descending')
+        newurl=re.sub("SortOrder.*?&","SortOrder=Descending&",WINDOW.getProperty("currenturl"))
+    else:
+        __settings__.setSetting('sortorderfor'+WINDOW.getProperty("heading"),'Ascending')
+        newurl=re.sub("SortOrder.*?&","SortOrder=Ascending&",WINDOW.getProperty("currenturl"))
+    WINDOW.setProperty("currenturl",newurl)
+    u=urllib.quote(newurl)+'&mode=0'
+    xbmc.executebuiltin("Container.Update(plugin://plugin.video.xbmb3c/?url="+u+",\"replace\")")#, WINDOW.getProperty('currenturl')
+
     
 def delete (url):
     conn = Http()
@@ -564,7 +577,13 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
                 
             argsToPass = 'sortby'
             commands.append(( "Sort By ...", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            argsToPass = 'refresh'
+            print('triponthis:'+WINDOW.getProperty("currenturl"))
+            if 'Ascending' in WINDOW.getProperty("currenturl"):
+                argsToPass = 'sortorder'
+                commands.append(( "Sort Order Descending", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            else:
+                argsToPass = 'sortorder'
+                commands.append(( "Sort Order Ascending", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             #argsToPass = 'xbmc.Container.Update()'
             commands.append(( "Refresh", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'delete,' + extraData.get('deleteurl')
@@ -1191,8 +1210,6 @@ param_indirect=params.get('indirect',None)
 force=params.get('force')
 WINDOW = xbmcgui.Window( 10000 )
 WINDOW.setProperty("addshowname","false")
-if __settings__.getSetting("sortby")=="":
-    __settings__.setSetting("sortby","SortName")
 if str(sys.argv[1]) == "skin":
      skin()
 elif str(sys.argv[1]) == "shelf":
@@ -1230,6 +1247,8 @@ elif sys.argv[1] == "refresh":
     #xbmc.executebuiltin("Container.Update(plugin://plugin.video.xbmb3c/?url="+WINDOW.getProperty('currenturl')+","replace")")
 elif sys.argv[1] == "sortby":
     sortby()
+elif sys.argv[1] == "sortorder":
+    sortorder()
 elif sys.argv[1] == "subs":
     url=sys.argv[2]
     alterSubs(url)
