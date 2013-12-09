@@ -1,3 +1,8 @@
+0.5.0 - Added Sorting support via Context Menu
+      - Added Sort order support via Context Menu
+      - Fixed bug with unaired shows appearing in TV
+      - Fixed bug with certain characters causing errors in playback path
+
 0.4.5 - Added Recently Added Movies, TV
       - Added Favorites support (excuse the trophy icon instead of heart, best I could do)
       - Added Upcoming TV
