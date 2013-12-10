@@ -291,7 +291,19 @@ def getServerSections ( ip_address, port, name, uuid):
             'local'      : '1' ,
             'type'       : "movie",
             'owned'      : '1' })            
-# Add Favorite Movies
+# Add NextUp Episodes
+    temp_list.append( {'title'      : 'Next Episodes',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=xml') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'owned'      : '1' })            
+            # Add Favorite Movies
     temp_list.append( {'title'      : 'Favorite Movies',
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
@@ -577,7 +589,6 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
                 
             argsToPass = 'sortby'
             commands.append(( "Sort By ...", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            print('triponthis:'+WINDOW.getProperty("currenturl"))
             if 'Ascending' in WINDOW.getProperty("currenturl"):
                 argsToPass = 'sortorder'
                 commands.append(( "Sort Order Descending", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
@@ -611,14 +622,10 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
         list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
         xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE  )
-        #xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_DATE  )
-        #xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_YEAR  )
         return xbmcplugin.addDirectoryItem(handle=pluginhandle,url=u,listitem=list,isFolder=folder)
 
 def displaySections( filter=None, shared=False ):
         printDebug("== ENTER: displaySections() ==", False)
-        #xbmcplugin.setContent(pluginhandle, 'movies')
-        #xbmcplugin.setContent(pluginhandle, 'episodes')
         xbmcplugin.setContent(pluginhandle, 'files')
         ds_servers=discoverAllServers()
         numOfServers=len(ds_servers)
@@ -782,8 +789,6 @@ def processDirectory( url, tree=None ):
     parsedserver,parsedport=parsed.netloc.split(':')
     userid=getUserId(parsedserver,parsedport)
     printDebug("Processing secondary menus")
-    #xbmcplugin.setContent(pluginhandle, 'files')
-    #xbmcplugin.setContent(pluginhandle, 'episodes')
     xbmcplugin.setContent(pluginhandle, 'movies')
 
     server=getServerFromURL(url)
@@ -1129,20 +1134,6 @@ def displayServers( url ):
         else:
             extraData={}
 
-#            elif type == "music":
-#            extraData['mode']=_MODE_MUSIC
-#            s_url='http://%s:%s/music' % ( mediaserver.get('server', ''),mediaserver.get('port') )
-#            if Servers_list == 1:
-#                music(s_url+getAuthDetails(extraData,prefix="?"))
-#        return
-
-#        elif type == "photo":
-#            extraData['mode']=_MODE_PHOTOS
-#            s_url='http://%s:%s/photos' % ( mediaserver.get('server', ''),mediaserver.get('port') )
-#            if Servers_list == 1:
-#                photo(s_url+getAuthDetails(extraData,prefix="?"))
-#                return
-
         addGUIItem(s_url, details, extraData )
 
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
@@ -1277,46 +1268,8 @@ else:
     elif mode == _MODE_GETCONTENT:
         getContent(param_url)
 
-    elif mode == _MODE_TVSHOWS:
-        TVShows(param_url)
-
-    elif mode == _MODE_MOVIES:
-        #xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE )
-        Movies(param_url)
-
-    elif mode == _MODE_ARTISTS:
-        artist(param_url)
-
-    elif mode == _MODE_TVSEASONS:
-        TVSeasons(param_url)
-
-    elif mode == _MODE_PLAYLIBRARY:
-        playLibraryMedia(param_url,force=force)
-
-    elif mode == _MODE_TVEPISODES:
-        TVEpisodes(param_url)
-
-    elif mode == _MODE_PROCESSXML:
-        processXML(param_url)
-
     elif mode == _MODE_BASICPLAY:
         PLAY(param_url)
-
-    elif mode == _MODE_ALBUMS:
-        albums(param_url)
-
-    elif mode == _MODE_TRACKS:
-        tracks(param_url)
-
-    elif mode == _MODE_PHOTOS:
-        photo(param_url)
-
-    elif mode == _MODE_MUSIC:
-        music(param_url)
-
-    elif mode == _MODE_VIDEOPLUGINPLAY:
-        videoPluginPlay(param_url,param_identifier,param_indirect)
-
 print "===== XBMB3C STOP ====="
 
 #clear done and exit.
