@@ -257,7 +257,7 @@ def getServerSections ( ip_address, port, name, uuid):
                     'address'    : ip_address+":"+port ,
                     'serverName' : name ,
                     'uuid'       : uuid ,
-                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+BaseItemDto.find(sDto + 'Name').text)+'&SortBy='+__settings__.getSetting('sortbyfor'+BaseItemDto.find(sDto + 'Name').text)+'&format=xml') ,
+                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+BaseItemDto.find(sDto + 'Name').text)+'&SortBy='+__settings__.getSetting('sortbyfor'+BaseItemDto.find(sDto + 'Name').text)+'&Genres=&format=xml') ,
                     'token'      : str(BaseItemDto.find(sDto + 'Id').text)  ,
                     'location'   : "local" ,
                     'art'        : str(BaseItemDto.text) ,
@@ -429,6 +429,15 @@ def sortby ():
     u=urllib.quote(newurl)+'&mode=0'
     xbmc.executebuiltin("Container.Update(plugin://plugin.video.xbmb3c/?url="+u+",\"replace\")")#, WINDOW.getProperty('currenturl')
 
+def genrefilter ():
+    genreFilters=["","Action","Adventure","Animation","Crime","Comedy","Documentary","Drama","Fantasy","Foreign","History","Horror","Music","Musical","Mystery","Romance","Science%20Fiction","Short","Suspense","Thriller","Western"]
+    genreFiltersText=["None","Action","Adventure","Animation","Crime","Comedy","Documentary","Drama","Fantasy","Foreign","History","Horror","Music","Musical","Mystery","Romance","Science Fiction","Short","Suspense","Thriller","Western"]
+    return_value=xbmcgui.Dialog().select("Genre Filter",genreFiltersText)
+    newurl=re.sub("Genres.*?&","Genres="+ genreFilters[return_value] + "&",WINDOW.getProperty("currenturl"))
+    WINDOW.setProperty("currenturl",newurl)
+    u=urllib.quote(newurl)+'&mode=0'
+    xbmc.executebuiltin("Container.Update(plugin://plugin.video.xbmb3c/?url="+u+",\"replace\")")#, WINDOW.getProperty('currenturl')
+
 def sortorder ():
     WINDOW = xbmcgui.Window( 10000 )
     if(__settings__.getSetting('sortorderfor'+WINDOW.getProperty("heading"))=="Ascending"):
@@ -595,6 +604,8 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
             else:
                 argsToPass = 'sortorder'
                 commands.append(( "Sort Order Ascending", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            argsToPass = 'genrefilter'
+            commands.append(( "Genre Filter ...", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             #argsToPass = 'xbmc.Container.Update()'
             commands.append(( "Refresh", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'delete,' + extraData.get('deleteurl')
@@ -1240,6 +1251,8 @@ elif sys.argv[1] == "sortby":
     sortby()
 elif sys.argv[1] == "sortorder":
     sortorder()
+elif sys.argv[1] == "genrefilter":
+    genrefilter()
 elif sys.argv[1] == "subs":
     url=sys.argv[2]
     alterSubs(url)
