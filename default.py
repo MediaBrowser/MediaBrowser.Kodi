@@ -438,6 +438,29 @@ def genrefilter ():
     u=urllib.quote(newurl)+'&mode=0'
     xbmc.executebuiltin("Container.Update(plugin://plugin.video.xbmb3c/?url="+u+",\"replace\")")#, WINDOW.getProperty('currenturl')
 
+def playall ():
+    temp_list = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+    temp_list.clear()
+    html=getURL(WINDOW.getProperty("currenturl"))
+    print html
+    tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
+    for BaseItemDto in tree:
+        if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
+            u=(BaseItemDto.find(sDto + 'Path').text)
+            u=u.replace("\\\\","smb://")
+            u=u.replace("\\","/")
+            temp_list.add(u)
+    xbmc.Player().play(temp_list)
+    #Set a loop to wait for positive confirmation of playback
+    count = 0
+    while not xbmc.Player().isPlaying():
+        printDebug( "Not playing yet...sleep for 2")
+        count = count + 2
+        if count >= 20:
+            return
+        else:
+            time.sleep(2)
+
 def sortorder ():
     WINDOW = xbmcgui.Window( 10000 )
     if(__settings__.getSetting('sortorderfor'+WINDOW.getProperty("heading"))=="Ascending"):
@@ -606,6 +629,8 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
                 commands.append(( "Sort Order Ascending", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'genrefilter'
             commands.append(( "Genre Filter ...", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            argsToPass = 'playall'
+            commands.append(( "Play All from Here", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))            
             #argsToPass = 'xbmc.Container.Update()'
             commands.append(( "Refresh", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'delete,' + extraData.get('deleteurl')
@@ -1253,6 +1278,8 @@ elif sys.argv[1] == "sortorder":
     sortorder()
 elif sys.argv[1] == "genrefilter":
     genrefilter()
+elif sys.argv[1] == "playall":
+    playall()    
 elif sys.argv[1] == "subs":
     url=sys.argv[2]
     alterSubs(url)
