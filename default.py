@@ -46,6 +46,8 @@ __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
 __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') ) 
+__language__     = __addon__.getLocalizedString
+
 BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
 PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
 
@@ -166,7 +168,11 @@ g_txheaders = {
 #Set up holding variable for session ID
 global g_sessionID
 g_sessionID=None
-        
+
+genreList=[__language__(30069),__language__(30070),__language__(30071),__language__(30072),__language__(30073),__language__(30074),__language__(30075),__language__(30076),__language__(30077),__language__(30078),__language__(30079),__language__(30080),__language__(30081),__language__(30082),__language__(30083),__language__(30084),__language__(30085),__language__(30086),__language__(30087),__language__(30088),__language__(30089)]
+sortbyList=[__language__(30060),__language__(30061),__language__(30062),__language__(30063),__language__(30064),__language__(30065),__language__(30066),__language__(30067)]
+
+
 def discoverAllServers( ):
     '''
         Take the users settings and add the required master servers
@@ -420,8 +426,8 @@ def unmarkFavorite (url):
 
 def sortby ():
     sortOptions=["SortName","ProductionYear","PremiereDate","DateCreated","CriticRating","CommuityRating","PlayCount","Budget"]
-    sortOptionsText=["Title","Year","Premiere Date","Date Created","Critic Rating","Commuity Rating","Play Count","Budget"]
-    return_value=xbmcgui.Dialog().select("Sort By",sortOptionsText)
+    sortOptionsText=sortbyList
+    return_value=xbmcgui.Dialog().select(__language__(30068),sortOptionsText)
     WINDOW = xbmcgui.Window( 10000 )
     __settings__.setSetting('sortbyfor'+WINDOW.getProperty("heading"),sortOptions[return_value]+',SortName')
     newurl=re.sub("SortBy.*?&","SortBy="+ sortOptions[return_value] + ",SortName&",WINDOW.getProperty("currenturl"))
@@ -431,8 +437,8 @@ def sortby ():
 
 def genrefilter ():
     genreFilters=["","Action","Adventure","Animation","Crime","Comedy","Documentary","Drama","Fantasy","Foreign","History","Horror","Music","Musical","Mystery","Romance","Science%20Fiction","Short","Suspense","Thriller","Western"]
-    genreFiltersText=["None","Action","Adventure","Animation","Crime","Comedy","Documentary","Drama","Fantasy","Foreign","History","Horror","Music","Musical","Mystery","Romance","Science Fiction","Short","Suspense","Thriller","Western"]
-    return_value=xbmcgui.Dialog().select("Genre Filter",genreFiltersText)
+    genreFiltersText=genreList#["None","Action","Adventure","Animation","Crime","Comedy","Documentary","Drama","Fantasy","Foreign","History","Horror","Music","Musical","Mystery","Romance","Science Fiction","Short","Suspense","Thriller","Western"]
+    return_value=xbmcgui.Dialog().select(__language__(30090),genreFiltersText)
     newurl=re.sub("Genres.*?&","Genres="+ genreFilters[return_value] + "&",WINDOW.getProperty("currenturl"))
     WINDOW.setProperty("currenturl",newurl)
     u=urllib.quote(newurl)+'&mode=0'
@@ -442,7 +448,6 @@ def playall ():
     temp_list = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     temp_list.clear()
     html=getURL(WINDOW.getProperty("currenturl"))
-    print html
     tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
     for BaseItemDto in tree:
         if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
@@ -476,7 +481,7 @@ def sortorder ():
     
 def delete (url):
     conn = Http()
-    return_value = xbmcgui.Dialog().yesno("Confirm file delete?","Delete this item? This action will delete media and associated data files.")
+    return_value = xbmcgui.Dialog().yesno(__language__(30091),__language__(30092))
     if return_value:
         printDebug('Deleting via URL: ' + url)
         resp, content = conn.request(
@@ -608,33 +613,33 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
             scriptToRun = PLUGINPATH + "/default.py"
             if extraData.get('playcount')=='0':
                 argsToPass = 'markWatched,' + extraData.get('watchedurl')
-                commands.append(( "Mark Watched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+                commands.append(( __language__(30093), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             else:
                 argsToPass = 'markUnwatched,' + extraData.get('watchedurl')
-                commands.append(( "Mark Unwatched", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+                commands.append(( __language__(30094), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             if extraData.get('favorite') != 'true':
                 argsToPass = 'markFavorite,' + extraData.get('favoriteurl')
-                commands.append(( "Add to Favorites", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+                commands.append(( __language__(30095), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             else:
                 argsToPass = 'unmarkFavorite,' + extraData.get('favoriteurl')
-                commands.append(( "Remove from Favorites", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+                commands.append(( __language__(30096), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
                 
             argsToPass = 'sortby'
-            commands.append(( "Sort By ...", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            commands.append(( __language__(30097), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             if 'Ascending' in WINDOW.getProperty("currenturl"):
                 argsToPass = 'sortorder'
-                commands.append(( "Sort Order Descending", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+                commands.append(( __language__(30098), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             else:
                 argsToPass = 'sortorder'
-                commands.append(( "Sort Order Ascending", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+                commands.append(( __language__(30099), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'genrefilter'
-            commands.append(( "Genre Filter ...", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            commands.append(( __language__(30040), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'playall'
-            commands.append(( "Play All from Here", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))            
+            commands.append(( __language__(30041), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))            
             #argsToPass = 'xbmc.Container.Update()'
-            commands.append(( "Refresh", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            commands.append(( __language__(30042), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'delete,' + extraData.get('deleteurl')
-            commands.append(( "Delete", "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            commands.append(( __language__(30043), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             list.addContextMenuItems( commands, g_contextReplace )
 
         list.setInfo('video', {'duration' : extraData.get('duration')})
@@ -984,7 +989,11 @@ def processDirectory( url, tree=None ):
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
             else:
+                if __settings__.getSetting('autoEnterSingle')=='true':
+                    if directory.find(sDto + 'ChildCount').text=='1':
+                        id=findChildId('http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+__settings__.getSetting('sortby')+'&format=xml')
                 u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+__settings__.getSetting('sortby')+'&format=xml'
+
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
 
@@ -997,6 +1006,12 @@ def processDirectory( url, tree=None ):
                 addGUIItem(u+'5PL1T'+extraData.get('watchedurl'),details,extraData)
         
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
+
+def findChildId(u):
+    html=getURL(u)
+    tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
+    for BaseItemDto in tree:
+        return(BaseItemDto.find(sDto + 'Id').text)
 
 def getThumb( data, server, transcode=False, width=None, height=None ):
     '''

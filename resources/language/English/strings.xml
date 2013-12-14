@@ -5,6 +5,7 @@
 	<string id="30005">Username: </string>
 	<string id="30006">Password: </string>
     <string id="30004">Enable debug output to log</string>
+    <string id="30001">Auto enter single folder items?</string>
 
     <string id="30022">Debug</string>
     <string id="30024">Username</string>
@@ -15,7 +16,55 @@
     <string id="30036">Number of recent movies to show</string>    
     <string id="30037">Number of recent TV episodes to show</string>    
     <string id="30038">Mark watched at start of playback</string>    
-    <string id="30043">Flatten TV Shows</string>
-    <string id="30058">If only one season</string>
-    <string id="30059">All seasons</string>
+
+    <string id="30040">Genre Filter ...</string>
+    <string id="30041">Play All from Here</string>
+    <string id="30042">Refresh</string>
+    <string id="30043">Delete</string>
+    
+    <string id="30060">Title</string>
+    <string id="30061">Year</string>
+    <string id="30062">Premiere Date</string>
+    <string id="30063">Date Created</string>
+    <string id="30064">Critic Rating</string>
+    <string id="30065">Commuity Rating</string>
+    <string id="30066">Play Count</string>
+    <string id="30067">Budget</string>
+    
+    <string id="30068">Sort By</string>
+    
+    <string id="30069">None</string>
+    <string id="30070">Action</string>
+    <string id="30071">Adventure</string>
+    <string id="30072">Animation</string>
+    <string id="30073">Crime</string>
+    <string id="30074">Comedy</string>
+    <string id="30075">Documentary</string>
+    <string id="30076">Drama</string>
+    <string id="30077">Fantasy</string>
+    <string id="30078">Foreign</string>
+    <string id="30079">History</string>
+    <string id="30080">Horror</string>
+    <string id="30081">Music</string>
+    <string id="30082">Musical</string>
+    <string id="30083">Mystery</string>
+    <string id="30084">Romance</string>
+    <string id="30085">Science Fiction</string>
+    <string id="30086">Short</string>
+    <string id="30087">Suspense</string>
+    <string id="30088">Thriller</string>
+    <string id="30089">Western</string>
+    
+    <string id="30090">Genre Filter</string>
+    <string id="30091">Confirm file delete?</string>
+    <string id="30092">Delete this item? This action will delete media and associated data files.</string>
+    
+    <string id="30093">Mark Watched</string>
+    <string id="30094">Mark Unwatched</string>
+    <string id="30095">Add to Favorites</string>
+    <string id="30096">Remove from Favorites</string>
+    <string id="30097">Sort By ...</string>
+    <string id="30098">Sort Order Descending</string>
+    <string id="30099">Sort Order Ascending</string>
+
 </strings>
