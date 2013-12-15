@@ -1,11 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <strings>
-    <string id="30014">General</string>
     <string id="30000">Primary Server Address</string>
-	<string id="30005">Username: </string>
-	<string id="30006">Password: </string>
+    <string id="30001">Auto enter single folder items</string>
+    <string id="30002">Play from Stream instead of SMB</string>
     <string id="30004">Enable debug output to log</string>
-    <string id="30001">Auto enter single folder items?</string>
+    <string id="30005">Username: </string>
+    <string id="30006">Password: </string>
+    <string id="30014">General</string>
 
     <string id="30022">Debug</string>
     <string id="30024">Username</string>

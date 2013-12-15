@@ -523,6 +523,8 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
             u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
             u=u.replace("\\\\","smb://")
             u=u.replace("\\","/")
+        elif 'mediabrowser/Videos' in url:
+            u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
         elif url.startswith('http') or url.startswith('file'):
             u=sys.argv[0]+"?url="+urllib.quote(url)+mode
         else:
@@ -733,10 +735,7 @@ def PLAY( url ):
             playurl=path.split(':',1)[1]
         elif path[0:4] == "http":
             printDebug( "We are playing a stream")
-            if '?' in path:
-                playurl=path+getAuthDetails({'token':_PARAM_TOKEN})
-            else:
-                playurl=path
+            playurl=path
         else:
             playurl=path
         item = xbmcgui.ListItem(path=playurl)
@@ -980,7 +979,10 @@ def processDirectory( url, tree=None ):
                     addGUIItem(u,details,extraData)
 
         else:
-            u= directory.find(sDto + "Path").text
+            if __settings__.getSetting('playFromStream')=='false':
+                u= directory.find(sDto + "Path").text
+            else:
+                u='http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
             if u == None:
                 printDebug('Virtual Unaired')
                 addGUIItem("temp",details,extraData)
