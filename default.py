@@ -97,27 +97,8 @@ except ImportError:
 #Get the setting from the appropriate file.
 DEFAULT_PORT="32400"
 _MODE_GETCONTENT=0
-_MODE_TVSHOWS=1
 _MODE_MOVIES=0
-_MODE_ARTISTS=3
-_MODE_TVSEASONS=4
-_MODE_PLAYLIBRARY=5
-_MODE_TVEPISODES=6
-_MODE_PROCESSXML=8
-_MODE_PLAYSHELF=11
 _MODE_BASICPLAY=12
-_MODE_ALBUMS=14
-_MODE_TRACKS=15
-_MODE_PHOTOS=16
-_MODE_MUSIC=17
-_MODE_VIDEOPLUGINPLAY=18
-_MODE_CHANNELINSTALL=20
-_MODE_CHANNELVIEW=21
-_MODE_DISPLAYSERVERS=22
-
-_SUB_AUDIO_XBMC_CONTROL="0"
-_SUB_AUDIO_XBMC_CONTROL="0"
-_SUB_AUDIO_NEVER_SHOW="2"
 
 #Check debug first...
 g_debug = __settings__.getSetting('debug')
@@ -425,7 +406,7 @@ def unmarkFavorite (url):
     xbmc.executebuiltin("Container.Refresh")
 
 def sortby ():
-    sortOptions=["SortName","ProductionYear","PremiereDate","DateCreated","CriticRating","CommuityRating","PlayCount","Budget"]
+    sortOptions=["SortName","ProductionYear","PremiereDate","DateCreated","CriticRating","CommunityRating","PlayCount","Budget"]
     sortOptionsText=sortbyList
     return_value=xbmcgui.Dialog().select(__language__(30068),sortOptionsText)
     WINDOW = xbmcgui.Window( 10000 )
@@ -649,6 +630,7 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         if extraData.get('totaltime') != None:
             list.setProperty('TotalTime', extraData.get('totaltime'))
             list.setProperty('ResumeTime', extraData.get('resumetime'))
+            list.setProperty('starttime', extraData.get('resumetime'))
         list.setInfo('video', {'director' : extraData.get('director')})
         list.setInfo('video', {'writer' : extraData.get('writer')})
         list.setInfo('video', {'year' : extraData.get('year')})
