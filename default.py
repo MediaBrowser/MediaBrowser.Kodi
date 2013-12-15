@@ -739,7 +739,7 @@ def PLAY( url ):
         else:
             playurl=path
         item = xbmcgui.ListItem(path=playurl)
-        xbmc.Player().play(urllib.unquote(playurl))
+        xbmc.Player().play(urllib.unquote(playurl),item)
         #Set a loop to wait for positive confirmation of playback
         count = 0
         while not xbmc.Player().isPlaying():
