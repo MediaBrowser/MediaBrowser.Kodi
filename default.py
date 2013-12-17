@@ -193,8 +193,9 @@ def getUserId( ip_address, port ):
     printDebug("userhtml:" + html)
     tree= etree.fromstring(html).getiterator(sDto + 'UserDto')
     for UserDto in tree:
-        userid=str(UserDto.find(sDto + 'Id').text)
-    printDebug("userid:" + userid)
+        if __settings__.getSetting('username')==UserDto.find(sDto+'Name').text:
+            userid=str(UserDto.find(sDto + 'Id').text)
+            printDebug("userid:" + userid)
     return userid
     
 def getLocalServers( ip_address, port ):
