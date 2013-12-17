@@ -245,7 +245,7 @@ def getServerSections ( ip_address, port, name, uuid):
                     'address'    : ip_address+":"+port ,
                     'serverName' : name ,
                     'uuid'       : uuid ,
-                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+BaseItemDto.find(sDto + 'Name').text)+'&SortBy='+__settings__.getSetting('sortbyfor'+BaseItemDto.find(sDto + 'Name').text)+'&Genres=&format=xml') ,
+                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(BaseItemDto.find(sDto + 'Name').text))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(BaseItemDto.find(sDto + 'Name').text))+'&Genres=&format=xml') ,
                     'token'      : str(BaseItemDto.find(sDto + 'Id').text)  ,
                     'location'   : "local" ,
                     'art'        : str(BaseItemDto.text) ,
@@ -411,7 +411,7 @@ def sortby ():
     sortOptionsText=sortbyList
     return_value=xbmcgui.Dialog().select(__language__(30068),sortOptionsText)
     WINDOW = xbmcgui.Window( 10000 )
-    __settings__.setSetting('sortbyfor'+WINDOW.getProperty("heading"),sortOptions[return_value]+',SortName')
+    __settings__.setSetting('sortbyfor'+urllib.quote(WINDOW.getProperty("heading")),sortOptions[return_value]+',SortName')
     newurl=re.sub("SortBy.*?&","SortBy="+ sortOptions[return_value] + ",SortName&",WINDOW.getProperty("currenturl"))
     WINDOW.setProperty("currenturl",newurl)
     u=urllib.quote(newurl)+'&mode=0'
@@ -450,11 +450,11 @@ def playall ():
 
 def sortorder ():
     WINDOW = xbmcgui.Window( 10000 )
-    if(__settings__.getSetting('sortorderfor'+WINDOW.getProperty("heading"))=="Ascending"):
-        __settings__.setSetting('sortorderfor'+WINDOW.getProperty("heading"),'Descending')
+    if(__settings__.getSetting('sortorderfor'+urllib.quote(WINDOW.getProperty("heading")))=="Ascending"):
+        __settings__.setSetting('sortorderfor'+urllib.quote(WINDOW.getProperty("heading")),'Descending')
         newurl=re.sub("SortOrder.*?&","SortOrder=Descending&",WINDOW.getProperty("currenturl"))
     else:
-        __settings__.setSetting('sortorderfor'+WINDOW.getProperty("heading"),'Ascending')
+        __settings__.setSetting('sortorderfor'+urllib.quote(WINDOW.getProperty("heading")),'Ascending')
         newurl=re.sub("SortOrder.*?&","SortOrder=Ascending&",WINDOW.getProperty("currenturl"))
     WINDOW.setProperty("currenturl",newurl)
     u=urllib.quote(newurl)+'&mode=0'
