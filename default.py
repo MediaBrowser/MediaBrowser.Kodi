@@ -241,6 +241,9 @@ def getServerSections ( ip_address, port, name, uuid):
     temp_list=[]
     for BaseItemDto in tree:
         if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
+            if __settings__.getSetting('sortbyfor'+BaseItemDto.find(sDto + 'Name').text) == '':
+                __settings__.setSetting('sortbyfor'+BaseItemDto.find(sDto + 'Name').text,'SortName')
+                __settings__.setSetting('sortorderfor'+BaseItemDto.find(sDto + 'Name').text,'Ascending')
             temp_list.append( {'title'      : (str(BaseItemDto.find(sDto + 'Name').text)).encode('utf-8'),
                     'address'    : ip_address+":"+port ,
                     'serverName' : name ,
@@ -966,7 +969,7 @@ def processDirectory( url, tree=None ):
         extraData['mode']=_MODE_GETCONTENT
         
         if isFolder=='true':
-            if type=='Season':
+            if type=='Season' or type=='BoxSet':
                 u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+__settings__.getSetting('sortby')+'&format=xml'
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
