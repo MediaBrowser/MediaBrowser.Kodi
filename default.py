@@ -242,8 +242,8 @@ def getServerSections ( ip_address, port, name, uuid):
     for BaseItemDto in tree:
         if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
             if __settings__.getSetting('sortbyfor'+BaseItemDto.find(sDto + 'Name').text) == '':
-                __settings__.setSetting('sortbyfor'+BaseItemDto.find(sDto + 'Name').text,'SortName')
-                __settings__.setSetting('sortorderfor'+BaseItemDto.find(sDto + 'Name').text,'Ascending')
+                __settings__.setSetting(urllib.quote('sortbyfor'+BaseItemDto.find(sDto + 'Name').text),'SortName')
+                __settings__.setSetting(urllib.quote('sortorderfor'+BaseItemDto.find(sDto + 'Name').text),'Ascending')
             temp_list.append( {'title'      : (str(BaseItemDto.find(sDto + 'Name').text)).encode('utf-8'),
                     'address'    : ip_address+":"+port ,
                     'serverName' : name ,
