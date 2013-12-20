@@ -1,4 +1,4 @@
-﻿import xbmc, xbmcgui, xbmcaddon, urllib, httplib, os
+﻿import xbmc, xbmcgui, xbmcaddon, urllib, httplib, os, time
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
 BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
@@ -22,6 +22,18 @@ def markWatched (url):
         body='watched',
     )
     xbmc.executebuiltin("Container.Refresh")
+
+def setPosition (url,method):
+    conn = Http()
+    authString='MediaBrowser UserId=\"81452d964095cf6c18af19ac559f08c5\",Client=\"XBMC\",Device=\"XBMB3C\",DeviceId=\"42\",Version=\"0.5.5\"'
+    print('Setting position via: ' + url)
+    resp, content = conn.request(
+        uri=url,
+        method=method,
+        headers={'Accept-encoding': 'gzip','Authorization' : authString},
+        body='position',
+    )
+    xbmc.executebuiltin("Container.Refresh")
     
 class Service( xbmc.Player ):
 
@@ -31,7 +43,10 @@ class Service( xbmc.Player ):
 
     def onPlayBackStarted( self ):
         # Will be called when xbmc starts playing a file
-        print( "LED Status: Playback Started, LED ON" )
+        WINDOW = xbmcgui.Window( 10000 )
+        if WINDOW.getProperty("watchedurl")!="":
+            positionurl=WINDOW.getProperty("positionurl")
+            setPosition(positionurl + '/Progress?PositionTicks=0','POST')
 
     def onPlayBackEnded( self ):
         # Will be called when xbmc stops playing a file
@@ -39,13 +54,18 @@ class Service( xbmc.Player ):
 
     def onPlayBackStopped( self ):
         # Will be called when user stops xbmc playing a file
-        print( "LED Status: Playback Stopped, LED OFF" )
         WINDOW = xbmcgui.Window( 10000 )
         if WINDOW.getProperty("watchedurl")!="":
             watchedurl=WINDOW.getProperty("watchedurl")
-            markWatched(watchedurl)
+            positionurl=WINDOW.getProperty("positionurl")
+            setPosition(positionurl +'?PositionTicks=' + str(int(playTime*10000000)),'DELETE')
             WINDOW.setProperty("watchedurl","")
+            WINDOW.setProperty("positionurl","")
             print("stopped at time:" + str(playTime))
+            xbmc.executebuiltin("Container.Refresh")
+            time.sleep(1)
+
+
 montior=Service()        
 while not xbmc.abortRequested:
     if xbmc.Player().isPlaying():

@@ -633,7 +633,7 @@ def addGUIItem( url, details, extraData, folder=True ):
             list.setInfo('video', {'top250' : '1'})
         if extraData.get('totaltime') != None:
             list.setProperty('TotalTime', extraData.get('totaltime'))
-            list.setProperty('ResumeTime', extraData.get('resumetime'))
+            list.setProperty('ResumeTime', str(int(extraData.get('resumetime'))/60))
         list.setInfo('video', {'director' : extraData.get('director')})
         list.setInfo('video', {'writer' : extraData.get('writer')})
         list.setInfo('video', {'year' : extraData.get('year')})
@@ -745,6 +745,7 @@ def PLAY( url ):
 
         #if (__settings__.getSetting("markWatchedOnPlay")=='true'):
         watchedurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
+        positionurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
             #print watchedurl
             #markWatched (urllib.unquote(watchedurl))
         
@@ -768,6 +769,7 @@ def PLAY( url ):
         xbmc.Player().play(playurl,item)
         WINDOW = xbmcgui.Window( 10000 )
         WINDOW.setProperty("watchedurl", watchedurl)
+        WINDOW.setProperty("positionurl", positionurl)
 
         #Set a loop to wait for positive confirmation of playback
         count = 0
@@ -939,6 +941,8 @@ def processDirectory( url, tree=None ):
             favorite='false'
         if UserData.find(sDto + "PlaybackPositionTicks").text != None:
             PlaybackPositionTicks=str(UserData.find(sDto + "PlaybackPositionTicks").text)
+            reasonableTicks=int(UserData.find(sDto + "PlaybackPositionTicks").text)/1000
+            seekTime=reasonableTicks/10000
         else:
             PlaybackPositionTicks='100'
 
@@ -993,7 +997,7 @@ def processDirectory( url, tree=None ):
                    'favoriteurl'  : 'http://' + server + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id,
                    'deleteurl'    : 'http://' + server + '/mediabrowser/Items/' + id,                   
                    'parenturl'    : url,
-                   'resumetime'   : (int(PlaybackPositionTicks)/int(RunTimeTicks))*tempDuration,
+                   'resumetime'   : str(seekTime),
                    'totaltime'    : tempDuration,
                    'duration'     : tempDuration}
         if extraData['thumb'] == '':
