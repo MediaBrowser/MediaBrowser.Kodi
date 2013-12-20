@@ -40,6 +40,7 @@ import time
 import inspect
 import base64
 import random
+import datetime
 from urlparse import urlparse
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -59,6 +60,7 @@ sys.path.append(BASE_RESOURCE_PATH)
 XBMB3C_VERSION="0.5.5"
 import httplib2
 from httplib2 import Http
+
 print "===== XBMB3C START ====="
 
 print "XBMB3C -> running Python: " + str(sys.version_info)
@@ -508,7 +510,7 @@ def getURL( url, suppress=True, type="GET", popup=0 ):
     printDebug("====== getURL finished ======")
     return link
 
-def addGUIItem( url, details, extraData, context=None, folder=True ):
+def addGUIItem( url, details, extraData, folder=True ):
         printDebug("== ENTER: addGUIItem ==", False)
         printDebug("Adding Dir for [%s]" % details.get('title','Unknown'))
         printDebug("Passed details: " + str(details))
@@ -523,11 +525,7 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
             mode="&mode=%s" % extraData['mode']
 
         #Create the URL to pass to the item
-        if ( not folder) and ( extraData['type'] == "image" ):
-            u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-            u=u.replace("\\\\","smb://")
-            u=u.replace("\\","/")
-        elif 'mediabrowser/Videos' in url:
+        if 'mediabrowser/Videos' in url:
             u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
         elif url.startswith('http') or url.startswith('file'):
             u=sys.argv[0]+"?url="+urllib.quote(url)+mode
@@ -589,9 +587,9 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
 
         printDebug( "Setting fan art as " + fanart )
 
-        if extraData.get('banner'):
-            list.setProperty('banner', extraData.get('banner'))
-            printDebug( "Setting banner as " + extraData.get('banner'))
+        #if extraData.get('banner'):
+        #    list.setProperty('banner', extraData.get('banner'))
+        #    printDebug( "Setting banner as " + extraData.get('banner'))
 
         printDebug("Building Context Menus")
         commands = []
@@ -636,7 +634,6 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         if extraData.get('totaltime') != None:
             list.setProperty('TotalTime', extraData.get('totaltime'))
             list.setProperty('ResumeTime', extraData.get('resumetime'))
-            list.setProperty('starttime', extraData.get('resumetime'))
         list.setInfo('video', {'director' : extraData.get('director')})
         list.setInfo('video', {'writer' : extraData.get('writer')})
         list.setInfo('video', {'year' : extraData.get('year')})
@@ -648,10 +645,12 @@ def addGUIItem( url, details, extraData, context=None, folder=True ):
         list.setInfo('video', {'season': details.get('season')})        
         list.setInfo('video', {'mpaa': extraData.get('mpaa')})
         list.setInfo('video', {'rating': extraData.get('rating')})
+        if watched!=None:
+            list.setProperty('watchedurl', extraData.get('watchedurl'))
         list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
         list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
         xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE  )
-        return xbmcplugin.addDirectoryItem(handle=pluginhandle,url=u,listitem=list,isFolder=folder)
+        return xbmcplugin.addDirectoryItem(handle=pluginhandle,url=u,listitem=list,isFolder=True)
 
 def displaySections( filter=None, shared=False ):
         printDebug("== ENTER: displaySections() ==", False)
@@ -709,11 +708,9 @@ def displaySections( filter=None, shared=False ):
             extraData['mode']=mode
             s_url='http://%s%s' % ( section['address'], path)
 
-            context=None
-
             #Build that listing..
-            printDebug("addGUIItem:"+str(s_url)+str(details)+str(extraData)+str(context))
-            addGUIItem(s_url, details,extraData, context)
+            printDebug("addGUIItem:"+str(s_url)+str(details)+str(extraData))
+            addGUIItem(s_url, details,extraData)
 
         if shared:
             xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
@@ -732,18 +729,46 @@ def remove_html_tags( data ):
 
 def PLAY( url ):
         printDebug("== ENTER: PLAY ==", False)
-        path, watchedurl = url.split("5PL1T")
-        if path[0:4] == "file":
-            printDebug( "We are playing a local file")
-            #Split out the path from the URL
-            playurl=path.split(':',1)[1]
-        elif path[0:4] == "http":
-            printDebug( "We are playing a stream")
-            playurl=path
+        url=urllib.unquote(url)
+        server,id=url.split(',;')
+        ip,port=server.split(':')
+        userid=getUserId(ip,port)
+        seekTime=0
+        resume=0
+
+        html=getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=xml", suppress=False, popup=1 )        
+        if __settings__.getSetting('playFromStream')=='false':
+            html=getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=xml", suppress=False, popup=1 )
+            playurl= etree.fromstring(html).find(sDto+"Path").text
         else:
-            playurl=path
+            playurl='http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
+
+        #if (__settings__.getSetting("markWatchedOnPlay")=='true'):
+        watchedurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
+            #print watchedurl
+            #markWatched (urllib.unquote(watchedurl))
+        
         item = xbmcgui.ListItem(path=playurl)
-        xbmc.Player().play(urllib.unquote(playurl),item)
+        #item.setProperty('IsPlayable', 'true')
+        #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
+        #tree=etree.fromstring(html).getiterator(sDto + "BaseItemDto")
+        UserData=etree.fromstring(html).find(sDto+'UserData')
+        if UserData.find(sDto + "PlaybackPositionTicks").text != '0':
+            reasonableTicks=int(UserData.find(sDto + "PlaybackPositionTicks").text)/1000
+            seekTime=reasonableTicks/10000
+            displayTime = str(datetime.timedelta(seconds=seekTime))
+            display_list = [ "Resume from " + displayTime , "Start from beginning"]
+            resumeScreen = xbmcgui.Dialog()
+            result = resumeScreen.select('Resume',display_list)
+            if result == -1:
+                return False
+            if result == 0:
+                resume=1
+
+        xbmc.Player().play(playurl,item)
+        WINDOW = xbmcgui.Window( 10000 )
+        WINDOW.setProperty("watchedurl", watchedurl)
+
         #Set a loop to wait for positive confirmation of playback
         count = 0
         while not xbmc.Player().isPlaying():
@@ -753,8 +778,16 @@ def PLAY( url ):
                 return
             else:
                 time.sleep(2)
-        if (__settings__.getSetting("markWatchedOnPlay")=='true'):
-            markWatched (urllib.unquote(watchedurl))#while xbmc.Player().isPlaying():
+        if resume==1:
+            xbmc.Player().seekTime(seekTime-1)
+        #while(not xbmc.abortRequested):
+        #    xbmc.sleep(100)
+        #while Player().isPlaying():
+        #    self.Timer = threading.Timer( 60*60*60, self.dummy,() )
+        #    self.Timer.start()
+        #    currentTime = int(xbmc.Player().getTime())
+        #    totalTime = int(xbmc.Player().getTotalTime())
+            #while xbmc.Player().isPlaying():
                 #time.sleep(1)
                 #currentTime = int(xbmc.Player().getTime())
         #return xbmcplugin.setResolvedUrl(pluginhandle, True, item)
@@ -762,7 +795,7 @@ def PLAY( url ):
 
 def get_params( paramstring ):
     printDebug("== ENTER: get_params ==", False)
-    printDebug("Parameter string: " + paramstring)
+    print("Parameter string: " + paramstring)
     param={}
     if len(paramstring)>=2:
             params=paramstring
@@ -960,8 +993,8 @@ def processDirectory( url, tree=None ):
                    'favoriteurl'  : 'http://' + server + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id,
                    'deleteurl'    : 'http://' + server + '/mediabrowser/Items/' + id,                   
                    'parenturl'    : url,
-                   'resumetime'   : PlaybackPositionTicks,
-                   'totaltime'    : RunTimeTicks,
+                   'resumetime'   : (int(PlaybackPositionTicks)/int(RunTimeTicks))*tempDuration,
+                   'totaltime'    : tempDuration,
                    'duration'     : tempDuration}
         if extraData['thumb'] == '':
             extraData['thumb']=extraData['fanart_image']
@@ -976,22 +1009,27 @@ def processDirectory( url, tree=None ):
             else:
                 if __settings__.getSetting('autoEnterSingle')=='true':
                     if directory.find(sDto + 'ChildCount').text=='1':
-                        id=findChildId('http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+__settings__.getSetting('sortby')+'&format=xml')
+                        newid=findChildId('http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+__settings__.getSetting('sortby')+'&format=xml')
+                        if newid!=None:
+                            id=newid
                 u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+__settings__.getSetting('sortby')+'&format=xml'
 
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
 
         else:
-            if __settings__.getSetting('playFromStream')=='false':
-                u= directory.find(sDto + "Path").text
-            else:
-                u='http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
-            if u == None:
-                printDebug('Virtual Unaired')
-                addGUIItem("temp",details,extraData)
-            else:
-                addGUIItem(u+'5PL1T'+extraData.get('watchedurl'),details,extraData)
+            #if __settings__.getSetting('playFromStream')=='false':
+            #    u= directory.find(sDto + "Path").text
+            #else:
+            #    u='http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
+            #if u == None:
+            #    printDebug('Virtual Unaired')
+            #    addGUIItem("temp",details,extraData,folder=False)
+            #else:
+            #    addGUIItem(u+'&'+extraData.get('watchedurl'),details,extraData,folder=False)
+                #addGUIItem(u,details,extraData,folder=False)
+            u=server+',;'+id
+            addGUIItem(u,details,extraData,folder=False)
         
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
 
@@ -1217,6 +1255,8 @@ def setMasterServer () :
     printDebug("Setting master server to: %s" % (servers[result]['name'],))
     __settings__.setSetting('masterServer',servers[result]['name'])
     return
+    
+
 ###########################################################################  
 ##Start of Main
 ###########################################################################
@@ -1317,3 +1357,4 @@ print "===== XBMB3C STOP ====="
 
 #clear done and exit.
 sys.modules.clear()
+
