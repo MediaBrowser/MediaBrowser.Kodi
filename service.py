@@ -65,7 +65,7 @@ class Service( xbmc.Player ):
             WINDOW.setProperty("positionurl","")
             print("stopped at time:" + str(playTime))
             xbmc.executebuiltin("Container.Refresh")
-            time.sleep(1)
+            xbmc.sleep(100)
 
 
 montior=Service()        

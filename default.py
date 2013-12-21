@@ -501,11 +501,15 @@ def getURL( url, suppress=True, type="GET", popup=0 ):
         
         printDebug("cachetime = "+__settings__.getSetting("cachetime"))
         if XBMB3C_PLATFORM=="Windows":
-            conn = httplib2.Http("c:\\temp\\" +".cache", timeout=20)
+            conn = httplib2.Http("c:\\temp\\" +".cache", timeout=30)
         else:
-            conn = httplib2.Http(__addondir__ +".cache", timeout=20)
+            conn = httplib2.Http(__addondir__ +".cache", timeout=30)
         headers={'Accept-encoding': 'gzip', 'Cache-Control' : 'max-age=' + (__settings__.getSetting("cachetime"))}
         resp, link = conn.request("http://"+server+urlPath, "GET",headers=headers)
+        if resp==None:
+            xbmc.sleep(1000)
+            print("it failed!")
+            resp, link = conn.request("http://"+server+urlPath, "GET",headers=headers)
     except:
         error = "HTTP response error"
     printDebug("Headers: " + str(resp))
@@ -560,7 +564,7 @@ def addGUIItem( url, details, extraData, folder=True ):
 
         #For all end items    
         if ( not folder):
-            list.setProperty('IsPlayable', 'true')
+            #list.setProperty('IsPlayable', 'true')
 
             if extraData.get('type','video').lower() == "video":
                 list.setProperty('TotalTime', str(extraData.get('duration')))
@@ -752,7 +756,8 @@ def PLAY( url ):
             #markWatched (urllib.unquote(watchedurl))
         
         item = xbmcgui.ListItem(path=playurl)
-        #item.setProperty('IsPlayable', 'true')
+        item.setProperty('IsPlayable', 'true')
+        item.setProperty('IsFolder', 'false')
         #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         #tree=etree.fromstring(html).getiterator(sDto + "BaseItemDto")
         UserData=etree.fromstring(html).find(sDto+'UserData')
@@ -769,6 +774,7 @@ def PLAY( url ):
                 resume=1
 
         xbmc.Player().play(playurl,item)
+        #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         WINDOW = xbmcgui.Window( 10000 )
         WINDOW.setProperty("watchedurl", watchedurl)
         WINDOW.setProperty("positionurl", positionurl)
