@@ -767,6 +767,7 @@ def PLAY( url ):
         WINDOW = xbmcgui.Window( 10000 )
         WINDOW.setProperty("watchedurl", watchedurl)
         WINDOW.setProperty("positionurl", positionurl)
+        WINDOW.setProperty("runtimeticks", str(etree.fromstring(html).find(sDto+"RunTimeTicks").text))
 
         #Set a loop to wait for positive confirmation of playback
         count = 0
@@ -776,7 +777,7 @@ def PLAY( url ):
             if count >= 20:
                 return
             else:
-                time.sleep(2)
+                time.sleep(1)
         if resume==1:
             xbmc.Player().seekTime(seekTime-1)
         return
