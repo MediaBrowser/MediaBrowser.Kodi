@@ -25,7 +25,9 @@ def markWatched (url):
 
 def setPosition (url,method):
     conn = Http()
-    authString='MediaBrowser UserId=\"81452d964095cf6c18af19ac559f08c5\",Client=\"XBMC\",Device=\"XBMB3C\",DeviceId=\"42\",Version=\"0.5.5\"'
+    WINDOW = xbmcgui.Window( 10000 )
+    userid=WINDOW.getProperty("userid")    
+    authString='MediaBrowser UserId=\"' + userid + '\",Client=\"XBMC\",Device=\"XBMB3C\",DeviceId=\"42\",Version=\"0.5.5\"'
     print('Setting position via: ' + url)
     resp, content = conn.request(
         uri=url,

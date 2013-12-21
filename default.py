@@ -198,6 +198,8 @@ def getUserId( ip_address, port ):
         if __settings__.getSetting('username')==UserDto.find(sDto+'Name').text:
             userid=str(UserDto.find(sDto + 'Id').text)
             printDebug("userid:" + userid)
+    WINDOW = xbmcgui.Window( 10000 )
+    WINDOW.setProperty("userid",userid)
     return userid
     
 def getLocalServers( ip_address, port ):
