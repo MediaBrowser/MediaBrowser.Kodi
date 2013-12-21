@@ -416,7 +416,10 @@ def playall ():
     for BaseItemDto in tree:
         if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
             u=(BaseItemDto.find(sDto + 'Path').text)
-            u=u.replace("\\\\","smb://")
+            if __settings__.getSetting('smbusername')=='':
+                u=u.replace("\\\\","smb://")
+            else:
+                u=u.replace("\\\\","smb://"+__settings__.getSetting('smbusername')+':'+__settings__.getSetting('smbpassword')+'@')
             u=u.replace("\\","/")
             temp_list.add(u)
     xbmc.Player().play(temp_list)
@@ -744,7 +747,10 @@ def PLAY( url ):
         if __settings__.getSetting('playFromStream')=='false':
             html=getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=xml", suppress=False, popup=1 )
             playurl= etree.fromstring(html).find(sDto+"Path").text
-            playurl=playurl.replace("\\\\","smb://")
+            if __settings__.getSetting('smbusername')=='':
+                playurl=playurl.replace("\\\\","smb://")
+            else:
+                playurl=playurl.replace("\\\\","smb://"+__settings__.getSetting('smbusername')+':'+__settings__.getSetting('smbpassword')+'@')
             playurl=playurl.replace("\\","/")
         else:
             playurl='http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'

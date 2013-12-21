@@ -6,6 +6,8 @@
     <string id="30004">Enable debug output to log</string>
     <string id="30005">Username: </string>
     <string id="30006">Password: </string>
+    <string id="30007">Samba Username: </string>
+    <string id="30008">Samba Password: </string>
     <string id="30014">General</string>
 
     <string id="30022">Debug</string>
@@ -13,7 +15,6 @@
     <string id="30025">Password</string>
 
     <string id="30030">Port Number</string>
-    <string id="30035">Database cache time (in seconds)</string>
     <string id="30036">Number of recent movies to show</string>    
     <string id="30037">Number of recent TV episodes to show</string>    
     <string id="30038">Mark watched at start of playback</string>    
