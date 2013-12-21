@@ -21,7 +21,7 @@ def markWatched (url):
         headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"},
         body='watched',
     )
-    xbmc.executebuiltin("Container.Refresh")
+    #xbmc.executebuiltin("Container.Refresh")
 
 def setPosition (url,method):
     conn = Http()
@@ -35,7 +35,7 @@ def setPosition (url,method):
         headers={'Accept-encoding': 'gzip','Authorization' : authString},
         body='position',
     )
-    xbmc.executebuiltin("Container.Refresh")
+   # xbmc.executebuiltin("Container.Refresh")
     
 class Service( xbmc.Player ):
 
@@ -70,8 +70,8 @@ class Service( xbmc.Player ):
             WINDOW.setProperty("positionurl","")
             WINDOW.setProperty("runtimeticks","")
             print("stopped at time:" + str(playTime))
-            xbmc.executebuiltin("Container.Refresh")
-            xbmc.sleep(100)
+            #xbmc.executebuiltin("Container.Refresh")
+            #xbmc.sleep(100)
 
 
 montior=Service()        
