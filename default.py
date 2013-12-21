@@ -734,6 +734,8 @@ def PLAY( url ):
         if __settings__.getSetting('playFromStream')=='false':
             html=getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=xml", suppress=False, popup=1 )
             playurl= etree.fromstring(html).find(sDto+"Path").text
+            playurl=playurl.replace("\\\\","smb://")
+            playurl=playurl.replace("\\","/")
         else:
             playurl='http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
 
