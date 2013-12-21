@@ -1,4 +1,4 @@
-﻿import xbmc, xbmcgui, xbmcaddon, urllib, httplib, os, time
+﻿import xbmc, xbmcgui, xbmcaddon, urllib, httplib, os, time, requests
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
 BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
@@ -9,33 +9,21 @@ sEntities='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Entities}
 sArrays='{http://schemas.microsoft.com/2003/10/Serialization/Arrays}'
 
 sys.path.append(BASE_RESOURCE_PATH)
-import httplib2
-from httplib2 import Http
 playTime=0
 def markWatched (url):
-    conn = Http()
-    xbmc.log('Marking watched via URL: ' + url)
-    resp, content = conn.request(
-        uri=url,
-        method='POST',
-        headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"},
-        body='watched',
-    )
-    #xbmc.executebuiltin("Container.Refresh")
+    headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
+    resp = requests.post(url, data='', headers=headers)
 
 def setPosition (url,method):
-    conn = Http()
     WINDOW = xbmcgui.Window( 10000 )
-    userid=WINDOW.getProperty("userid")    
+    userid=WINDOW.getProperty("userid")
     authString='MediaBrowser UserId=\"' + userid + '\",Client=\"XBMC\",Device=\"XBMB3C\",DeviceId=\"42\",Version=\"0.5.5\"'
+    headers={'Accept-encoding': 'gzip','Authorization' : authString}
     xbmc.log('Setting position via: ' + url)
-    resp, content = conn.request(
-        uri=url,
-        method=method,
-        headers={'Accept-encoding': 'gzip','Authorization' : authString},
-        body='position',
-    )
-   # xbmc.executebuiltin("Container.Refresh")
+    if method=='POST':
+        resp = requests.post(url, data='', headers=headers)
+    elif method=='DELETE':
+        resp = requests.delete(url, data='', headers=headers)
     
 class Service( xbmc.Player ):
 
@@ -70,9 +58,6 @@ class Service( xbmc.Player ):
             WINDOW.setProperty("positionurl","")
             WINDOW.setProperty("runtimeticks","")
             xbmc.log("stopped at time:" + str(playTime))
-            #xbmc.executebuiltin("Container.Refresh")
-            #xbmc.sleep(100)
-
 
 montior=Service()        
 while not xbmc.abortRequested:

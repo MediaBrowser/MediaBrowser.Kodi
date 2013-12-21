@@ -41,6 +41,7 @@ import inspect
 import base64
 import random
 import datetime
+import requests
 from urlparse import urlparse
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -58,8 +59,6 @@ sArrays='{http://schemas.microsoft.com/2003/10/Serialization/Arrays}'
 
 sys.path.append(BASE_RESOURCE_PATH)
 XBMB3C_VERSION="0.5.5"
-import httplib2
-from httplib2 import Http
 
 xbmc.log ("===== XBMB3C START =====")
 
@@ -370,47 +369,23 @@ def getAllSections( server_list = None ):
     return section_list
 
 def markWatched (url):
-    conn = Http()
-    printDebug('Marking watched via URL: ' + url)
-    resp, content = conn.request(
-        uri=url,
-        method='POST',
-        headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"},
-        body='watched',
-    )
+    headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
+    resp = requests.post(url, data='', headers=headers)
     xbmc.executebuiltin("Container.Refresh")
 
 def markUnwatched (url):
-    conn = Http()
-    printDebug('Marking watched via URL: ' + url)
-    resp, content = conn.request(
-        uri=url,
-        method='DELETE',
-        headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"},
-        body='unwatched',
-    )
+    headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
+    resp = requests.delete(url, data='', headers=headers)
     xbmc.executebuiltin("Container.Refresh")
 
 def markFavorite (url):
-    conn = Http()
-    printDebug('Marking favorite via URL: ' + url)
-    resp, content = conn.request(
-        uri=url,
-        method='POST',
-        headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"},
-        body='unwatched',
-    )
+    headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
+    resp = requests.post(url, data='', headers=headers)
     xbmc.executebuiltin("Container.Refresh")
     
 def unmarkFavorite (url):
-    conn = Http()
-    printDebug('Unmarking favorite via URL: ' + url)
-    resp, content = conn.request(
-        uri=url,
-        method='DELETE',
-        headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"},
-        body='unwatched',
-    )
+    headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
+    resp = requests.delete(url, data='', headers=headers)
     xbmc.executebuiltin("Container.Refresh")
 
 def sortby ():
@@ -469,19 +444,13 @@ def sortorder ():
 
     
 def delete (url):
-    conn = Http()
     return_value = xbmcgui.Dialog().yesno(__language__(30091),__language__(30092))
     if return_value:
         printDebug('Deleting via URL: ' + url)
-        resp, content = conn.request(
-            uri=url,
-            method='DELETE',
-            headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"},
-            body='unwatched',
-        )
-        time.sleep(5)
+        headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
+        resp = requests.delete(url, data='', headers=headers)
+        xbmc.sleep(8000)
         xbmc.executebuiltin("Container.Refresh")
-
 def getURL( url, suppress=True, type="GET", popup=0 ):
     printDebug("== ENTER: getURL ==", False)
     try:
@@ -498,21 +467,62 @@ def getURL( url, suppress=True, type="GET", popup=0 ):
         printDebug("url = "+url)
         printDebug("server = "+str(server))
         printDebug("urlPath = "+str(urlPath))
-        
-        printDebug("cachetime = "+__settings__.getSetting("cachetime"))
-        if XBMB3C_PLATFORM=="Windows":
-            conn = httplib2.Http("c:\\temp\\" +".cache", timeout=30)
+        conn = httplib.HTTPConnection(server, timeout=20)
+        #head = {"Accept-Encoding" : "gzip,deflate", "Accept-Charset" : "UTF-8,*"} 
+        conn.request(type, urlPath)
+        data = conn.getresponse()
+        if int(data.status) == 200:
+            link=data.read()
+            printDebug("====== XML 200 returned =======")
+            printDebug(link, False)
+            printDebug("====== XML 200 finished ======")
+
+        elif ( int(data.status) == 301 ) or ( int(data.status) == 302 ):
+            try: conn.close()
+            except: pass
+            return data.getheader('Location')
+
+        elif int(data.status) >= 400:
+            error = "HTTP response error: " + str(data.status) + " " + str(data.reason)
+            print error
+            if suppress is False:
+                if popup == 0:
+                    xbmc.executebuiltin("XBMC.Notification(URL error: "+ str(data.reason) +",)")
+                else:
+                    xbmcgui.Dialog().ok("Error",server)
+            print error
+            try: conn.close()
+            except: pass
+            return False
         else:
-            conn = httplib2.Http(__addondir__ +".cache", timeout=30)
-        headers={'Accept-encoding': 'gzip', 'Cache-Control' : 'max-age=' + (__settings__.getSetting("cachetime"))}
-        resp, link = conn.request("http://"+server+urlPath, "GET",headers=headers)
-        if resp==None:
-            xbmc.sleep(1000)
-            resp, link = conn.request("http://"+server+urlPath, "GET",headers=headers)
-    except:
-        error = "HTTP response error"
-    printDebug("Headers: " + str(resp))
-    printDebug("====== getURL finished ======")
+            link=data.read()
+            printDebug("====== XML returned =======")
+            printDebug(link, False)
+            printDebug("====== XML finished ======")
+    except socket.gaierror :
+        error = 'Unable to lookup host: ' + server + "\nCheck host name is correct"
+        print error
+        if suppress is False:
+            if popup==0:
+                xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to find server,)")
+            else:
+                xbmcgui.Dialog().ok("","Unable to contact host")
+        print error
+        return False
+    except socket.error, msg :
+        error="Unable to connect to " + server +"\nReason: " + str(msg)
+        print error
+        if suppress is False:
+            if popup == 0:
+                xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to connect to server,)")
+            else:
+                xbmcgui.Dialog().ok("","Unable to connect to host")
+        print error
+        return False
+    else:
+        try: conn.close()
+        except: pass
+
     return link
 
 def addGUIItem( url, details, extraData, folder=True ):
