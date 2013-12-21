@@ -63,8 +63,8 @@ from httplib2 import Http
 
 xbmc.log ("===== XBMB3C START =====")
 
-print "XBMB3C -> running Python: " + str(sys.version_info)
-print "XBMB3C -> running XBMB3C: " + str(XBMB3C_VERSION)
+xbmc.log ("XBMB3C -> running Python: " + str(sys.version_info))
+xbmc.log ("XBMB3C -> running XBMB3C: " + str(XBMB3C_VERSION))
 
 try:
   import lxml.etree.ElementTree as etree
@@ -107,7 +107,7 @@ g_debug = __settings__.getSetting('debug')
 def printDebug( msg, functionname=True ):
     if g_debug == "true":
         if functionname is False:
-            print str(msg)
+            xbmc.log (str(msg))
         else:
             print "XBMB3C -> " + inspect.stack()[1][3] + ": " + str(msg)
 
@@ -129,13 +129,13 @@ def getPlatform( ):
     return "Unknown"
 
 XBMB3C_PLATFORM=getPlatform()
-print "XBMB3C -> Platform: " + str(XBMB3C_PLATFORM)
+xbmc.log ("XBMB3C -> Platform: " + str(XBMB3C_PLATFORM))
 
 g_flatten = __settings__.getSetting('flatten')
 printDebug("XBMB3C -> Flatten is: "+ g_flatten, False)
 
 if g_debug == "true":
-    print "XBMB3C -> Setting debug to " + g_debug
+    xbmc.log ("XBMB3C -> Setting debug to " + g_debug)
 else:
     xbmc.log ("XBMB3C -> Debug is turned off.  Running silent")
 
@@ -783,7 +783,7 @@ def PLAY( url ):
 
 def get_params( paramstring ):
     printDebug("== ENTER: get_params ==", False)
-    print("Parameter string: " + paramstring)
+    xbmc.log("Parameter string: " + paramstring)
     param={}
     if len(paramstring)>=2:
             params=paramstring
@@ -804,7 +804,7 @@ def get_params( paramstring ):
                             param[splitparams[0]]=splitparams[1]
                     elif (len(splitparams))==3:
                             param[splitparams[0]]=splitparams[1]+"="+splitparams[2]
-    print "XBMB3C -> Detected parameters: " + str(param)
+    xbmc.log ("XBMB3C -> Detected parameters: " + str(param))
     return param
 
 def getContent( url ):
@@ -1311,10 +1311,10 @@ else:
     WINDOW.clearProperty("heading")
     #mode=_MODE_BASICPLAY
     if g_debug == "true":
-        print "XBMB3C -> Mode: "+str(mode)
-        print "XBMB3C -> URL: "+str(param_url)
-        print "XBMB3C -> Name: "+str(param_name)
-        print "XBMB3C -> identifier: " + str(param_identifier)
+        xbmc.log ("XBMB3C -> Mode: "+str(mode))
+        xbmc.log ("XBMB3C -> URL: "+str(param_url))
+        xbmc.log ("XBMB3C -> Name: "+str(param_name))
+        xbmc.log ("XBMB3C -> identifier: " + str(param_identifier))
 
     #Run a function based on the mode variable that was passed in the URL
     if ( mode == None ) or ( param_url == None ) or ( len(param_url)<1 ):

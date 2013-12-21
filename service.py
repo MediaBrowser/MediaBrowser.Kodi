@@ -14,7 +14,7 @@ from httplib2 import Http
 playTime=0
 def markWatched (url):
     conn = Http()
-    print('Marking watched via URL: ' + url)
+    xbmc.log('Marking watched via URL: ' + url)
     resp, content = conn.request(
         uri=url,
         method='POST',
@@ -28,7 +28,7 @@ def setPosition (url,method):
     WINDOW = xbmcgui.Window( 10000 )
     userid=WINDOW.getProperty("userid")    
     authString='MediaBrowser UserId=\"' + userid + '\",Client=\"XBMC\",Device=\"XBMB3C\",DeviceId=\"42\",Version=\"0.5.5\"'
-    print('Setting position via: ' + url)
+    xbmc.log('Setting position via: ' + url)
     resp, content = conn.request(
         uri=url,
         method=method,
@@ -40,7 +40,7 @@ def setPosition (url,method):
 class Service( xbmc.Player ):
 
     def __init__( self, *args ):
-        print("starting monitor service")
+        xbmc.log("starting monitor service")
         pass
 
     def onPlayBackStarted( self ):
@@ -52,7 +52,7 @@ class Service( xbmc.Player ):
 
     def onPlayBackEnded( self ):
         # Will be called when xbmc stops playing a file
-        print( "LED Status: Playback Stopped, LED OFF" )
+        xbmc.log( "LED Status: Playback Stopped, LED OFF" )
 
     def onPlayBackStopped( self ):
         # Will be called when user stops xbmc playing a file
@@ -61,15 +61,15 @@ class Service( xbmc.Player ):
             watchedurl=WINDOW.getProperty("watchedurl")
             positionurl=WINDOW.getProperty("positionurl")
             setPosition(positionurl +'?PositionTicks=' + str(int(playTime*10000000)),'DELETE')
-            print "runtimeticks:" + WINDOW.getProperty("runtimeticks")
+            xbmc.log ("runtimeticks:" + WINDOW.getProperty("runtimeticks"))
             percentComplete=(playTime*10000000)/int(WINDOW.getProperty("runtimeticks"))
-            print "Percent complete:" + str(percentComplete)
+            xbmc.log ("Percent complete:" + str(percentComplete))
             if ((playTime*10000000)/(int(WINDOW.getProperty("runtimeticks")))) > 0.95:
                 markWatched(watchedurl)
             WINDOW.setProperty("watchedurl","")
             WINDOW.setProperty("positionurl","")
             WINDOW.setProperty("runtimeticks","")
-            print("stopped at time:" + str(playTime))
+            xbmc.log("stopped at time:" + str(playTime))
             #xbmc.executebuiltin("Container.Refresh")
             #xbmc.sleep(100)
 
@@ -85,4 +85,4 @@ while not xbmc.abortRequested:
     else:
         xbmc.sleep(1000)
     
-print("Service shutting down")
+xbmc.log("Service shutting down")
