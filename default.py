@@ -61,40 +61,40 @@ XBMB3C_VERSION="0.5.5"
 import httplib2
 from httplib2 import Http
 
-print "===== XBMB3C START ====="
+xbmc.log ("===== XBMB3C START =====")
 
 print "XBMB3C -> running Python: " + str(sys.version_info)
 print "XBMB3C -> running XBMB3C: " + str(XBMB3C_VERSION)
 
 try:
   import lxml.etree.ElementTree as etree
-  print("XBMB3C -> Running with lxml.etree")
+  xbmc.log("XBMB3C -> Running with lxml.etree")
 except ImportError:
   try:
     # Python 2.5
     import xml.etree.cElementTree as etree
-    print("XBMB3C -> Running with cElementTree on Python 2.5+")
+    xbmc.log("XBMB3C -> Running with cElementTree on Python 2.5+")
   except ImportError:
     try:
       # Python 2.5
       import xml.etree.ElementTree as etree
-      print("XBMB3C -> Running with ElementTree on Python 2.5+")
+      xbmc.log("XBMB3C -> Running with ElementTree on Python 2.5+")
     except ImportError:
       try:
         # normal cElementTree install
         import cElementTree as etree
-        print("XBMB3C -> Running with built-in cElementTree")
+        xbmc.log("XBMB3C -> Running with built-in cElementTree")
       except ImportError:
         try:
           # normal ElementTree install
           import elementtree.ElementTree as etree
-          print("XBMB3C -> Running with built-in ElementTree")
+          xbmc.log("XBMB3C -> Running with built-in ElementTree")
         except ImportError:
             try:
                 import ElementTree as etree
-                print("XBMB3C -> Running addon ElementTree version")
+                xbmc.log("XBMB3C -> Running addon ElementTree version")
             except ImportError:
-                print("XBMB3C -> Failed to import ElementTree from any known place")
+                xbmc.log("XBMB3C -> Failed to import ElementTree from any known place")
     
 #Get the setting from the appropriate file.
 DEFAULT_PORT="32400"
@@ -137,7 +137,7 @@ printDebug("XBMB3C -> Flatten is: "+ g_flatten, False)
 if g_debug == "true":
     print "XBMB3C -> Setting debug to " + g_debug
 else:
-    print "XBMB3C -> Debug is turned off.  Running silent"
+    xbmc.log ("XBMB3C -> Debug is turned off.  Running silent")
 
 g_contextReplace=True
 
@@ -508,7 +508,6 @@ def getURL( url, suppress=True, type="GET", popup=0 ):
         resp, link = conn.request("http://"+server+urlPath, "GET",headers=headers)
         if resp==None:
             xbmc.sleep(1000)
-            print("it failed!")
             resp, link = conn.request("http://"+server+urlPath, "GET",headers=headers)
     except:
         error = "HTTP response error"
@@ -1326,7 +1325,7 @@ else:
 
     elif mode == _MODE_BASICPLAY:
         PLAY(param_url)
-print "===== XBMB3C STOP ====="
+xbmc.log ("===== XBMB3C STOP =====")
 
 #clear done and exit.
 sys.modules.clear()
