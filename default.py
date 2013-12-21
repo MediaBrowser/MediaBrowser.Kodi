@@ -572,17 +572,6 @@ def addGUIItem( url, details, extraData, folder=True ):
             
 
                 
-        #try:
-            #Then set the number of watched and unwatched, which will be displayed per season
-            #list.setProperty('WatchedEpisodes', str(extraData['WatchedEpisodes']))
-            #list.setProperty('UnWatchedEpisodes', str(extraData['UnWatchedEpisodes']))
-            
-            #Hack to show partial flag for TV shows and seasons
-            #if extraData.get('partialTV') == 1:            
-            #    list.setProperty('TotalTime', '100')
-            #    list.setProperty('ResumeTime', '50')
-                
-        #except: pass
 
         #Set the fanart image if it has been enabled
         fanart=str(extraData.get('fanart_image',''))
@@ -790,17 +779,6 @@ def PLAY( url ):
                 time.sleep(2)
         if resume==1:
             xbmc.Player().seekTime(seekTime-1)
-        #while(not xbmc.abortRequested):
-        #    xbmc.sleep(100)
-        #while Player().isPlaying():
-        #    self.Timer = threading.Timer( 60*60*60, self.dummy,() )
-        #    self.Timer.start()
-        #    currentTime = int(xbmc.Player().getTime())
-        #    totalTime = int(xbmc.Player().getTotalTime())
-            #while xbmc.Player().isPlaying():
-                #time.sleep(1)
-                #currentTime = int(xbmc.Player().getTime())
-        #return xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         return
 
 def get_params( paramstring ):
@@ -1030,16 +1008,6 @@ def processDirectory( url, tree=None ):
                     addGUIItem(u,details,extraData)
 
         else:
-            #if __settings__.getSetting('playFromStream')=='false':
-            #    u= directory.find(sDto + "Path").text
-            #else:
-            #    u='http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
-            #if u == None:
-            #    printDebug('Virtual Unaired')
-            #    addGUIItem("temp",details,extraData,folder=False)
-            #else:
-            #    addGUIItem(u+'&'+extraData.get('watchedurl'),details,extraData,folder=False)
-                #addGUIItem(u,details,extraData,folder=False)
             u=server+',;'+id
             addGUIItem(u,details,extraData,folder=False)
         
@@ -1335,14 +1303,6 @@ elif sys.argv[1] == "genrefilter":
     genrefilter()
 elif sys.argv[1] == "playall":
     playall()    
-elif sys.argv[1] == "subs":
-    url=sys.argv[2]
-    alterSubs(url)
-elif sys.argv[1] == "audio":
-    url=sys.argv[2]
-    alterAudio(url)
-elif sys.argv[1] == "master":
-    setMasterServer()
 else:
 
     pluginhandle = int(sys.argv[1])
