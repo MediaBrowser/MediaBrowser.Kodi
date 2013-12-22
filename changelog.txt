@@ -1,12 +1,13 @@
 0.6.0 - Added resume tracking
-      - Added playback from resume point
-      - Removed xml caching - not needed (switched from httplib2 to requests) 
+      - Added playback from resume point (SMB only)
+      - Added support for multiple users
+      - Added password authentication
       - Added SMB username/password option
       - Added option to play from HTTP instead of SMB (note: resume does not work with this option)
+      - Added default sort modes
       - Changed to not resolve real path until playback.  Pi speedup?
       - Fixed boxsets containing only one movie
-      - Added default sort modes
-      - Added support more multiple users
+      - Removed xml caching - not needed (switched from httplib2 to requests)       
       - Cleaned up more for official repo submission requirements
 
 0.5.5 - Finished requirements for official repo submission
