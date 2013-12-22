@@ -29,6 +29,7 @@
 
 import urllib
 import re
+import hashlib
 import xbmcplugin
 import xbmcgui
 import xbmcaddon
@@ -197,6 +198,8 @@ def getUserId( ip_address, port ):
         if __settings__.getSetting('username')==UserDto.find(sDto+'Name').text:
             userid=str(UserDto.find(sDto + 'Id').text)
             printDebug("userid:" + userid)
+    if __settings__.getSetting('password')!="":
+        authenticate('http://'+ip_address+":"+port+"/mediabrowser/Users/AuthenticateByName")
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("userid",userid)
     return userid
@@ -367,6 +370,18 @@ def getAllSections( server_list = None ):
             local_complete=True
             
     return section_list
+
+def authenticate (url):
+    headers={'Content-Type': 'application/json'}
+    sha1=hashlib.sha1(__settings__.getSetting('password'))
+    resp = requests.post(url, '{\"password\":\"' +sha1.hexdigest() + '\",\"Username\":\"' + __settings__.getSetting('username') + "\"}", headers=headers)
+    code=str(resp).split('[')[1]
+    code=code.split(']')[0]
+    if int(code) >= 200 and int(code)<300:
+        printDebug ("User Authenticated")
+    else:
+        return_value = xbmcgui.Dialog().ok(__language__(30044),__language__(30044))
+        sys.exit()
 
 def markWatched (url):
     headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
