@@ -3,7 +3,7 @@
     @package    : XBMB3C add-on
     @author     : xnappo
     @copyleft   : 2013, xnappo
-    @version    : 0.5.5 (frodo)
+    @version    : 0.6.0 (frodo)
 
     @license    : Gnu General Public License - see LICENSE.TXT
     @description: XBMB3C XBMC add-on
@@ -58,7 +58,7 @@ sEntities='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Entities}
 sArrays='{http://schemas.microsoft.com/2003/10/Serialization/Arrays}'
 
 sys.path.append(BASE_RESOURCE_PATH)
-XBMB3C_VERSION="0.5.5"
+XBMB3C_VERSION="0.6.0"
 
 xbmc.log ("===== XBMB3C START =====")
 
