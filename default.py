@@ -772,6 +772,7 @@ def PLAY( url ):
                 playurl='http://' + server + '/mediabrowser/Videos/' + id + '/stream.ts'
             else:
                 playurl='http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
+                
         #if (__settings__.getSetting("markWatchedOnPlay")=='true'):
         watchedurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
         positionurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
@@ -784,7 +785,7 @@ def PLAY( url ):
         #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         #tree=etree.fromstring(html).getiterator(sDto + "BaseItemDto")
         UserData=etree.fromstring(html).find(sDto+'UserData')
-        if UserData.find(sDto + "PlaybackPositionTicks").text != '0':
+        if UserData.find(sDto + "PlaybackPositionTicks").text != '0' and __settings__.getSetting('transcode')=='false':
             reasonableTicks=int(UserData.find(sDto + "PlaybackPositionTicks").text)/1000
             seekTime=reasonableTicks/10000
             displayTime = str(datetime.timedelta(seconds=seekTime))
