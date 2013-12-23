@@ -768,8 +768,10 @@ def PLAY( url ):
                 playurl=playurl.replace("\\\\","smb://"+__settings__.getSetting('smbusername')+':'+__settings__.getSetting('smbpassword')+'@')
             playurl=playurl.replace("\\","/")
         else:
-            playurl='http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
-
+            if __settings__.getSetting('transcode')=='true':
+                playurl='http://' + server + '/mediabrowser/Videos/' + id + '/stream.ts'
+            else:
+                playurl='http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
         #if (__settings__.getSetting("markWatchedOnPlay")=='true'):
         watchedurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
         positionurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
@@ -811,7 +813,12 @@ def PLAY( url ):
             else:
                 time.sleep(1)
         if resume==1:
-            xbmc.Player().seekTime(seekTime-1)
+            while xbmc.Player().getTime()<(seekTime-1):
+                xbmc.Player().pause
+                xbmc.sleep(100)
+                xbmc.Player().seekTime(seekTime-1)
+                xbmc.sleep(100)
+                xbmc.Player().play()
         return
 
 def get_params( paramstring ):
