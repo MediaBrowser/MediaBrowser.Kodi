@@ -40,7 +40,20 @@ class Service( xbmc.Player ):
 
     def onPlayBackEnded( self ):
         # Will be called when xbmc stops playing a file
-        xbmc.log( "LED Status: Playback Stopped, LED OFF" )
+        WINDOW = xbmcgui.Window( 10000 )
+        if WINDOW.getProperty("watchedurl")!="":
+            watchedurl=WINDOW.getProperty("watchedurl")
+            positionurl=WINDOW.getProperty("positionurl")
+            setPosition(positionurl +'?PositionTicks=' + str(int(playTime*10000000)),'DELETE')
+            xbmc.log ("runtimeticks:" + WINDOW.getProperty("runtimeticks"))
+            percentComplete=(playTime*10000000)/int(WINDOW.getProperty("runtimeticks"))
+            xbmc.log ("Percent complete:" + str(percentComplete))
+            if ((playTime*10000000)/(int(WINDOW.getProperty("runtimeticks")))) > 0.95:
+                markWatched(watchedurl)
+            WINDOW.setProperty("watchedurl","")
+            WINDOW.setProperty("positionurl","")
+            WINDOW.setProperty("runtimeticks","")
+            xbmc.log("stopped at time:" + str(playTime))
 
     def onPlayBackStopped( self ):
         # Will be called when user stops xbmc playing a file

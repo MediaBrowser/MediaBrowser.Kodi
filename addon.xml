@@ -4,6 +4,7 @@
         version="0.6.0" 
         provider-name="xnappo">
   <requires>
+    <import addon="script.module.requests" version="1.1.0" />
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>
   <extension    point="xbmc.python.pluginsource"
