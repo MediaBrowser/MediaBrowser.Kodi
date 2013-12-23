@@ -193,6 +193,7 @@ def discoverAllServers( ):
 def getUserId( ip_address, port ):
     html = getURL(ip_address+":"+port+"/mediabrowser/Users?format=xml")
     userid=''
+    printDebug("Looking for user name: " + __settings__.getSetting('username'))
     printDebug("userhtml:" + html)
     tree= etree.fromstring(html).getiterator(sDto + 'UserDto')
     for UserDto in tree:
@@ -251,14 +252,15 @@ def getServerSections ( ip_address, port, name, uuid):
     temp_list=[]
     for BaseItemDto in tree:
         if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
-            if __settings__.getSetting('sortbyfor'+BaseItemDto.find(sDto + 'Name').text) == '':
-                __settings__.setSetting(urllib.quote('sortbyfor'+BaseItemDto.find(sDto + 'Name').text),'SortName')
-                __settings__.setSetting(urllib.quote('sortorderfor'+BaseItemDto.find(sDto + 'Name').text),'Ascending')
-            temp_list.append( {'title'      : (str(BaseItemDto.find(sDto + 'Name').text)).encode('utf-8'),
+            Name=(BaseItemDto.find(sDto + 'Name').text).encode('utf-8')
+            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+            temp_list.append( {'title'      : Name,
                     'address'    : ip_address+":"+port ,
                     'serverName' : name ,
                     'uuid'       : uuid ,
-                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(BaseItemDto.find(sDto + 'Name').text))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(BaseItemDto.find(sDto + 'Name').text))+'&Genres=&format=xml') ,
+                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=xml') ,
                     'token'      : str(BaseItemDto.find(sDto + 'Id').text)  ,
                     'location'   : "local" ,
                     'art'        : str(BaseItemDto.text) ,
