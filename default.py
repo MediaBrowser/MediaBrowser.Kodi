@@ -502,13 +502,13 @@ def getURL( url, suppress=True, type="GET", popup=0 ):
 
         elif int(data.status) >= 400:
             error = "HTTP response error: " + str(data.status) + " " + str(data.reason)
-            print error
+            xbmc.log (error)
             if suppress is False:
                 if popup == 0:
                     xbmc.executebuiltin("XBMC.Notification(URL error: "+ str(data.reason) +",)")
                 else:
                     xbmcgui.Dialog().ok("Error",server)
-            print error
+            xbmc.log (error)
             try: conn.close()
             except: pass
             return False
@@ -519,23 +519,23 @@ def getURL( url, suppress=True, type="GET", popup=0 ):
             printDebug("====== XML finished ======")
     except socket.gaierror :
         error = 'Unable to lookup host: ' + server + "\nCheck host name is correct"
-        print error
+        xbmc.log (error)
         if suppress is False:
             if popup==0:
                 xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to find server,)")
             else:
                 xbmcgui.Dialog().ok("","Unable to contact host")
-        print error
+        xbmc.log (error)
         return False
     except socket.error, msg :
         error="Unable to connect to " + server +"\nReason: " + str(msg)
-        print error
+        xbmc.log (error)
         if suppress is False:
             if popup == 0:
                 xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to connect to server,)")
             else:
                 xbmcgui.Dialog().ok("","Unable to connect to host")
-        print error
+        xbmc.log (error)
         return False
     else:
         try: conn.close()
