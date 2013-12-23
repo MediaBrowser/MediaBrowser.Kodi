@@ -192,14 +192,18 @@ def discoverAllServers( ):
     return das_servers
 def getUserId( ip_address, port ):
     html = getURL(ip_address+":"+port+"/mediabrowser/Users?format=xml")
+    userid=''
     printDebug("userhtml:" + html)
     tree= etree.fromstring(html).getiterator(sDto + 'UserDto')
     for UserDto in tree:
         if __settings__.getSetting('username')==UserDto.find(sDto+'Name').text:
             userid=str(UserDto.find(sDto + 'Id').text)
-            printDebug("userid:" + userid)
     if __settings__.getSetting('password')!="":
         authenticate('http://'+ip_address+":"+port+"/mediabrowser/Users/AuthenticateByName")
+    if userid=='':
+        return_value = xbmcgui.Dialog().ok(__language__(30045),__language__(30045))
+        sys.exit()
+    printDebug("userid:" + userid)
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("userid",userid)
     return userid
