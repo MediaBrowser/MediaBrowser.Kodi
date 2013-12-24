@@ -1,3 +1,9 @@
+0.6.5 - Added preliminary transcoding support
+      - Added preliminary music support (plays, no metadata yet)
+      - Fixed bug with non-ASCII characters in collection name
+      - Gracefully handle username not specified
+      - Fixed XML compliance issue for official repo submission
+
 0.6.0 - Added resume tracking
       - Added playback from resume point (SMB only)
       - Added support for multiple users
