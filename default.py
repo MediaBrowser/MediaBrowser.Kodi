@@ -908,6 +908,8 @@ def processDirectory( url, tree=None ):
             xbmcplugin.setContent(pluginhandle, 'episodes')
         if directory.find(sDto + "DisplayMediaType").text=='Season':
             xbmcplugin.setContent(pluginhandle, 'tvshows')
+        if directory.find(sDto + "DisplayMediaType").text=='Audio':
+            xbmcplugin.setContent(pluginhandle, 'songs')            
         if directory.find(sDto + "DisplayMediaType").text=='Series':
             xbmcplugin.setContent(pluginhandle, 'tvshows')            
 # Process MediaStreams
@@ -1039,7 +1041,7 @@ def processDirectory( url, tree=None ):
         extraData['mode']=_MODE_GETCONTENT
         
         if isFolder=='true':
-            if type=='Season' or type=='BoxSet':
+            if type=='Season' or type=='BoxSet' or type=='MusicAlbum' or type=='MusicArtist':
                 u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+__settings__.getSetting('sortby')+'&format=xml'
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
