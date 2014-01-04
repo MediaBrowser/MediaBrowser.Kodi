@@ -890,6 +890,8 @@ def PLAY( url ):
         if __settings__.getSetting('playFromStream')=='false':
             html=getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=xml", suppress=False, popup=1 )
             playurl= etree.fromstring(html).find(sDto+"Path").text
+            if (etree.fromstring(html).find(sDto+"VideoType").text=="Dvd"):
+                playurl=playurl+"/VIDEO_TS/VIDEO_TS.IFO"
             if __settings__.getSetting('smbusername')=='':
                 playurl=playurl.replace("\\\\","smb://")
             else:
