@@ -44,6 +44,9 @@ import random
 import datetime
 import requests
 from urlparse import urlparse
+import cProfile
+import pstats
+import threading
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
@@ -101,6 +104,104 @@ DEFAULT_PORT="32400"
 _MODE_GETCONTENT=0
 _MODE_MOVIES=0
 _MODE_BASICPLAY=12
+
+imageData = []
+
+def saveImageLoadRequests():
+    fileTimeStamp = time.strftime("%Y-%m-%d %H-%M-%S")
+    fileName = (__addondir__ + "ImageLoadRequests_" + fileTimeStamp + ".txt")
+    fh = open(fileName,"w")
+    for imageInfo in imageData:
+        fh.write(imageInfo[0] + "," + imageInfo[1] + "\n")
+    fh.close()
+
+class ImageLoaderThread(threading.Thread):
+
+    def __init__(self,baseDir):
+        threading.Thread.__init__(self)
+        self.BaseLoaderPath = baseDir
+        
+        
+    def loadRequestFiles(self):
+    
+        files = []
+        for (dirpath, dirnames, filenames) in os.walk(self.BaseLoaderPath):
+            xbmc.log ("XBMB3C -> Walker " + str(filenames))
+            files.extend(filenames)
+            break 
+        
+        selected_file = ""
+        for filename in files:
+            if(filename.startswith("ImageLoadRequests")):
+                selected_file = filename
+                break
+        
+        if(len(selected_file) == 0):
+            return []
+
+        xbmc.log ("XBMB3C -> Processing Image Loader Requests File : " + selected_file)
+        
+        request_list = []
+        
+        request = open(self.BaseLoaderPath + selected_file, 'r')
+        s = request.read()
+        request.close()
+        ls = s.split("\n")
+        for l in ls:        
+            tokens = l.split(",")
+            if(len(tokens) == 2):
+                request_list.append([tokens[0], tokens[1]])
+                
+        os.remove(self.BaseLoaderPath + selected_file)
+            
+        return request_list
+        
+    def run(self):
+        WINDOW = xbmcgui.Window( 10000 )
+        imageLoaderRunning = WINDOW.getProperty("image_loader_running")
+        
+        if(imageLoaderRunning == "1"):
+            xbmc.log ("XBMB3C -> Image Loader already running so exiting")
+            return
+        
+        WINDOW.setProperty("image_loader_running", "1")
+        
+        xbmc.log ("XBMB3C -> Image Loader thread Started")
+        
+        from urllib import urlretrieve
+        
+        loadRequests = self.loadRequestFiles()
+        if __settings__.getSetting('cacheAll')=='true':
+            progress = xbmcgui.DialogProgress()
+            progress.create("Artwork", "Grabbing Artwork")
+        initialRequests=len(loadRequests)
+        while(len(loadRequests) > 0):
+            xbmc.log ("XBMB3C -> Images to load " + str(len(loadRequests)))
+            currentImage=1
+            
+            for imageData in loadRequests:
+                if __settings__.getSetting('cacheAll')=='true':
+                    progress.update((int((float(currentImage)/float(initialRequests))*100)),"Grabbing Artwork")
+                currentImage=currentImage+1
+                #xbmc.log ("Image Data : " + imageData[0] + " " + imageData[1])
+                
+                try:
+                    f = open(imageData[1])
+                    f.close()
+                    #with open(imageData[1]):
+                    #    xbmc.log("Image Already Exists Locally : " + imageData[1])
+                except IOError:
+                    urlretrieve(imageData[0], imageData[1])
+                    #xbmc.log("Downloading Image : " + imageData[0] + " " + imageData[1])
+                
+            WINDOW.setProperty("image_loader_running", "0")
+            if __settings__.getSetting('cacheAll')=='true':
+                progress.close()
+                __settings__.setSetting('cacheAll','false')
+                xbmcgui.Dialog().ok("Complete","Artwork caching complete, press back to access collections")
+            xbmc.log ("XBMB3C -> Image Loader thread Exited")
+            
+            loadRequests = self.loadRequestFiles()
 
 #Check debug first...
 g_debug = __settings__.getSetting('debug')
@@ -243,108 +344,122 @@ def getServerSections ( ip_address, port, name, uuid):
         parentid=str(BaseItemDto.find(sDto + 'Id').text)
     htmlpath=("http://%s:%s/mediabrowser/Users/" % ( ip_address, port))
     html=getURL(htmlpath + userid + "/items?ParentId=" + parentid + "&format=xml")
+    temp_list=[]
 
     if html is False:
         return {}
 
+    # Add cache all images
+    if __settings__.getSetting('cacheAll')=='true':
+        temp_list.append( {'title'      : 'Cache All Artwork',
+                'address'    : ip_address+":"+port ,
+                'serverName' : name ,
+                'uuid'       : uuid ,
+                'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortOrder=Ascending&IsVirtualUnaired=false&IsMissing=false&IncludeItemTypes=Movie,Series,Season&format=xml') ,
+                'token'      : ''  ,
+                'location'   : "local" ,
+                'art'        : '' ,
+                'local'      : '1' ,
+                'type'       : "movie",
+                'owned'      : '1' })                            
+            #printDebug("Title " + str(BaseItemDto.tag))
+    else:
+        tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
+        for BaseItemDto in tree:
+            if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
+                Name=(BaseItemDto.find(sDto + 'Name').text).encode('utf-8')
+                if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                    __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                    __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+                temp_list.append( {'title'      : Name,
+                        'address'    : ip_address+":"+port ,
+                        'serverName' : name ,
+                        'uuid'       : uuid ,
+                        'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=xml') ,
+                        'token'      : str(BaseItemDto.find(sDto + 'Id').text)  ,
+                        'location'   : "local" ,
+                        'art'        : str(BaseItemDto.text) ,
+                        'local'      : '1' ,
+                        'type'       : "movie",
+                        'owned'      : '1' })
+                printDebug("Title " + str(BaseItemDto.tag))
     
-    tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
-    temp_list=[]
-    for BaseItemDto in tree:
-        if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
-            Name=(BaseItemDto.find(sDto + 'Name').text).encode('utf-8')
-            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
-                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
-                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
-            temp_list.append( {'title'      : Name,
-                    'address'    : ip_address+":"+port ,
-                    'serverName' : name ,
-                    'uuid'       : uuid ,
-                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=xml') ,
-                    'token'      : str(BaseItemDto.find(sDto + 'Id').text)  ,
-                    'location'   : "local" ,
-                    'art'        : str(BaseItemDto.text) ,
-                    'local'      : '1' ,
-                    'type'       : "movie",
-                    'owned'      : '1' })
-            printDebug("Title " + str(BaseItemDto.tag))
-
-# Add recent movies
-    temp_list.append( {'title'      : 'Recently Added Movies',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'owned'      : '1' })
-            
-# Add recent Episodes
-    temp_list.append( {'title'      : 'Recently Added Episodes',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=xml') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'owned'      : '1' })            
-# Add NextUp Episodes
-    temp_list.append( {'title'      : 'Next Episodes',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=xml') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'owned'      : '1' })            
-            # Add Favorite Movies
-    temp_list.append( {'title'      : 'Favorite Movies',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'owned'      : '1' })            
-
-# Add Favorite Episodes
-    temp_list.append( {'title'      : 'Favorite Episodes',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=xml') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'owned'      : '1' })                       
-            
-# Add Upcoming TV
-    temp_list.append( {'title'      : 'Upcoming TV',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=xml') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'owned'      : '1' })                            
-    #printDebug("Title " + str(BaseItemDto.tag))
+    # Add recent movies
+        temp_list.append( {'title'      : 'Recently Added Movies',
+                'address'    : ip_address+":"+port ,
+                'serverName' : name ,
+                'uuid'       : uuid ,
+                'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
+                'token'      : ''  ,
+                'location'   : "local" ,
+                'art'        : '' ,
+                'local'      : '1' ,
+                'type'       : "movie",
+                'owned'      : '1' })
+                
+    # Add recent Episodes
+        temp_list.append( {'title'      : 'Recently Added Episodes',
+                'address'    : ip_address+":"+port ,
+                'serverName' : name ,
+                'uuid'       : uuid ,
+                'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=xml') ,
+                'token'      : ''  ,
+                'location'   : "local" ,
+                'art'        : '' ,
+                'local'      : '1' ,
+                'type'       : "movie",
+                'owned'      : '1' })            
+    # Add NextUp Episodes
+        temp_list.append( {'title'      : 'Next Episodes',
+                'address'    : ip_address+":"+port ,
+                'serverName' : name ,
+                'uuid'       : uuid ,
+                'path'       : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=xml') ,
+                'token'      : ''  ,
+                'location'   : "local" ,
+                'art'        : '' ,
+                'local'      : '1' ,
+                'type'       : "movie",
+                'owned'      : '1' })            
+                # Add Favorite Movies
+        temp_list.append( {'title'      : 'Favorite Movies',
+                'address'    : ip_address+":"+port ,
+                'serverName' : name ,
+                'uuid'       : uuid ,
+                'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
+                'token'      : ''  ,
+                'location'   : "local" ,
+                'art'        : '' ,
+                'local'      : '1' ,
+                'type'       : "movie",
+                'owned'      : '1' })            
+    
+    # Add Favorite Episodes
+        temp_list.append( {'title'      : 'Favorite Episodes',
+                'address'    : ip_address+":"+port ,
+                'serverName' : name ,
+                'uuid'       : uuid ,
+                'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=xml') ,
+                'token'      : ''  ,
+                'location'   : "local" ,
+                'art'        : '' ,
+                'local'      : '1' ,
+                'type'       : "movie",
+                'owned'      : '1' })                       
+                
+    # Add Upcoming TV
+        temp_list.append( {'title'      : 'Upcoming TV',
+                'address'    : ip_address+":"+port ,
+                'serverName' : name ,
+                'uuid'       : uuid ,
+                'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=xml') ,
+                'token'      : ''  ,
+                'location'   : "local" ,
+                'art'        : '' ,
+                'local'      : '1' ,
+                'type'       : "movie",
+                'owned'      : '1' })                            
+    
 
     for item in temp_list:
         printDebug ("temp_list: " + str(item))
@@ -471,9 +586,16 @@ def delete (url):
     return_value = xbmcgui.Dialog().yesno(__language__(30091),__language__(30092))
     if return_value:
         printDebug('Deleting via URL: ' + url)
+        progress = xbmcgui.DialogProgress()
+        progress.create("Deleting", "Waiting for server to delete")
         headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
         resp = requests.delete(url, data='', headers=headers)
-        xbmc.sleep(8000)
+        deleteSleep=0
+        while deleteSleep<10:
+            xbmc.sleep(1000)
+            deleteSleep=deleteSleep+1
+            progress.update(deleteSleep*10,"Waiting for server to delete")
+        progress.close()
         xbmc.executebuiltin("Container.Refresh")
 def getURL( url, suppress=True, type="GET", popup=0 ):
     printDebug("== ENTER: getURL ==", False)
@@ -863,18 +985,18 @@ def getContent( url ):
         @return: nothing, redirects to another function
     '''
     printDebug("== ENTER: getContent ==", False)
-
     server=getServerFromURL(url)
     lastbit=url.split('/')[-1]
     printDebug("URL suffix: " + str(lastbit))
     printDebug("server: " + str(server))
     printDebug("URL: " + str(url))    
     html=getURL(url, suppress=False, popup=1 )
-
     if html is False:
         return
     tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
-    processDirectory(url,tree)
+    
+    processDirectory(url, tree)
+    
     return
 
 def processDirectory( url, tree=None ):
@@ -1041,17 +1163,22 @@ def processDirectory( url, tree=None ):
         extraData['mode']=_MODE_GETCONTENT
         
         if isFolder=='true':
+            SortByTemp=__settings__.getSetting('sortby')
+            if SortByTemp=='':
+                SortByTemp='SortName'
+                
             if type=='Season' or type=='BoxSet' or type=='MusicAlbum' or type=='MusicArtist':
-                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+__settings__.getSetting('sortby')+'&format=xml'
+                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=xml'
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
             else:
                 if __settings__.getSetting('autoEnterSingle')=='true':
                     if directory.find(sDto + 'ChildCount').text=='1':
-                        newid=findChildId('http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+__settings__.getSetting('sortby')+'&format=xml')
-                        if newid!=None:
-                            id=newid
-                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+__settings__.getSetting('sortby')+'&format=xml'
+                        u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&recursive=true&IncludeItemTypes=Episode&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=xml'
+                    else:
+                        u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=xml'
+                else:
+                    u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=xml'
 
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
                     addGUIItem(u,details,extraData)
@@ -1061,12 +1188,11 @@ def processDirectory( url, tree=None ):
             addGUIItem(u,details,extraData,folder=False)
         
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
-
-def findChildId(u):
-    html=getURL(u)
-    tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
-    for BaseItemDto in tree:
-        return(BaseItemDto.find(sDto + 'Id').text)
+    
+    saveImageLoadRequests()
+    thread1 = ImageLoaderThread(__addondir__)
+    thread1.start()
+    thread1.join()
 
 def getThumb( data, server, transcode=False, width=None, height=None ):
     '''
@@ -1079,35 +1205,14 @@ def getThumb( data, server, transcode=False, width=None, height=None ):
     id=data.find(sDto + 'Id').text
     if data.find(sDto + 'DisplayMediaType').text == 'Episode':
         id=data.find(sDto + 'SeriesId').text
-    thumbnail=('http://'+server+'/mediabrowser/Items/'+str(id)+'/Images/Primary?Format=png')
-    printDebug('The temp path is:' + __addondir__)
-    from urllib import urlretrieve
-    try:
-      with open(__addondir__ + id + '.png'):
-         printDebug('Already there')
-    except IOError:
-         urlretrieve(thumbnail, (__addondir__ + id+ '.png'))
-    thumbnail=(__addondir__ + id + '.png')
-    printDebug('Thumb:' + thumbnail)
-    return thumbnail
     
-
-
-    if thumbnail == '':
-        return g_loc+'/resources/mb3.png'
-
-    elif thumbnail[0:4] == "http" :
-        return thumbnail
-
-    elif thumbnail[0] == '/':
-        if transcode:
-            return photoTranscode(server,'http://localhost:32400'+thumbnail,width,height)
-        else:
-            return 'http://'+server+thumbnail
-
-    else:
-        return g_loc+'/resources/mb3.png'
-
+    fileName = (__addondir__ + id + '.png')
+    thumbnail=('http://'+server+'/mediabrowser/Items/'+str(id)+'/Images/Primary?Format=png')
+    imageData.append([thumbnail, fileName])
+    
+    return fileName
+    
+    
 def getFanart( data, server, transcode=False ):
     '''
         Simply take a URL or path and determine how to format for fanart
@@ -1117,17 +1222,14 @@ def getFanart( data, server, transcode=False ):
     id=data.find(sDto + 'Id').text
     if data.find(sDto + 'DisplayMediaType').text == 'Episode' or data.find(sDto + 'DisplayMediaType').text == 'Season':
         id=data.find(sDto + 'SeriesId').text    
-    fanart=('http://'+server+'/mediabrowser/Items/'+str(id)+'/Images/Backdrop?Format=png')
-    from urllib import urlretrieve
-    try:
-      with open(__addondir__+'fanart_' + id + '.png'):
-         printDebug('Already there')
-    except IOError:
-         urlretrieve(fanart, (__addondir__+'fanart_' + id+ '.png'))
-    fanart=(__addondir__+'fanart_' + id + '.png')
-    printDebug('Fanart:' + fanart)
-    return fanart
-
+                
+    fileName = (__addondir__ + "fanart_" + id + ".png")
+    thumbnail=('http://'+server+'/mediabrowser/Items/'+str(id)+'/Images/Primary?Format=png')
+    imageData.append([thumbnail, fileName])
+    
+    return fileName
+    
+    
 def getServerFromURL( url ):
     '''
     Simply split the URL up and get the server portion, sans port
@@ -1294,7 +1396,10 @@ try:
     params=get_params(sys.argv[2])
 except:
     params={}
-
+#Check to see if XBMC is playing - we don't want to do anything if so
+if xbmc.Player().isPlaying():
+    printDebug ('Already Playing! Exiting...')
+    sys.exit()
 #Now try and assign some data to them
 param_url=params.get('url',None)
 
@@ -1370,7 +1475,17 @@ else:
         displaySections()
 
     elif mode == _MODE_GETCONTENT:
-        getContent(param_url)
+        if g_debug == "true":
+            fileTimeStamp = time.strftime("%Y-%m-%d %H-%M-%S")
+            profileFileName = __addondir__ + "profile_(" + fileTimeStamp + ").dat"
+            filename = __addondir__ + "profile_cumulative_(" + fileTimeStamp + ").txt"
+            cProfile.run("getContent(param_url)", profileFileName)
+            stream = open(filename, "w")
+            p = pstats.Stats(profileFileName, stream=stream)
+            p.sort_stats('cumulative').print_stats()
+        else:
+            getContent(param_url)
+        
 
     elif mode == _MODE_BASICPLAY:
         PLAY(param_url)
