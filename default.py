@@ -173,7 +173,7 @@ class ImageLoaderThread(threading.Thread):
         loadRequests = self.loadRequestFiles()
         if __settings__.getSetting('cacheAll')=='true':
             progress = xbmcgui.DialogProgress()
-            progress.create("Artwork", "Grabbing Artwork")
+            progress.create(__language__(30050), __language__(30051))
         initialRequests=len(loadRequests)
         while(len(loadRequests) > 0):
             xbmc.log ("XBMB3C -> Images to load " + str(len(loadRequests)))
@@ -181,7 +181,7 @@ class ImageLoaderThread(threading.Thread):
             
             for imageData in loadRequests:
                 if __settings__.getSetting('cacheAll')=='true':
-                    progress.update((int((float(currentImage)/float(initialRequests))*100)),"Grabbing Artwork")
+                    progress.update((int((float(currentImage)/float(initialRequests))*100)),__language__(30051))
                 currentImage=currentImage+1
                 #xbmc.log ("Image Data : " + imageData[0] + " " + imageData[1])
                 
@@ -198,7 +198,7 @@ class ImageLoaderThread(threading.Thread):
             if __settings__.getSetting('cacheAll')=='true':
                 progress.close()
                 __settings__.setSetting('cacheAll','false')
-                xbmcgui.Dialog().ok("Complete","Artwork caching complete, press back to access collections")
+                xbmcgui.Dialog().ok(__language__(30054),__language__(30055))
             xbmc.log ("XBMB3C -> Image Loader thread Exited")
             
             loadRequests = self.loadRequestFiles()
@@ -587,14 +587,14 @@ def delete (url):
     if return_value:
         printDebug('Deleting via URL: ' + url)
         progress = xbmcgui.DialogProgress()
-        progress.create("Deleting", "Waiting for server to delete")
+        progress.create(__language__(30052), __language__(30053))
         headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
         resp = requests.delete(url, data='', headers=headers)
         deleteSleep=0
         while deleteSleep<10:
             xbmc.sleep(1000)
             deleteSleep=deleteSleep+1
-            progress.update(deleteSleep*10,"Waiting for server to delete")
+            progress.update(deleteSleep*10,__language__(30053))
         progress.close()
         xbmc.executebuiltin("Container.Refresh")
 def getURL( url, suppress=True, type="GET", popup=0 ):

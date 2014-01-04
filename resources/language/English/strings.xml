@@ -31,6 +31,13 @@
     <string id="30044">Incorrect Username/Password</string>
     <string id="30045">Username not found</string>
     
+    <string id="30050">Artwork</string>
+    <string id="30051">Grabbing Artwork</string>
+    <string id="30052">Deleting</string>
+    <string id="30053">Waiting for server to delete</string>
+    <string id="30054">Complete</string>
+    <string id="30055">Artwork caching complete, press back to access collections</string>
+    
     <string id="30060">Title</string>
     <string id="30061">Year</string>
     <string id="30062">Premiere Date</string>
