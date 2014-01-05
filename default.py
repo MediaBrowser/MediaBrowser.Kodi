@@ -613,7 +613,11 @@ def addGUIItem( url, details, extraData, folder=True ):
             if extraData.get('locationtype')== "Virtual":
                 list=xbmcgui.ListItem(extraData.get('premieredate')+" - "+details.get('SeriesName','')+" - " +"S"+details.get('season')+"E"+details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
             else:
-                list=xbmcgui.ListItem(details.get('SeriesName','')+" - " +"S"+details.get('season')+"E"+details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
+                if details.get('season')==None:
+                    season='0'
+                else:
+                    season=details.get('season')
+                list=xbmcgui.ListItem(details.get('SeriesName','')+" - " +"S"+season+"E"+details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
             list=xbmcgui.ListItem(details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
         printDebug("Setting thumbnail as " + thumbPath)
@@ -908,6 +912,7 @@ def getContent( url ):
     printDebug("URL suffix: " + str(lastbit))
     printDebug("server: " + str(server))
     printDebug("URL: " + str(url))    
+    validator='special' #Ugly hack to allow special queries (recently added etc) to work
     if "Parent" in url:
         validator="_"+getCacheValidator(server,url)
         
@@ -921,7 +926,7 @@ def getContent( url ):
     
     # if a cached file exists load it first then kick off a background download to refresh it
     # if one does not exist then kick of the load, wait for it to finish then load the data
-    if(os.path.exists(__addondir__ + urlHash + validator)):
+    if(os.path.exists(__addondir__ + urlHash + validator)) and validator != 'special':
         cachedfie = open(__addondir__ + urlHash+validator, 'r')
         html = cachedfie.read()
         cachedfie.close()
