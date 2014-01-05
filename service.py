@@ -3,10 +3,105 @@ __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
 BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
 PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
+__addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+__addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') ) 
 
 sDto='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}'
 sEntities='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Entities}'
 sArrays='{http://schemas.microsoft.com/2003/10/Serialization/Arrays}'
+
+#################################################################################################
+# http image proxy server 
+# This acts as a HTTP Image proxy server for all thumbs and artwork requests
+# this is needed due to the fact XBMC can not use the MB3 API as it has issues with the HTTP response format
+# this proxy handles all the requests and allows XBMC to call the MB3 server
+#################################################################################################
+
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+import os
+import mimetypes
+from threading import Thread
+from SocketServer import ThreadingMixIn
+from urlparse import parse_qs
+from urllib import urlretrieve
+
+class MyHandler(BaseHTTPRequestHandler):
+    addonDataPath = ""
+    mb3Host = ""
+    mb3Port = 0
+    debugLogging = "false"
+    
+    def logMsg(self, msg):
+        if(self.debugLogging == "true"):
+            xbmc.log("XBMB3C Image Proxy -> " + msg)
+    
+    def do_GET(self):
+        params = parse_qs(self.path[2:])
+        self.logMsg("Params : " + str(params))
+        itemId = params["id"][0]
+        requestType = params["type"][0]
+        
+        imageType = "Primary"
+        if(requestType == "b"):
+            imageType = "Backdrop"        
+            
+        remoteUrl = "http://" + self.mb3Host + ":" + self.mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType + "?Format=png"
+        localTempImage = self.addonDataPath + imageType + "_" + itemId + ".png"
+        
+        self.logMsg("Addon Data Path : " + self.addonDataPath)
+        self.logMsg("MB3 Host : " + self.mb3Host)
+        self.logMsg("MB3 Port : " + self.mb3Port)
+        self.logMsg("Item ID : " + itemId)
+        self.logMsg("Request Type : " + requestType)
+        self.logMsg("Remote URL : " + remoteUrl)
+        self.logMsg("Local Image Path : " + localTempImage)
+        
+        # get the remote image
+        self.logMsg("Downloading Image")
+        urlretrieve(remoteUrl, localTempImage)
+        
+        datestring = time.strftime('%a, %d %b %Y %H:%M:%S GMT')
+        length = os.path.getsize(localTempImage)
+        
+        self.logMsg("ReSending Image")
+        f = open(localTempImage, 'rb')
+        self.send_response(200)
+        self.send_header('Content-type', 'image/png')
+        self.send_header('Content-Length', length)
+        self.send_header('Last-Modified', datestring)        
+        self.end_headers()
+        self.wfile.write(f.read())
+        f.close()
+        self.logMsg("Image Sent")
+        
+        self.logMsg("Local Image Deleted")
+        os.remove(localTempImage)
+        
+    def do_HEAD(self):
+        datestring = time.strftime('%a, %d %b %Y %H:%M:%S GMT')
+        self.send_response(200)
+        self.send_header('Content-type', 'image/png')
+        self.send_header('Last-Modified', datestring)
+        self.end_headers()        
+        
+class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
+    pass
+
+def startServer():
+    MyHandler.addonDataPath = __addondir__
+    MyHandler.mb3Host = __settings__.getSetting('ipaddress')
+    MyHandler.mb3Port =__settings__.getSetting('port')
+    MyHandler.debugLogging = __settings__.getSetting('debug')
+    server = ThreadingHTTPServer(("",15001), MyHandler)
+    server.serve_forever()
+    
+xbmc.log("XBMB3s -> HTTP Image Proxy Server Starting")
+Thread(target=startServer).start()
+xbmc.log("XBMB3s -> HTTP Image Proxy Server NOW SERVING IMAGES")
+
+#################################################################################################
+# end http image proxy server 
+#################################################################################################
 
 sys.path.append(BASE_RESOURCE_PATH)
 playTime=0
