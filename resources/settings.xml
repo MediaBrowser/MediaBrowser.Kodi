@@ -10,7 +10,6 @@
         <setting id="numRecentMovies" type="text" label="30036" default="20" visible="true" enable="true"/>
         <setting id="numRecentTV" type="text" label="30037" default="20" visible="true" enable="true"/>
         <setting id="autoEnterSingle" type="bool" label="30001" default="true" visible="true" enable="true"/>
-        <setting id="cacheAll" type="bool" label="30010" default="false" visible="true" enable="true"/>
 	</category>
     
 	<category label="30015"> <!-- Network -->
@@ -21,6 +20,7 @@
 	</category>
     <category label="30022" > <!-- debug -->
         <setting id="debug" type="bool" label="30004" default="false" />
+        <setting id="profile" type="bool" label="30010" default="false" visible="true" enable="true"/>
     </category>
 
 </settings>
