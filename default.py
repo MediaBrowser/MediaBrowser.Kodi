@@ -265,116 +265,101 @@ def getServerSections ( ip_address, port, name, uuid):
     if html is False:
         return {}
 
-    # Add cache all images
-    if __settings__.getSetting('cacheAll')=='true':
-        temp_list.append( {'title'      : 'Cache All Artwork',
-                'address'    : ip_address+":"+port ,
-                'serverName' : name ,
-                'uuid'       : uuid ,
-                'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortOrder=Ascending&IsVirtualUnaired=false&IsMissing=false&IncludeItemTypes=Movie,Series,Season&format=xml') ,
-                'token'      : ''  ,
-                'location'   : "local" ,
-                'art'        : '' ,
-                'local'      : '1' ,
-                'type'       : "movie",
-                'owned'      : '1' })                            
-            #printDebug("Title " + str(BaseItemDto.tag))
-    else:
-        tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
-        for BaseItemDto in tree:
-            if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
-                Name=(BaseItemDto.find(sDto + 'Name').text).encode('utf-8')
-                if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
-                    __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
-                    __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
-                temp_list.append( {'title'      : Name,
-                        'address'    : ip_address+":"+port ,
-                        'serverName' : name ,
-                        'uuid'       : uuid ,
-                        'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=xml') ,
-                        'token'      : str(BaseItemDto.find(sDto + 'Id').text)  ,
-                        'location'   : "local" ,
-                        'art'        : str(BaseItemDto.text) ,
-                        'local'      : '1' ,
-                        'type'       : "movie",
-                        'owned'      : '1' })
-                printDebug("Title " + str(BaseItemDto.tag))
-    
-    # Add recent movies
-        temp_list.append( {'title'      : 'Recently Added Movies',
-                'address'    : ip_address+":"+port ,
-                'serverName' : name ,
-                'uuid'       : uuid ,
-                'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
-                'token'      : ''  ,
-                'location'   : "local" ,
-                'art'        : '' ,
-                'local'      : '1' ,
-                'type'       : "movie",
-                'owned'      : '1' })
-                
-    # Add recent Episodes
-        temp_list.append( {'title'      : 'Recently Added Episodes',
-                'address'    : ip_address+":"+port ,
-                'serverName' : name ,
-                'uuid'       : uuid ,
-                'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=xml') ,
-                'token'      : ''  ,
-                'location'   : "local" ,
-                'art'        : '' ,
-                'local'      : '1' ,
-                'type'       : "movie",
-                'owned'      : '1' })            
-    # Add NextUp Episodes
-        temp_list.append( {'title'      : 'Next Episodes',
-                'address'    : ip_address+":"+port ,
-                'serverName' : name ,
-                'uuid'       : uuid ,
-                'path'       : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=xml') ,
-                'token'      : ''  ,
-                'location'   : "local" ,
-                'art'        : '' ,
-                'local'      : '1' ,
-                'type'       : "movie",
-                'owned'      : '1' })            
-                # Add Favorite Movies
-        temp_list.append( {'title'      : 'Favorite Movies',
-                'address'    : ip_address+":"+port ,
-                'serverName' : name ,
-                'uuid'       : uuid ,
-                'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
-                'token'      : ''  ,
-                'location'   : "local" ,
-                'art'        : '' ,
-                'local'      : '1' ,
-                'type'       : "movie",
-                'owned'      : '1' })            
-    
-    # Add Favorite Episodes
-        temp_list.append( {'title'      : 'Favorite Episodes',
-                'address'    : ip_address+":"+port ,
-                'serverName' : name ,
-                'uuid'       : uuid ,
-                'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=xml') ,
-                'token'      : ''  ,
-                'location'   : "local" ,
-                'art'        : '' ,
-                'local'      : '1' ,
-                'type'       : "movie",
-                'owned'      : '1' })                       
-                
-    # Add Upcoming TV
-        temp_list.append( {'title'      : 'Upcoming TV',
-                'address'    : ip_address+":"+port ,
-                'serverName' : name ,
-                'uuid'       : uuid ,
-                'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=xml') ,
-                'token'      : ''  ,
-                'location'   : "local" ,
-                'art'        : '' ,
-                'local'      : '1' ,
-                'type'       : "movie",
-                'owned'      : '1' })                            
+    tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
+    for BaseItemDto in tree:
+        if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
+            Name=(BaseItemDto.find(sDto + 'Name').text).encode('utf-8')
+            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+            temp_list.append( {'title'      : Name,
+                    'address'    : ip_address+":"+port ,
+                    'serverName' : name ,
+                    'uuid'       : uuid ,
+                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=xml') ,
+                    'token'      : str(BaseItemDto.find(sDto + 'Id').text)  ,
+                    'location'   : "local" ,
+                    'art'        : str(BaseItemDto.text) ,
+                    'local'      : '1' ,
+                    'type'       : "movie",
+                    'owned'      : '1' })
+            printDebug("Title " + str(BaseItemDto.tag))
+
+# Add recent movies
+    temp_list.append( {'title'      : 'Recently Added Movies',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'owned'      : '1' })
+            
+# Add recent Episodes
+    temp_list.append( {'title'      : 'Recently Added Episodes',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=xml') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'owned'      : '1' })            
+# Add NextUp Episodes
+    temp_list.append( {'title'      : 'Next Episodes',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=xml') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'owned'      : '1' })            
+            # Add Favorite Movies
+    temp_list.append( {'title'      : 'Favorite Movies',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'owned'      : '1' })            
+
+# Add Favorite Episodes
+    temp_list.append( {'title'      : 'Favorite Episodes',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=xml') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'owned'      : '1' })                       
+            
+# Add Upcoming TV
+    temp_list.append( {'title'      : 'Upcoming TV',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=xml') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'owned'      : '1' })                            
     
 
     for item in temp_list:
@@ -1402,7 +1387,7 @@ else:
         displaySections()
 
     elif mode == _MODE_GETCONTENT:
-        if g_debug == "true":
+        if __settings__.getSetting('profile') == "true":
             fileTimeStamp = time.strftime("%Y-%m-%d %H-%M-%S")
             profileFileName = __addondir__ + "profile_(" + fileTimeStamp + ").dat"
             filename = __addondir__ + "profile_cumulative_(" + fileTimeStamp + ").txt"
