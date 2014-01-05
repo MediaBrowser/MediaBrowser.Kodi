@@ -105,104 +105,6 @@ _MODE_GETCONTENT=0
 _MODE_MOVIES=0
 _MODE_BASICPLAY=12
 
-imageData = []
-
-def saveImageLoadRequests():
-    fileTimeStamp = time.strftime("%Y-%m-%d %H-%M-%S")
-    fileName = (__addondir__ + "ImageLoadRequests_" + fileTimeStamp + ".txt")
-    fh = open(fileName,"w")
-    for imageInfo in imageData:
-        fh.write(imageInfo[0] + "," + imageInfo[1] + "\n")
-    fh.close()
-
-class ImageLoaderThread(threading.Thread):
-
-    def __init__(self,baseDir):
-        threading.Thread.__init__(self)
-        self.BaseLoaderPath = baseDir
-        
-        
-    def loadRequestFiles(self):
-    
-        files = []
-        for (dirpath, dirnames, filenames) in os.walk(self.BaseLoaderPath):
-            xbmc.log ("XBMB3C -> Walker " + str(filenames))
-            files.extend(filenames)
-            break 
-        
-        selected_file = ""
-        for filename in files:
-            if(filename.startswith("ImageLoadRequests")):
-                selected_file = filename
-                break
-        
-        if(len(selected_file) == 0):
-            return []
-
-        xbmc.log ("XBMB3C -> Processing Image Loader Requests File : " + selected_file)
-        
-        request_list = []
-        
-        request = open(self.BaseLoaderPath + selected_file, 'r')
-        s = request.read()
-        request.close()
-        ls = s.split("\n")
-        for l in ls:        
-            tokens = l.split(",")
-            if(len(tokens) == 2):
-                request_list.append([tokens[0], tokens[1]])
-                
-        os.remove(self.BaseLoaderPath + selected_file)
-            
-        return request_list
-        
-    def run(self):
-        WINDOW = xbmcgui.Window( 10000 )
-        imageLoaderRunning = WINDOW.getProperty("image_loader_running")
-        
-        if(imageLoaderRunning == "1"):
-            xbmc.log ("XBMB3C -> Image Loader already running so exiting")
-            return
-        
-        WINDOW.setProperty("image_loader_running", "1")
-        
-        xbmc.log ("XBMB3C -> Image Loader thread Started")
-        
-        from urllib import urlretrieve
-        
-        loadRequests = self.loadRequestFiles()
-        if __settings__.getSetting('cacheAll')=='true':
-            progress = xbmcgui.DialogProgress()
-            progress.create(__language__(30050), __language__(30051))
-        initialRequests=len(loadRequests)
-        while(len(loadRequests) > 0):
-            xbmc.log ("XBMB3C -> Images to load " + str(len(loadRequests)))
-            currentImage=1
-            
-            for imageData in loadRequests:
-                if __settings__.getSetting('cacheAll')=='true':
-                    progress.update((int((float(currentImage)/float(initialRequests))*100)),__language__(30051))
-                currentImage=currentImage+1
-                #xbmc.log ("Image Data : " + imageData[0] + " " + imageData[1])
-                
-                try:
-                    f = open(imageData[1])
-                    f.close()
-                    #with open(imageData[1]):
-                    #    xbmc.log("Image Already Exists Locally : " + imageData[1])
-                except IOError:
-                    urlretrieve(imageData[0], imageData[1])
-                    #xbmc.log("Downloading Image : " + imageData[0] + " " + imageData[1])
-                
-            WINDOW.setProperty("image_loader_running", "0")
-            if __settings__.getSetting('cacheAll')=='true':
-                progress.close()
-                __settings__.setSetting('cacheAll','false')
-                xbmcgui.Dialog().ok(__language__(30054),__language__(30055))
-            xbmc.log ("XBMB3C -> Image Loader thread Exited")
-            
-            loadRequests = self.loadRequestFiles()
-
 #Check debug first...
 g_debug = __settings__.getSetting('debug')
 def printDebug( msg, functionname=True ):
@@ -1190,47 +1092,27 @@ def processDirectory( url, tree=None ):
             addGUIItem(u,details,extraData,folder=False)
         
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
-    
-    saveImageLoadRequests()
-    thread1 = ImageLoaderThread(__addondir__)
-    thread1.start()
-    thread1.join()
 
 def getThumb( data, server, transcode=False, width=None, height=None ):
-    '''
-        Simply take a URL or path and determine how to format for images
-        @ input: elementTree element, server name
-        @ return formatted URL
-    '''
     
     printDebug('getThumb server:' + server)
     id=data.find(sDto + 'Id').text
     if data.find(sDto + 'DisplayMediaType').text == 'Episode':
         id=data.find(sDto + 'SeriesId').text
-    
-    fileName = (__addondir__ + id + '.png')
-    thumbnail=('http://'+server+'/mediabrowser/Items/'+str(id)+'/Images/Primary?Format=png')
-    imageData.append([thumbnail, fileName])
-    
-    return fileName
-    
+
+    # use the local image proxy server that is made available by this addons service
+    thumbnail = ("http://localhost:15001/?id=" + str(id) + "&type=t")
+    return thumbnail
     
 def getFanart( data, server, transcode=False ):
-    '''
-        Simply take a URL or path and determine how to format for fanart
-        @ input: elementTree element, server name
-        @ return formatted URL for photo resizing
-    '''
+
     id=data.find(sDto + 'Id').text
     if data.find(sDto + 'DisplayMediaType').text == 'Episode' or data.find(sDto + 'DisplayMediaType').text == 'Season':
         id=data.find(sDto + 'SeriesId').text    
-                
-    fileName = (__addondir__ + "fanart_" + id + ".png")
-    thumbnail=('http://'+server+'/mediabrowser/Items/'+str(id)+'/Images/Primary?Format=png')
-    imageData.append([thumbnail, fileName])
     
-    return fileName
-    
+    # use the local image proxy server that is made available by this addons service
+    thumbnail = ("http://localhost:15001/?id=" + str(id) + "&type=b")
+    return thumbnail
     
 def getServerFromURL( url ):
     '''
