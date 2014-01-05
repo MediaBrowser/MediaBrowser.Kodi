@@ -47,6 +47,7 @@ from urlparse import urlparse
 import cProfile
 import pstats
 import threading
+import hashlib
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
@@ -157,6 +158,19 @@ g_sessionID=None
 
 genreList=[__language__(30069),__language__(30070),__language__(30071),__language__(30072),__language__(30073),__language__(30074),__language__(30075),__language__(30076),__language__(30077),__language__(30078),__language__(30079),__language__(30080),__language__(30081),__language__(30082),__language__(30083),__language__(30084),__language__(30085),__language__(30086),__language__(30087),__language__(30088),__language__(30089)]
 sortbyList=[__language__(30060),__language__(30061),__language__(30062),__language__(30063),__language__(30064),__language__(30065),__language__(30066),__language__(30067)]
+
+from urllib import urlretrieve
+class DataLoaderThread(threading.Thread):
+
+    def __init__(self, file, url):
+        threading.Thread.__init__(self)
+        self.CacheFile = file
+        self.Url = url
+        
+    def run(self):
+        xbmc.log ("Background Data Loader Grabbing : " + self.Url)
+        urlretrieve(self.Url, self.CacheFile)
+        xbmc.log ("Background Data Loader Saving   : " + self.CacheFile)
 
 
 def discoverAllServers( ):
@@ -499,6 +513,7 @@ def delete (url):
             progress.update(deleteSleep*10,__language__(30053))
         progress.close()
         xbmc.executebuiltin("Container.Refresh")
+        
 def getURL( url, suppress=True, type="GET", popup=0 ):
     printDebug("== ENTER: getURL ==", False)
     try:
@@ -894,9 +909,32 @@ def getContent( url ):
     printDebug("URL suffix: " + str(lastbit))
     printDebug("server: " + str(server))
     printDebug("URL: " + str(url))    
-    html=getURL(url, suppress=False, popup=1 )
-    if html is False:
+    
+    m = hashlib.md5()
+    m.update(url)
+    urlHash = m.hexdigest()
+    xbmc.log("Cache Url Hash : " + urlHash)
+    
+    thread1 = DataLoaderThread(__addondir__ + urlHash, url)
+    thread1.start()
+    
+    if(os.path.exists(__addondir__ + urlHash) == False):
+        xbmc.log("No Cache Data, waiting for thread to do its thing")
+        thread1.join()
+    
+    html = ""
+    xbmc.log("Trying to load data form cache : " + __addondir__ + urlHash)
+    try:
+        with open(__addondir__ + urlHash, 'r') as cachedfie:
+            html = cachedfie.read()
+            xbmc.log("Data Read From Cache : " + __addondir__ + urlHash)
+    except:
+        xbmc.log("No cache data and loader thread failed, loading data from url")
+        html = getURL(url, suppress=False, popup=1 )
+    
+    if html == "":
         return
+        
     tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
     
     processDirectory(url, tree)
