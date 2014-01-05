@@ -913,25 +913,30 @@ def getContent( url ):
     m = hashlib.md5()
     m.update(url)
     urlHash = m.hexdigest()
-    xbmc.log("Cache Url Hash : " + urlHash)
-    
-    thread1 = DataLoaderThread(__addondir__ + urlHash, url)
-    thread1.start()
-    
-    if(os.path.exists(__addondir__ + urlHash) == False):
-        xbmc.log("No Cache Data, waiting for thread to do its thing")
-        thread1.join()
-    
+   
     html = ""
-    xbmc.log("Trying to load data form cache : " + __addondir__ + urlHash)
-    try:
-        with open(__addondir__ + urlHash, 'r') as cachedfie:
-            html = cachedfie.read()
-            xbmc.log("Data Read From Cache : " + __addondir__ + urlHash)
-    except:
-        xbmc.log("No cache data and loader thread failed, loading data from url")
-        html = getURL(url, suppress=False, popup=1 )
     
+    # if a cached file exists load it first then kick off a background download to refresh it
+    # if one does not exist then kick of the load, wait for it to finish then load the data
+    if(os.path.exists(__addondir__ + urlHash)):
+        cachedfie = open(__addondir__ + urlHash, 'r')
+        html = cachedfie.read()
+        cachedfie.close()
+        xbmc.log("Data Read From Cache : " + __addondir__ + urlHash)
+        #start a background data reload
+        thread1 = DataLoaderThread(__addondir__ + urlHash, url)
+        thread1.start()     
+    else:
+        xbmc.log("No Cache Data, waiting for thread to do its thing")
+        thread1 = DataLoaderThread(__addondir__ + urlHash, url)
+        thread1.start() 
+        thread1.join()
+        cachedfie = open(__addondir__ + urlHash, 'r')
+        html = cachedfie.read()
+        cachedfie.close()        
+    
+    #html = getURL(url, suppress=False, popup=1 )
+
     if html == "":
         return
         
