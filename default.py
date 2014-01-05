@@ -889,7 +889,8 @@ def getCacheValidator (server,url):
     itemtree = etree.fromstring(html)
     printDebug ("RecursiveItemCount: " + itemtree.find(sDto + 'RecursiveItemCount').text)
     printDebug ("RecursiveUnplayedCount: " + itemtree.find(sDto + 'RecursiveUnplayedItemCount').text)
-    return (itemtree.find(sDto + 'RecursiveItemCount').text +"_"+itemtree.find(sDto + 'RecursiveUnplayedItemCount').text)
+    playedTime=(itemtree.find(sDto + 'PlayedPercentage').text).replace(".","")
+    return (itemtree.find(sDto + 'RecursiveItemCount').text +"_"+itemtree.find(sDto + 'RecursiveUnplayedItemCount').text+"_"+playedTime)
     
     
 def getContent( url ):
@@ -907,7 +908,7 @@ def getContent( url ):
     printDebug("server: " + str(server))
     printDebug("URL: " + str(url))    
     if "Parent" in url:
-        validator=getCacheValidator(server,url)
+        validator="_"+getCacheValidator(server,url)
         
     # ADD VALIDATOR TO FILENAME TO DETERMINE IF CACHE IS FRESH
     
@@ -919,20 +920,20 @@ def getContent( url ):
     
     # if a cached file exists load it first then kick off a background download to refresh it
     # if one does not exist then kick of the load, wait for it to finish then load the data
-    if(os.path.exists(__addondir__ + urlHash)):
-        cachedfie = open(__addondir__ + urlHash, 'r')
+    if(os.path.exists(__addondir__ + urlHash + validator)):
+        cachedfie = open(__addondir__ + urlHash+validator, 'r')
         html = cachedfie.read()
         cachedfie.close()
-        xbmc.log("Data Read From Cache : " + __addondir__ + urlHash)
+        xbmc.log("Data Read From Cache : " + __addondir__ + urlHash+validator)
         #start a background data reload
-        thread1 = DataLoaderThread(__addondir__ + urlHash, url)
+        thread1 = DataLoaderThread(__addondir__ + urlHash+validator, url)
         thread1.start()     
     else:
         xbmc.log("No Cache Data, waiting for thread to do its thing")
-        thread1 = DataLoaderThread(__addondir__ + urlHash, url)
+        thread1 = DataLoaderThread(__addondir__ + urlHash+validator, url)
         thread1.start() 
         thread1.join()
-        cachedfie = open(__addondir__ + urlHash, 'r')
+        cachedfie = open(__addondir__ + urlHash+validator, 'r')
         html = cachedfie.read()
         cachedfie.close()        
     
