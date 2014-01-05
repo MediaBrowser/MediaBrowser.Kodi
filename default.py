@@ -880,6 +880,18 @@ def get_params( paramstring ):
     xbmc.log ("XBMB3C -> Detected parameters: " + str(param))
     return param
 
+def getCacheValidator (server,url):
+    parsedserver,parsedport=server.split(':')
+    userid=getUserId(parsedserver,parsedport)
+    idAndOptions=url.split("ParentId=")
+    id=idAndOptions[1].split("&")
+    html = getURL("http://"+server+"/mediabrowser/Users/" + userid + "/Items/" +id[0]+"?format=xml", suppress=False, popup=1 )
+    itemtree = etree.fromstring(html)
+    printDebug ("RecursiveItemCount: " + itemtree.find(sDto + 'RecursiveItemCount').text)
+    printDebug ("RecursiveUnplayedCount: " + itemtree.find(sDto + 'RecursiveUnplayedItemCount').text)
+    return (itemtree.find(sDto + 'RecursiveItemCount').text +"_"+itemtree.find(sDto + 'RecursiveUnplayedItemCount').text)
+    
+    
 def getContent( url ):
     '''
         This function takes the URL, gets the XML and determines what the content is
@@ -894,6 +906,10 @@ def getContent( url ):
     printDebug("URL suffix: " + str(lastbit))
     printDebug("server: " + str(server))
     printDebug("URL: " + str(url))    
+    if "Parent" in url:
+        validator=getCacheValidator(server,url)
+        
+    # ADD VALIDATOR TO FILENAME TO DETERMINE IF CACHE IS FRESH
     
     m = hashlib.md5()
     m.update(url)
