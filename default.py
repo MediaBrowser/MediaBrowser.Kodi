@@ -28,6 +28,7 @@
 '''
 
 import urllib
+import glob
 import re
 import hashlib
 import xbmcplugin
@@ -929,6 +930,9 @@ def getContent( url ):
         thread1 = DataLoaderThread(__addondir__ + urlHash+validator, url)
         thread1.start()     
     else:
+        r = glob.glob(__addondir__ + urlHash + "*")
+        for i in r:
+            os.remove(i)
         xbmc.log("No Cache Data, waiting for thread to do its thing")
         thread1 = DataLoaderThread(__addondir__ + urlHash+validator, url)
         thread1.start() 
