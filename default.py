@@ -196,9 +196,11 @@ def discoverAllServers( ):
     return das_servers
 def getUserId( ip_address, port ):
     html = getURL(ip_address+":"+port+"/mediabrowser/Users?format=xml")
+    if(html == False):
+        return ""
     userid=''
     printDebug("Looking for user name: " + __settings__.getSetting('username'))
-    printDebug("userhtml:" + html)
+    printDebug("userhtml:" + str(html))
     tree= etree.fromstring(html).getiterator(sDto + 'UserDto')
     for UserDto in tree:
         if __settings__.getSetting('username')==UserDto.find(sDto+'Name').text:
@@ -486,7 +488,7 @@ def delete (url):
         progress.close()
         xbmc.executebuiltin("Container.Refresh")
         
-def getURL( url, suppress=True, type="GET", popup=0 ):
+def getURL( url, suppress=False, type="GET", popup=0 ):
     printDebug("== ENTER: getURL ==", False)
     try:
         if url[0:4] == "http":
