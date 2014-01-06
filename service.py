@@ -26,7 +26,6 @@ from urlparse import parse_qs
 from urllib import urlretrieve
 
 class MyHandler(BaseHTTPRequestHandler):
-    addonDataPath = ""
     mb3Host = ""
     mb3Port = 0
     debugLogging = "false"
@@ -46,36 +45,30 @@ class MyHandler(BaseHTTPRequestHandler):
             imageType = "Backdrop"        
             
         remoteUrl = "http://" + self.mb3Host + ":" + self.mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType + "?Format=png"
-        localTempImage = self.addonDataPath + imageType + "_" + itemId + ".png"
         
-        self.logMsg("Addon Data Path : " + self.addonDataPath)
         self.logMsg("MB3 Host : " + self.mb3Host)
         self.logMsg("MB3 Port : " + self.mb3Port)
         self.logMsg("Item ID : " + itemId)
         self.logMsg("Request Type : " + requestType)
         self.logMsg("Remote URL : " + remoteUrl)
-        self.logMsg("Local Image Path : " + localTempImage)
         
         # get the remote image
         self.logMsg("Downloading Image")
-        urlretrieve(remoteUrl, localTempImage)
+        requesthandle = urllib.urlopen(remoteUrl, proxies={})
+        pngData = requesthandle.read()
+        requesthandle.close()
         
         datestring = time.strftime('%a, %d %b %Y %H:%M:%S GMT')
-        length = os.path.getsize(localTempImage)
+        length = len(pngData)
         
         self.logMsg("ReSending Image")
-        f = open(localTempImage, 'rb')
         self.send_response(200)
         self.send_header('Content-type', 'image/png')
         self.send_header('Content-Length', length)
         self.send_header('Last-Modified', datestring)        
         self.end_headers()
-        self.wfile.write(f.read())
-        f.close()
+        self.wfile.write(pngData)
         self.logMsg("Image Sent")
-        
-        self.logMsg("Local Image Deleted")
-        os.remove(localTempImage)
         
     def do_HEAD(self):
         datestring = time.strftime('%a, %d %b %Y %H:%M:%S GMT')
@@ -88,7 +81,6 @@ class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     pass
 
 def startServer():
-    MyHandler.addonDataPath = __addondir__
     MyHandler.mb3Host = __settings__.getSetting('ipaddress')
     MyHandler.mb3Port =__settings__.getSetting('port')
     MyHandler.debugLogging = __settings__.getSetting('debug')
