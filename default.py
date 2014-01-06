@@ -160,20 +160,6 @@ g_sessionID=None
 genreList=[__language__(30069),__language__(30070),__language__(30071),__language__(30072),__language__(30073),__language__(30074),__language__(30075),__language__(30076),__language__(30077),__language__(30078),__language__(30079),__language__(30080),__language__(30081),__language__(30082),__language__(30083),__language__(30084),__language__(30085),__language__(30086),__language__(30087),__language__(30088),__language__(30089)]
 sortbyList=[__language__(30060),__language__(30061),__language__(30062),__language__(30063),__language__(30064),__language__(30065),__language__(30066),__language__(30067)]
 
-from urllib import urlretrieve
-class DataLoaderThread(threading.Thread):
-
-    def __init__(self, file, url):
-        threading.Thread.__init__(self)
-        self.CacheFile = file
-        self.Url = url
-        
-    def run(self):
-        xbmc.log ("Background Data Loader Grabbing : " + self.Url)
-        urlretrieve(self.Url, self.CacheFile)
-        xbmc.log ("Background Data Loader Saving   : " + self.CacheFile)
-
-
 def discoverAllServers( ):
     '''
         Take the users settings and add the required master servers
@@ -914,7 +900,7 @@ def getContent( url ):
     printDebug("URL: " + str(url))    
     validator='special' #Ugly hack to allow special queries (recently added etc) to work
     if "Parent" in url:
-        validator="_"+getCacheValidator(server,url)
+        validator = "_" + getCacheValidator(server,url)
         
     # ADD VALIDATOR TO FILENAME TO DETERMINE IF CACHE IS FRESH
     
@@ -923,30 +909,24 @@ def getContent( url ):
     urlHash = m.hexdigest()
    
     html = ""
+    cacheDataPath = __addondir__ + urlHash + validator
     
-    # if a cached file exists load it first then kick off a background download to refresh it
-    # if one does not exist then kick of the load, wait for it to finish then load the data
-    if(os.path.exists(__addondir__ + urlHash + validator)) and validator != 'special':
-        cachedfie = open(__addondir__ + urlHash+validator, 'r')
+    # if a cached file exists use it
+    # if one does not exist then load data from the url
+    if(os.path.exists(cacheDataPath)) and validator != 'special':
+        cachedfie = open(cacheDataPath, 'r')
         html = cachedfie.read()
         cachedfie.close()
-        xbmc.log("Data Read From Cache : " + __addondir__ + urlHash+validator)
-        #start a background data reload
-        thread1 = DataLoaderThread(__addondir__ + urlHash+validator, url)
-        thread1.start()     
+        xbmc.log("Data Read From Cache : " + cacheDataPath)
     else:
         r = glob.glob(__addondir__ + urlHash + "*")
         for i in r:
             os.remove(i)
-        xbmc.log("No Cache Data, waiting for thread to do its thing")
-        thread1 = DataLoaderThread(__addondir__ + urlHash+validator, url)
-        thread1.start() 
-        thread1.join()
-        cachedfie = open(__addondir__ + urlHash+validator, 'r')
-        html = cachedfie.read()
+        xbmc.log("No Cache Data, download data now")
+        html = getURL(url, suppress=False, popup=1 )
+        cachedfie = open(cacheDataPath, 'w')
+        cachedfie.write(html)
         cachedfie.close()        
-    
-    #html = getURL(url, suppress=False, popup=1 )
 
     if html == "":
         return
