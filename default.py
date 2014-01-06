@@ -1411,4 +1411,3 @@ xbmc.log ("===== XBMB3C STOP =====")
 
 #clear done and exit.
 sys.modules.clear()
-
