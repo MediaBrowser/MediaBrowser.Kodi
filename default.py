@@ -695,7 +695,8 @@ def addGUIItem( url, details, extraData, folder=True ):
         list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
         list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
         xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE  )
-        return xbmcplugin.addDirectoryItem(handle=pluginhandle,url=u,listitem=list,isFolder=True)
+        
+        return (u, list, True)
 
 def displaySections( filter=None, shared=False ):
         printDebug("== ENTER: displaySections() ==", False)
@@ -703,6 +704,8 @@ def displaySections( filter=None, shared=False ):
         ds_servers=discoverAllServers()
         numOfServers=len(ds_servers)
         printDebug( "Using list of "+str(numOfServers)+" servers: " +  str(ds_servers))
+        
+        dirItems = []
         
         for section in getAllSections(ds_servers):
         
@@ -755,9 +758,10 @@ def displaySections( filter=None, shared=False ):
 
             #Build that listing..
             printDebug("addGUIItem:"+str(s_url)+str(details)+str(extraData))
-            addGUIItem(s_url, details,extraData)
+            dirItems.append(addGUIItem(s_url, details, extraData))
 
         if shared:
+            xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
             xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
             return
                     
@@ -766,6 +770,7 @@ def displaySections( filter=None, shared=False ):
         numOfServers=len(allservers)
 
         #All XML entries have been parsed and we are ready to allow the user to browse around.  So end the screen listing.
+        xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
         xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
 
 def remove_html_tags( data ):
@@ -934,8 +939,10 @@ def getContent( url ):
         return
         
     tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
+    dirItems = processDirectory(url, tree)
     
-    processDirectory(url, tree)
+    xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
+    xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
     
     return
 
@@ -949,6 +956,9 @@ def processDirectory( url, tree=None ):
 
     server=getServerFromURL(url)
     setWindowHeading(url)
+    
+    dirItems = []
+    
     for directory in tree:
         try:
             tempTitle=((directory.find(sDto + 'Name').text)).encode('utf-8')
@@ -956,7 +966,7 @@ def processDirectory( url, tree=None ):
             tempTitle="Missing Title"
         id=str(directory.find(sDto + 'Id').text).encode('utf-8')
         isFolder=str(directory.find(sDto + 'IsFolder').text).encode('utf-8')
-        type=str(directory.find(sDto + 'Type').text).encode('utf-8')
+        item_type=str(directory.find(sDto + 'Type').text).encode('utf-8')
         try:
             tempEpisode=directory.find(sDto + "IndexNumber").text
             if int(tempEpisode)<10:
@@ -1107,10 +1117,10 @@ def processDirectory( url, tree=None ):
             if SortByTemp=='':
                 SortByTemp='SortName'
                 
-            if type=='Season' or type=='BoxSet' or type=='MusicAlbum' or type=='MusicArtist':
+            if item_type=='Season' or item_type=='BoxSet' or item_type=='MusicAlbum' or item_type=='MusicArtist':
                 u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=xml'
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
-                    addGUIItem(u,details,extraData)
+                    dirItems.append(addGUIItem(u, details, extraData))
             else:
                 if __settings__.getSetting('autoEnterSingle')=='true':
                     if directory.find(sDto + 'ChildCount').text=='1':
@@ -1121,13 +1131,13 @@ def processDirectory( url, tree=None ):
                     u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=xml'
 
                 if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
-                    addGUIItem(u,details,extraData)
+                    dirItems.append(addGUIItem(u, details, extraData))
 
         else:
             u=server+',;'+id
-            addGUIItem(u,details,extraData,folder=False)
-        
-    xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
+            dirItems.append(addGUIItem(u, details, extraData, folder=False))
+    
+    return dirItems
 
 def getThumb( data, server, transcode=False, width=None, height=None ):
     
@@ -1252,6 +1262,8 @@ def displayServers( url ):
     Servers = discoverAllServers()
     Servers_list=len(Servers)
 
+    dirItems = []
+    
     #For each of the servers we have identified
     for mediaserver in Servers.values():
 
@@ -1262,8 +1274,9 @@ def displayServers( url ):
         else:
             extraData={}
 
-        addGUIItem(s_url, details, extraData )
+        dirItems.append(addGUIItem(s_url, details, extraData ))
 
+    xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
 
 def setWindowHeading(url) :
