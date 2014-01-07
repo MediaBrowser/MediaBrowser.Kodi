@@ -622,10 +622,10 @@ def addGUIItem( url, details, extraData, folder=True ):
 
         printDebug("Building Context Menus")
         commands = []
-        watched=extraData.get('watchedurl')
+        watched = extraData.get('watchedurl')
         if watched != None:
             scriptToRun = PLUGINPATH + "/default.py"
-            if extraData.get('playcount')=='0':
+            if extraData.get("playcount") == "0":
                 argsToPass = 'markWatched,' + extraData.get('watchedurl')
                 commands.append(( __language__(30093), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             else:
@@ -646,6 +646,7 @@ def addGUIItem( url, details, extraData, folder=True ):
             else:
                 argsToPass = 'sortorder'
                 commands.append(( __language__(30099), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+                
             argsToPass = 'genrefilter'
             commands.append(( __language__(30040), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'playall'
@@ -674,7 +675,7 @@ def addGUIItem( url, details, extraData, folder=True ):
         list.setInfo('video', {'season': details.get('season')})        
         list.setInfo('video', {'mpaa': extraData.get('mpaa')})
         list.setInfo('video', {'rating': extraData.get('rating')})
-        if watched!=None:
+        if watched != None:
             list.setProperty('watchedurl', extraData.get('watchedurl'))
         list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
         list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
@@ -804,6 +805,7 @@ def PLAY( url ):
         #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         #tree=etree.fromstring(html).getiterator(sDto + "BaseItemDto")
         userData = result.get("UserData")
+        resume_result = 0
         if userData.get("PlaybackPositionTicks") != "0" and __settings__.getSetting('transcode') == 'false':
             reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
             seekTime = reasonableTicks/10000
@@ -1054,7 +1056,7 @@ def processDirectory(url, result):
                  'episode'      : tempEpisode,
                  #'watched'      : watched,
                  'Overlay'      : overlay,
-                 'playcount'    : userData.get("PlayCount"),
+                 'playcount'    : str(userData.get("PlayCount")),
                  #'aired'       : episode.get('originallyAvailableAt','') ,
                  'SeriesName'  :  item.get("SeriesName"),
                  'season'       : tempSeason
@@ -1082,7 +1084,7 @@ def processDirectory(url, result):
                    'locationtype' : item.get("LocationType"),
                    'premieredate' : premieredate,
                    'genre'        : genre,
-                   'playcount'    : userData.get("PlayCount"),
+                   'playcount'    : str(userData.get("PlayCount")),
                    'director'     : director,
                    'writer'       : writer,
                    'channels'     : channels,
