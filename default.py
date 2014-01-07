@@ -49,6 +49,7 @@ import cProfile
 import pstats
 import threading
 import hashlib
+import json
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
@@ -194,25 +195,36 @@ def discoverAllServers( ):
             das_server_index = das_server_index + 1
 
     return das_servers
+    
 def getUserId( ip_address, port ):
-    html = getURL(ip_address+":"+port+"/mediabrowser/Users?format=xml")
-    if(html == False):
+
+    jsonData = getURL(ip_address+":"+port+"/mediabrowser/Users?format=json")
+    
+    if(jsonData == False):
         return ""
-    userid=''
-    printDebug("Looking for user name: " + __settings__.getSetting('username'))
-    printDebug("userhtml:" + str(html))
-    tree= etree.fromstring(html).getiterator(sDto + 'UserDto')
-    for UserDto in tree:
-        if __settings__.getSetting('username')==UserDto.find(sDto+'Name').text:
-            userid=str(UserDto.find(sDto + 'Id').text)
-    if __settings__.getSetting('password')!="":
+        
+    userid=""
+    userName = __settings__.getSetting('username')
+    printDebug("Looking for user name: " + userName)
+    printDebug("json data : " + str(jsonData))
+    result = json.loads(jsonData)
+    
+    for user in result:
+        if(user.get("Name") == userName):
+            userid = user.get("Id")
+
+    if __settings__.getSetting('password') != "":
         authenticate('http://'+ip_address+":"+port+"/mediabrowser/Users/AuthenticateByName")
+        
     if userid=='':
         return_value = xbmcgui.Dialog().ok(__language__(30045),__language__(30045))
         sys.exit()
-    printDebug("userid:" + userid)
+        
+    printDebug("userid : " + userid)
+    
     WINDOW = xbmcgui.Window( 10000 )
-    WINDOW.setProperty("userid",userid)
+    WINDOW.setProperty("userid", userid)
+    
     return userid
     
 def getLocalServers( ip_address, port ):
