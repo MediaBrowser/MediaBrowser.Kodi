@@ -60,10 +60,6 @@ __language__     = __addon__.getLocalizedString
 BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
 PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
 
-sDto='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}'
-sEntities='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Entities}'
-sArrays='{http://schemas.microsoft.com/2003/10/Serialization/Arrays}'
-
 sys.path.append(BASE_RESOURCE_PATH)
 XBMB3C_VERSION="0.6.5"
 
@@ -72,36 +68,6 @@ xbmc.log ("===== XBMB3C START =====")
 xbmc.log ("XBMB3C -> running Python: " + str(sys.version_info))
 xbmc.log ("XBMB3C -> running XBMB3C: " + str(XBMB3C_VERSION))
 
-try:
-  import lxml.etree.ElementTree as etree
-  xbmc.log("XBMB3C -> Running with lxml.etree")
-except ImportError:
-  try:
-    # Python 2.5
-    import xml.etree.cElementTree as etree
-    xbmc.log("XBMB3C -> Running with cElementTree on Python 2.5+")
-  except ImportError:
-    try:
-      # Python 2.5
-      import xml.etree.ElementTree as etree
-      xbmc.log("XBMB3C -> Running with ElementTree on Python 2.5+")
-    except ImportError:
-      try:
-        # normal cElementTree install
-        import cElementTree as etree
-        xbmc.log("XBMB3C -> Running with built-in cElementTree")
-      except ImportError:
-        try:
-          # normal ElementTree install
-          import elementtree.ElementTree as etree
-          xbmc.log("XBMB3C -> Running with built-in ElementTree")
-        except ImportError:
-            try:
-                import ElementTree as etree
-                xbmc.log("XBMB3C -> Running addon ElementTree version")
-            except ImportError:
-                xbmc.log("XBMB3C -> Failed to import ElementTree from any known place")
-    
 #Get the setting from the appropriate file.
 DEFAULT_PORT="32400"
 _MODE_GETCONTENT=0
@@ -235,19 +201,20 @@ def getLocalServers( ip_address, port ):
         @return: a list of servers (as Dict)
     '''
     printDebug("== ENTER: getLocalServers ==", False)
-    url_path="/mediabrowser/Users/" + getUserId( ip_address, port) + "/items?format=xml"
-    html = getURL(ip_address+":"+port+url_path)
+    url_path="/mediabrowser/Users/" + getUserId( ip_address, port) + "/items?format=json"
+    jsonData = getURL(ip_address + ":" + port + url_path)
 
-    if html is False:
+    if jsonData is False:
          return []
-    server=etree.fromstring(html)
+         
+    result = json.loads(jsonData)
 
-    return {'serverName': server.get('friendlyName','Unknown').encode('utf-8') ,
+    return {'serverName': result.get('friendlyName','Unknown').encode('utf-8') ,
                         'server'    : ip_address,
                         'port'      : port ,
                         'discovery' : 'local' ,
                         'token'     : None ,
-                        'uuid'      : server.get('machineIdentifier') ,
+                        'uuid'      : result.get('machineIdentifier') ,
                         'owned'     : '1' ,
                         'master'    : 1 }
 
@@ -282,7 +249,7 @@ def getServerSections( ip_address, port, name, uuid):
                     'address'    : ip_address+":"+port ,
                     'serverName' : name ,
                     'uuid'       : uuid ,
-                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=xml') ,
+                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json') ,
                     'token'      : item.get("Id")  ,
                     'location'   : "local" ,
                     'art'        : item.get("?") ,
@@ -296,7 +263,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -309,7 +276,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=xml') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -322,7 +289,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=xml') ,
+            'path'       : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -334,7 +301,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=xml') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -347,7 +314,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=xml') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -360,7 +327,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=xml') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -803,22 +770,27 @@ def PLAY( url ):
         seekTime=0
         resume=0
 
-        html=getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=xml", suppress=False, popup=1 )        
-        if __settings__.getSetting('playFromStream')=='false':
-            html=getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=xml", suppress=False, popup=1 )
-            playurl= etree.fromstring(html).find(sDto+"Path").text
-            if (etree.fromstring(html).find(sDto+"VideoType").text=="Dvd"):
-                playurl=playurl+"/VIDEO_TS/VIDEO_TS.IFO"
+        jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
+        result = json.loads(jsonData)
+
+        if __settings__.getSetting('playFromStream') == 'false':
+
+            playurl = result.get("Path")
+
+            if (result.get("VideoType") == "Dvd"):
+                playurl = playurl+"/VIDEO_TS/VIDEO_TS.IFO"
             if __settings__.getSetting('smbusername')=='':
-                playurl=playurl.replace("\\\\","smb://")
+                playurl = playurl.replace("\\\\","smb://")
             else:
-                playurl=playurl.replace("\\\\","smb://"+__settings__.getSetting('smbusername')+':'+__settings__.getSetting('smbpassword')+'@')
-            playurl=playurl.replace("\\","/")
+                playurl = playurl.replace("\\\\","smb://" + __settings__.getSetting('smbusername') + ':' + __settings__.getSetting('smbpassword') + '@')
+            playurl = playurl.replace("\\","/")
+            
         else:
+        
             if __settings__.getSetting('transcode')=='true':
-                playurl='http://' + server + '/mediabrowser/Videos/' + id + '/stream.ts'
+                playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream.ts'
             else:
-                playurl='http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
+                playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
                 
         #if (__settings__.getSetting("markWatchedOnPlay")=='true'):
         watchedurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
@@ -831,25 +803,25 @@ def PLAY( url ):
         item.setProperty('IsFolder', 'false')
         #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         #tree=etree.fromstring(html).getiterator(sDto + "BaseItemDto")
-        UserData=etree.fromstring(html).find(sDto+'UserData')
-        if UserData.find(sDto + "PlaybackPositionTicks").text != '0' and __settings__.getSetting('transcode')=='false':
-            reasonableTicks=int(UserData.find(sDto + "PlaybackPositionTicks").text)/1000
-            seekTime=reasonableTicks/10000
+        userData = result.get("UserData")
+        if userData.get("PlaybackPositionTicks") != "0" and __settings__.getSetting('transcode') == 'false':
+            reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
+            seekTime = reasonableTicks/10000
             displayTime = str(datetime.timedelta(seconds=seekTime))
             display_list = [ "Resume from " + displayTime , "Start from beginning"]
             resumeScreen = xbmcgui.Dialog()
-            result = resumeScreen.select('Resume',display_list)
-            if result == -1:
+            resume_result = resumeScreen.select('Resume',display_list)
+            if resume_result == -1:
                 return False
-            if result == 0:
-                resume=1
+            if resume_result == 0:
+                resume_result = 1
 
         xbmc.Player().play(playurl,item)
         #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         WINDOW = xbmcgui.Window( 10000 )
         WINDOW.setProperty("watchedurl", watchedurl)
         WINDOW.setProperty("positionurl", positionurl)
-        WINDOW.setProperty("runtimeticks", str(etree.fromstring(html).find(sDto+"RunTimeTicks").text))
+        WINDOW.setProperty("runtimeticks", str(result.get("RunTimeTicks")))
 
         #Set a loop to wait for positive confirmation of playback
         count = 0
@@ -860,7 +832,7 @@ def PLAY( url ):
                 return
             else:
                 time.sleep(1)
-        if resume==1:
+        if resume_result == 1:
             while xbmc.Player().getTime()<(seekTime-1):
                 xbmc.Player().pause
                 xbmc.sleep(100)
@@ -896,17 +868,18 @@ def get_params( paramstring ):
     return param
 
 def getCacheValidator (server,url):
-    parsedserver,parsedport=server.split(':')
-    userid=getUserId(parsedserver,parsedport)
-    idAndOptions=url.split("ParentId=")
-    id=idAndOptions[1].split("&")
-    html = getURL("http://"+server+"/mediabrowser/Users/" + userid + "/Items/" +id[0]+"?format=xml", suppress=False, popup=1 )
-    itemtree = etree.fromstring(html)
-    printDebug ("RecursiveItemCount: " + itemtree.find(sDto + 'RecursiveItemCount').text)
-    printDebug ("RecursiveUnplayedCount: " + itemtree.find(sDto + 'RecursiveUnplayedItemCount').text)
-    playedTime=(itemtree.find(sDto + 'PlayedPercentage').text).replace(".","")
-    return (itemtree.find(sDto + 'RecursiveItemCount').text +"_"+itemtree.find(sDto + 'RecursiveUnplayedItemCount').text+"_"+playedTime)
+    parsedserver,parsedport = server.split(':')
+    userid = getUserId(parsedserver, parsedport)
+    idAndOptions = url.split("ParentId=")
+    id = idAndOptions[1].split("&")
+    jsonData = getURL("http://"+server+"/mediabrowser/Users/" + userid + "/Items/" +id[0]+"?format=json", suppress=False, popup=1 )
     
+    result = json.loads(jsonData)
+    
+    printDebug ("RecursiveItemCount: " + str(result.get("RecursiveItemCount")))
+    printDebug ("RecursiveUnplayedCount: " + str(result.get("RecursiveUnplayedItemCount")))
+    playedTime = (str(result.get("PlayedPercentage"))).replace(".","")
+    return (str(result.get("RecursiveItemCount")) + "_" + str(result.get("RecursiveUnplayedItemCount")) + "_" + playedTime)
     
 def getContent( url ):
     '''
@@ -932,14 +905,14 @@ def getContent( url ):
     m.update(url)
     urlHash = m.hexdigest()
    
-    html = ""
+    jsonData = ""
     cacheDataPath = __addondir__ + urlHash + validator
     
     # if a cached file exists use it
     # if one does not exist then load data from the url
     if(os.path.exists(cacheDataPath)) and validator != 'special':
         cachedfie = open(cacheDataPath, 'r')
-        html = cachedfie.read()
+        jsonData = cachedfie.read()
         cachedfie.close()
         xbmc.log("Data Read From Cache : " + cacheDataPath)
     else:
@@ -947,23 +920,23 @@ def getContent( url ):
         for i in r:
             os.remove(i)
         xbmc.log("No Cache Data, download data now")
-        html = getURL(url, suppress=False, popup=1 )
+        jsonData = getURL(url, suppress=False, popup=1 )
         cachedfie = open(cacheDataPath, 'w')
-        cachedfie.write(html)
+        cachedfie.write(jsonData)
         cachedfie.close()        
 
-    if html == "":
+    if jsonData == "":
         return
-        
-    tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
-    dirItems = processDirectory(url, tree)
+    
+    result = json.loads(jsonData)
+    dirItems = processDirectory(url, result)
     
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
     
     return
 
-def processDirectory( url, tree=None ):
+def processDirectory(url, result):
     printDebug("== ENTER: processDirectory ==", False)
     parsed = urlparse(url)
     parsedserver,parsedport=parsed.netloc.split(':')
@@ -975,33 +948,36 @@ def processDirectory( url, tree=None ):
     setWindowHeading(url)
     
     dirItems = []
-    
-    for directory in tree:
+    result = result.get("Items")
+
+    for item in result:
         try:
-            tempTitle=((directory.find(sDto + 'Name').text)).encode('utf-8')
+            tempTitle = item.get("Name").encode('utf-8')
         except TypeError:
-            tempTitle="Missing Title"
-        id=str(directory.find(sDto + 'Id').text).encode('utf-8')
-        isFolder=str(directory.find(sDto + 'IsFolder').text).encode('utf-8')
-        item_type=str(directory.find(sDto + 'Type').text).encode('utf-8')
+            tempTitle = "Missing Title"
+            
+        id = str(item.get("Id")).encode('utf-8')
+        isFolder = str(item.get("IsFolder")).encode('utf-8')
+        item_type = str(item.get("Type")).encode('utf-8')
         try:
-            tempEpisode=directory.find(sDto + "IndexNumber").text
+            tempEpisode = item.get("IndexNumber")
             if int(tempEpisode)<10:
                 tempEpisode='0'+tempEpisode
-            tempSeason=directory.find(sDto + "ParentIndexNumber").text
+            tempSeason = item.get("ParentIndexNumber")
         except TypeError:
-            tempEpisode=''
-            tempSeason=''
-        if directory.find(sDto + "DisplayMediaType").text=='Episode':
-            tempTitle=tempEpisode+' - '+tempTitle
+            tempEpisode = ""
+            tempSeason = ""
+        if item.get("DisplayMediaType") == "Episode":
+            tempTitle = tempEpisode + ' - ' + tempTitle
             xbmcplugin.setContent(pluginhandle, 'episodes')
-        if directory.find(sDto + "DisplayMediaType").text=='Season':
+        if item.get("DisplayMediaType") == "Season":
             xbmcplugin.setContent(pluginhandle, 'tvshows')
-        if directory.find(sDto + "DisplayMediaType").text=='Audio':
+        if item.get("DisplayMediaType") == "Audio":
             xbmcplugin.setContent(pluginhandle, 'songs')            
-        if directory.find(sDto + "DisplayMediaType").text=='Series':
-            xbmcplugin.setContent(pluginhandle, 'tvshows')            
-# Process MediaStreams
+        if item.get("DisplayMediaType") == "Series":
+            xbmcplugin.setContent(pluginhandle, 'tvshows')         
+            
+        # Process MediaStreams
         channels=''
         videocodec=''
         audiocodec=''
@@ -1009,104 +985,104 @@ def processDirectory( url, tree=None ):
         width=''
         aspectratio='1:1'
         aspectfloat=1.85
-        MediaStreams=directory.find(sDto+'MediaStreams')
-        for MediaStream in MediaStreams.findall(sEntities + 'MediaStream'):
-            if(MediaStream.find(sEntities + 'Type').text=='Video'):
-                videocodec=MediaStream.find(sEntities + 'Codec').text
-                height=MediaStream.find(sEntities + 'Height').text
-                width=MediaStream.find(sEntities + 'Width').text
-                aspectratio=MediaStream.find(sEntities + 'AspectRatio').text
+        mediaStreams = item.get("MediaStreams")
+        for mediaStream in mediaStreams:
+            if(mediaStream.get("Type") == "Video"):
+                videocodec = mediaStream.get("Codec")
+                height = mediaStream.get("Height")
+                width = mediaStream.get("Width")
+                aspectratio = mediaStream.get("AspectRatio")
                 if aspectratio != None:
-                    aspectwidth,aspectheight=aspectratio.split(':')
-                    aspectfloat=float(aspectwidth)/float(aspectheight)
-            if(MediaStream.find(sEntities + 'Type').text=='Audio'):
-                audiocodec=MediaStream.find(sEntities + 'Codec').text
-                channels=MediaStream.find(sEntities + 'Channels').text
-# Process People
+                    aspectwidth,aspectheight = aspectratio.split(':')
+                    aspectfloat = float(aspectwidth) / float(aspectheight)
+            if(mediaStream.get("Type") == "Audio"):
+                audiocodec = mediaStream.get("Codec")
+                channels = mediaStream.get("Channels")
+                
+        # Process People
         director=''
         writer=''
         cast=''
-        People=directory.find(sDto+'People')
-        for BaseItemPerson in People.findall(sDto+'BaseItemPerson'):
-            if(BaseItemPerson.find(sDto+'Type').text=='Director'):
-                director=director + BaseItemPerson.find(sDto + 'Name').text + ' ' 
-            if(BaseItemPerson.find(sDto+'Type').text=='Writing'):
-                writer=(BaseItemPerson.find(sDto + 'Name').text)                
-            if(BaseItemPerson.find(sDto+'Type').text=='Actor'):
-                Name=(BaseItemPerson.find(sDto + 'Name').text)
-                Role=(BaseItemPerson.find(sDto + 'Role').text)
-                if Role==None:
-                    Role=''
-                if cast=='':
-                    cast=Name+' as '+Role
+        People = item.get("People")
+        for person in People:
+            if(person.get("Type") == "Director"):
+                director = director + person.get("Name") + ' ' 
+            if(person.get("Type") == "Writing"):
+                writer = person.get("Name")                
+            if(person.get("Type") == "Actor"):
+                Name = person.get("Name")
+                Role = person.get("Role")
+                if Role == None:
+                    Role = ''
+                if cast == '':
+                    cast = Name + ' as ' + Role
                 else:
-                    cast=cast+'\n'+Name+' as '+Role
-# Process Genres
-        genre=''
-        Genres=directory.find(sDto+'Genres')
-        for string in Genres.findall(sArrays+'string'):
-            if genre=="": #Just take the first genre
-                genre=string.text
+                    cast = cast + '\n' + Name + ' as ' + Role
+                    
+        # Process Genres
+        genre = ""
+        Genres = item.get("Genres")
+        for genre_string in Genres:
+            if genre == "": #Just take the first genre
+                genre = genre_string
             else:
-                genre=genre+" / "+string.text
+                genre = genre + " / " + genre_string
                 
-# Process UserData
-        UserData=directory.find(sDto+'UserData')
-        if UserData.find(sDto + "PlayCount").text != '0':
-            overlay='7'
-            watched='true'
+        # Process UserData
+        userData = item.get("UserData")
+        if userData.get("PlayCount") != "0":
+            overlay = "7"
+            watched = "true"
         else:
-            overlay='6'
-            watched='false'
-        if UserData.find(sDto + "IsFavorite").text == 'true':
-            overlay='5'
-            favorite='true'
+            overlay = "6"
+            watched = "false"
+        if userData.get("IsFavorite") == "true":
+            overlay = "5"
+            favorite = "true"
         else:
-            favorite='false'
-        if UserData.find(sDto + "PlaybackPositionTicks").text != None:
-            PlaybackPositionTicks=str(UserData.find(sDto + "PlaybackPositionTicks").text)
-            reasonableTicks=int(UserData.find(sDto + "PlaybackPositionTicks").text)/1000
-            seekTime=reasonableTicks/10000
+            favorite = "false"
+        if userData.get("PlaybackPositionTicks") != None:
+            PlaybackPositionTicks = str(userData.get("PlaybackPositionTicks"))
+            reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
+            seekTime = reasonableTicks / 10000
         else:
-            PlaybackPositionTicks='100'
+            PlaybackPositionTicks = '100'
 
-# Populate the details list
+        # Populate the details list
         details={'title'        : tempTitle,
-                 'plot'         : directory.find(sDto + "Overview").text ,
+                 'plot'         : item.get("Overview"),
                  'episode'      : tempEpisode,
                  #'watched'      : watched,
                  'Overlay'      : overlay,
-                 'playcount'    : UserData.find(sDto + "PlayCount").text,
+                 'playcount'    : userData.get("PlayCount"),
                  #'aired'       : episode.get('originallyAvailableAt','') ,
-                 'SeriesName'  :  directory.find(sDto + "SeriesName").text
-                 
-                 
-                 ,
+                 'SeriesName'  :  item.get("SeriesName"),
                  'season'       : tempSeason
                  }
+                 
         try:
-            tempDuration=str(int(directory.find(sDto + "RunTimeTicks").text)/(10000000*60))
-            RunTimeTicks=str(directory.find(sDto + "RunTimeTicks").text)
+            tempDuration = str(int(item.get("RunTimeTicks"))/(10000000*60))
+            RunTimeTicks = str(item.get("RunTimeTicks"))
         except TypeError:
-            tempDuration='100'
-            RunTimeTicks='100'
+            tempDuration = "100"
+            RunTimeTicks = "100"
         
-        if((directory.find(sDto + "PremiereDate").text) != None):
-            premieredatelist=(directory.find(sDto + "PremiereDate").text).split("T")
-            premieredate=premieredatelist[0]
+        if(item.get("PremiereDate") != None):
+            premieredatelist = (item.get("PremiereDate")).split("T")
+            premieredate = premieredatelist[0]
         else:
-            premieredate=""
+            premieredate = ""
 
-# Populate the extraData list
-        extraData={'thumb'        : getThumb(directory, server) ,
-                   'fanart_image' : getFanart(directory, server) ,
-                   'mpaa'         : directory.find(sDto + "OfficialRating").text ,
-                   'rating'       : directory.find(sDto + "CommunityRating").text,
-                   'year'         : directory.find(sDto + "ProductionYear").text,
-                   'locationtype' : directory.find(sDto + "LocationType").text,
+        # Populate the extraData list
+        extraData={'thumb'        : getThumb(item) ,
+                   'fanart_image' : getFanart(item) ,
+                   'mpaa'         : item.get("OfficialRating"),
+                   'rating'       : item.get("CommunityRating"),
+                   'year'         : item.get("ProductionYear"),
+                   'locationtype' : item.get("LocationType"),
                    'premieredate' : premieredate,
                    'genre'        : genre,
-                   'playcount'    : UserData.find(sDto + "PlayCount").text,
+                   'playcount'    : userData.get("PlayCount"),
                    'director'     : director,
                    'writer'       : writer,
                    'channels'     : channels,
@@ -1124,30 +1100,31 @@ def processDirectory( url, tree=None ):
                    'resumetime'   : str(seekTime),
                    'totaltime'    : tempDuration,
                    'duration'     : tempDuration}
+                   
         if extraData['thumb'] == '':
-            extraData['thumb']=extraData['fanart_image']
+            extraData['thumb'] = extraData['fanart_image']
 
-        extraData['mode']=_MODE_GETCONTENT
+        extraData['mode'] = _MODE_GETCONTENT
         
         if isFolder=='true':
             SortByTemp=__settings__.getSetting('sortby')
             if SortByTemp=='':
                 SortByTemp='SortName'
                 
-            if item_type=='Season' or item_type=='BoxSet' or item_type=='MusicAlbum' or item_type=='MusicArtist':
-                u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=xml'
-                if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
+            if item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist':
+                u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=json'
+                if (item.get("RecursiveItemCount") != "0"):
                     dirItems.append(addGUIItem(u, details, extraData))
             else:
-                if __settings__.getSetting('autoEnterSingle')=='true':
-                    if directory.find(sDto + 'ChildCount').text=='1':
-                        u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&recursive=true&IncludeItemTypes=Episode&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=xml'
+                if __settings__.getSetting('autoEnterSingle') == "true":
+                    if item.get("ChildCount") == "1":
+                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&recursive=true&IncludeItemTypes=Episode&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
                     else:
-                        u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=xml'
+                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=json'
                 else:
-                    u= 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=xml'
+                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=json'
 
-                if (str(directory.find(sDto + 'RecursiveItemCount').text).encode('utf-8')!='0'):
+                if (str(item.get("RecursiveItemCount")).encode('utf-8') != '0'):
                     dirItems.append(addGUIItem(u, details, extraData))
 
         else:
@@ -1156,26 +1133,27 @@ def processDirectory( url, tree=None ):
     
     return dirItems
 
-def getThumb( data, server, transcode=False, width=None, height=None ):
+def getThumb( data ):
     
-    printDebug('getThumb server:' + server)
-    id=data.find(sDto + 'Id').text
-    if data.find(sDto + 'DisplayMediaType').text == 'Episode':
-        id=data.find(sDto + 'SeriesId').text
+    id = data.get("Id")
+    if data.get("DisplayMediaType") == "Episode":
+        id = data.get("SeriesId")
 
     # use the local image proxy server that is made available by this addons service
     thumbnail = ("http://localhost:15001/?id=" + str(id) + "&type=t")
+    printDebug("getThumb : " + thumbnail)
     return thumbnail
     
-def getFanart( data, server, transcode=False ):
+def getFanart( data ):
 
-    id=data.find(sDto + 'Id').text
-    if data.find(sDto + 'DisplayMediaType').text == 'Episode' or data.find(sDto + 'DisplayMediaType').text == 'Season':
-        id=data.find(sDto + 'SeriesId').text    
+    id = data.get("Id")
+    if data.get("DisplayMediaType") == "Episode" or data.get("DisplayMediaType") == "Season":
+        id = data.get("SeriesId")   
     
     # use the local image proxy server that is made available by this addons service
-    thumbnail = ("http://localhost:15001/?id=" + str(id) + "&type=b")
-    return thumbnail
+    fanArt = ("http://localhost:15001/?id=" + str(id) + "&type=b")
+    printDebug("getFanart : " + fanArt)
+    return fanArt
     
 def getServerFromURL( url ):
     '''
@@ -1299,16 +1277,16 @@ def displayServers( url ):
 def setWindowHeading(url) :
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("addshowname", "false")
-    WINDOW.setProperty("currenturl",url)
-    WINDOW.setProperty("currentpluginhandle",str(pluginhandle))
+    WINDOW.setProperty("currenturl", url)
+    WINDOW.setProperty("currentpluginhandle", str(pluginhandle))
     if 'ParentId' in url:
-        dirUrl=url.replace('items?ParentId=','Items/')
-        splitUrl=dirUrl.split('&')
-        dirUrl=splitUrl[0]+'?format=xml'
-        html=getURL(dirUrl)
-        tree= etree.fromstring(html).getiterator(sDto + 'BaseItemDto')
-        for BaseItemDto in tree:
-            title=(BaseItemDto.find(sDto + 'Name').text)
+        dirUrl = url.replace('items?ParentId=','Items/')
+        splitUrl = dirUrl.split('&')
+        dirUrl = splitUrl[0] + '?format=json'
+        jsonData = getURL(dirUrl)
+        result = json.loads(jsonData)
+        for name in result:
+            title = name
         WINDOW.setProperty("heading", title)
     elif 'IncludeItemTypes=Episode' in url:
         WINDOW.setProperty("addshowname", "true")
