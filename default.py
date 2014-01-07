@@ -206,7 +206,7 @@ def getUserId( ip_address, port ):
     userid=""
     userName = __settings__.getSetting('username')
     printDebug("Looking for user name: " + userName)
-    printDebug("json data : " + str(jsonData))
+    printDebug("jsonData : " + str(jsonData))
     result = json.loads(jsonData)
     
     for user in result:
@@ -251,25 +251,30 @@ def getLocalServers( ip_address, port ):
                         'owned'     : '1' ,
                         'master'    : 1 }
 
-def getServerSections ( ip_address, port, name, uuid):
+def getServerSections( ip_address, port, name, uuid):
     printDebug("== ENTER: getServerSections ==", False)
     userid=str(getUserId( ip_address, port))
-    html = getURL(ip_address+":"+port+"/mediabrowser/Users/"+userid+"/Items/Root?format=xml")
-    printDebug("html:" + html)
-    tree= etree.fromstring(html).getiterator(sDto + 'BaseItemDto')
-    for BaseItemDto in tree:
-        parentid=str(BaseItemDto.find(sDto + 'Id').text)
-    htmlpath=("http://%s:%s/mediabrowser/Users/" % ( ip_address, port))
-    html=getURL(htmlpath + userid + "/items?ParentId=" + parentid + "&format=xml")
+    jsonData = getURL(ip_address+":"+port+"/mediabrowser/Users/"+userid+"/Items/Root?format=json")
+    printDebug("jsonData : " + jsonData)
+    result = json.loads(jsonData)
+    
+    parentid = result.get("Id")
+    printDebug("parentid : " + parentid)
+       
+    htmlpath = ("http://%s:%s/mediabrowser/Users/" % ( ip_address, port))
+    jsonData = getURL(htmlpath + userid + "/items?ParentId=" + parentid + "&format=json")
+    printDebug("jsonData : " + jsonData)
     temp_list=[]
 
-    if html is False:
+    if jsonData is False:
         return {}
 
-    tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
-    for BaseItemDto in tree:
-        if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
-            Name=(BaseItemDto.find(sDto + 'Name').text).encode('utf-8')
+    result = json.loads(jsonData)
+    result = result.get("Items")
+    
+    for item in result:
+        if(item.get("RecursiveItemCount") != "0"):
+            Name =(item.get("Name")).encode('utf-8')
             if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
                 __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
                 __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
@@ -277,16 +282,16 @@ def getServerSections ( ip_address, port, name, uuid):
                     'address'    : ip_address+":"+port ,
                     'serverName' : name ,
                     'uuid'       : uuid ,
-                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + str(BaseItemDto.find(sDto + 'Id').text) + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=xml') ,
-                    'token'      : str(BaseItemDto.find(sDto + 'Id').text)  ,
+                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=xml') ,
+                    'token'      : item.get("Id")  ,
                     'location'   : "local" ,
-                    'art'        : str(BaseItemDto.text) ,
+                    'art'        : item.get("?") ,
                     'local'      : '1' ,
                     'type'       : "movie",
                     'owned'      : '1' })
-            printDebug("Title " + str(BaseItemDto.tag))
-
-# Add recent movies
+            printDebug("Title " + Name)    
+    
+    # Add recent movies
     temp_list.append( {'title'      : 'Recently Added Movies',
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
@@ -299,7 +304,7 @@ def getServerSections ( ip_address, port, name, uuid):
             'type'       : "movie",
             'owned'      : '1' })
             
-# Add recent Episodes
+    # Add recent Episodes
     temp_list.append( {'title'      : 'Recently Added Episodes',
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
@@ -310,8 +315,9 @@ def getServerSections ( ip_address, port, name, uuid):
             'art'        : '' ,
             'local'      : '1' ,
             'type'       : "movie",
-            'owned'      : '1' })            
-# Add NextUp Episodes
+            'owned'      : '1' })    
+            
+    # Add NextUp Episodes
     temp_list.append( {'title'      : 'Next Episodes',
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
@@ -323,7 +329,7 @@ def getServerSections ( ip_address, port, name, uuid):
             'local'      : '1' ,
             'type'       : "movie",
             'owned'      : '1' })            
-            # Add Favorite Movies
+    # Add Favorite Movies
     temp_list.append( {'title'      : 'Favorite Movies',
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
@@ -336,7 +342,7 @@ def getServerSections ( ip_address, port, name, uuid):
             'type'       : "movie",
             'owned'      : '1' })            
 
-# Add Favorite Episodes
+    # Add Favorite Episodes
     temp_list.append( {'title'      : 'Favorite Episodes',
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
@@ -349,7 +355,7 @@ def getServerSections ( ip_address, port, name, uuid):
             'type'       : "movie",
             'owned'      : '1' })                       
             
-# Add Upcoming TV
+    # Add Upcoming TV
     temp_list.append( {'title'      : 'Upcoming TV',
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
@@ -362,7 +368,6 @@ def getServerSections ( ip_address, port, name, uuid):
             'type'       : "movie",
             'owned'      : '1' })                            
     
-
     for item in temp_list:
         printDebug ("temp_list: " + str(item))
     return temp_list
