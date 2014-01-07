@@ -49,7 +49,8 @@ import cProfile
 import pstats
 import threading
 import hashlib
-import json
+#import json
+import simplejson as json
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
