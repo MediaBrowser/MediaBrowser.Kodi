@@ -432,20 +432,24 @@ def genrefilter ():
     u=urllib.quote(newurl)+'&mode=0'
     xbmc.executebuiltin("Container.Update(plugin://plugin.video.xbmb3c/?url="+u+",\"replace\")")#, WINDOW.getProperty('currenturl')
 
-def playall ():
+def playall (startId):
     temp_list = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     temp_list.clear()
     html=getURL(WINDOW.getProperty("currenturl"))
     tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
+    found=0
     for BaseItemDto in tree:
-        if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
-            u=(BaseItemDto.find(sDto + 'Path').text)
-            if __settings__.getSetting('smbusername')=='':
-                u=u.replace("\\\\","smb://")
-            else:
-                u=u.replace("\\\\","smb://"+__settings__.getSetting('smbusername')+':'+__settings__.getSetting('smbpassword')+'@')
-            u=u.replace("\\","/")
-            temp_list.add(u)
+        if str(BaseItemDto.find(sDto + 'Id').text)==startId:
+            found=1
+        if found==1:
+            if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
+                u=(BaseItemDto.find(sDto + 'Path').text)
+                if __settings__.getSetting('smbusername')=='':
+                    u=u.replace("\\\\","smb://")
+                else:
+                    u=u.replace("\\\\","smb://"+__settings__.getSetting('smbusername')+':'+__settings__.getSetting('smbpassword')+'@')
+                u=u.replace("\\","/")
+                temp_list.add(u)
     xbmc.Player().play(temp_list)
     #Set a loop to wait for positive confirmation of playback
     count = 0
@@ -662,7 +666,7 @@ def addGUIItem( url, details, extraData, folder=True ):
                 commands.append(( __language__(30099), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'genrefilter'
             commands.append(( __language__(30040), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            argsToPass = 'playall'
+            argsToPass = 'playall,' + extraData.get('id')
             commands.append(( __language__(30041), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))            
             #argsToPass = 'xbmc.Container.Update()'
             commands.append(( __language__(30042), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
@@ -1071,6 +1075,7 @@ def processDirectory( url, tree=None ):
 # Populate the extraData list
         extraData={'thumb'        : getThumb(directory, server) ,
                    'fanart_image' : getFanart(directory, server) ,
+                   'id'           : id ,
                    'mpaa'         : directory.find(sDto + "OfficialRating").text ,
                    'rating'       : directory.find(sDto + "CommunityRating").text,
                    'year'         : directory.find(sDto + "ProductionYear").text,
@@ -1374,7 +1379,8 @@ elif sys.argv[1] == "sortorder":
 elif sys.argv[1] == "genrefilter":
     genrefilter()
 elif sys.argv[1] == "playall":
-    playall()    
+    startId=sys.argv[2]
+    playall(startId)    
 else:
 
     pluginhandle = int(sys.argv[1])
