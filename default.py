@@ -240,6 +240,9 @@ def getServerSections( ip_address, port, name, uuid):
     result = json.loads(jsonData)
     result = result.get("Items")
     
+    deatilsString = "Path,Genres,MediaStreams"
+    #Path,Overview,Genres,People,MediaStreams
+    
     for item in result:
         if(item.get("RecursiveItemCount") != "0"):
             Name =(item.get("Name")).encode('utf-8')
@@ -250,7 +253,7 @@ def getServerSections( ip_address, port, name, uuid):
                     'address'    : ip_address+":"+port ,
                     'serverName' : name ,
                     'uuid'       : uuid ,
-                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json') ,
+                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + deatilsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json') ,
                     'token'      : item.get("Id")  ,
                     'location'   : "local" ,
                     'art'        : item.get("?") ,
@@ -264,7 +267,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + deatilsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -277,7 +280,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=' + deatilsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -290,7 +293,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json') ,
+            'path'       : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=' + deatilsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -302,7 +305,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=json') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=' + deatilsString + '&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -315,7 +318,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=json') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=' + deatilsString + '&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -328,7 +331,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=Path,Overview,Genres,People,MediaStreams&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=json') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + deatilsString + '&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -911,6 +914,8 @@ def getContent( url ):
     jsonData = ""
     cacheDataPath = __addondir__ + urlHash + validator
     
+    result = None
+    
     # if a cached file exists use it
     # if one does not exist then load data from the url
     if(os.path.exists(cacheDataPath)) and validator != 'special':
@@ -918,20 +923,39 @@ def getContent( url ):
         jsonData = cachedfie.read()
         cachedfie.close()
         xbmc.log("Data Read From Cache : " + cacheDataPath)
-    else:
+        try:
+            result = loadJasonData(jsonData)
+        except:
+            xbmc.log("Json load failed from cache data")
+            result = []
+        dataLen = len(result)
+        xbmc.log("Json Load Result : " + str(dataLen))
+        if(dataLen == 0):
+            result = None
+    
+    # if there was no cache data for the cache data was not valid then try to load it again
+    if(result == None):
         r = glob.glob(__addondir__ + urlHash + "*")
         for i in r:
             os.remove(i)
         xbmc.log("No Cache Data, download data now")
         jsonData = getURL(url, suppress=False, popup=1 )
-        cachedfie = open(cacheDataPath, 'w')
-        cachedfie.write(jsonData)
-        cachedfie.close()        
+        try:
+            result = loadJasonData(jsonData)
+        except:
+            xbmc.log("Json load failed from downloaded data")
+            result = []
+        dataLen = len(result)
+        xbmc.log("Json Load Result : " + str(dataLen))
+        if(dataLen > 0):
+            xbmc.log("Saving data to cache : " + cacheDataPath)
+            cachedfie = open(cacheDataPath, 'w')
+            cachedfie.write(jsonData)
+            cachedfie.close()        
 
     if jsonData == "":
         return
     
-    result = json.loads(jsonData)
     dirItems = processDirectory(url, result)
     
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
@@ -939,6 +963,9 @@ def getContent( url ):
     
     return
 
+def loadJasonData(jsonData):
+    return json.loads(jsonData)
+    
 def processDirectory(url, result):
     printDebug("== ENTER: processDirectory ==", False)
     parsed = urlparse(url)
@@ -952,6 +979,8 @@ def processDirectory(url, result):
     
     dirItems = []
     result = result.get("Items")
+    if(result == None):
+        result = []
 
     for item in result:
         try:
@@ -989,47 +1018,50 @@ def processDirectory(url, result):
         aspectratio='1:1'
         aspectfloat=1.85
         mediaStreams = item.get("MediaStreams")
-        for mediaStream in mediaStreams:
-            if(mediaStream.get("Type") == "Video"):
-                videocodec = mediaStream.get("Codec")
-                height = mediaStream.get("Height")
-                width = mediaStream.get("Width")
-                aspectratio = mediaStream.get("AspectRatio")
-                if aspectratio != None:
-                    aspectwidth,aspectheight = aspectratio.split(':')
-                    aspectfloat = float(aspectwidth) / float(aspectheight)
-            if(mediaStream.get("Type") == "Audio"):
-                audiocodec = mediaStream.get("Codec")
-                channels = mediaStream.get("Channels")
+        if(mediaStreams != None):
+            for mediaStream in mediaStreams:
+                if(mediaStream.get("Type") == "Video"):
+                    videocodec = mediaStream.get("Codec")
+                    height = mediaStream.get("Height")
+                    width = mediaStream.get("Width")
+                    aspectratio = mediaStream.get("AspectRatio")
+                    if aspectratio != None:
+                        aspectwidth,aspectheight = aspectratio.split(':')
+                        aspectfloat = float(aspectwidth) / float(aspectheight)
+                if(mediaStream.get("Type") == "Audio"):
+                    audiocodec = mediaStream.get("Codec")
+                    channels = mediaStream.get("Channels")
                 
         # Process People
         director=''
         writer=''
         cast=''
-        People = item.get("People")
-        for person in People:
-            if(person.get("Type") == "Director"):
-                director = director + person.get("Name") + ' ' 
-            if(person.get("Type") == "Writing"):
-                writer = person.get("Name")                
-            if(person.get("Type") == "Actor"):
-                Name = person.get("Name")
-                Role = person.get("Role")
-                if Role == None:
-                    Role = ''
-                if cast == '':
-                    cast = Name + ' as ' + Role
-                else:
-                    cast = cast + '\n' + Name + ' as ' + Role
+        people = item.get("People")
+        if(people != None):
+            for person in people:
+                if(person.get("Type") == "Director"):
+                    director = director + person.get("Name") + ' ' 
+                if(person.get("Type") == "Writing"):
+                    writer = person.get("Name")                
+                if(person.get("Type") == "Actor"):
+                    Name = person.get("Name")
+                    Role = person.get("Role")
+                    if Role == None:
+                        Role = ''
+                    if cast == '':
+                        cast = Name + ' as ' + Role
+                    else:
+                        cast = cast + '\n' + Name + ' as ' + Role
                     
         # Process Genres
         genre = ""
-        Genres = item.get("Genres")
-        for genre_string in Genres:
-            if genre == "": #Just take the first genre
-                genre = genre_string
-            else:
-                genre = genre + " / " + genre_string
+        genres = item.get("Genres")
+        if(genres != None):
+            for genre_string in genres:
+                if genre == "": #Just take the first genre
+                    genre = genre_string
+                else:
+                    genre = genre + " / " + genre_string
                 
         # Process UserData
         userData = item.get("UserData")
