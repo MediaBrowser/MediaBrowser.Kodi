@@ -240,7 +240,7 @@ def getServerSections( ip_address, port, name, uuid):
     result = json.loads(jsonData)
     result = result.get("Items")
     
-    deatilsString = "Path,Genres,MediaStreams"
+    deatilsString = "Path,MediaStreams,Genres"
     #Path,Overview,Genres,People,MediaStreams
     
     for item in result:
@@ -498,9 +498,9 @@ def getURL( url, suppress=False, type="GET", popup=0 ):
         data = conn.getresponse()
         if int(data.status) == 200:
             link=data.read()
-            printDebug("====== XML 200 returned =======")
+            printDebug("====== 200 returned =======")
             printDebug(link, False)
-            printDebug("====== XML 200 finished ======")
+            printDebug("====== 200 finished ======")
 
         elif ( int(data.status) == 301 ) or ( int(data.status) == 302 ):
             try: conn.close()
@@ -521,9 +521,9 @@ def getURL( url, suppress=False, type="GET", popup=0 ):
             return False
         else:
             link=data.read()
-            printDebug("====== XML returned =======")
+            printDebug("====== returned =======")
             printDebug(link, False)
-            printDebug("====== XML finished ======")
+            printDebug("====== finished ======")
     except socket.gaierror :
         error = 'Unable to lookup host: ' + server + "\nCheck host name is correct"
         xbmc.log (error)
@@ -674,7 +674,7 @@ def addGUIItem( url, details, extraData, folder=True ):
         list.setInfo('video', {'genre' : extraData.get('genre')})
         #list.setInfo('video', {'cast' : extraData.get('cast')}) --- Broken in Frodo
         #list.setInfo('video', {'castandrole' : extraData.get('cast')}) --- Broken in Frodo
-        list.setInfo('video', {'plotoutline' : extraData.get('cast')}) # Hack to get cast data into skin
+        #list.setInfo('video', {'plotoutline' : extraData.get('cast')}) # Hack to get cast data into skin
         list.setInfo('video', {'episode': details.get('episode')})
         list.setInfo('video', {'season': details.get('season')})        
         list.setInfo('video', {'mpaa': extraData.get('mpaa')})
@@ -1065,23 +1065,24 @@ def processDirectory(url, result):
                 
         # Process UserData
         userData = item.get("UserData")
-        if userData.get("PlayCount") != "0":
-            overlay = "7"
-            watched = "true"
-        else:
-            overlay = "6"
-            watched = "false"
-        if userData.get("IsFavorite") == "true":
-            overlay = "5"
-            favorite = "true"
-        else:
-            favorite = "false"
-        if userData.get("PlaybackPositionTicks") != None:
-            PlaybackPositionTicks = str(userData.get("PlaybackPositionTicks"))
-            reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
-            seekTime = reasonableTicks / 10000
-        else:
-            PlaybackPositionTicks = '100'
+        if(userData != None):
+            if userData.get("PlayCount") != "0":
+                overlay = "7"
+                watched = "true"
+            else:
+                overlay = "6"
+                watched = "false"
+            if userData.get("IsFavorite") == "true":
+                overlay = "5"
+                favorite = "true"
+            else:
+                favorite = "false"
+            if userData.get("PlaybackPositionTicks") != None:
+                PlaybackPositionTicks = str(userData.get("PlaybackPositionTicks"))
+                reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
+                seekTime = reasonableTicks / 10000
+            else:
+                PlaybackPositionTicks = '100'
 
         # Populate the details list
         details={'title'        : tempTitle,
@@ -1122,7 +1123,7 @@ def processDirectory(url, result):
                    'writer'       : writer,
                    'channels'     : channels,
                    'videocodec'   : videocodec,
-                   'aspectratio'  : aspectfloat,
+                   'aspectratio'  : str(aspectfloat),
                    'audiocodec'   : audiocodec,
                    'height'       : height,
                    'width'        : width,
