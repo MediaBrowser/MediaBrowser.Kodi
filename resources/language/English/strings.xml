@@ -17,7 +17,7 @@
     <string id="30022">Debug:</string>
     <string id="30024">Username:</string>
     <string id="30025">Password:</string>
-
+    
     <string id="30030">Port Number:</string>
     <string id="30036">Number of recent movies to show:</string>    
     <string id="30037">Number of recent TV episodes to show:</string>    
@@ -78,5 +78,10 @@
     <string id="30097">Sort By ...</string>
     <string id="30098">Sort Order Descending</string>
     <string id="30099">Sort Order Ascending</string>
+    
+    <string id="30110">General</string>
+    <string id="30111">Include Stream Info</string>
+    <string id="30112">Include People</string>
+    <string id="30113">Include Overview</string>
 
 </strings>

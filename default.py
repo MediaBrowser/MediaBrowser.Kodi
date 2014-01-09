@@ -240,8 +240,16 @@ def getServerSections( ip_address, port, name, uuid):
     result = json.loads(jsonData)
     result = result.get("Items")
     
-    deatilsString = "Path,MediaStreams,Genres"
-    #Path,Overview,Genres,People,MediaStreams
+    deatilsString = "Path,Genres"
+    
+    #if(__settings__.getSetting('includeStreamInfo') == "true"):
+    deatilsString += ",MediaStreams"
+    
+    #if(__settings__.getSetting('includePeople') == "true"):
+    #    deatilsString += ",People"
+        
+    #if(__settings__.getSetting('includeOverview') == "true"):
+    #    deatilsString += ",Overview"        
     
     for item in result:
         if(item.get("RecursiveItemCount") != "0"):
@@ -1025,7 +1033,7 @@ def processDirectory(url, result):
                     height = mediaStream.get("Height")
                     width = mediaStream.get("Width")
                     aspectratio = mediaStream.get("AspectRatio")
-                    if aspectratio != None:
+                    if aspectratio != None and len(aspectratio) >= 3:
                         aspectwidth,aspectheight = aspectratio.split(':')
                         aspectfloat = float(aspectwidth) / float(aspectheight)
                 if(mediaStream.get("Type") == "Audio"):
