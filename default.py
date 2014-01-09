@@ -403,11 +403,15 @@ def markUnwatched (url):
 def markFavorite (url):
     headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
     resp = requests.post(url, data='', headers=headers)
+    WINDOW = xbmcgui.Window( 10000 )
+    WINDOW.setProperty("force_data_reload", "true")    
     xbmc.executebuiltin("Container.Refresh")
     
 def unmarkFavorite (url):
     headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
     resp = requests.delete(url, data='', headers=headers)
+    WINDOW = xbmcgui.Window( 10000 )
+    WINDOW.setProperty("force_data_reload", "true")    
     xbmc.executebuiltin("Container.Refresh")
 
 def sortby ():
@@ -924,9 +928,13 @@ def getContent( url ):
     
     result = None
     
+    WINDOW = xbmcgui.Window( 10000 )
+    force_data_reload = WINDOW.getProperty("force_data_reload")
+    WINDOW.setProperty("force_data_reload", "false")
+    
     # if a cached file exists use it
     # if one does not exist then load data from the url
-    if(os.path.exists(cacheDataPath)) and validator != 'special':
+    if(os.path.exists(cacheDataPath)) and validator != 'special' and force_data_reload != "true":
         cachedfie = open(cacheDataPath, 'r')
         jsonData = cachedfie.read()
         cachedfie.close()
