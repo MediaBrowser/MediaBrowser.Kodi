@@ -49,7 +49,6 @@ import cProfile
 import pstats
 import threading
 import hashlib
-#import json
 import simplejson as json
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -242,14 +241,16 @@ def getServerSections( ip_address, port, name, uuid):
     
     deatilsString = "Path,Genres"
     
-    #if(__settings__.getSetting('includeStreamInfo') == "true"):
-    deatilsString += ",MediaStreams"
+    '''
+    if(__settings__.getSetting('includeStreamInfo') == "true"):
+        deatilsString += ",MediaStreams"
     
-    #if(__settings__.getSetting('includePeople') == "true"):
-    #    deatilsString += ",People"
+    if(__settings__.getSetting('includePeople') == "true"):
+        deatilsString += ",People"
         
-    #if(__settings__.getSetting('includeOverview') == "true"):
-    #    deatilsString += ",Overview"        
+    if(__settings__.getSetting('includeOverview') == "true"):
+        deatilsString += ",Overview"        
+    '''
     
     for item in result:
         if(item.get("RecursiveItemCount") != "0"):
@@ -599,12 +600,12 @@ def addGUIItem( url, details, extraData, folder=True ):
         WINDOW = xbmcgui.Window( 10000 )
         if WINDOW.getProperty("addshowname") == "true":
             if extraData.get('locationtype')== "Virtual":
-                list=xbmcgui.ListItem(extraData.get('premieredate')+" - "+details.get('SeriesName','')+" - " +"S"+details.get('season')+"E"+details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
+                list=xbmcgui.ListItem( extraData.get('premieredate') + " - " + details.get('SeriesName','') + " - " + "S" + details.get('season') + "E" + details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
             else:
-                if details.get('season')==None:
-                    season='0'
+                if details.get('season') == None:
+                    season = '0'
                 else:
-                    season=details.get('season')
+                    season = details.get('season')
                 list=xbmcgui.ListItem(details.get('SeriesName','')+" - " +"S"+season+"E"+details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
             list=xbmcgui.ListItem(details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
@@ -999,24 +1000,30 @@ def processDirectory(url, result):
         result = []
 
     for item in result:
-        try:
+    
+        if(item.get("Name") != None):
             tempTitle = item.get("Name").encode('utf-8')
-        except TypeError:
+        else:
             tempTitle = "Missing Title"
             
         id = str(item.get("Id")).encode('utf-8')
-        isFolder = str(item.get("IsFolder")).encode('utf-8')
+        isFolder = item.get("IsFolder")
         item_type = str(item.get("Type")).encode('utf-8')
-        try:
-            tempEpisode = item.get("IndexNumber")
-            if int(tempEpisode)<10:
-                tempEpisode='0'+tempEpisode
-            tempSeason = item.get("ParentIndexNumber")
-        except TypeError:
-            tempEpisode = ""
-            tempSeason = ""
+        
+        tempEpisode = ""
+        if (item.get("IndexNumber") != None):
+            episodeNum = item.get("IndexNumber")
+            if episodeNum < 10:
+                tempEpisode = "0" + str(episodeNum)
+            else:
+                tempEpisode = str(episodeNum)
+                
+        tempSeason = ""
+        if (str(item.get("ParentIndexNumber")) != None):
+            tempSeason = str(item.get("ParentIndexNumber"))
+      
         if item.get("DisplayMediaType") == "Episode":
-            tempTitle = tempEpisode + ' - ' + tempTitle
+            tempTitle = str(tempEpisode) + ' - ' + tempTitle
             xbmcplugin.setContent(pluginhandle, 'episodes')
         if item.get("DisplayMediaType") == "Season":
             xbmcplugin.setContent(pluginhandle, 'tvshows')
@@ -1026,24 +1033,27 @@ def processDirectory(url, result):
             xbmcplugin.setContent(pluginhandle, 'tvshows')         
             
         # Process MediaStreams
-        channels=''
-        videocodec=''
-        audiocodec=''
-        height=''
-        width=''
-        aspectratio='1:1'
-        aspectfloat=1.85
+        channels = ''
+        videocodec = ''
+        audiocodec = ''
+        height = ''
+        width = ''
+        aspectratio = '1:1'
+        aspectfloat = 1.85
         mediaStreams = item.get("MediaStreams")
         if(mediaStreams != None):
             for mediaStream in mediaStreams:
                 if(mediaStream.get("Type") == "Video"):
                     videocodec = mediaStream.get("Codec")
-                    height = mediaStream.get("Height")
-                    width = mediaStream.get("Width")
+                    height = str(mediaStream.get("Height"))
+                    width = str(mediaStream.get("Width"))
                     aspectratio = mediaStream.get("AspectRatio")
                     if aspectratio != None and len(aspectratio) >= 3:
-                        aspectwidth,aspectheight = aspectratio.split(':')
-                        aspectfloat = float(aspectwidth) / float(aspectheight)
+                        try:
+                            aspectwidth,aspectheight = aspectratio.split(':')
+                            aspectfloat = float(aspectwidth) / float(aspectheight)
+                        except:
+                            aspectfloat = 1.85
                 if(mediaStream.get("Type") == "Audio"):
                     audiocodec = mediaStream.get("Codec")
                     channels = mediaStream.get("Channels")
@@ -1158,29 +1168,29 @@ def processDirectory(url, result):
 
         extraData['mode'] = _MODE_GETCONTENT
         
-        if isFolder=='true':
-            SortByTemp=__settings__.getSetting('sortby')
-            if SortByTemp=='':
-                SortByTemp='SortName'
+        if isFolder == True:
+            SortByTemp = __settings__.getSetting('sortby')
+            if SortByTemp == '':
+                SortByTemp = 'SortName'
                 
-            if item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist':
+            if  item_type == 'Series' or item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist':
                 u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=json'
-                if (item.get("RecursiveItemCount") != "0"):
+                if (item.get("RecursiveItemCount") != 0):
                     dirItems.append(addGUIItem(u, details, extraData))
             else:
                 if __settings__.getSetting('autoEnterSingle') == "true":
-                    if item.get("ChildCount") == "1":
+                    if item.get("ChildCount") == 1:
                         u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&recursive=true&IncludeItemTypes=Episode&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
                     else:
                         u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=json'
                 else:
                     u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=json'
 
-                if (str(item.get("RecursiveItemCount")).encode('utf-8') != '0'):
+                if (item.get("RecursiveItemCount") != 0):
                     dirItems.append(addGUIItem(u, details, extraData))
 
         else:
-            u=server+',;'+id
+            u = server+',;'+id
             dirItems.append(addGUIItem(u, details, extraData, folder=False))
     
     return dirItems
