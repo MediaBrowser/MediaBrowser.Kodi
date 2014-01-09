@@ -818,7 +818,7 @@ def PLAY( url ):
         #tree=etree.fromstring(html).getiterator(sDto + "BaseItemDto")
         userData = result.get("UserData")
         resume_result = 0
-        if userData.get("PlaybackPositionTicks") != "0" and __settings__.getSetting('transcode') == 'false':
+        if userData.get("PlaybackPositionTicks") != 0 and __settings__.getSetting('transcode') == 'false':
             reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
             seekTime = reasonableTicks/10000
             displayTime = str(datetime.timedelta(seconds=seekTime))
