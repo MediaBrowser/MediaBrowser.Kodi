@@ -1074,13 +1074,13 @@ def processDirectory(url, result):
         # Process UserData
         userData = item.get("UserData")
         if(userData != None):
-            if userData.get("PlayCount") != "0":
+            if userData.get("PlayCount") != 0:
                 overlay = "7"
                 watched = "true"
             else:
                 overlay = "6"
                 watched = "false"
-            if userData.get("IsFavorite") == "true":
+            if userData.get("IsFavorite") == True:
                 overlay = "5"
                 favorite = "true"
             else:
