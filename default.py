@@ -835,14 +835,11 @@ def PLAY( url ):
             reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
             seekTime = reasonableTicks/10000
             displayTime = str(datetime.timedelta(seconds=seekTime))
-            display_list = [ "Resume from " + displayTime , "Start from beginning"]
+            display_list = [ "Start from beginning", "Resume from " + displayTime]
             resumeScreen = xbmcgui.Dialog()
             resume_result = resumeScreen.select('Resume',display_list)
             if resume_result == -1:
                 return False
-            if resume_result == 0:
-                resume_result = 1
-
         xbmc.Player().play(playurl,item)
         #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         WINDOW = xbmcgui.Window( 10000 )
