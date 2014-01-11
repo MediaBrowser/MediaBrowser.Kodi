@@ -1,9 +1,9 @@
 '''
     @document   : default.py
     @package    : XBMB3C add-on
-    @author     : xnappo
+    @authors    : xnappo, null_pointer
     @copyleft   : 2013, xnappo
-    @version    : 0.6.5 (frodo)
+    @version    : 0.7.0 (frodo)
 
     @license    : Gnu General Public License - see LICENSE.TXT
     @description: XBMB3C XBMC add-on
@@ -61,7 +61,7 @@ BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'li
 PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
 
 sys.path.append(BASE_RESOURCE_PATH)
-XBMB3C_VERSION="0.6.5"
+XBMB3C_VERSION="0.7.0"
 
 xbmc.log ("===== XBMB3C START =====")
 
@@ -435,20 +435,25 @@ def genrefilter ():
     u=urllib.quote(newurl)+'&mode=0'
     xbmc.executebuiltin("Container.Update(plugin://plugin.video.xbmb3c/?url="+u+",\"replace\")")#, WINDOW.getProperty('currenturl')
 
-def playall ():
+def playall (startId):
     temp_list = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     temp_list.clear()
-    html=getURL(WINDOW.getProperty("currenturl"))
-    tree = etree.fromstring(html).getiterator(sDto + "BaseItemDto")
-    for BaseItemDto in tree:
-        if(str(BaseItemDto.find(sDto + 'RecursiveItemCount').text)!='0'):
-            u=(BaseItemDto.find(sDto + 'Path').text)
-            if __settings__.getSetting('smbusername')=='':
-                u=u.replace("\\\\","smb://")
-            else:
-                u=u.replace("\\\\","smb://"+__settings__.getSetting('smbusername')+':'+__settings__.getSetting('smbpassword')+'@')
-            u=u.replace("\\","/")
-            temp_list.add(u)
+    jsonData = getURL(WINDOW.getProperty("currenturl"))
+    result = json.loads(jsonData)
+    result = result.get("Items")
+    found=0
+    for item in result:
+        if str(item.get('Id'))==startId:
+            found=1
+        if found==1:
+            if(item.get('RecursiveItemCount')!=0):
+                u=item.get('Path')
+                if __settings__.getSetting('smbusername')=='':
+                    u=u.replace("\\\\","smb://")
+                else:
+                    u=u.replace("\\\\","smb://"+__settings__.getSetting('smbusername')+':'+__settings__.getSetting('smbpassword')+'@')
+                u=u.replace("\\","/")
+                temp_list.add(u)
     xbmc.Player().play(temp_list)
     #Set a loop to wait for positive confirmation of playback
     count = 0
@@ -600,15 +605,18 @@ def addGUIItem( url, details, extraData, folder=True ):
         WINDOW = xbmcgui.Window( 10000 )
         if WINDOW.getProperty("addshowname") == "true":
             if extraData.get('locationtype')== "Virtual":
-                list=xbmcgui.ListItem( extraData.get('premieredate') + " - " + details.get('SeriesName','') + " - " + "S" + details.get('season') + "E" + details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
+                listItemName = extraData.get('premieredate').decode("utf-8") + u" - " + details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + details.get('season').decode("utf-8") + u"E" + details.get('title','Unknown').decode("utf-8")
+                list=xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
             else:
                 if details.get('season') == None:
                     season = '0'
                 else:
                     season = details.get('season')
-                list=xbmcgui.ListItem(details.get('SeriesName','')+" - " +"S"+season+"E"+details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
+                listItemName = details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + season + u"E" + details.get('title','Unknown').decode("utf-8")
+                list=xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
-            list=xbmcgui.ListItem(details.get('title','Unknown'), iconImage=thumbPath, thumbnailImage=thumbPath)
+            listItemName = details.get('title','Unknown').decode("utf-8")
+            list = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         printDebug("Setting thumbnail as " + thumbPath)
         #Set the properties of the item, such as summary, name, season, etc
         list.setInfo( type=extraData.get('type','Video'), infoLabels=details )
@@ -666,9 +674,9 @@ def addGUIItem( url, details, extraData, folder=True ):
                 
             argsToPass = 'genrefilter'
             commands.append(( __language__(30040), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            argsToPass = 'playall'
+            argsToPass = 'playall,' + extraData.get('id')
             commands.append(( __language__(30041), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))            
-            #argsToPass = 'xbmc.Container.Update()'
+            argsToPass = 'refresh'
             commands.append(( __language__(30042), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'delete,' + extraData.get('deleteurl')
             commands.append(( __language__(30043), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
@@ -827,13 +835,11 @@ def PLAY( url ):
             reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
             seekTime = reasonableTicks/10000
             displayTime = str(datetime.timedelta(seconds=seekTime))
-            display_list = [ "Resume from " + displayTime , "Start from beginning"]
+            display_list = [ "Start from beginning", "Resume from " + displayTime]
             resumeScreen = xbmcgui.Dialog()
             resume_result = resumeScreen.select('Resume',display_list)
             if resume_result == -1:
                 return False
-            if resume_result == 0:
-                resume_result = 1
 
         xbmc.Player().play(playurl,item)
         #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
@@ -1138,6 +1144,7 @@ def processDirectory(url, result):
         # Populate the extraData list
         extraData={'thumb'        : getThumb(item) ,
                    'fanart_image' : getFanart(item) ,
+                   'id'           : id ,
                    'mpaa'         : item.get("OfficialRating"),
                    'rating'       : item.get("CommunityRating"),
                    'year'         : item.get("ProductionYear"),
@@ -1173,7 +1180,7 @@ def processDirectory(url, result):
             if SortByTemp == '':
                 SortByTemp = 'SortName'
                 
-            if  item_type == 'Series' or item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist':
+            if  item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist':
                 u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=json'
                 if (item.get("RecursiveItemCount") != 0):
                     dirItems.append(addGUIItem(u, details, extraData))
@@ -1438,7 +1445,8 @@ elif sys.argv[1] == "delete":
     delete(url)
 elif sys.argv[1] == "refresh":
     WINDOW = xbmcgui.Window( 10000 )
-    #xbmc.executebuiltin("Container.Update(plugin://plugin.video.xbmb3c/?url="+WINDOW.getProperty('currenturl')+","replace")")
+    WINDOW.setProperty("force_data_reload", "true")    
+    xbmc.executebuiltin("Container.Refresh")    
 elif sys.argv[1] == "sortby":
     sortby()
 elif sys.argv[1] == "sortorder":
@@ -1446,7 +1454,8 @@ elif sys.argv[1] == "sortorder":
 elif sys.argv[1] == "genrefilter":
     genrefilter()
 elif sys.argv[1] == "playall":
-    playall()    
+    startId=sys.argv[2]
+    playall(startId)    
 else:
 
     pluginhandle = int(sys.argv[1])
