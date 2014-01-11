@@ -1,3 +1,11 @@
+0.7.0 - Switched all data from XML to JSON
+      - Removed local image copying - new image proxy service by Null_Pointer! 
+        - NOTE: You can delete the .png files in addon_data!
+      - Added local data cache 
+      - Changed 'Play All From Here' to start from current episode
+      - Fixed crash in latest episodes when a 'special' is present 
+      - Fixed DVD playback
+
 0.6.5 - Added preliminary transcoding support
       - Added preliminary music support (plays, no metadata yet)
       - Fixed bug with non-ASCII characters in collection name
