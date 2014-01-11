@@ -1,9 +1,9 @@
 '''
     @document   : default.py
     @package    : XBMB3C add-on
-    @author     : xnappo
+    @authors    : xnappo, null_pointer
     @copyleft   : 2013, xnappo
-    @version    : 0.6.5 (frodo)
+    @version    : 0.7.0 (frodo)
 
     @license    : Gnu General Public License - see LICENSE.TXT
     @description: XBMB3C XBMC add-on
@@ -61,7 +61,7 @@ BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'li
 PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
 
 sys.path.append(BASE_RESOURCE_PATH)
-XBMB3C_VERSION="0.6.5"
+XBMB3C_VERSION="0.7.0"
 
 xbmc.log ("===== XBMB3C START =====")
 
