@@ -1,4 +1,5 @@
 0.7.0 - Switched all data from XML to JSON
+        - NOTE: If you have added nodes to your main menu, you will need to redo them
       - Removed local image copying - new image proxy service by Null_Pointer! 
         - NOTE: You can delete the .png files in addon_data!
       - Added local data cache (null_pointer)
