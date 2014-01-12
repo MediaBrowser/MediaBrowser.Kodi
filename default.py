@@ -241,7 +241,6 @@ def getServerSections( ip_address, port, name, uuid):
     
     deatilsString = "Path,Genres"
     
-    '''
     if(__settings__.getSetting('includeStreamInfo') == "true"):
         deatilsString += ",MediaStreams"
     
@@ -250,7 +249,6 @@ def getServerSections( ip_address, port, name, uuid):
         
     if(__settings__.getSetting('includeOverview') == "true"):
         deatilsString += ",Overview"        
-    '''
     
     for item in result:
         if(item.get("RecursiveItemCount") != "0"):
@@ -840,6 +838,7 @@ def PLAY( url ):
             resume_result = resumeScreen.select('Resume',display_list)
             if resume_result == -1:
                 return False
+
         xbmc.Player().play(playurl,item)
         #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         WINDOW = xbmcgui.Window( 10000 )
@@ -998,6 +997,17 @@ def processDirectory(url, result):
 
     server=getServerFromURL(url)
     setWindowHeading(url)
+    
+    deatilsString = "Path,Genres"
+    
+    if(__settings__.getSetting('includeStreamInfo') == "true"):
+        deatilsString += ",MediaStreams"
+    
+    if(__settings__.getSetting('includePeople') == "true"):
+        deatilsString += ",People"
+        
+    if(__settings__.getSetting('includeOverview') == "true"):
+        deatilsString += ",Overview"            
     
     dirItems = []
     result = result.get("Items")
@@ -1180,17 +1190,17 @@ def processDirectory(url, result):
                 SortByTemp = 'SortName'
                 
             if  item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist':
-                u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=json'
+                u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + deatilsString + '&SortBy='+SortByTemp+'&format=json'
                 if (item.get("RecursiveItemCount") != 0):
                     dirItems.append(addGUIItem(u, details, extraData))
             else:
                 if __settings__.getSetting('autoEnterSingle') == "true":
                     if item.get("ChildCount") == 1:
-                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&recursive=true&IncludeItemTypes=Episode&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
+                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&recursive=true&IncludeItemTypes=Episode&Fields=' + deatilsString + '&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
                     else:
-                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=json'
+                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + deatilsString + '&SortBy='+SortByTemp+'&format=json'
                 else:
-                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=Path,Overview,Genres,People,MediaStreams&SortBy='+SortByTemp+'&format=json'
+                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + deatilsString + '&SortBy='+SortByTemp+'&format=json'
 
                 if (item.get("RecursiveItemCount") != 0):
                     dirItems.append(addGUIItem(u, details, extraData))

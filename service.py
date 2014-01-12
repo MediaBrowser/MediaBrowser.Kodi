@@ -6,10 +6,6 @@ PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
 __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') ) 
 
-sDto='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Dto}'
-sEntities='{http://schemas.datacontract.org/2004/07/MediaBrowser.Model.Entities}'
-sArrays='{http://schemas.microsoft.com/2003/10/Serialization/Arrays}'
-
 #################################################################################################
 # http image proxy server 
 # This acts as a HTTP Image proxy server for all thumbs and artwork requests
