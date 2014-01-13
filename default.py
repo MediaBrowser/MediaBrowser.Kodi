@@ -49,7 +49,8 @@ import cProfile
 import pstats
 import threading
 import hashlib
-import simplejson as json
+#import simplejson as json
+import json
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
@@ -566,143 +567,193 @@ def getURL( url, suppress=False, type="GET", popup=0 ):
 
     return link
 
+def addGUIItemGetMode(extraData):
+    if extraData.get("mode", None) is None:
+        mode = "&mode=0"
+    else:
+        mode = "&mode=%s" % extraData.get("mode")
+    
+    return mode
+    
+def addGUIItemCreateUrl(url, mode):
+    if 'mediabrowser/Videos' in url:
+        u = sys.argv[0] + "?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+    elif url.startswith('http') or url.startswith('file'):
+        u = sys.argv[0] + "?url=" + urllib.quote(url) + mode
+    else:
+        u = sys.argv[0] + "?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+        u = u.replace("\\\\","smb://")
+        u = u.replace("\\","/")
+        
+    return u
+    
+def addGUIItemGetThumb(extraData):
+    thumb = str(extraData.get('thumb',''))
+    if thumb.startswith('http'):
+        if '?' in thumb:
+            thumbPath = thumb
+        else:
+            thumbPath = thumb.encode('utf-8') 
+    else:
+        thumbPath = thumb
+        
+    return thumbPath
+
+def addGUIItemCreateListItemCreate(listItemName, thumbPath ):
+    list = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
+    return list
+
+def addGUIItemCreateListItem(details, extraData, thumbPath):
+        
+    if xbmcgui.Window( 10000 ).getProperty("addshowname") == "true":
+        if extraData.get('locationtype')== "Virtual":
+            listItemName = extraData.get('premieredate').decode("utf-8") + u" - " + details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + details.get('season').decode("utf-8") + u"E" + details.get('title','Unknown').decode("utf-8")
+            list = addGUIItemCreateListItemCreate(listItemName, thumbPath )
+        else:
+            if details.get('season') == None:
+                season = '0'
+            else:
+                season = details.get('season')
+            listItemName = details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + season + u"E" + details.get('title','Unknown').decode("utf-8")
+            list = addGUIItemCreateListItemCreate(listItemName, thumbPath )
+    else:
+        listItemName = details.get('title','Unknown').decode("utf-8")
+        list = addGUIItemCreateListItemCreate(listItemName, thumbPath )
+        
+    printDebug("Setting thumbnail as " + thumbPath)
+
+    list.setInfo( type=extraData.get('type','Video'), infoLabels=details )
+    
+    return list
+
+def addGUIItemSetNonFolderInfo(list, extraData, folder):
+    if ( not folder):
+        #list.setProperty('IsPlayable', 'true')
+
+        if extraData.get('type','video').lower() == "video":
+            list.setProperty('TotalTime', str(extraData.get('duration')))
+            list.setProperty('ResumeTime', str(extraData.get('resume')))
+
+def addGUIItemSetFanArt(list, extraData):
+    fanart = str(extraData.get('fanart_image',''))
+    if '?' in fanart:
+        list.setProperty('fanart_image', fanart)
+    else:
+        list.setProperty('fanart_image', fanart)
+
+    printDebug( "Setting fan art as " + fanart )
+
+def addGUIItemAddContextMenu(list, commands, g_contextReplace):
+    list.addContextMenuItems( commands, g_contextReplace )
+
+def addGUIItemBuildContextMenu(list, extraData):
+    printDebug("Building Context Menus")
+    commands = []
+    watched = extraData.get('watchedurl')
+    if watched != None:
+        scriptToRun = PLUGINPATH + "/default.py"
+        if extraData.get("playcount") == "0":
+            argsToPass = 'markWatched,' + extraData.get('watchedurl')
+            commands.append(( __language__(30093), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+        else:
+            argsToPass = 'markUnwatched,' + extraData.get('watchedurl')
+            commands.append(( __language__(30094), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+        if extraData.get('favorite') != 'true':
+            argsToPass = 'markFavorite,' + extraData.get('favoriteurl')
+            commands.append(( __language__(30095), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+        else:
+            argsToPass = 'unmarkFavorite,' + extraData.get('favoriteurl')
+            commands.append(( __language__(30096), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            
+        argsToPass = 'sortby'
+        commands.append(( __language__(30097), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+        if 'Ascending' in xbmcgui.Window( 10000 ).getProperty("currenturl"):
+            argsToPass = 'sortorder'
+            commands.append(( __language__(30098), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+        else:
+            argsToPass = 'sortorder'
+            commands.append(( __language__(30099), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            
+        argsToPass = 'genrefilter'
+        commands.append(( __language__(30040), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+        argsToPass = 'playall,' + extraData.get('id')
+        commands.append(( __language__(30041), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))            
+        argsToPass = 'refresh'
+        commands.append(( __language__(30042), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+        argsToPass = 'delete,' + extraData.get('deleteurl')
+        commands.append(( __language__(30043), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+        
+        addGUIItemAddContextMenu(list, commands, g_contextReplace)
+
+def addGUIItemSetMetaInfo(list, details, extraData):
+    list.setInfo('video', {'duration' : extraData.get('duration')})
+    list.setInfo('video', {'playcount' : extraData.get('playcount')})
+    if extraData.get('favorite')=='true':
+        list.setInfo('video', {'top250' : '1'})
+    if extraData.get('totaltime') != None:
+        list.setProperty('TotalTime', extraData.get('totaltime'))
+        list.setProperty('ResumeTime', str(int(extraData.get('resumetime'))/60))
+    list.setInfo('video', {'director' : extraData.get('director')})
+    list.setInfo('video', {'writer' : extraData.get('writer')})
+    list.setInfo('video', {'year' : extraData.get('year')})
+    list.setInfo('video', {'genre' : extraData.get('genre')})
+    #list.setInfo('video', {'cast' : extraData.get('cast')}) --- Broken in Frodo
+    #list.setInfo('video', {'castandrole' : extraData.get('cast')}) --- Broken in Frodo
+    #list.setInfo('video', {'plotoutline' : extraData.get('cast')}) # Hack to get cast data into skin
+    list.setInfo('video', {'episode': details.get('episode')})
+    list.setInfo('video', {'season': details.get('season')})        
+    list.setInfo('video', {'mpaa': extraData.get('mpaa')})
+    list.setInfo('video', {'rating': extraData.get('rating')})
+        
+        
+def addGUIItemSetWatchedUrl(list, extraData):
+    watched = extraData.get('watchedurl')
+    if watched != None:
+        list.setProperty('watchedurl', extraData.get('watchedurl'))
+        
+def addGUIItemAddStreamInfo(list, extraData):
+    list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
+    list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
+        
+def addGUIItemAddSortMethod():
+    xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE  )
+  
 def addGUIItem( url, details, extraData, folder=True ):
+
         printDebug("== ENTER: addGUIItem ==", False)
         printDebug("Adding Dir for [%s]" % details.get('title','Unknown'))
         printDebug("Passed details: " + str(details))
         printDebug("Passed extraData: " + str(extraData))
         #printDebug("urladdgui:" + str(url))
+        
         if details.get('title','') == '':
             return
 
-        if extraData.get('mode',None) is None:
-            mode="&mode=0"
-        else:
-            mode="&mode=%s" % extraData['mode']
+        mode = addGUIItemGetMode(extraData)
 
-        #Create the URL to pass to the item
-        if 'mediabrowser/Videos' in url:
-            u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-        elif url.startswith('http') or url.startswith('file'):
-            u=sys.argv[0]+"?url="+urllib.quote(url)+mode
-        else:
-            u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-            u=u.replace("\\\\","smb://")
-            u=u.replace("\\","/")
+        u = addGUIItemCreateUrl(url, mode)
         
-        #Create the ListItem that will be displayed
-        thumb=str(extraData.get('thumb',''))
-        if thumb.startswith('http'):
-            if '?' in thumb:
-                thumbPath=thumb
-            else:
-                thumbPath=thumb.encode('utf-8') 
-        else:
-            thumbPath=thumb
-        
-        WINDOW = xbmcgui.Window( 10000 )
-        if WINDOW.getProperty("addshowname") == "true":
-            if extraData.get('locationtype')== "Virtual":
-                listItemName = extraData.get('premieredate').decode("utf-8") + u" - " + details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + details.get('season').decode("utf-8") + u"E" + details.get('title','Unknown').decode("utf-8")
-                list=xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
-            else:
-                if details.get('season') == None:
-                    season = '0'
-                else:
-                    season = details.get('season')
-                listItemName = details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + season + u"E" + details.get('title','Unknown').decode("utf-8")
-                list=xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
-        else:
-            listItemName = details.get('title','Unknown').decode("utf-8")
-            list = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
-        printDebug("Setting thumbnail as " + thumbPath)
-        #Set the properties of the item, such as summary, name, season, etc
-        list.setInfo( type=extraData.get('type','Video'), infoLabels=details )
+        thumbPath = addGUIItemGetThumb(extraData)
 
-        #For all end items    
-        if ( not folder):
-            #list.setProperty('IsPlayable', 'true')
+        list = addGUIItemCreateListItem(details, extraData, thumbPath)
+          
+        addGUIItemSetNonFolderInfo(list, extraData, folder)
 
-            if extraData.get('type','video').lower() == "video":
-                list.setProperty('TotalTime', str(extraData.get('duration')))
-                list.setProperty('ResumeTime', str(extraData.get('resume')))
-            
-
-                
-
-        #Set the fanart image if it has been enabled
-        fanart=str(extraData.get('fanart_image',''))
-        if '?' in fanart:
-            list.setProperty('fanart_image', fanart)
-        else:
-            list.setProperty('fanart_image', fanart)
-
-        printDebug( "Setting fan art as " + fanart )
+        addGUIItemSetFanArt(list, extraData)
 
         #if extraData.get('banner'):
         #    list.setProperty('banner', extraData.get('banner'))
         #    printDebug( "Setting banner as " + extraData.get('banner'))
 
-        printDebug("Building Context Menus")
-        commands = []
-        watched = extraData.get('watchedurl')
-        if watched != None:
-            scriptToRun = PLUGINPATH + "/default.py"
-            if extraData.get("playcount") == "0":
-                argsToPass = 'markWatched,' + extraData.get('watchedurl')
-                commands.append(( __language__(30093), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            else:
-                argsToPass = 'markUnwatched,' + extraData.get('watchedurl')
-                commands.append(( __language__(30094), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            if extraData.get('favorite') != 'true':
-                argsToPass = 'markFavorite,' + extraData.get('favoriteurl')
-                commands.append(( __language__(30095), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            else:
-                argsToPass = 'unmarkFavorite,' + extraData.get('favoriteurl')
-                commands.append(( __language__(30096), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-                
-            argsToPass = 'sortby'
-            commands.append(( __language__(30097), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            if 'Ascending' in WINDOW.getProperty("currenturl"):
-                argsToPass = 'sortorder'
-                commands.append(( __language__(30098), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            else:
-                argsToPass = 'sortorder'
-                commands.append(( __language__(30099), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-                
-            argsToPass = 'genrefilter'
-            commands.append(( __language__(30040), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            argsToPass = 'playall,' + extraData.get('id')
-            commands.append(( __language__(30041), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))            
-            argsToPass = 'refresh'
-            commands.append(( __language__(30042), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            argsToPass = 'delete,' + extraData.get('deleteurl')
-            commands.append(( __language__(30043), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
-            list.addContextMenuItems( commands, g_contextReplace )
+        addGUIItemBuildContextMenu(list, extraData)
 
-        list.setInfo('video', {'duration' : extraData.get('duration')})
-        list.setInfo('video', {'playcount' : extraData.get('playcount')})
-        if extraData.get('favorite')=='true':
-            list.setInfo('video', {'top250' : '1'})
-        if extraData.get('totaltime') != None:
-            list.setProperty('TotalTime', extraData.get('totaltime'))
-            list.setProperty('ResumeTime', str(int(extraData.get('resumetime'))/60))
-        list.setInfo('video', {'director' : extraData.get('director')})
-        list.setInfo('video', {'writer' : extraData.get('writer')})
-        list.setInfo('video', {'year' : extraData.get('year')})
-        list.setInfo('video', {'genre' : extraData.get('genre')})
-        #list.setInfo('video', {'cast' : extraData.get('cast')}) --- Broken in Frodo
-        #list.setInfo('video', {'castandrole' : extraData.get('cast')}) --- Broken in Frodo
-        #list.setInfo('video', {'plotoutline' : extraData.get('cast')}) # Hack to get cast data into skin
-        list.setInfo('video', {'episode': details.get('episode')})
-        list.setInfo('video', {'season': details.get('season')})        
-        list.setInfo('video', {'mpaa': extraData.get('mpaa')})
-        list.setInfo('video', {'rating': extraData.get('rating')})
-        if watched != None:
-            list.setProperty('watchedurl', extraData.get('watchedurl'))
-        list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
-        list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
-        xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE  )
+        addGUIItemSetMetaInfo(list, details, extraData)
+
+        addGUIItemSetWatchedUrl(list, extraData)
+
+        addGUIItemAddStreamInfo(list, extraData)
+
+        addGUIItemAddSortMethod()
         
         return (u, list, True)
 
