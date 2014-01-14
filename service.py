@@ -6,6 +6,8 @@ PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
 __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') ) 
 
+_MODE_BASICPLAY=12
+
 #################################################################################################
 # http image proxy server 
 # This acts as a HTTP Image proxy server for all thumbs and artwork requests
@@ -89,6 +91,95 @@ xbmc.log("XBMB3s -> HTTP Image Proxy Server NOW SERVING IMAGES")
 
 #################################################################################################
 # end http image proxy server 
+#################################################################################################
+
+#################################################################################################
+# Recent Info Updater
+# 
+#################################################################################################
+import threading
+import json
+
+class RecentInfoUpdaterThread(threading.Thread):
+
+    lastRun = time.time()
+    def run(self):
+        xbmc.log("RecentInfoUpdaterThread Started")
+        
+        while (xbmc.abortRequested == False):
+            self.updateRecentMovies()
+            # sleep for 2 min
+            xbmc.sleep(1000 * 60 * 2)
+                        
+        xbmc.log("RecentInfoUpdaterThread Exited")
+        
+    def updateRecentMovies(self):
+        xbmc.log("updateRecentMovies Called")
+        
+        mb3Host = __settings__.getSetting('ipaddress')
+        mb3Port =__settings__.getSetting('port')    
+        userName = __settings__.getSetting('username')        
+        
+        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
+        
+        requesthandle = urllib.urlopen(userUrl, proxies={})
+        jsonData = requesthandle.read()
+        requesthandle.close()        
+        
+        userid = ""
+        result = json.loads(jsonData)
+        for user in result:
+            if(user.get("Name") == userName):
+                userid = user.get("Id")    
+                break
+        
+        xbmc.log("updateRecentMovies UserID : " + userid)
+        
+        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
+        
+        requesthandle = urllib.urlopen(recentUrl, proxies={})
+        jsonData = requesthandle.read()
+        requesthandle.close()     
+
+        result = json.loads(jsonData)
+        xbmc.log("Json Data : " + str(result))
+        
+        result = result.get("Items")
+        if(result == None):
+            result = []
+            
+        WINDOW = xbmcgui.Window( 10000 )
+
+        item_count = 1
+        for item in result:
+            title = "Missing Title"
+            if(item.get("Name") != None):
+                title = item.get("Name").encode('utf-8')
+
+            item_id = item.get("Id")
+            thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
+            
+            url =  mb3Host + ":" + mb3Port + ',;' + item_id
+            playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+            playUrl = playUrl.replace("\\\\","smb://")
+            playUrl = playUrl.replace("\\","/")    
+
+            xbmc.log("LatestMovieMB3." + str(item_count) + ".Title = " + title)
+            xbmc.log("LatestMovieMB3." + str(item_count) + ".Thumb = " + thumbnail)
+            xbmc.log("LatestMovieMB3." + str(item_count) + ".Path  = " + playUrl)
+            
+            WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Title", title)
+            WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Thumb", thumbnail)
+            WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Path", playUrl)            
+            
+            item_count = item_count + 1
+        
+        
+newThread = RecentInfoUpdaterThread()
+newThread.start()
+
+#################################################################################################
+# end Recent Info Updater
 #################################################################################################
 
 sys.path.append(BASE_RESOURCE_PATH)
