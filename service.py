@@ -22,34 +22,36 @@ from urlparse import parse_qs
 from urllib import urlretrieve
 
 class MyHandler(BaseHTTPRequestHandler):
-    mb3Host = ""
-    mb3Port = 0
-    debugLogging = "false"
     
-    def logMsg(self, msg):
-        if(self.debugLogging == "true"):
+    def logMsg(self, msg, debugLogging):
+        if(debugLogging == "true"):
             xbmc.log("XBMB3C Image Proxy -> " + msg)
     
     def do_GET(self):
+    
+        mb3Host = __settings__.getSetting('ipaddress')
+        mb3Port =__settings__.getSetting('port')
+        debugLogging = __settings__.getSetting('debug')   
+        
         params = parse_qs(self.path[2:])
-        self.logMsg("Params : " + str(params))
+        self.logMsg("Params : " + str(params), debugLogging)
         itemId = params["id"][0]
         requestType = params["type"][0]
-        
+
         imageType = "Primary"
         if(requestType == "b"):
             imageType = "Backdrop"        
             
-        remoteUrl = "http://" + self.mb3Host + ":" + self.mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType + "?Format=png"
+        remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType + "?Format=png"
         
-        self.logMsg("MB3 Host : " + self.mb3Host)
-        self.logMsg("MB3 Port : " + self.mb3Port)
-        self.logMsg("Item ID : " + itemId)
-        self.logMsg("Request Type : " + requestType)
-        self.logMsg("Remote URL : " + remoteUrl)
+        self.logMsg("MB3 Host : " + mb3Host, debugLogging)
+        self.logMsg("MB3 Port : " + mb3Port, debugLogging)
+        self.logMsg("Item ID : " + itemId, debugLogging)
+        self.logMsg("Request Type : " + requestType, debugLogging)
+        self.logMsg("Remote URL : " + remoteUrl, debugLogging)
         
         # get the remote image
-        self.logMsg("Downloading Image")
+        self.logMsg("Downloading Image", debugLogging)
         requesthandle = urllib.urlopen(remoteUrl, proxies={})
         pngData = requesthandle.read()
         requesthandle.close()
@@ -57,14 +59,14 @@ class MyHandler(BaseHTTPRequestHandler):
         datestring = time.strftime('%a, %d %b %Y %H:%M:%S GMT')
         length = len(pngData)
         
-        self.logMsg("ReSending Image")
+        self.logMsg("ReSending Image", debugLogging)
         self.send_response(200)
         self.send_header('Content-type', 'image/png')
         self.send_header('Content-Length', length)
         self.send_header('Last-Modified', datestring)        
         self.end_headers()
         self.wfile.write(pngData)
-        self.logMsg("Image Sent")
+        self.logMsg("Image Sent", debugLogging)
         
     def do_HEAD(self):
         datestring = time.strftime('%a, %d %b %Y %H:%M:%S GMT')
@@ -77,9 +79,7 @@ class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     pass
 
 def startServer():
-    MyHandler.mb3Host = __settings__.getSetting('ipaddress')
-    MyHandler.mb3Port =__settings__.getSetting('port')
-    MyHandler.debugLogging = __settings__.getSetting('debug')
+
     server = ThreadingHTTPServer(("",15001), MyHandler)
     server.serve_forever()
     
