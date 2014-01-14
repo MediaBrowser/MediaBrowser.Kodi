@@ -99,21 +99,31 @@ xbmc.log("XBMB3s -> HTTP Image Proxy Server NOW SERVING IMAGES")
 #################################################################################################
 import threading
 import json
+from datetime import datetime
+import time
 
 class RecentInfoUpdaterThread(threading.Thread):
 
-    lastRun = time.time()
+    
     def run(self):
         xbmc.log("RecentInfoUpdaterThread Started")
         
+        self.updateRecent()
+        lastRun = datetime.today()
+        
         while (xbmc.abortRequested == False):
-            self.updateRecentMovies()
-            # sleep for 2 min
-            xbmc.sleep(1000 * 60 * 2)
+            td = datetime.today() - lastRun
+            secTotal = td.seconds
+            
+            if(secTotal > 300):
+                self.updateRecent()
+                lastRun = datetime.today()
+
+            xbmc.sleep(3000)
                         
         xbmc.log("RecentInfoUpdaterThread Exited")
         
-    def updateRecentMovies(self):
+    def updateRecent(self):
         xbmc.log("updateRecentMovies Called")
         
         mb3Host = __settings__.getSetting('ipaddress')
@@ -135,6 +145,8 @@ class RecentInfoUpdaterThread(threading.Thread):
         
         xbmc.log("updateRecentMovies UserID : " + userid)
         
+        xbmc.log("Updating Recent Movie List")
+        
         recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
         
         requesthandle = urllib.urlopen(recentUrl, proxies={})
@@ -142,7 +154,7 @@ class RecentInfoUpdaterThread(threading.Thread):
         requesthandle.close()     
 
         result = json.loads(jsonData)
-        xbmc.log("Json Data : " + str(result))
+        xbmc.log("Recent Movie Json Data : " + str(result))
         
         result = result.get("Items")
         if(result == None):
@@ -171,6 +183,45 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Title", title)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Thumb", thumbnail)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Path", playUrl)            
+            
+            item_count = item_count + 1
+        
+        xbmc.log("Updating Recent TV Show List")
+        
+        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json"
+        
+        requesthandle = urllib.urlopen(recentUrl, proxies={})
+        jsonData = requesthandle.read()
+        requesthandle.close()         
+        
+        result = json.loads(jsonData)
+        xbmc.log("Recent TV Show Json Data : " + str(result))
+        
+        result = result.get("Items")
+        if(result == None):
+            result = []   
+
+        item_count = 1
+        for item in result:
+            title = "Missing Title"
+            if(item.get("Name") != None):
+                title = item.get("Name").encode('utf-8')
+
+            item_id = item.get("Id")
+            thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
+            
+            url =  mb3Host + ":" + mb3Port + ',;' + item_id
+            playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+            playUrl = playUrl.replace("\\\\","smb://")
+            playUrl = playUrl.replace("\\","/")    
+
+            xbmc.log("LatestEpisodeMB3." + str(item_count) + ".Title = " + title)
+            xbmc.log("LatestEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail)
+            xbmc.log("LatestEpisodeMB3." + str(item_count) + ".Path  = " + playUrl)
+            
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Title", title)
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Thumb", thumbnail)
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Path", playUrl)            
             
             item_count = item_count + 1
         
