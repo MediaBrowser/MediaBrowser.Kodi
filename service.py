@@ -215,11 +215,15 @@ class RecentInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            xbmc.log("LatestEpisodeMB3." + str(item_count) + ".Title = " + title)
+            xbmc.log("LatestEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title)
+            xbmc.log("LatestEpisodeMB3." + str(item_count) + ".ShowTitle = " + "Show Title")
+            xbmc.log("LatestEpisodeMB3." + str(item_count) + ".EpisodeNo = " + "Show Num")
             xbmc.log("LatestEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail)
             xbmc.log("LatestEpisodeMB3." + str(item_count) + ".Path  = " + playUrl)
             
-            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Title", title)
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".EpisodeTitle", title)
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".ShowTitle", "Show Title")
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".EpisodeNo", "Show Num")
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Thumb", thumbnail)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Path", playUrl)            
             
