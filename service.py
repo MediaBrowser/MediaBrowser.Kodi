@@ -104,6 +104,9 @@ import time
 
 class RecentInfoUpdaterThread(threading.Thread):
 
+    def logMsg(self, msg, debugLogging):
+        if(debugLogging == "true"):
+            xbmc.log("XBMB3C Recent Info Thread -> " + msg)
     
     def run(self):
         xbmc.log("RecentInfoUpdaterThread Started")
@@ -128,7 +131,8 @@ class RecentInfoUpdaterThread(threading.Thread):
         
         mb3Host = __settings__.getSetting('ipaddress')
         mb3Port =__settings__.getSetting('port')    
-        userName = __settings__.getSetting('username')        
+        userName = __settings__.getSetting('username')     
+        debugLogging = __settings__.getSetting('debug')           
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
@@ -176,9 +180,9 @@ class RecentInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            xbmc.log("LatestMovieMB3." + str(item_count) + ".Title = " + title)
-            xbmc.log("LatestMovieMB3." + str(item_count) + ".Thumb = " + thumbnail)
-            xbmc.log("LatestMovieMB3." + str(item_count) + ".Path  = " + playUrl)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Title = " + title, debugLogging)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, debugLogging)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Path  = " + playUrl, debugLogging)
             
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Title", title)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Thumb", thumbnail)
@@ -206,6 +210,14 @@ class RecentInfoUpdaterThread(threading.Thread):
             title = "Missing Title"
             if(item.get("Name") != None):
                 title = item.get("Name").encode('utf-8')
+                
+            seriesName = "Missing Name"
+            if(item.get("SeriesName") != None):
+                seriesName = item.get("SeriesName").encode('utf-8')   
+
+            eppNumber = "X"
+            if(item.get("IndexNumber") != None):
+                eppNumber = str(item.get("IndexNumber"))
 
             item_id = item.get("Id")
             thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
@@ -215,15 +227,15 @@ class RecentInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            xbmc.log("LatestEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title)
-            xbmc.log("LatestEpisodeMB3." + str(item_count) + ".ShowTitle = " + "Show Title")
-            xbmc.log("LatestEpisodeMB3." + str(item_count) + ".EpisodeNo = " + "Show Num")
-            xbmc.log("LatestEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail)
-            xbmc.log("LatestEpisodeMB3." + str(item_count) + ".Path  = " + playUrl)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, debugLogging)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, debugLogging)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".EpisodeNo = " + eppNumber, debugLogging)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail, debugLogging)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Path  = " + playUrl, debugLogging)
             
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".EpisodeTitle", title)
-            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".ShowTitle", "Show Title")
-            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".EpisodeNo", "Show Num")
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".ShowTitle", seriesName)
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".EpisodeNo", eppNumber)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Thumb", thumbnail)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Path", playUrl)            
             
