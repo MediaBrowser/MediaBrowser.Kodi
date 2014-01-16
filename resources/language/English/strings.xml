@@ -14,14 +14,16 @@
     <string id="30014">MediaBrowser</string>
     <string id="30015">Network</string>    
 
-    <string id="30022">Debug:</string>
+    <string id="30022">Advanced</string>
     <string id="30024">Username:</string>
     <string id="30025">Password:</string>
+    <string id="30026">Use JSON instead of SIMPLEJSON (recommended for Pi)</string>
     
     <string id="30030">Port Number:</string>
     <string id="30036">Number of recent movies to show:</string>    
     <string id="30037">Number of recent TV episodes to show:</string>    
     <string id="30038">Mark watched at start of playback:</string>    
+    <string id="30039">Use Series Art for Episodes</string>
 
     <string id="30040">Genre Filter ...</string>
     <string id="30041">Play All from Here</string>
@@ -79,7 +81,7 @@
     <string id="30098">Sort Order Descending</string>
     <string id="30099">Sort Order Ascending</string>
     
-    <string id="30110">General</string>
+    <string id="30110">Media Data</string>
     <string id="30111">Include Stream Info</string>
     <string id="30112">Include People</string>
     <string id="30113">Include Overview</string>

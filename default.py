@@ -49,7 +49,7 @@ import cProfile
 import pstats
 import threading
 import hashlib
-import simplejson as json
+
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
@@ -76,6 +76,11 @@ _MODE_BASICPLAY=12
 
 #Check debug first...
 g_debug = __settings__.getSetting('debug')
+if (__settings__.getSetting('useJson')=='true'):
+    import json as json
+else:
+    import simplejson as json
+    
 def printDebug( msg, functionname=True ):
     if g_debug == "true":
         if functionname is False:
@@ -1037,14 +1042,14 @@ def processDirectory(url, result):
         if (str(item.get("ParentIndexNumber")) != None):
             tempSeason = str(item.get("ParentIndexNumber"))
       
-        if item.get("DisplayMediaType") == "Episode":
+        if item.get("Type") == "Episode":
             tempTitle = str(tempEpisode) + ' - ' + tempTitle
             xbmcplugin.setContent(pluginhandle, 'episodes')
-        if item.get("DisplayMediaType") == "Season":
+        if item.get("Type") == "Season":
             xbmcplugin.setContent(pluginhandle, 'tvshows')
-        if item.get("DisplayMediaType") == "Audio":
+        if item.get("Type") == "Audio":
             xbmcplugin.setContent(pluginhandle, 'songs')            
-        if item.get("DisplayMediaType") == "Series":
+        if item.get("Type") == "Series":
             xbmcplugin.setContent(pluginhandle, 'tvshows')         
             
         # Process MediaStreams
@@ -1214,8 +1219,9 @@ def processDirectory(url, result):
 def getThumb( data ):
     
     id = data.get("Id")
-    if data.get("DisplayMediaType") == "Episode":
-        id = data.get("SeriesId")
+    if __settings__.getSetting('useSeriesArt') == "true":
+        if data.get("Type") == "Episode":
+            id = data.get("SeriesId")
 
     # use the local image proxy server that is made available by this addons service
     thumbnail = ("http://localhost:15001/?id=" + str(id) + "&type=t")
@@ -1225,7 +1231,7 @@ def getThumb( data ):
 def getFanart( data ):
 
     id = data.get("Id")
-    if data.get("DisplayMediaType") == "Episode" or data.get("DisplayMediaType") == "Season":
+    if data.get("Type") == "Episode" or data.get("Type") == "Season":
         id = data.get("SeriesId")   
     
     # use the local image proxy server that is made available by this addons service
