@@ -6,6 +6,8 @@ PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
 __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') ) 
 
+_MODE_BASICPLAY=12
+
 #################################################################################################
 # http image proxy server 
 # This acts as a HTTP Image proxy server for all thumbs and artwork requests
@@ -89,6 +91,162 @@ xbmc.log("XBMB3s -> HTTP Image Proxy Server NOW SERVING IMAGES")
 
 #################################################################################################
 # end http image proxy server 
+#################################################################################################
+
+#################################################################################################
+# Recent Info Updater
+# 
+#################################################################################################
+import threading
+import json
+from datetime import datetime
+import time
+
+class RecentInfoUpdaterThread(threading.Thread):
+
+    def logMsg(self, msg, debugLogging):
+        if(debugLogging == "true"):
+            xbmc.log("XBMB3C Recent Info Thread -> " + msg)
+    
+    def run(self):
+        xbmc.log("RecentInfoUpdaterThread Started")
+        
+        self.updateRecent()
+        lastRun = datetime.today()
+        
+        while (xbmc.abortRequested == False):
+            td = datetime.today() - lastRun
+            secTotal = td.seconds
+            
+            if(secTotal > 300):
+                self.updateRecent()
+                lastRun = datetime.today()
+
+            xbmc.sleep(3000)
+                        
+        xbmc.log("RecentInfoUpdaterThread Exited")
+        
+    def updateRecent(self):
+        xbmc.log("updateRecentMovies Called")
+        
+        mb3Host = __settings__.getSetting('ipaddress')
+        mb3Port =__settings__.getSetting('port')    
+        userName = __settings__.getSetting('username')     
+        debugLogging = __settings__.getSetting('debug')           
+        
+        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
+        
+        requesthandle = urllib.urlopen(userUrl, proxies={})
+        jsonData = requesthandle.read()
+        requesthandle.close()        
+        
+        userid = ""
+        result = json.loads(jsonData)
+        for user in result:
+            if(user.get("Name") == userName):
+                userid = user.get("Id")    
+                break
+        
+        xbmc.log("updateRecentMovies UserID : " + userid)
+        
+        xbmc.log("Updating Recent Movie List")
+        
+        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
+        
+        requesthandle = urllib.urlopen(recentUrl, proxies={})
+        jsonData = requesthandle.read()
+        requesthandle.close()     
+
+        result = json.loads(jsonData)
+        xbmc.log("Recent Movie Json Data : " + str(result))
+        
+        result = result.get("Items")
+        if(result == None):
+            result = []
+            
+        WINDOW = xbmcgui.Window( 10000 )
+
+        item_count = 1
+        for item in result:
+            title = "Missing Title"
+            if(item.get("Name") != None):
+                title = item.get("Name").encode('utf-8')
+
+            item_id = item.get("Id")
+            thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
+            
+            url =  mb3Host + ":" + mb3Port + ',;' + item_id
+            playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+            playUrl = playUrl.replace("\\\\","smb://")
+            playUrl = playUrl.replace("\\","/")    
+
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Title = " + title, debugLogging)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, debugLogging)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Path  = " + playUrl, debugLogging)
+            
+            WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Title", title)
+            WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Thumb", thumbnail)
+            WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Path", playUrl)            
+            
+            item_count = item_count + 1
+        
+        xbmc.log("Updating Recent TV Show List")
+        
+        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json"
+        
+        requesthandle = urllib.urlopen(recentUrl, proxies={})
+        jsonData = requesthandle.read()
+        requesthandle.close()         
+        
+        result = json.loads(jsonData)
+        xbmc.log("Recent TV Show Json Data : " + str(result))
+        
+        result = result.get("Items")
+        if(result == None):
+            result = []   
+
+        item_count = 1
+        for item in result:
+            title = "Missing Title"
+            if(item.get("Name") != None):
+                title = item.get("Name").encode('utf-8')
+                
+            seriesName = "Missing Name"
+            if(item.get("SeriesName") != None):
+                seriesName = item.get("SeriesName").encode('utf-8')   
+
+            eppNumber = "X"
+            if(item.get("IndexNumber") != None):
+                eppNumber = str(item.get("IndexNumber"))
+
+            item_id = item.get("Id")
+            thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
+            
+            url =  mb3Host + ":" + mb3Port + ',;' + item_id
+            playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+            playUrl = playUrl.replace("\\\\","smb://")
+            playUrl = playUrl.replace("\\","/")    
+
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, debugLogging)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, debugLogging)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".EpisodeNo = " + eppNumber, debugLogging)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail, debugLogging)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Path  = " + playUrl, debugLogging)
+            
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".EpisodeTitle", title)
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".ShowTitle", seriesName)
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".EpisodeNo", eppNumber)
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Thumb", thumbnail)
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Path", playUrl)            
+            
+            item_count = item_count + 1
+        
+        
+newThread = RecentInfoUpdaterThread()
+newThread.start()
+
+#################################################################################################
+# end Recent Info Updater
 #################################################################################################
 
 sys.path.append(BASE_RESOURCE_PATH)
