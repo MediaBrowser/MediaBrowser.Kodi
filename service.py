@@ -9,6 +9,41 @@ __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') )
 _MODE_BASICPLAY=12
 
 #################################################################################################
+# menu item loader
+# this loads the favourites.xml and sets the windows props for the menus to auto display
+#################################################################################################
+import xml.etree.ElementTree as xml
+
+def loadMenuOptions():
+    favourites_file = os.path.join(xbmc.translatePath('special://userdata'), "favourites.xml")
+    
+    WINDOW = xbmcgui.Window( 10000 )
+    menuItem = 0
+    
+    tree = xml.parse(favourites_file)
+    rootElement = tree.getroot()
+    for child in rootElement.findall('favourite'):
+        name = child.get('name')
+        action = child.text
+
+        index = action.find("plugin://plugin.video.xbmb3c")
+        if(index > -1 and len(action) > 10):
+            action_url = action[index:len(action) - 2]
+            
+            WINDOW.setProperty("xbmb3c_menuitem_name_" + str(menuItem), name)
+            WINDOW.setProperty("xbmb3c_menuitem_action_" + str(menuItem), action_url)
+            xbmc.log("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name)
+            xbmc.log("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url)
+            
+            menuItem = menuItem + 1
+
+loadMenuOptions()
+
+#################################################################################################
+# end menu item loader
+#################################################################################################
+
+#################################################################################################
 # http image proxy server 
 # This acts as a HTTP Image proxy server for all thumbs and artwork requests
 # this is needed due to the fact XBMC can not use the MB3 API as it has issues with the HTTP response format
