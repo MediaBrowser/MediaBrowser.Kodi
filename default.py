@@ -521,9 +521,7 @@ def getURL( url, suppress=False, type="GET", popup=0 ):
         #head = {"Accept-Encoding" : "gzip,deflate", "Accept-Charset" : "UTF-8,*"} 
         conn.request(type, urlPath)
         data = conn.getresponse()
-        
-        xbmc.log(str(data.getheaders()))
-        
+        #xbmc.log(str(data.getheaders()))
         if int(data.status) == 200:
             link=data.read()
             printDebug("====== 200 returned =======")
