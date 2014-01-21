@@ -906,15 +906,11 @@ def getCacheValidator (server,url):
     idAndOptions = url.split("ParentId=")
     id = idAndOptions[1].split("&")
     jsonData = getURL("http://"+server+"/mediabrowser/Users/" + userid + "/Items/" +id[0]+"?format=json", suppress=False, popup=1 )
-    
     result = json.loads(jsonData)
-    
     printDebug ("RecursiveItemCount: " + str(result.get("RecursiveItemCount")))
     printDebug ("RecursiveUnplayedCount: " + str(result.get("RecursiveUnplayedItemCount")))
-    #playedTime = (str(result.get("PlayedPercentage"))).replace(".","")
-    playedTime = str(int(result.get("PlayedPercentage")))
-    #xbmc.log(str(result.get("PlayedPercentage")))
-    #xbmc.log(playedTime)
+    playedTime = (str(result.get("PlayedPercentage"))).replace(".","-")
+    xbmc.log("getCacheValidator PlayedPercentage : " + playedTime)
     return (str(result.get("RecursiveItemCount")) + "_" + str(result.get("RecursiveUnplayedItemCount")) + "_" + playedTime)
     
 def getCacheValidatorFromData(result):
@@ -923,17 +919,25 @@ def getCacheValidatorFromData(result):
         result = []
 
     itemCount = 0
-    unwatchedItemCount = 0 
+    unwatchedItemCount = 0
+    totalPlayedPercentage = 0.0
     for item in result:
-    
         userData = item.get("UserData")
         if(userData != None):
             itemCount = itemCount + 1
             if userData.get("Played") == False:
                 unwatchedItemCount = unwatchedItemCount + 1
-        
-    playedTime =  int(100 - ((float(unwatchedItemCount) / float(itemCount)) * 100))
-    return "_" + str(itemCount) + "_" + str(unwatchedItemCount) + "_" + str(playedTime)
+                itemPossition = userData.get("PlaybackPositionTicks")
+                itemRuntime = item.get("RunTimeTicks")
+                itemPercent = float(itemPossition) / float(itemRuntime)
+                totalPlayedPercentage = totalPlayedPercentage + itemPercent
+            else:
+                totalPlayedPercentage = totalPlayedPercentage + 100
+    
+    totalPlayedPercentage = totalPlayedPercentage / float(itemCount)
+    playedTime = str(totalPlayedPercentage).replace(".","-")
+    xbmc.log("getCacheValidatorFromData PlayedPercentage : " + playedTime)
+    return "_" + str(itemCount) + "_" + str(unwatchedItemCount) + "_" + playedTime
     
 def getContent( url ):
     '''
