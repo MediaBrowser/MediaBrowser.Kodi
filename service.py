@@ -115,10 +115,16 @@ class MyHandler(BaseHTTPRequestHandler):
 class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
     pass
 
+keepServing = True
 def startServer():
 
     server = ThreadingHTTPServer(("",15001), MyHandler)
-    server.serve_forever()
+    
+    while (keepServing):
+        server.handle_request()
+    #server.serve_forever()
+    
+    xbmc.log("XBMB3s -> HTTP Image Proxy Server EXITING")
     
 xbmc.log("XBMB3s -> HTTP Image Proxy Server Starting")
 Thread(target=startServer).start()
@@ -157,7 +163,7 @@ class RecentInfoUpdaterThread(threading.Thread):
                 self.updateRecent()
                 lastRun = datetime.today()
 
-            xbmc.sleep(3000)
+            xbmc.sleep(1000)
                         
         xbmc.log("RecentInfoUpdaterThread Exited")
         
@@ -350,13 +356,20 @@ class Service( xbmc.Player ):
 
 montior=Service()        
 while not xbmc.abortRequested:
+
     if xbmc.Player().isPlaying():
         try:
-            playTime=xbmc.Player().getTime()
+            playTime = xbmc.Player().getTime()
         except:
             pass
-        xbmc.sleep(100)
-    else:
-        xbmc.sleep(1000)
+
+    xbmc.sleep(1000)
+    
+# stop the image proxy
+keepServing = False
+try:
+    requesthandle = urllib.urlopen("http://localhost:15001/?id=dummy&type=t", proxies={})
+except:
+    xbmc.log("Tried to stop image proxy server but it was already stopped")
     
 xbmc.log("Service shutting down")
