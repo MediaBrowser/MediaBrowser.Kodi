@@ -49,7 +49,8 @@ import cProfile
 import pstats
 import threading
 import hashlib
-
+import StringIO
+import gzip
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
@@ -500,7 +501,7 @@ def delete (url):
             progress.update(deleteSleep*10,__language__(30053))
         progress.close()
         xbmc.executebuiltin("Container.Refresh")
-        
+                
 def getURL( url, suppress=False, type="GET", popup=0 ):
     printDebug("== ENTER: getURL ==", False)
     try:
@@ -519,12 +520,27 @@ def getURL( url, suppress=False, type="GET", popup=0 ):
         printDebug("urlPath = "+str(urlPath))
         conn = httplib.HTTPConnection(server, timeout=20)
         #head = {"Accept-Encoding" : "gzip,deflate", "Accept-Charset" : "UTF-8,*"} 
-        conn.request(type, urlPath)
+        head = {"Accept-Encoding" : "gzip", "Accept-Charset" : "UTF-8,*"} 
+        conn.request(method=type, url=urlPath, headers=head)
+        #conn.request(method=type, url=urlPath)
         data = conn.getresponse()
-        #xbmc.log(str(data.getheaders()))
+        printDebug("GET URL HEADERS : " + str(data.getheaders()))
+        link = ""
+        contentType = "none"
         if int(data.status) == 200:
-            link=data.read()
+            retData = data.read()
+            contentType = data.getheader('content-encoding')
+            printDebug("Data Len Before : " + str(len(retData)))
+            if(contentType == "gzip"):
+                retData = StringIO.StringIO(retData)
+                gzipper = gzip.GzipFile(fileobj=retData)
+                link = gzipper.read()
+            else:
+                link = retData
+                
+            printDebug("Data Len After : " + str(len(link)))
             printDebug("====== 200 returned =======")
+            printDebug("Content-Type : " + str(contentType), False)
             printDebug(link, False)
             printDebug("====== 200 finished ======")
 
@@ -544,12 +560,10 @@ def getURL( url, suppress=False, type="GET", popup=0 ):
             xbmc.log (error)
             try: conn.close()
             except: pass
-            return False
+            return ""
         else:
-            link=data.read()
-            printDebug("====== returned =======")
-            printDebug(link, False)
-            printDebug("====== finished ======")
+            link = ""
+
     except socket.gaierror :
         error = 'Unable to lookup host: ' + server + "\nCheck host name is correct"
         xbmc.log (error)
@@ -907,9 +921,12 @@ def getCacheValidator (server,url):
     id = idAndOptions[1].split("&")
     jsonData = getURL("http://"+server+"/mediabrowser/Users/" + userid + "/Items/" +id[0]+"?format=json", suppress=False, popup=1 )
     result = json.loads(jsonData)
+    
+    xbmc.log("VALIDATE DATA : " + str(result))
     printDebug ("RecursiveItemCount: " + str(result.get("RecursiveItemCount")))
     printDebug ("RecursiveUnplayedCount: " + str(result.get("RecursiveUnplayedItemCount")))
-    playedTime = (str(result.get("PlayedPercentage"))).replace(".","-")
+    playedTime = "{0:09.6f}".format(result.get("PlayedPercentage"))
+    playedTime = playedTime.replace(".","-")
     xbmc.log("getCacheValidator PlayedPercentage : " + playedTime)
     return (str(result.get("RecursiveItemCount")) + "_" + str(result.get("RecursiveUnplayedItemCount")) + "_" + playedTime)
     
@@ -920,7 +937,7 @@ def getCacheValidatorFromData(result):
 
     itemCount = 0
     unwatchedItemCount = 0
-    totalPlayedPercentage = 0.0
+    totalPlayedPercentage = 0
     for item in result:
         userData = item.get("UserData")
         if(userData != None):
@@ -929,13 +946,15 @@ def getCacheValidatorFromData(result):
                 unwatchedItemCount = unwatchedItemCount + 1
                 itemPossition = userData.get("PlaybackPositionTicks")
                 itemRuntime = item.get("RunTimeTicks")
-                itemPercent = float(itemPossition) / float(itemRuntime)
-                totalPlayedPercentage = totalPlayedPercentage + itemPercent
+                if(itemRuntime != None and itemPossition != None):
+                    itemPercent = float(itemPossition) / float(itemRuntime)
+                    totalPlayedPercentage = totalPlayedPercentage + itemPercent
             else:
                 totalPlayedPercentage = totalPlayedPercentage + 100
     
     totalPlayedPercentage = totalPlayedPercentage / float(itemCount)
-    playedTime = str(totalPlayedPercentage).replace(".","-")
+    playedTime = "{0:09.6f}".format(totalPlayedPercentage)
+    playedTime = playedTime.replace(".","-")
     xbmc.log("getCacheValidatorFromData PlayedPercentage : " + playedTime)
     return "_" + str(itemCount) + "_" + str(unwatchedItemCount) + "_" + playedTime
     
@@ -1007,11 +1026,13 @@ def getContent( url ):
             cacheValidationString = getCacheValidatorFromData(result)
             xbmc.log("getCacheValidator : " + validator)
             xbmc.log("getCacheValidatorFromData : " + cacheValidationString)
-            cacheDataPath = __addondir__ + urlHash + cacheValidationString
-            xbmc.log("Saving data to cache : " + cacheDataPath)
-            cachedfie = open(cacheDataPath, 'w')
-            cachedfie.write(jsonData)
-            cachedfie.close()        
+            if(validator == cacheValidationString):
+                xbmc.log("Validator String Match, Saving Cache Data")
+                cacheDataPath = __addondir__ + urlHash + cacheValidationString
+                xbmc.log("Saving data to cache : " + cacheDataPath)
+                cachedfie = open(cacheDataPath, 'w')
+                cachedfie.write(jsonData)
+                cachedfie.close()        
 
     if jsonData == "":
         return
