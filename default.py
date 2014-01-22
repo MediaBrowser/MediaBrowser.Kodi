@@ -922,13 +922,13 @@ def getCacheValidator (server,url):
     jsonData = getURL("http://"+server+"/mediabrowser/Users/" + userid + "/Items/" +id[0]+"?format=json", suppress=False, popup=1 )
     result = json.loads(jsonData)
     
-    xbmc.log("VALIDATE DATA : " + str(result))
     printDebug ("RecursiveItemCount: " + str(result.get("RecursiveItemCount")))
     printDebug ("RecursiveUnplayedCount: " + str(result.get("RecursiveUnplayedItemCount")))
     playedTime = "{0:09.6f}".format(result.get("PlayedPercentage"))
     playedTime = playedTime.replace(".","-")
-    xbmc.log("getCacheValidator PlayedPercentage : " + playedTime)
-    return (str(result.get("RecursiveItemCount")) + "_" + str(result.get("RecursiveUnplayedItemCount")) + "_" + playedTime)
+    validatorString = str(result.get("RecursiveItemCount")) + "_" + str(result.get("RecursiveUnplayedItemCount")) + "_" + playedTime
+    printDebug ("getCacheValidator : " + validatorString)
+    return validatorString
     
 def getCacheValidatorFromData(result):
     result = result.get("Items")
@@ -955,8 +955,9 @@ def getCacheValidatorFromData(result):
     totalPlayedPercentage = totalPlayedPercentage / float(itemCount)
     playedTime = "{0:09.6f}".format(totalPlayedPercentage)
     playedTime = playedTime.replace(".","-")
-    xbmc.log("getCacheValidatorFromData PlayedPercentage : " + playedTime)
-    return "_" + str(itemCount) + "_" + str(unwatchedItemCount) + "_" + playedTime
+    validatorString = "_" + str(itemCount) + "_" + str(unwatchedItemCount) + "_" + playedTime
+    printDebug ("getCacheValidatorFromData : " + validatorString)
+    return validatorString
     
 def getContent( url ):
     '''
