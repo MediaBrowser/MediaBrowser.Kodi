@@ -64,10 +64,20 @@ class MyHandler(BaseHTTPRequestHandler):
         if(debugLogging == "true"):
             xbmc.log("XBMB3C Image Proxy -> " + msg)
     
+    #overload the default log func to stop stderr message from showing up in the xbmc log
+    def log_message(self, format, *args):
+        debugLogging = __settings__.getSetting('debug')
+        if(debugLogging == "true"):
+            the_string = [str(i) for i in range(len(args))]
+            the_string = '"{' + '}" "{'.join(the_string) + '}"'
+            the_string = the_string.format(*args)
+            xbmc.log("XBMB3C Image Proxy -> BaseHTTPRequestHandler : " + the_string)
+        return    
+    
     def do_GET(self):
     
         mb3Host = __settings__.getSetting('ipaddress')
-        mb3Port =__settings__.getSetting('port')
+        mb3Port = __settings__.getSetting('port')
         debugLogging = __settings__.getSetting('debug')   
         
         params = parse_qs(self.path[2:])
