@@ -855,13 +855,13 @@ def PLAY( url ):
         resume_result = 0
         if userData.get("PlaybackPositionTicks") != 0 and __settings__.getSetting('transcode') == 'false':
             reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
-            seekTime = reasonableTicks/10000
+            seekTime = reasonableTicks / 10000
             displayTime = str(datetime.timedelta(seconds=seekTime))
-            display_list = [ "Start from beginning", "Resume from " + displayTime]
+            display_list = [ "Resume from " + displayTime, "Start from beginning"]
             resumeScreen = xbmcgui.Dialog()
-            resume_result = resumeScreen.select('Resume',display_list)
+            resume_result = resumeScreen.select('Resume', display_list)
             if resume_result == -1:
-                return False
+                return
 
         xbmc.Player().play(playurl,item)
         #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
@@ -873,17 +873,20 @@ def PLAY( url ):
         #Set a loop to wait for positive confirmation of playback
         count = 0
         while not xbmc.Player().isPlaying():
-            printDebug( "Not playing yet...sleep for 2")
-            count = count + 2
-            if count >= 20:
+            printDebug( "Not playing yet...sleep for 1 sec")
+            count = count + 1
+            if count >= 10:
                 return
             else:
                 time.sleep(1)
-        if resume_result == 1:
-            while xbmc.Player().getTime()<(seekTime-1):
+                
+        if resume_result == 0:
+            jumpBackSec = int(__settings__.getSetting("resumeJumpBack"))
+            seekToTime = seekTime - jumpBackSec
+            while xbmc.Player().getTime() < seekToTime:
                 xbmc.Player().pause
                 xbmc.sleep(100)
-                xbmc.Player().seekTime(seekTime-1)
+                xbmc.Player().seekTime(seekToTime)
                 xbmc.sleep(100)
                 xbmc.Player().play()
         return
