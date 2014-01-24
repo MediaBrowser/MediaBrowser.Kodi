@@ -68,6 +68,7 @@ xbmc.log ("===== XBMB3C START =====")
 
 xbmc.log ("XBMB3C -> running Python: " + str(sys.version_info))
 xbmc.log ("XBMB3C -> running XBMB3C: " + str(XBMB3C_VERSION))
+xbmc.log (xbmc.getInfoLabel( "System.BuildVersion" ))
 
 #Get the setting from the appropriate file.
 DEFAULT_PORT="32400"
@@ -662,7 +663,56 @@ def addGUIItem( url, details, extraData, folder=True ):
             list.setProperty('fanart_image', fanart)
 
         printDebug( "Setting fan art as " + fanart )
+        
+        #Set the logo image if it has been enabled
+        logo=str(extraData.get('logo',''))
+        logoPath=logo.encode('utf-8')
+        if '?' in logo:
+            setArt(list,'clearlogo',logo)
+        else:
+            setArt(list,'clearlogo','logoPath')
 
+        printDebug( "Setting logo as " + logoPath )
+        
+         #Set the disc image if it has been enabled
+        disc=str(extraData.get('disc',''))
+        discPath=disc.encode('utf-8')
+        if '?' in disc:
+            setArt(list,'discart',disc)
+        else:
+            setArt(list,'discart','discPath')
+
+        printDebug( "Setting disc as " + discPath )
+        
+         #Set the banner image if it has been enabled
+        banner=str(extraData.get('banner',''))
+        bannerPath=banner.encode('utf-8')
+        if '?' in banner:
+            setArt(list,'banner',banner)
+        else:
+            setArt(list,'banner','bannerPath')
+
+        printDebug( "Setting banner as " + bannerPath )
+        
+         #Set the clearart image if it has been enabled
+        art=str(extraData.get('clearart',''))
+        artPath=art.encode('utf-8')
+        if '?' in art:
+            setArt(list,'clearart',art)
+        else:
+            setArt(list,'clearart','artPath')
+
+        printDebug( "Setting clearart as " + artPath )
+        
+         #Set the landscape image if it has been enabled
+        landscape=str(extraData.get('landscape',''))
+        landscapePath=landscape.encode('utf-8')
+        if '?' in landscape:
+            setArt(list,'landscape',landscape)
+        else:
+            setArt(list,'landscape','landscapePath')
+
+        printDebug( "Setting landscape as " + landscapePath )
         #if extraData.get('banner'):
         #    list.setProperty('banner', extraData.get('banner'))
         #    printDebug( "Setting banner as " + extraData.get('banner'))
@@ -755,7 +805,7 @@ def displaySections( filter=None, shared=False ):
                         'thumb'        : '' ,
                         'token'        : section.get('token',None) }
 
-            #Determine what we are going to do process after a link is selected by the user, based on the content we find
+                        #Determine what we are going to do process after a link is selected by the user, based on the content we find
 
             path=section['path']
 
@@ -1217,6 +1267,11 @@ def processDirectory(url, result):
         # Populate the extraData list
         extraData={'thumb'        : getThumb(item) ,
                    'fanart_image' : getFanart(item) ,
+                   'banner'       : getBanner(item) ,
+                   'logo'         : getLogo(item) ,
+                   'disc'         : getDisc(item) ,
+                   'clearart'     : getClearArt(item) ,
+                   'landscape'    : getLandscape(item) ,
                    'id'           : id ,
                    'mpaa'         : item.get("OfficialRating"),
                    'rating'       : item.get("CommunityRating"),
@@ -1297,6 +1352,61 @@ def getFanart( data ):
     fanArt = ("http://localhost:15001/?id=" + str(id) + "&type=b")
     printDebug("getFanart : " + fanArt)
     return fanArt
+    
+def getBanner( data ):
+
+    id = data.get("Id")
+    if data.get("Type") == "Episode" or data.get("Type") == "Season":
+        id = data.get("SeriesId")   
+    
+    # use the local image proxy server that is made available by this addons service
+    banner = ("http://localhost:15001/?id=" + str(id) + "&type=banner")
+    printDebug("getBanner : " + banner)
+    return banner
+
+def getLogo( data ):
+
+    id = data.get("Id")
+    if data.get("Type") == "Episode" or data.get("Type") == "Season":
+        id = data.get("SeriesId")   
+    
+    # use the local image proxy server that is made available by this addons service
+    logo = ("http://localhost:15001/?id=" + str(id) + "&type=logo")
+    printDebug("getLogo : " + logo)
+    return logo
+
+def getDisc( data ):
+    
+    id = data.get("Id")
+    if data.get("Type") == "Episode" or data.get("Type") == "Season":
+        id = data.get("SeriesId")   
+    
+    # use the local image proxy server that is made available by this addons service
+    disc = ("http://localhost:15001/?id=" + str(id) + "&type=disc")
+    printDebug("getDisc : " + disc)
+    return disc
+
+def getClearArt( data ):
+    
+    id = data.get("Id")
+    if data.get("Type") == "Episode" or data.get("Type") == "Season":
+        id = data.get("SeriesId")   
+    
+    # use the local image proxy server that is made available by this addons service
+    art = ("http://localhost:15001/?id=" + str(id) + "&type=clearart")
+    printDebug("getClearArt : " + art)
+    return art
+
+def getLandscape( data ):
+    
+    id = data.get("Id")
+    if data.get("Type") == "Episode" or data.get("Type") == "Season":
+        id = data.get("SeriesId")   
+    
+    # use the local image proxy server that is made available by this addons service
+    landscape = ("http://localhost:15001/?id=" + str(id) + "&type=landscape")
+    printDebug("getLandscape : " + landscape)
+    return landscape
     
 def getServerFromURL( url ):
     '''
@@ -1417,6 +1527,10 @@ def displayServers( url ):
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
 
+def setArt (list,name,path):
+    if "13" in xbmc.getInfoLabel( "System.BuildVersion" ):
+        list.setArt({name:path})
+    
 def setWindowHeading(url) :
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("addshowname", "false")

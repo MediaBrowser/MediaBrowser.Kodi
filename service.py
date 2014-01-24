@@ -87,7 +87,17 @@ class MyHandler(BaseHTTPRequestHandler):
 
         imageType = "Primary"
         if(requestType == "b"):
-            imageType = "Backdrop"        
+            imageType = "Backdrop"
+        elif(requestType == "logo"):
+            imageType = "Logo"
+        elif(requestType == "banner"):
+            imageType = "Banner"
+        elif(requestType == "disc"):
+            imageType = "Disc"
+        elif(requestType == "clearart"):
+            imageType = "Art"
+        elif(requestType == "landscape"):
+            imageType = "Thumb"
             
         remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType + "?Format=png"
         
