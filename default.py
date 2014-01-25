@@ -655,6 +655,14 @@ def addGUIItem( url, details, extraData, folder=True ):
 
                 
 
+        #Set the poster image if it has been enabled
+        poster=str(extraData.get('poster',''))
+        if '?' in poster:
+            setArt(list,'poster', poster)
+        else:
+            setArt(list,'poster', poster)
+        printDebug( "Setting poster as " + poster )
+
         #Set the fanart image if it has been enabled
         fanart=str(extraData.get('fanart_image',''))
         if '?' in fanart:
@@ -664,6 +672,7 @@ def addGUIItem( url, details, extraData, folder=True ):
 
         printDebug( "Setting fan art as " + fanart )
         
+
         #Set the logo image if it has been enabled
         logo=str(extraData.get('logo',''))
         logoPath=logo.encode('utf-8')
@@ -1215,7 +1224,7 @@ def processDirectory(url, result):
         if(studios != None):
             for studio_string in studios:
                 if studio=="": #Just take the first one
-                    studio=str(studio_string.get("Name"))
+                    studio=str(studio_string.get("Name")).encode('utf-8')
         # Process Genres
         genre = ""
         genres = item.get("Genres")
@@ -1275,6 +1284,7 @@ def processDirectory(url, result):
         # Populate the extraData list
         extraData={'thumb'        : getThumb(item) ,
                    'fanart_image' : getFanart(item) ,
+                   'poster'       : getThumb(item) ,
                    'banner'       : getBanner(item) ,
                    'logo'         : getLogo(item) ,
                    'disc'         : getDisc(item) ,
