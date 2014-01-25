@@ -238,7 +238,10 @@ class RecentInfoUpdaterThread(threading.Thread):
             criticratingsummary = ""
             if(item.get("CriticRatingSummary") != None):
                 criticratingsummary = item.get("CriticRatingSummary").encode('utf-8')
-            plot = item.get("Overview").encode('utf-8')
+            plot = item.get("Overview")
+            if plot == None:
+                plot=''
+            plot=plot.encode('utf-8')
             year = item.get("ProductionYear")
             runtime = str(int(item.get("RunTimeTicks"))/(10000000*60))
 
@@ -319,7 +322,10 @@ class RecentInfoUpdaterThread(threading.Thread):
             else:
               tempSeasonNumber = str(seasonNumber)
             rating = str(item.get("CommunityRating"))
-            plot = item.get("Overview").encode('utf-8')
+            plot = item.get("Overview")
+            if plot == None:
+                plot=''
+            plot=plot.encode('utf-8')
 
             item_id = item.get("Id")
            
@@ -616,7 +622,10 @@ class RandomInfoUpdaterThread(threading.Thread):
             else:
               tempSeasonNumber = str(seasonNumber)
             rating = str(item.get("CommunityRating"))
-            plot = item.get("Overview").encode('utf-8')
+            plot = item.get("Overview")
+            if plot == None:
+                plot=''
+            plot=plot.encode('utf-8')
 
             item_id = item.get("Id")
            
@@ -841,7 +850,10 @@ class NextUpUpdaterThread(threading.Thread):
             else:
               tempSeasonNumber = str(seasonNumber)
             rating = str(item.get("CommunityRating"))
-            plot = item.get("Overview").encode('utf-8')
+            plot = item.get("Overview")
+            if plot == None:
+                plot=''
+            plot=plot.encode('utf-8')
 
             item_id = item.get("Id")
            
