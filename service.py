@@ -532,7 +532,10 @@ class RandomInfoUpdaterThread(threading.Thread):
             criticratingsummary = ""
             if(item.get("CriticRatingSummary") != None):
                 criticratingsummary = item.get("CriticRatingSummary").encode('utf-8')
-            plot = item.get("Overview").encode('utf-8')
+            plot = item.get("Overview")
+            if plot == None:
+                plot=''
+            plot=plot.encode('utf-8')
             year = item.get("ProductionYear")
             runtime = str(int(item.get("RunTimeTicks"))/(10000000*60))
 
