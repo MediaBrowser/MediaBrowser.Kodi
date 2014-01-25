@@ -1,7 +1,7 @@
 '''
     @document   : default.py
     @package    : XBMB3C add-on
-    @authors    : xnappo, null_pointer
+    @authors    : xnappo, null_pointer, im85288
     @copyleft   : 2013, xnappo
     @version    : 0.7.5 (frodo)
 
@@ -756,11 +756,12 @@ def addGUIItem( url, details, extraData, folder=True ):
 
         list.setInfo('video', {'duration' : extraData.get('duration')})
         list.setInfo('video', {'playcount' : extraData.get('playcount')})
+        list.setProperty('CriticRating', str(extraData.get('criticrating')))
         if extraData.get('favorite')=='true':
             list.setInfo('video', {'top250' : '1'})
         if extraData.get('totaltime') != None:
             list.setProperty('TotalTime', extraData.get('totaltime'))
-            list.setProperty('ResumeTime', str(int(extraData.get('resumetime'))/60))
+            #list.setProperty('ResumeTime', str(int(extraData.get('resumetime'))/60))
         list.setInfo('video', {'director' : extraData.get('director')})
         list.setInfo('video', {'writer' : extraData.get('writer')})
         list.setInfo('video', {'year' : extraData.get('year')})
@@ -778,7 +779,7 @@ def addGUIItem( url, details, extraData, folder=True ):
         list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
         xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE  )
         
-        return (u, list, True)
+        return (u, list, folder)
 
 def displaySections( filter=None, shared=False ):
         printDebug("== ENTER: displaySections() ==", False)
@@ -859,7 +860,7 @@ def remove_html_tags( data ):
     p = re.compile(r'<.*?>')
     return p.sub('', data)
 
-def PLAY( url ):
+def PLAY( url, handle ):
         printDebug("== ENTER: PLAY ==", False)
         url=urllib.unquote(url)
         server,id=url.split(',;')
@@ -912,8 +913,8 @@ def PLAY( url ):
             resume_result = resumeScreen.select('Resume', display_list)
             if resume_result == -1:
                 return
-
-        xbmc.Player().play(playurl,item)
+        xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False) #start = xbmcplugin.setResolvedUrl(handle, True, item)
+        #xbmc.Player().play(playurl,item)
         #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         WINDOW = xbmcgui.Window( 10000 )
         WINDOW.setProperty("watchedurl", watchedurl)
@@ -1275,6 +1276,7 @@ def processDirectory(url, result):
                    'id'           : id ,
                    'mpaa'         : item.get("OfficialRating"),
                    'rating'       : item.get("CommunityRating"),
+                   'criticrating' : item.get("CriticRating"), 
                    'year'         : item.get("ProductionYear"),
                    'locationtype' : item.get("LocationType"),
                    'premieredate' : premieredate,
@@ -1582,9 +1584,9 @@ try:
 except:
     params={}
 #Check to see if XBMC is playing - we don't want to do anything if so
-if xbmc.Player().isPlaying():
-    printDebug ('Already Playing! Exiting...')
-    sys.exit()
+#if xbmc.Player().isPlaying():
+#    printDebug ('Already Playing! Exiting...')
+#    sys.exit()
 #Now try and assign some data to them
 param_url=params.get('url',None)
 
@@ -1675,7 +1677,7 @@ else:
         
 
     elif mode == _MODE_BASICPLAY:
-        PLAY(param_url)
+        PLAY(param_url, pluginhandle)
 xbmc.log ("===== XBMB3C STOP =====")
 
 #clear done and exit.
