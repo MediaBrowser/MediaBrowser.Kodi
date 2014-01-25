@@ -650,7 +650,7 @@ def addGUIItem( url, details, extraData, folder=True ):
 
             if extraData.get('type','video').lower() == "video":
                 list.setProperty('TotalTime', str(extraData.get('duration')))
-                #list.setProperty('ResumeTime', str(extraData.get('resume')))
+                list.setProperty('ResumeTime', str(extraData.get('resume')))
             
 
                 
@@ -1224,7 +1224,8 @@ def processDirectory(url, result):
         if(studios != None):
             for studio_string in studios:
                 if studio=="": #Just take the first one
-                    studio=str(studio_string.get("Name")).encode('utf-8')
+                    temp=studio_string.get("Name")
+                    studio=temp.encode('utf-8')
         # Process Genres
         genre = ""
         genres = item.get("Genres")
