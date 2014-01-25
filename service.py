@@ -894,8 +894,158 @@ newThread.start()
 
 #################################################################################################
 # end NextUp TV Updater
-#################################################################################################
+##################################################################################################
 
+#################################################################################################
+# Info Updater
+# 
+#################################################################################################
+import threading
+import json
+from datetime import datetime
+import time
+
+class InfoUpdaterThread(threading.Thread):
+
+    def logMsg(self, msg, debugLogging):
+        if(debugLogging == "true"):
+            xbmc.log("XBMB3C Info Thread -> " + msg)
+    
+    def run(self):
+        xbmc.log("InfoUpdaterThread Started")
+        
+        self.updateInfo()
+        lastRun = datetime.today()
+        
+        while (xbmc.abortRequested == False):
+            td = datetime.today() - lastRun
+            secTotal = td.seconds
+            
+            if(secTotal > 300):
+                self.updateInfo()
+                lastRun = datetime.today()
+
+            xbmc.sleep(3000)
+                        
+        xbmc.log("InfoUpdaterThread Exited")
+        
+    def updateInfo(self):
+        xbmc.log("updateInfo Called")
+        
+        mb3Host = __settings__.getSetting('ipaddress')
+        mb3Port =__settings__.getSetting('port')    
+        userName = __settings__.getSetting('username')     
+        debugLogging = __settings__.getSetting('debug')           
+        
+        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
+        
+        requesthandle = urllib.urlopen(userUrl, proxies={})
+        jsonData = requesthandle.read()
+        requesthandle.close()        
+        
+        userid = ""
+        result = json.loads(jsonData)
+        for user in result:
+            if(user.get("Name") == userName):
+                userid = user.get("Id")    
+                break
+        
+        xbmc.log("updateInfo UserID : " + userid)
+        
+        xbmc.log("Updating info List")
+        
+        infoUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?format=json"
+        
+        requesthandle = urllib.urlopen(infoUrl, proxies={})
+        jsonData = requesthandle.read()
+        requesthandle.close()         
+        
+        result = json.loads(jsonData)
+        xbmc.log("Info Json Data : " + str(result))
+        
+        result = result.get("Items")
+        WINDOW = xbmcgui.Window( 10000 )
+        if(result == None):
+            result = []   
+
+        item_count = 1
+        movie_count = 0
+        movie_unwatched_count = 0
+        tv_count = 0
+        episode_count = 0
+        episode_unwatched_count = 0
+        tv_unwatched_count = 0
+        music_count = 0
+        music_songs_count = 0
+        music_songs_unplayed_count = 0
+        musicvideos_count = 0
+        musicvideos_unwatched_count = 0
+        trailers_count = 0
+        trailers_unwatched_count = 0
+        for item in result:
+            collectionType = item.get("CollectionType")
+                
+            if(collectionType == "movies"):
+                movie_count = movie_count + item.get("RecursiveItemCount")
+                movie_unwatched_count = movie_unwatched_count + item.get("RecursiveUnplayedItemCount")
+                
+            if(collectionType == "musicvideos"):
+                musicvideos_count = musicvideos_count + item.get("RecursiveItemCount")
+                musicvideos_unwatched_count = musicvideos_unwatched_count + item.get("RecursiveUnplayedItemCount")
+            
+            if(collectionType == "tvshows"):
+                tv_count = tv_count + item.get("ChildCount")
+                episode_count = episode_count + item.get("RecursiveItemCount")
+                episode_unwatched_count = episode_unwatched_count + item.get("RecursiveUnplayedItemCount")
+            
+            if(collectionType == "music"):
+                music_count = music_count + item.get("ChildCount")
+                music_songs_count = music_songs_count + item.get("RecursiveItemCount")
+                music_songs_unplayed_count = music_songs_unplayed_count + item.get("RecursiveUnplayedItemCount")
+                  
+            if(item.get("Name") == "Trailers"):
+                trailers_count = trailers_count + item.get("RecursiveItemCount")
+                trailers_unwatched_count = trailers_unwatched_count + item.get("RecursiveUnplayedItemCount")
+               
+            self.logMsg("MoviesCount "  + str(movie_count), debugLogging)
+            self.logMsg("MoviesUnWatchedCount "  + str(movie_unwatched_count), debugLogging)
+            self.logMsg("MusicVideosCount "  + str(musicvideos_count), debugLogging)
+            self.logMsg("MusicVideosUnWatchedCount "  + str(musicvideos_unwatched_count), debugLogging)
+            self.logMsg("TVCount "  + str(tv_count), debugLogging)
+            self.logMsg("EpisodeCount "  + str(episode_count), debugLogging)
+            self.logMsg("EpisodeUnWatchedCount "  + str(episode_unwatched_count), debugLogging)
+            self.logMsg("MusicCount "  + str(music_count), debugLogging)
+            self.logMsg("SongsCount "  + str(music_songs_count), debugLogging)
+            self.logMsg("SongsUnPlayedCount "  + str(music_songs_unplayed_count), debugLogging)
+    
+            item_count = item_count + 1
+        
+        movie_watched_count = movie_count - movie_unwatched_count
+        musicvideos_watched_count = musicvideos_count - musicvideos_unwatched_count
+        episode_watched_count = episode_count - episode_unwatched_count
+        music_songs_played_count = music_songs_count - music_songs_unplayed_count    
+        WINDOW.setProperty("MB3TotalMovies", str(movie_count))
+        WINDOW.setProperty("MB3TotalUnWatchedMovies", str(movie_unwatched_count))
+        WINDOW.setProperty("MB3TotalWatchedMovies", str(movie_watched_count))
+        WINDOW.setProperty("MB3TotalMusicVideos", str(musicvideos_count))
+        WINDOW.setProperty("MB3TotalUnWatchedMusicVideos", str(musicvideos_unwatched_count))
+        WINDOW.setProperty("MB3TotalWatchedMusicVideos", str(musicvideos_watched_count))
+        WINDOW.setProperty("MB3TotalTvShows", str(tv_count))
+        WINDOW.setProperty("MB3TotalEpisodes", str(episode_count))
+        WINDOW.setProperty("MB3TotalUnWatchedEpisodes", str(episode_unwatched_count))
+        WINDOW.setProperty("MB3TotalWatchedEpisodes", str(episode_watched_count))
+        WINDOW.setProperty("MB3TotalMusicAlbums", str(music_count))
+        WINDOW.setProperty("MB3TotalMusicSongs", str(music_songs_count))
+        WINDOW.setProperty("MB3TotalUnPlayedMusicSongs", str(music_songs_unplayed_count))
+        WINDOW.setProperty("MB3TotalPlayedMusicSongs", str(music_songs_played_count))
+        
+        
+newThread = InfoUpdaterThread()
+newThread.start()
+
+#################################################################################################
+# end Info Updater
+#################################################################################################
 sys.path.append(BASE_RESOURCE_PATH)
 playTime=0
 def markWatched (url):
