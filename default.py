@@ -650,7 +650,7 @@ def addGUIItem( url, details, extraData, folder=True ):
 
             if extraData.get('type','video').lower() == "video":
                 list.setProperty('TotalTime', str(extraData.get('duration')))
-                list.setProperty('ResumeTime', str(extraData.get('resume')))
+                #list.setProperty('ResumeTime', str(extraData.get('resume')))
             
 
                 
