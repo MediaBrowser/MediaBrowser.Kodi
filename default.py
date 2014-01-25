@@ -913,8 +913,7 @@ def PLAY( url, handle ):
             resume_result = resumeScreen.select('Resume', display_list)
             if resume_result == -1:
                 return
-        xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False) #start = xbmcplugin.setResolvedUrl(handle, True, item)
-        #xbmc.Player().play(playurl,item)
+        xbmc.Player().play(playurl,item)
         #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         WINDOW = xbmcgui.Window( 10000 )
         WINDOW.setProperty("watchedurl", watchedurl)
