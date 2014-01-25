@@ -1212,7 +1212,7 @@ def processDirectory(url, result):
         # Process Studios
         studio = ""
         studios = item.get("Studios")
-        if(studios != []):
+        if(studios != None):
             for studio_string in studios:
                 if studio=="": #Just take the first one
                     studio=str(studio_string.get("Name"))
