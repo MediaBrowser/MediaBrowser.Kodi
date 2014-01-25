@@ -246,7 +246,7 @@ def getServerSections( ip_address, port, name, uuid):
     result = json.loads(jsonData)
     result = result.get("Items")
     
-    deatilsString = "Path,Genres"
+    deatilsString = "Path,Genres,Studios"
     
     if(__settings__.getSetting('includeStreamInfo') == "true"):
         deatilsString += ",MediaStreams"
@@ -765,6 +765,7 @@ def addGUIItem( url, details, extraData, folder=True ):
         list.setInfo('video', {'director' : extraData.get('director')})
         list.setInfo('video', {'writer' : extraData.get('writer')})
         list.setInfo('video', {'year' : extraData.get('year')})
+        list.setInfo('video', {'studio' : extraData.get('studio')})
         list.setInfo('video', {'genre' : extraData.get('genre')})
         #list.setInfo('video', {'cast' : extraData.get('cast')}) --- Broken in Frodo
         #list.setInfo('video', {'castandrole' : extraData.get('cast')}) --- Broken in Frodo
@@ -1207,7 +1208,14 @@ def processDirectory(url, result):
                         cast = Name + ' as ' + Role
                     else:
                         cast = cast + '\n' + Name + ' as ' + Role
-                    
+
+        # Process Studios
+        studio = ""
+        studios = item.get("Studios")
+        if(studios != []):
+            for studio_string in studios:
+                if studio=="": #Just take the first one
+                    studio=str(studio_string.get("Name"))
         # Process Genres
         genre = ""
         genres = item.get("Genres")
@@ -1279,6 +1287,7 @@ def processDirectory(url, result):
                    'year'         : item.get("ProductionYear"),
                    'locationtype' : item.get("LocationType"),
                    'premieredate' : premieredate,
+                   'studio'       : studio,
                    'genre'        : genre,
                    'playcount'    : str(userData.get("PlayCount")),
                    'director'     : director,
