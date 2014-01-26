@@ -352,7 +352,20 @@ def getServerSections( ip_address, port, name, uuid):
             'local'      : '1' ,
             'type'       : "movie",
             'owned'      : '1' })                            
-    
+
+    # Add BoxSets
+    temp_list.append( {'title'      : 'BoxSets',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + deatilsString + '&SortOrder=Ascending&IncludeItemTypes=BoxSet&format=json') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'owned'      : '1' })                            
+            
     for item in temp_list:
         printDebug ("temp_list: " + str(item))
     return temp_list
@@ -1170,7 +1183,14 @@ def processDirectory(url, result):
             xbmcplugin.setContent(pluginhandle, 'songs')            
         if item.get("Type") == "Series":
             xbmcplugin.setContent(pluginhandle, 'tvshows')         
-            
+
+        #Add show name to special TV collections RAL, NextUp etc
+        WINDOW = xbmcgui.Window( 10000 )
+        if WINDOW.getProperty("addshowname") == "true":
+            tempTitle=item.get("SeriesName").encode('utf-8') + " - " + tempTitle
+        else:
+            tempTitle=tempTitle
+
         # Process MediaStreams
         channels = ''
         videocodec = ''

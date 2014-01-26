@@ -954,7 +954,7 @@ class InfoUpdaterThread(threading.Thread):
         
         xbmc.log("Updating info List")
         
-        infoUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?format=json"
+        infoUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=CollectionType&format=json"
         
         requesthandle = urllib.urlopen(infoUrl, proxies={})
         jsonData = requesthandle.read()
@@ -984,7 +984,9 @@ class InfoUpdaterThread(threading.Thread):
         trailers_unwatched_count = 0
         for item in result:
             collectionType = item.get("CollectionType")
-                
+            if collectionType==None:
+                collectionType="movies"
+            self.logMsg("collectionType "  + collectionType, debugLogging)    
             if(collectionType == "movies"):
                 movie_count = movie_count + item.get("RecursiveItemCount")
                 movie_unwatched_count = movie_unwatched_count + item.get("RecursiveUnplayedItemCount")
@@ -1007,18 +1009,18 @@ class InfoUpdaterThread(threading.Thread):
                 trailers_count = trailers_count + item.get("RecursiveItemCount")
                 trailers_unwatched_count = trailers_unwatched_count + item.get("RecursiveUnplayedItemCount")
                
-            self.logMsg("MoviesCount "  + str(movie_count), debugLogging)
-            self.logMsg("MoviesUnWatchedCount "  + str(movie_unwatched_count), debugLogging)
-            self.logMsg("MusicVideosCount "  + str(musicvideos_count), debugLogging)
-            self.logMsg("MusicVideosUnWatchedCount "  + str(musicvideos_unwatched_count), debugLogging)
-            self.logMsg("TVCount "  + str(tv_count), debugLogging)
-            self.logMsg("EpisodeCount "  + str(episode_count), debugLogging)
-            self.logMsg("EpisodeUnWatchedCount "  + str(episode_unwatched_count), debugLogging)
-            self.logMsg("MusicCount "  + str(music_count), debugLogging)
-            self.logMsg("SongsCount "  + str(music_songs_count), debugLogging)
-            self.logMsg("SongsUnPlayedCount "  + str(music_songs_unplayed_count), debugLogging)
+        self.logMsg("MoviesCount "  + str(movie_count), debugLogging)
+        self.logMsg("MoviesUnWatchedCount "  + str(movie_unwatched_count), debugLogging)
+        self.logMsg("MusicVideosCount "  + str(musicvideos_count), debugLogging)
+        self.logMsg("MusicVideosUnWatchedCount "  + str(musicvideos_unwatched_count), debugLogging)
+        self.logMsg("TVCount "  + str(tv_count), debugLogging)
+        self.logMsg("EpisodeCount "  + str(episode_count), debugLogging)
+        self.logMsg("EpisodeUnWatchedCount "  + str(episode_unwatched_count), debugLogging)
+        self.logMsg("MusicCount "  + str(music_count), debugLogging)
+        self.logMsg("SongsCount "  + str(music_songs_count), debugLogging)
+        self.logMsg("SongsUnPlayedCount "  + str(music_songs_unplayed_count), debugLogging)
     
-            item_count = item_count + 1
+            #item_count = item_count + 1
         
         movie_watched_count = movie_count - movie_unwatched_count
         musicvideos_watched_count = musicvideos_count - musicvideos_unwatched_count
