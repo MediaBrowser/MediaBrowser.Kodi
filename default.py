@@ -352,7 +352,20 @@ def getServerSections( ip_address, port, name, uuid):
             'local'      : '1' ,
             'type'       : "movie",
             'owned'      : '1' })                            
-    
+
+    # Add BoxSets
+    temp_list.append( {'title'      : 'BoxSets',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + deatilsString + '&SortOrder=Ascending&IncludeItemTypes=BoxSet&format=json') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'owned'      : '1' })                            
+            
     for item in temp_list:
         printDebug ("temp_list: " + str(item))
     return temp_list
@@ -625,10 +638,14 @@ def addGUIItem( url, details, extraData, folder=True ):
         else:
             thumbPath=thumb
         
+        addCounts = __settings__.getSetting('addCounts') == 'true'
+        
         WINDOW = xbmcgui.Window( 10000 )
         if WINDOW.getProperty("addshowname") == "true":
             if extraData.get('locationtype')== "Virtual":
                 listItemName = extraData.get('premieredate').decode("utf-8") + u" - " + details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + details.get('season').decode("utf-8") + u"E" + details.get('title','Unknown').decode("utf-8")
+                if(addCounts and extraData.get("RecursiveItemCount") != None and extraData.get("RecursiveItemCount") != None):
+                    listItemName = listItemName + " (" + str(extraData.get("RecursiveItemCount") - extraData.get("RecursiveUnplayedItemCount")) + "/" + str(extraData.get("RecursiveItemCount")) + ")"
                 list=xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
             else:
                 if details.get('season') == None:
@@ -636,9 +653,13 @@ def addGUIItem( url, details, extraData, folder=True ):
                 else:
                     season = details.get('season')
                 listItemName = details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + season + u"E" + details.get('title','Unknown').decode("utf-8")
+                if(addCounts and extraData.get("RecursiveItemCount") != None and extraData.get("RecursiveItemCount") != None):
+                    listItemName = listItemName + " (" + str(extraData.get("RecursiveItemCount") - extraData.get("RecursiveUnplayedItemCount")) + "/" + str(extraData.get("RecursiveItemCount")) + ")"
                 list=xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
             listItemName = details.get('title','Unknown').decode("utf-8")
+            if(addCounts and extraData.get("RecursiveItemCount") != None and extraData.get("RecursiveItemCount") != None):
+                listItemName = listItemName + " (" + str(extraData.get("RecursiveItemCount") - extraData.get("RecursiveUnplayedItemCount")) + "/" + str(extraData.get("RecursiveItemCount")) + ")"
             list = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         printDebug("Setting thumbnail as " + thumbPath)
         #Set the properties of the item, such as summary, name, season, etc
@@ -650,10 +671,18 @@ def addGUIItem( url, details, extraData, folder=True ):
 
             if extraData.get('type','video').lower() == "video":
                 list.setProperty('TotalTime', str(extraData.get('duration')))
-                #list.setProperty('ResumeTime', str(extraData.get('resume')))
+                list.setProperty('ResumeTime', str(extraData.get('resume')))
             
 
                 
+
+        #Set the poster image if it has been enabled
+        poster=str(extraData.get('poster',''))
+        if '?' in poster:
+            setArt(list,'poster', poster)
+        else:
+            setArt(list,'poster', poster)
+        printDebug( "Setting poster as " + poster )
 
         #Set the fanart image if it has been enabled
         fanart=str(extraData.get('fanart_image',''))
@@ -664,6 +693,7 @@ def addGUIItem( url, details, extraData, folder=True ):
 
         printDebug( "Setting fan art as " + fanart )
         
+
         #Set the logo image if it has been enabled
         logo=str(extraData.get('logo',''))
         logoPath=logo.encode('utf-8')
@@ -1092,6 +1122,7 @@ def getContent( url ):
     if jsonData == "":
         return
     
+    printDebug("JSON DATA: " + str(result))
     dirItems = processDirectory(url, result)
     
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
@@ -1161,7 +1192,14 @@ def processDirectory(url, result):
             xbmcplugin.setContent(pluginhandle, 'songs')            
         if item.get("Type") == "Series":
             xbmcplugin.setContent(pluginhandle, 'tvshows')         
-            
+
+        #Add show name to special TV collections RAL, NextUp etc
+        WINDOW = xbmcgui.Window( 10000 )
+        if WINDOW.getProperty("addshowname") == "true":
+            tempTitle=item.get("SeriesName").encode('utf-8') + " - " + tempTitle
+        else:
+            tempTitle=tempTitle
+
         # Process MediaStreams
         channels = ''
         videocodec = ''
@@ -1215,7 +1253,8 @@ def processDirectory(url, result):
         if(studios != None):
             for studio_string in studios:
                 if studio=="": #Just take the first one
-                    studio=str(studio_string.get("Name"))
+                    temp=studio_string.get("Name")
+                    studio=temp.encode('utf-8')
         # Process Genres
         genre = ""
         genres = item.get("Genres")
@@ -1275,6 +1314,7 @@ def processDirectory(url, result):
         # Populate the extraData list
         extraData={'thumb'        : getThumb(item) ,
                    'fanart_image' : getFanart(item) ,
+                   'poster'       : getThumb(item) ,
                    'banner'       : getBanner(item) ,
                    'logo'         : getLogo(item) ,
                    'disc'         : getDisc(item) ,
@@ -1306,7 +1346,9 @@ def processDirectory(url, result):
                    'parenturl'    : url,
                    'resumetime'   : str(seekTime),
                    'totaltime'    : tempDuration,
-                   'duration'     : tempDuration}
+                   'duration'     : tempDuration,
+                   'RecursiveItemCount' : item.get("RecursiveItemCount"),
+                   'RecursiveUnplayedItemCount' : item.get("RecursiveUnplayedItemCount")}
                    
         if extraData['thumb'] == '':
             extraData['thumb'] = extraData['fanart_image']
@@ -1538,8 +1580,24 @@ def displayServers( url ):
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
 
 def setArt (list,name,path):
-    if "13" in xbmc.getInfoLabel( "System.BuildVersion" ):
+    if xbmcVersion() >= 13:
         list.setArt({name:path})
+        
+def xbmcVersion():
+    version = 0.0
+    vs = xbmc.getInfoLabel('System.BuildVersion')
+    try: 
+        # sample input: '12.3 Git:XXXXXX'
+        version = float(vs.split()[0])
+    except ValueError:
+        try:
+            # sample input: 'PRE-13.0 Git:XXXXXXXX'
+            version = float(vs.split()[0].split('-')[1])
+        except ValueError:
+            xbmc.log("Cannot determine version of XBMC from build version: " + vs)
+            
+    #xbmc.log("Version : " + str(version))
+    return version        
     
 def setWindowHeading(url) :
     WINDOW = xbmcgui.Window( 10000 )
