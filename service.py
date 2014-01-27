@@ -1000,7 +1000,7 @@ class InfoUpdaterThread(threading.Thread):
         for item in result:
             collectionType = item.get("CollectionType")
             if collectionType==None:
-                collectionType="movies"
+                collectionType="unknown"
             self.logMsg("collectionType "  + collectionType, debugLogging)    
             if(collectionType == "movies"):
                 movie_count = movie_count + item.get("RecursiveItemCount")
@@ -1034,13 +1034,16 @@ class InfoUpdaterThread(threading.Thread):
         self.logMsg("MusicCount "  + str(music_count), debugLogging)
         self.logMsg("SongsCount "  + str(music_songs_count), debugLogging)
         self.logMsg("SongsUnPlayedCount "  + str(music_songs_unplayed_count), debugLogging)
+        self.logMsg("TrailersCount" + str(trailers_count), debugLogging)
+        self.logMsg("TrailersUnWatchedCount" + str(trailers_unwatched_count) , debugLogging)
     
             #item_count = item_count + 1
         
         movie_watched_count = movie_count - movie_unwatched_count
         musicvideos_watched_count = musicvideos_count - musicvideos_unwatched_count
         episode_watched_count = episode_count - episode_unwatched_count
-        music_songs_played_count = music_songs_count - music_songs_unplayed_count    
+        music_songs_played_count = music_songs_count - music_songs_unplayed_count
+        trailers_watched_count = trailers_count - trailers_unwatched_count    
         WINDOW.setProperty("MB3TotalMovies", str(movie_count))
         WINDOW.setProperty("MB3TotalUnWatchedMovies", str(movie_unwatched_count))
         WINDOW.setProperty("MB3TotalWatchedMovies", str(movie_watched_count))
@@ -1055,6 +1058,9 @@ class InfoUpdaterThread(threading.Thread):
         WINDOW.setProperty("MB3TotalMusicSongs", str(music_songs_count))
         WINDOW.setProperty("MB3TotalUnPlayedMusicSongs", str(music_songs_unplayed_count))
         WINDOW.setProperty("MB3TotalPlayedMusicSongs", str(music_songs_played_count))
+        WINDOW.setProperty("MB3TotalTrailers", str(trailers_count))
+        WINDOW.setProperty("MB3TotalUnWatchedTrailers", str(trailers_unwatched_count))
+        WINDOW.setProperty("MB3TotalWatchedTrailers", str(trailers_watched_count))
 
         xbmc.log("InfoTV start")
         infoTVUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?&IncludeItemTypes=Series&Recursive=true&SeriesStatus=Continuing&format=json"
