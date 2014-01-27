@@ -332,6 +332,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             if item.get("Type") == "Episode" or item.get("Type") == "Season":
                series_id = item.get("SeriesId")
             
+            poster = "http://localhost:15001/?id=" + str(series_id) + "&type=t"
             thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
             logo = "http://localhost:15001/?id=" + str(series_id) + "&type=logo"
             fanart = "http://localhost:15001/?id=" + str(series_id) + "&type=b"
@@ -352,7 +353,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, debugLogging)
             self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, debugLogging)
             self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, debugLogging)  
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + thumbnail, debugLogging)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, debugLogging)
             self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
             
             
@@ -366,7 +367,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)", fanart)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)", logo)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
-            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", thumbnail)
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Plot", plot)
             
             
@@ -632,6 +633,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             if item.get("Type") == "Episode" or item.get("Type") == "Season":
                series_id = item.get("SeriesId")
             
+            poster = "http://localhost:15001/?id=" + str(series_id) + "&type=t"
             thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
             logo = "http://localhost:15001/?id=" + str(series_id) + "&type=logo"
             fanart = "http://localhost:15001/?id=" + str(series_id) + "&type=b"
@@ -652,7 +654,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, debugLogging)
             self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, debugLogging)
             self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, debugLogging)  
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + thumbnail, debugLogging)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, debugLogging)
             self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
             
             
@@ -666,7 +668,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)", fanart)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)", logo)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
-            WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", thumbnail)
+            WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Plot", plot)
             
             
@@ -860,6 +862,7 @@ class NextUpUpdaterThread(threading.Thread):
             if item.get("Type") == "Episode" or item.get("Type") == "Season":
                series_id = item.get("SeriesId")
             
+            poster = "http://localhost:15001/?id=" + str(series_id) + "&type=t"
             thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
             logo = "http://localhost:15001/?id=" + str(series_id) + "&type=logo"
             fanart = "http://localhost:15001/?id=" + str(series_id) + "&type=b"
@@ -880,7 +883,7 @@ class NextUpUpdaterThread(threading.Thread):
             self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, debugLogging)
             self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, debugLogging)
             self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, debugLogging)  
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + thumbnail, debugLogging)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, debugLogging)
             self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
             
             
@@ -894,7 +897,7 @@ class NextUpUpdaterThread(threading.Thread):
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)", fanart)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)", logo)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
-            WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", thumbnail)
+            WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Plot", plot)
             
             
