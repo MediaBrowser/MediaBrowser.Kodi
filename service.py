@@ -1040,7 +1040,65 @@ class InfoUpdaterThread(threading.Thread):
         WINDOW.setProperty("MB3TotalMusicSongs", str(music_songs_count))
         WINDOW.setProperty("MB3TotalUnPlayedMusicSongs", str(music_songs_unplayed_count))
         WINDOW.setProperty("MB3TotalPlayedMusicSongs", str(music_songs_played_count))
+
+        xbmc.log("InfoTV start")
+        infoTVUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?&IncludeItemTypes=Series&Recursive=true&SeriesStatus=Continuing&format=json"
         
+        requesthandle = urllib.urlopen(infoTVUrl, proxies={})
+        xbmc.log("InfoTV start open")
+        jsonData = requesthandle.read()
+        requesthandle.close()         
+        
+        result = json.loads(jsonData)
+        xbmc.log("InfoTV Json Data : " + str(result))
+        
+        totalRunning = result.get("TotalRecordCount")
+        self.logMsg("TotalRunningCount "  + str(totalRunning), debugLogging)
+        WINDOW.setProperty("MB3TotalRunningTvShows", str(totalRunning))
+        
+        xbmc.log("InfoNextAired start")
+        InfoNextAiredUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?IsUnaired=true&SortBy=PremiereDate%2CAirTime%2CSortName&SortOrder=Ascending&IncludeItemTypes=Episode&Limit=1&Recursive=true&Fields=SeriesInfo%2CUserData&format=json"
+        
+        requesthandle = urllib.urlopen(InfoNextAiredUrl, proxies={})
+        jsonData = requesthandle.read()
+        requesthandle.close()         
+        
+        result = json.loads(jsonData)
+        xbmc.log("InfoNextAired Json Data : " + str(result))
+        
+        result = result.get("Items")
+        if(result == None):
+            result = []
+        
+        episode = ""
+        for item in result:
+            title = ""
+            seriesName = ""
+            if(item.get("SeriesName") != None):
+                seriesName = item.get("SeriesName").encode('utf-8')
+            
+            if(item.get("Name") != None):
+                title = item.get("Name").encode('utf-8')
+                
+            eppNumber = ""
+            if(item.get("IndexNumber") != None):
+                eppNumber = item.get("IndexNumber")
+                if eppNumber < 10:
+                  tempEpisodeNumber = "0" + str(eppNumber)
+                else:
+                  tempEpisodeNumber = str(eppNumber)
+            
+            seasonNumber = item.get("ParentIndexNumber")
+            if seasonNumber < 10:
+              tempSeasonNumber = "0" + str(seasonNumber)
+            else:
+              tempSeasonNumber = str(seasonNumber)
+               
+            episode = seriesName + " - " + title + " - S" + tempSeasonNumber + "E" + tempEpisodeNumber
+        
+        self.logMsg("MB3NextAiredEpisode"  + episode, debugLogging)
+        WINDOW.setProperty("MB3NextAiredEpisode", episode)
+        xbmc.log("InfoNextAired end")        
         
 newThread = InfoUpdaterThread()
 newThread.start()
