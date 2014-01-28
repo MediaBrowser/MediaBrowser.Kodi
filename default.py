@@ -1586,6 +1586,7 @@ def setArt (list,name,path):
 def xbmcVersion():
     version = 0.0
     vs = xbmc.getInfoLabel('System.BuildVersion')
+    #vs = "13.0-ALPHA12 Git:2667375"
     try: 
         # sample input: '12.3 Git:XXXXXX'
         version = float(vs.split()[0])
@@ -1594,7 +1595,11 @@ def xbmcVersion():
             # sample input: 'PRE-13.0 Git:XXXXXXXX'
             version = float(vs.split()[0].split('-')[1])
         except ValueError:
-            xbmc.log("Cannot determine version of XBMC from build version: " + vs)
+            try:
+                # sample input: '13.0-PRE Git:XXXXXXXX'
+                version = float(vs.split()[0].split('-')[0])            
+            except ValueError:
+                xbmc.log("Cannot determine version of XBMC from build version: " + vs)
             
     #xbmc.log("Version : " + str(version))
     return version        
