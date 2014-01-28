@@ -246,16 +246,16 @@ def getServerSections( ip_address, port, name, uuid):
     result = json.loads(jsonData)
     result = result.get("Items")
     
-    deatilsString = "Path,Genres,Studios"
+    detailsString = "Path,Genres,Studios"
     
     if(__settings__.getSetting('includeStreamInfo') == "true"):
-        deatilsString += ",MediaStreams"
+        detailsString += ",MediaStreams"
     
     if(__settings__.getSetting('includePeople') == "true"):
-        deatilsString += ",People"
+        detailsString += ",People"
         
     if(__settings__.getSetting('includeOverview') == "true"):
-        deatilsString += ",Overview"        
+        detailsString += ",Overview"        
     
     for item in result:
         if(item.get("RecursiveItemCount") != "0"):
@@ -267,7 +267,7 @@ def getServerSections( ip_address, port, name, uuid):
                     'address'    : ip_address+":"+port ,
                     'serverName' : name ,
                     'uuid'       : uuid ,
-                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + deatilsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json') ,
+                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json') ,
                     'token'      : item.get("Id")  ,
                     'location'   : "local" ,
                     'art'        : item.get("?") ,
@@ -281,7 +281,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + deatilsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -294,7 +294,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=' + deatilsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -307,7 +307,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=' + deatilsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json') ,
+            'path'       : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -319,7 +319,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=' + deatilsString + '&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=json') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -332,7 +332,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=' + deatilsString + '&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=json') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -345,7 +345,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + deatilsString + '&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=json') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + detailsString + '&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -358,7 +358,7 @@ def getServerSections( ip_address, port, name, uuid):
             'address'    : ip_address+":"+port ,
             'serverName' : name ,
             'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + deatilsString + '&SortOrder=Ascending&IncludeItemTypes=BoxSet&format=json') ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=BoxSet&format=json') ,
             'token'      : ''  ,
             'location'   : "local" ,
             'art'        : '' ,
@@ -1144,16 +1144,16 @@ def processDirectory(url, result):
     server=getServerFromURL(url)
     setWindowHeading(url)
     
-    deatilsString = "Path,Genres,Studios"
+    detailsString = "Path,Genres,Studios"
     
     if(__settings__.getSetting('includeStreamInfo') == "true"):
-        deatilsString += ",MediaStreams"
+        detailsString += ",MediaStreams"
     
     if(__settings__.getSetting('includePeople') == "true"):
-        deatilsString += ",People"
+        detailsString += ",People"
         
     if(__settings__.getSetting('includeOverview') == "true"):
-        deatilsString += ",Overview"            
+        detailsString += ",Overview"            
     
     dirItems = []
     result = result.get("Items")
@@ -1361,17 +1361,17 @@ def processDirectory(url, result):
                 SortByTemp = 'SortName'
                 
             if  item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist':
-                u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + deatilsString + '&SortBy='+SortByTemp+'&format=json'
+                u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
                 if (item.get("RecursiveItemCount") != 0):
                     dirItems.append(addGUIItem(u, details, extraData))
             else:
                 if __settings__.getSetting('autoEnterSingle') == "true":
                     if item.get("ChildCount") == 1:
-                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&recursive=true&IncludeItemTypes=Episode&Fields=' + deatilsString + '&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
+                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&recursive=true&IncludeItemTypes=Episode&Fields=' + detailsString + '&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
                     else:
-                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + deatilsString + '&SortBy='+SortByTemp+'&format=json'
+                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
                 else:
-                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + deatilsString + '&SortBy='+SortByTemp+'&format=json'
+                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
 
                 if (item.get("RecursiveItemCount") != 0):
                     dirItems.append(addGUIItem(u, details, extraData))
