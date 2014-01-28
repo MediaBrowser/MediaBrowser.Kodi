@@ -15,30 +15,28 @@ _MODE_BASICPLAY=12
 import xml.etree.ElementTree as xml
 
 def loadMenuOptions():
-    try:
-        favourites_file = os.path.join(xbmc.translatePath('special://userdata'), "favourites.xml")
-        
-        WINDOW = xbmcgui.Window( 10000 )
-        menuItem = 0
+    favourites_file = os.path.join(xbmc.translatePath('special://userdata'), "favourites.xml")
     
-        tree = xml.parse(favourites_file)
-        rootElement = tree.getroot()
-        for child in rootElement.findall('favourite'):
-            name = child.get('name')
-            action = child.text
+    WINDOW = xbmcgui.Window( 10000 )
+    menuItem = 0
+    
+    tree = xml.parse(favourites_file)
+    rootElement = tree.getroot()
+    for child in rootElement.findall('favourite'):
+        name = child.get('name')
+        action = child.text
 
-            index = action.find("plugin://plugin.video.xbmb3c")
-            if(index > -1 and len(action) > 10):
-                action_url = action[index:len(action) - 2]
+        index = action.find("plugin://plugin.video.xbmb3c")
+        if(index > -1 and len(action) > 10):
+            action_url = action[index:len(action) - 2]
             
-                WINDOW.setProperty("xbmb3c_menuitem_name_" + str(menuItem), name)
-                WINDOW.setProperty("xbmb3c_menuitem_action_" + str(menuItem), action_url)
-                xbmc.log("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name)
-                xbmc.log("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url)
+            WINDOW.setProperty("xbmb3c_menuitem_name_" + str(menuItem), name)
+            WINDOW.setProperty("xbmb3c_menuitem_action_" + str(menuItem), action_url)
+            xbmc.log("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name)
+            xbmc.log("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url)
             
-                menuItem = menuItem + 1
-    except:
-        xbmc.log("No favourites file")
+            menuItem = menuItem + 1
+
 loadMenuOptions()
 
 #################################################################################################
@@ -321,9 +319,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             else:
               tempSeasonNumber = str(seasonNumber)
             rating = str(item.get("CommunityRating"))
-            plot = "Missing Plot"
-            if(item.get("Overview") != None):
-                plot = item.get("Overview").encode('utf-8')
+            plot = item.get("Overview").encode('utf-8')
 
             item_id = item.get("Id")
            
@@ -620,9 +616,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             else:
               tempSeasonNumber = str(seasonNumber)
             rating = str(item.get("CommunityRating"))
-            plot = "Missing Plot"
-            if(item.get("Overview") != None):
-                plot = item.get("Overview").encode('utf-8')
+            plot = item.get("Overview").encode('utf-8')
 
             item_id = item.get("Id")
            
