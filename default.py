@@ -1580,28 +1580,24 @@ def displayServers( url ):
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
 
 def setArt (list,name,path):
-    if xbmcVersion() >= 13:
+    if xbmcVersionNum >= 13:
         list.setArt({name:path})
         
-def xbmcVersion():
+def getXbmcVersion():
     version = 0.0
-    vs = xbmc.getInfoLabel('System.BuildVersion')
-    #vs = "13.0-ALPHA12 Git:2667375"
-    try: 
-        # sample input: '12.3 Git:XXXXXX'
-        version = float(vs.split()[0])
-    except ValueError:
-        try:
-            # sample input: 'PRE-13.0 Git:XXXXXXXX'
-            version = float(vs.split()[0].split('-')[1])
-        except ValueError:
-            try:
-                # sample input: '13.0-PRE Git:XXXXXXXX'
-                version = float(vs.split()[0].split('-')[0])            
-            except ValueError:
-                xbmc.log("Cannot determine version of XBMC from build version: " + vs)
-            
-    #xbmc.log("Version : " + str(version))
+    jsonData = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "method": "Application.GetProperties", "params": {"properties": ["version", "name"]}, "id": 1 }') 
+    
+    result = json.loads(jsonData)
+    
+    try:
+        result = result.get("result")
+        versionData = result.get("version")
+        version = float(str(versionData.get("major")) + "." + str(versionData.get("minor")))
+        xbmc.log("Version : " + str(version) + " - " + str(versionData))
+    except:
+        version = 0.0
+        xbmc.log("Version Error : RAW Version Data : " + str(result))
+
     return version        
     
 def setWindowHeading(url) :
@@ -1650,6 +1646,7 @@ def setMasterServer () :
 ##Start of Main
 ###########################################################################
 printDebug( "XBMB3C -> Script argument is " + str(sys.argv[1]), False)
+xbmcVersionNum = getXbmcVersion()
 try:
     params=get_params(sys.argv[2])
 except:
