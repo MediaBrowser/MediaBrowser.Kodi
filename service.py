@@ -238,7 +238,10 @@ class RecentInfoUpdaterThread(threading.Thread):
             criticratingsummary = ""
             if(item.get("CriticRatingSummary") != None):
                 criticratingsummary = item.get("CriticRatingSummary").encode('utf-8')
-            plot = item.get("Overview").encode('utf-8')
+            plot = item.get("Overview")
+            if plot == None:
+                plot=''
+            plot=plot.encode('utf-8')
             year = item.get("ProductionYear")
             runtime = str(int(item.get("RunTimeTicks"))/(10000000*60))
 
@@ -319,13 +322,17 @@ class RecentInfoUpdaterThread(threading.Thread):
             else:
               tempSeasonNumber = str(seasonNumber)
             rating = str(item.get("CommunityRating"))
-            plot = item.get("Overview").encode('utf-8')
+            plot = item.get("Overview")
+            if plot == None:
+                plot=''
+            plot=plot.encode('utf-8')
 
             item_id = item.get("Id")
            
             if item.get("Type") == "Episode" or item.get("Type") == "Season":
                series_id = item.get("SeriesId")
             
+            poster = "http://localhost:15001/?id=" + str(series_id) + "&type=t"
             thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
             logo = "http://localhost:15001/?id=" + str(series_id) + "&type=logo"
             fanart = "http://localhost:15001/?id=" + str(series_id) + "&type=b"
@@ -346,7 +353,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, debugLogging)
             self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, debugLogging)
             self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, debugLogging)  
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + thumbnail, debugLogging)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, debugLogging)
             self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
             
             
@@ -360,7 +367,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)", fanart)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)", logo)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
-            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", thumbnail)
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Plot", plot)
             
             
@@ -616,13 +623,17 @@ class RandomInfoUpdaterThread(threading.Thread):
             else:
               tempSeasonNumber = str(seasonNumber)
             rating = str(item.get("CommunityRating"))
-            plot = item.get("Overview").encode('utf-8')
+            plot = item.get("Overview")
+            if plot == None:
+                plot=''
+            plot=plot.encode('utf-8')
 
             item_id = item.get("Id")
            
             if item.get("Type") == "Episode" or item.get("Type") == "Season":
                series_id = item.get("SeriesId")
             
+            poster = "http://localhost:15001/?id=" + str(series_id) + "&type=t"
             thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
             logo = "http://localhost:15001/?id=" + str(series_id) + "&type=logo"
             fanart = "http://localhost:15001/?id=" + str(series_id) + "&type=b"
@@ -643,7 +654,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, debugLogging)
             self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, debugLogging)
             self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, debugLogging)  
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + thumbnail, debugLogging)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, debugLogging)
             self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
             
             
@@ -657,7 +668,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)", fanart)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)", logo)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
-            WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", thumbnail)
+            WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Plot", plot)
             
             
@@ -841,13 +852,17 @@ class NextUpUpdaterThread(threading.Thread):
             else:
               tempSeasonNumber = str(seasonNumber)
             rating = str(item.get("CommunityRating"))
-            plot = item.get("Overview").encode('utf-8')
+            plot = item.get("Overview")
+            if plot == None:
+                plot=''
+            plot=plot.encode('utf-8')
 
             item_id = item.get("Id")
            
             if item.get("Type") == "Episode" or item.get("Type") == "Season":
                series_id = item.get("SeriesId")
             
+            poster = "http://localhost:15001/?id=" + str(series_id) + "&type=t"
             thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
             logo = "http://localhost:15001/?id=" + str(series_id) + "&type=logo"
             fanart = "http://localhost:15001/?id=" + str(series_id) + "&type=b"
@@ -868,7 +883,7 @@ class NextUpUpdaterThread(threading.Thread):
             self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, debugLogging)
             self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, debugLogging)
             self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, debugLogging)  
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + thumbnail, debugLogging)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, debugLogging)
             self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
             
             
@@ -882,7 +897,7 @@ class NextUpUpdaterThread(threading.Thread):
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)", fanart)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)", logo)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
-            WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", thumbnail)
+            WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Plot", plot)
             
             
@@ -985,7 +1000,7 @@ class InfoUpdaterThread(threading.Thread):
         for item in result:
             collectionType = item.get("CollectionType")
             if collectionType==None:
-                collectionType="movies"
+                collectionType="unknown"
             self.logMsg("collectionType "  + collectionType, debugLogging)    
             if(collectionType == "movies"):
                 movie_count = movie_count + item.get("RecursiveItemCount")
@@ -1019,13 +1034,16 @@ class InfoUpdaterThread(threading.Thread):
         self.logMsg("MusicCount "  + str(music_count), debugLogging)
         self.logMsg("SongsCount "  + str(music_songs_count), debugLogging)
         self.logMsg("SongsUnPlayedCount "  + str(music_songs_unplayed_count), debugLogging)
+        self.logMsg("TrailersCount" + str(trailers_count), debugLogging)
+        self.logMsg("TrailersUnWatchedCount" + str(trailers_unwatched_count) , debugLogging)
     
             #item_count = item_count + 1
         
         movie_watched_count = movie_count - movie_unwatched_count
         musicvideos_watched_count = musicvideos_count - musicvideos_unwatched_count
         episode_watched_count = episode_count - episode_unwatched_count
-        music_songs_played_count = music_songs_count - music_songs_unplayed_count    
+        music_songs_played_count = music_songs_count - music_songs_unplayed_count
+        trailers_watched_count = trailers_count - trailers_unwatched_count    
         WINDOW.setProperty("MB3TotalMovies", str(movie_count))
         WINDOW.setProperty("MB3TotalUnWatchedMovies", str(movie_unwatched_count))
         WINDOW.setProperty("MB3TotalWatchedMovies", str(movie_watched_count))
@@ -1040,6 +1058,9 @@ class InfoUpdaterThread(threading.Thread):
         WINDOW.setProperty("MB3TotalMusicSongs", str(music_songs_count))
         WINDOW.setProperty("MB3TotalUnPlayedMusicSongs", str(music_songs_unplayed_count))
         WINDOW.setProperty("MB3TotalPlayedMusicSongs", str(music_songs_played_count))
+        WINDOW.setProperty("MB3TotalTrailers", str(trailers_count))
+        WINDOW.setProperty("MB3TotalUnWatchedTrailers", str(trailers_unwatched_count))
+        WINDOW.setProperty("MB3TotalWatchedTrailers", str(trailers_watched_count))
 
         xbmc.log("InfoTV start")
         infoTVUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?&IncludeItemTypes=Series&Recursive=true&SeriesStatus=Continuing&format=json"

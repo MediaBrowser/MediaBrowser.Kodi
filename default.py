@@ -1144,7 +1144,7 @@ def processDirectory(url, result):
     server=getServerFromURL(url)
     setWindowHeading(url)
     
-    deatilsString = "Path,Genres"
+    deatilsString = "Path,Genres,Studios"
     
     if(__settings__.getSetting('includeStreamInfo') == "true"):
         deatilsString += ",MediaStreams"
