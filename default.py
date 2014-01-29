@@ -246,7 +246,7 @@ def getServerSections( ip_address, port, name, uuid):
     result = json.loads(jsonData)
     result = result.get("Items")
     
-    detailsString = "Path,Genres,Studios"
+    detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
     
     if(__settings__.getSetting('includeStreamInfo') == "true"):
         detailsString += ",MediaStreams"
@@ -263,6 +263,11 @@ def getServerSections( ip_address, port, name, uuid):
             if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
                 __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
                 __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+            
+            total = str(item.get("RecursiveItemCount"))
+            section = item.get("CollectionType")
+            if (section == None):
+              section = "movies"
             temp_list.append( {'title'      : Name,
                     'address'    : ip_address+":"+port ,
                     'serverName' : name ,
@@ -273,6 +278,8 @@ def getServerSections( ip_address, port, name, uuid):
                     'art'        : item.get("?") ,
                     'local'      : '1' ,
                     'type'       : "movie",
+                    'section'    : section,
+                    'total'      : total,
                     'owned'      : '1' })
             printDebug("Title " + Name)    
     
@@ -287,6 +294,7 @@ def getServerSections( ip_address, port, name, uuid):
             'art'        : '' ,
             'local'      : '1' ,
             'type'       : "movie",
+            'section'    : "movies",
             'owned'      : '1' })
             
     # Add recent Episodes
@@ -300,6 +308,7 @@ def getServerSections( ip_address, port, name, uuid):
             'art'        : '' ,
             'local'      : '1' ,
             'type'       : "movie",
+            'section'    : "tvshows",
             'owned'      : '1' })    
             
     # Add NextUp Episodes
@@ -313,6 +322,7 @@ def getServerSections( ip_address, port, name, uuid):
             'art'        : '' ,
             'local'      : '1' ,
             'type'       : "movie",
+            'section'    : "tvshows",
             'owned'      : '1' })            
     # Add Favorite Movies
     temp_list.append( {'title'      : 'Favorite Movies',
@@ -325,6 +335,7 @@ def getServerSections( ip_address, port, name, uuid):
             'art'        : '' ,
             'local'      : '1' ,
             'type'       : "movie",
+            'section'    : "movies",
             'owned'      : '1' })            
 
     # Add Favorite Episodes
@@ -338,6 +349,7 @@ def getServerSections( ip_address, port, name, uuid):
             'art'        : '' ,
             'local'      : '1' ,
             'type'       : "movie",
+            'section'    : "tvshows",
             'owned'      : '1' })                       
             
     # Add Upcoming TV
@@ -351,6 +363,7 @@ def getServerSections( ip_address, port, name, uuid):
             'art'        : '' ,
             'local'      : '1' ,
             'type'       : "movie",
+            'section'    : "tvshows",
             'owned'      : '1' })                            
 
     # Add BoxSets
@@ -364,6 +377,7 @@ def getServerSections( ip_address, port, name, uuid):
             'art'        : '' ,
             'local'      : '1' ,
             'type'       : "movie",
+            'section'    : "movies",
             'owned'      : '1' })                            
             
     for item in temp_list:
@@ -886,6 +900,88 @@ def displaySections( filter=None, shared=False ):
         #All XML entries have been parsed and we are ready to allow the user to browse around.  So end the screen listing.
         xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
         xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
+        
+def skin( filter=None, shared=False ):
+        printDebug("== ENTER: skin() ==", False)
+        ds_servers=discoverAllServers()
+        numOfServers=len(ds_servers)
+        printDebug( "Using list of "+str(numOfServers)+" servers: " +  str(ds_servers))
+        #Get the global host variable set in settings
+        WINDOW = xbmcgui.Window( 10000 )
+        sectionCount=0
+        dirItems = []
+        
+        for section in getAllSections(ds_servers):
+        
+            if shared and section.get('owned') == '1':
+                continue
+                
+        
+            details={'title' : section.get('title', 'Unknown') }
+
+            if len(ds_servers) > 1:
+                details['title']=section.get('serverName')+": "+details['title']
+
+            extraData={ 'fanart_image' : '' ,
+                        'type'         : "Video" ,
+                        'thumb'        : '' ,
+                        'token'        : section.get('token',None) }
+
+                        #Determine what we are going to do process after a link is selected by the user, based on the content we find
+
+            path=section['path']
+
+            if section.get('type') == 'show':
+                mode=_MODE_TVSHOWS
+                window="VideoLibrary"
+                if (filter is not None) and (filter != "tvshows"):
+                    continue
+
+            elif section.get('type') == 'movie':
+                mode=_MODE_MOVIES
+                window="VideoLibrary"
+                printDebug("MovieType!")
+                if (filter is not None) and (filter != "movies"):
+                    continue
+
+            elif section.get('type') == 'artist':
+                mode=_MODE_ARTISTS
+                window="MusicFiles"
+                if (filter is not None) and (filter != "music"):
+                    continue
+
+            elif section.get('type') == 'photo':
+                mode=_MODE_PHOTOS
+                window="Pictures"
+                if (filter is not None) and (filter != "photos"):
+                    continue
+            else:
+                printDebug("Ignoring section "+details['title']+" of type " + section.get('type') + " as unable to process")
+                continue
+
+            path=path+'/all'
+
+            extraData['mode']=mode
+            modeurl="&mode=0"
+            s_url='http://%s%s' % ( section['address'], path)
+            murl= "?url="+urllib.quote(s_url)+modeurl
+
+            #Build that listing..
+            total = section.get('total')
+            if (total == None):
+                total = 0
+            WINDOW.setProperty("xbmb3c.%d.title"    % (sectionCount) , section.get('title', 'Unknown'))
+            WINDOW.setProperty("xbmb3c.%d.path"     % (sectionCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+            WINDOW.setProperty("xbmb3c.%d.type"     % (sectionCount) , section.get('section'))
+            WINDOW.setProperty("xbmb3c.%d.total" % (sectionCount) , str(total))
+
+            printDebug("Building window properties index [" + str(sectionCount) + "] which is [" + section.get('title') + " section - " + section.get('section') + " total - " + str(total) + "]")
+            printDebug("PATH in use is: ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+            sectionCount += 1
+
+            #For each of the servers we have identified
+            allservers=ds_servers
+            numOfServers=len(allservers)
 
 def remove_html_tags( data ):
     p = re.compile(r'<.*?>')
@@ -913,6 +1009,7 @@ def PLAY( url, handle ):
                 playurl = playurl.replace("\\\\","smb://")
             else:
                 playurl = playurl.replace("\\\\","smb://" + __settings__.getSetting('smbusername') + ':' + __settings__.getSetting('smbpassword') + '@')
+            
             playurl = playurl.replace("\\","/")
             
         else:
@@ -1152,7 +1249,7 @@ def processDirectory(url, result):
     server=getServerFromURL(url)
     setWindowHeading(url)
     
-    detailsString = "Path,Genres,Studios"
+    detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
     
     if(__settings__.getSetting('includeStreamInfo') == "true"):
         detailsString += ",MediaStreams"
@@ -1310,8 +1407,12 @@ def processDirectory(url, result):
             tempDuration = str(int(item.get("RunTimeTicks"))/(10000000*60))
             RunTimeTicks = str(item.get("RunTimeTicks"))
         except TypeError:
-            tempDuration = "100"
-            RunTimeTicks = "100"
+            try:
+                tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
+                RunTimeTicks = str(item.get("CumulativeRunTimeTicks"))
+            except TypeError:
+                tempDuration = "100"
+                RunTimeTicks = "100"
         
         if(item.get("PremiereDate") != None):
             premieredatelist = (item.get("PremiereDate")).split("T")
@@ -1754,6 +1855,7 @@ else:
 
     elif mode == _MODE_BASICPLAY:
         PLAY(param_url, pluginhandle)
+    
 xbmc.log ("===== XBMB3C STOP =====")
 
 #clear done and exit.
