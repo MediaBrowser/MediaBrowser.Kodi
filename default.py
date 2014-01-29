@@ -1025,17 +1025,22 @@ def getCacheValidatorFromData(result):
     for item in result:
         userData = item.get("UserData")
         if(userData != None):
-            itemCount = itemCount + 1
-            if userData.get("Played") == False:
-                unwatchedItemCount = unwatchedItemCount + 1
-                itemPossition = userData.get("PlaybackPositionTicks")
-                itemRuntime = item.get("RunTimeTicks")
-                if(itemRuntime != None and itemPossition != None):
-                    itemPercent = float(itemPossition) / float(itemRuntime)
-                    totalPlayedPercentage = totalPlayedPercentage + itemPercent
+            if(item.get("IsFolder") == False):
+                itemCount = itemCount + 1
+                if userData.get("Played") == False:
+                    unwatchedItemCount = unwatchedItemCount + 1
+                    itemPossition = userData.get("PlaybackPositionTicks")
+                    itemRuntime = item.get("RunTimeTicks")
+                    if(itemRuntime != None and itemPossition != None):
+                        itemPercent = float(itemPossition) / float(itemRuntime)
+                        totalPlayedPercentage = totalPlayedPercentage + itemPercent
+                else:
+                    totalPlayedPercentage = totalPlayedPercentage + 100
             else:
-                totalPlayedPercentage = totalPlayedPercentage + 100
-    
+                itemCount = itemCount + item.get("RecursiveItemCount")
+                unwatchedItemCount = unwatchedItemCount + item.get("RecursiveUnplayedItemCount")
+                totalPlayedPercentage = totalPlayedPercentage + (item.get("RecursiveItemCount") * item.get("PlayedPercentage"))
+            
     totalPlayedPercentage = totalPlayedPercentage / float(itemCount)
     playedTime = "{0:09.6f}".format(totalPlayedPercentage)
     playedTime = playedTime.replace(".","-")
