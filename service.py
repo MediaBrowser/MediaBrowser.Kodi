@@ -462,31 +462,74 @@ newThread.start()
 # Start of BackgroundRotationThread
 # Sets a backgound property to a fan art link
 #################################################################################################
+from random import randint
+import random
 
 class BackgroundRotationThread(threading.Thread):
 
+    movie_art_links = []
+    tv_art_links = []
+    global_art_links = []
+    current_movie_art = 0
+    current_tv_art = 0
+    current_global_art = 0
+    
     def logMsg(self, msg, debugLogging):
         if(debugLogging == "true"):
-            xbmc.log("XBMB3C Recent Info Thread -> " + msg)
+            xbmc.log("XBMB3C Background Image Thread -> " + msg)
     
     def run(self):
         xbmc.log("BackgroundRotationThread Started")
         
         self.updateArtLinks()
+        self.setBackgroundLink()
         lastRun = datetime.today()
         
         while (xbmc.abortRequested == False):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             
-            if(secTotal > 300):
-
+            if(secTotal > 60):
+                self.setBackgroundLink()
                 lastRun = datetime.today()
 
             xbmc.sleep(3000)
                         
         xbmc.log("BackgroundRotationThread Exited")
 
+    def setBackgroundLink(self):
+    
+        WINDOW = xbmcgui.Window( 10000 )
+        
+        if(len(self.movie_art_links) > 0):
+            xbmc.log("setBackgroundLink index movie_art_links " + str(self.current_movie_art) + " of " + str(len(self.movie_art_links)))
+            artUrl =  self.movie_art_links[self.current_movie_art]
+            WINDOW.setProperty("MB3.Background.Movie.FanArt", artUrl)
+            xbmc.log("MB3.Background.Movie.FanArt=" + artUrl)
+            self.current_movie_art = self.current_movie_art + 1
+            if(self.current_movie_art >= len(self.movie_art_links) - 1):
+                self.current_movie_art = 0
+        
+        if(len(self.tv_art_links) > 0):
+            xbmc.log("setBackgroundLink index tv_art_links " + str(self.current_tv_art) + " of " + str(len(self.tv_art_links)))
+            artUrl =  self.tv_art_links[self.current_tv_art]
+            WINDOW.setProperty("MB3.Background.TV.FanArt", artUrl)
+            xbmc.log("MB3.Background.TV.FanArt=" + artUrl)
+            self.current_tv_art = self.current_tv_art + 1
+            if(self.current_tv_art >= len(self.tv_art_links) - 1):
+                self.current_tv_art = 0
+            
+        if(len(self.global_art_links) > 0):
+            xbmc.log("setBackgroundLink index global_art_links " + str(self.current_global_art) + " of " + str(len(self.global_art_links)))
+            artUrl =  self.global_art_links[self.current_global_art]
+            WINDOW.setProperty("MB3.Background.Global.FanArt", artUrl)
+            xbmc.log("MB3.Background.Global.FanArt=" + artUrl)
+            self.current_global_art = self.current_global_art + 1         
+            if(self.current_global_art >= len(self.global_art_links) - 1):
+                self.current_global_art = 0
+        
+        #WINDOW.setProperty("MB3.Background.Music.FanArt", musicfanArt)
+                
     def updateArtLinks(self):
         xbmc.log("updateArtLinks Called")
         
@@ -509,7 +552,52 @@ class BackgroundRotationThread(threading.Thread):
                 break
         
         xbmc.log("updateArtLinks UserID : " + userid)
+        
+        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&Fields=&Filters=IsNotFolder&IncludeItemTypes=Movie&format=json"
 
+        requesthandle = urllib.urlopen(recentUrl, proxies={})
+        jsonData = requesthandle.read()
+        requesthandle.close()   
+        
+        result = json.loads(jsonData)
+        
+        result = result.get("Items")
+        if(result == None):
+            result = []   
+
+        for item in result:
+            fanartLink = "http://localhost:15001/?id=" + str(item.get("Id")) + "&type=b"
+            if (fanartLink not in self.movie_art_links):
+                self.movie_art_links.append(fanartLink)
+        
+        random.shuffle(self.movie_art_links)
+        xbmc.log("Background Movie Art Links : " + str(len(self.movie_art_links)))
+        
+        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&Fields=&Filters=IsNotFolder&IncludeItemTypes=Episode&format=json"
+
+        requesthandle = urllib.urlopen(recentUrl, proxies={})
+        jsonData = requesthandle.read()
+        requesthandle.close()   
+        
+        result = json.loads(jsonData)        
+        
+        result = result.get("Items")
+        if(result == None):
+            result = []   
+
+        for item in result:
+            fanartLink = "http://localhost:15001/?id=" + str(item.get("SeriesId")) + "&type=b"
+            if (fanartLink not in self.tv_art_links):
+                self.tv_art_links.append(fanartLink)     
+            
+        random.shuffle(self.tv_art_links)
+        xbmc.log("Background Tv Art Links : " + str(len(self.tv_art_links)))
+
+        self.global_art_links.extend(self.movie_art_links)
+        self.global_art_links.extend(self.tv_art_links)
+        random.shuffle(self.global_art_links)
+        xbmc.log("Background Global Art Links : " + str(len(self.global_art_links)))        
+        
 backgroundUpdaterThread = BackgroundRotationThread()
 backgroundUpdaterThread.start()
 
