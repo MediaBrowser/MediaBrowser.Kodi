@@ -87,6 +87,12 @@ class MyHandler(BaseHTTPRequestHandler):
         self.logMsg("Params : " + str(params), debugLogging)
         itemId = params["id"][0]
         requestType = params["type"][0]
+        
+        if (len(params) > 2):
+          self.logMsg("Params with Index: " + str(params), debugLogging)  
+          index = params['index'][0]
+        else:
+          index = None
 
         imageType = "Primary"
         if(requestType == "b"):
@@ -101,9 +107,12 @@ class MyHandler(BaseHTTPRequestHandler):
             imageType = "Art"
         elif(requestType == "landscape"):
             imageType = "Thumb"
-            
-        remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType + "?Format=png"
         
+        if (index == None):  
+          remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType  + "?Format=png"
+        else:
+          remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType +  "/" + index  + "?Format=png"
+                  
         self.logMsg("MB3 Host : " + mb3Host, debugLogging)
         self.logMsg("MB3 Port : " + mb3Port, debugLogging)
         self.logMsg("Item ID : " + itemId, debugLogging)
@@ -464,14 +473,17 @@ newThread.start()
 #################################################################################################
 from random import randint
 import random
+import urllib2
 
 class BackgroundRotationThread(threading.Thread):
 
     movie_art_links = []
     tv_art_links = []
+    music_art_links = []
     global_art_links = []
     current_movie_art = 0
     current_tv_art = 0
+    current_music_art = 0
     current_global_art = 0
     
     def logMsg(self, msg, debugLogging):
@@ -489,7 +501,7 @@ class BackgroundRotationThread(threading.Thread):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             
-            if(secTotal > 60):
+            if(secTotal > 10):
                 self.setBackgroundLink()
                 lastRun = datetime.today()
 
@@ -518,6 +530,15 @@ class BackgroundRotationThread(threading.Thread):
             self.current_tv_art = self.current_tv_art + 1
             if(self.current_tv_art >= len(self.tv_art_links) - 1):
                 self.current_tv_art = 0
+                
+        if(len(self.music_art_links) > 0):
+            xbmc.log("setBackgroundLink index music_art_links " + str(self.current_music_art) + " of " + str(len(self.music_art_links)))
+            artUrl =  self.music_art_links[self.current_music_art]
+            WINDOW.setProperty("MB3.Background.Music.FanArt", artUrl)
+            xbmc.log("MB3.Background.Music.FanArt=" + artUrl)
+            self.current_music_art = self.current_music_art + 1
+            if(self.current_music_art >= len(self.music_art_links) - 1):
+                self.current_music_art = 0
             
         if(len(self.global_art_links) > 0):
             xbmc.log("setBackgroundLink index global_art_links " + str(self.current_global_art) + " of " + str(len(self.global_art_links)))
@@ -527,8 +548,6 @@ class BackgroundRotationThread(threading.Thread):
             self.current_global_art = self.current_global_art + 1         
             if(self.current_global_art >= len(self.global_art_links) - 1):
                 self.current_global_art = 0
-        
-        #WINDOW.setProperty("MB3.Background.Music.FanArt", musicfanArt)
                 
     def updateArtLinks(self):
         xbmc.log("updateArtLinks Called")
@@ -553,9 +572,9 @@ class BackgroundRotationThread(threading.Thread):
         
         xbmc.log("updateArtLinks UserID : " + userid)
         
-        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&Fields=&Filters=IsNotFolder&IncludeItemTypes=Movie&format=json"
+        moviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&IncludeItemTypes=Movie&format=json"
 
-        requesthandle = urllib.urlopen(recentUrl, proxies={})
+        requesthandle = urllib2.urlopen(moviesUrl, timeout=60)
         jsonData = requesthandle.read()
         requesthandle.close()   
         
@@ -566,16 +585,23 @@ class BackgroundRotationThread(threading.Thread):
             result = []   
 
         for item in result:
-            fanartLink = "http://localhost:15001/?id=" + str(item.get("Id")) + "&type=b"
-            if (fanartLink not in self.movie_art_links):
-                self.movie_art_links.append(fanartLink)
+            images = item.get("BackdropImageTags")
+            id = item.get("Id")
+            if (images == None):
+                images = []
+            index = 0
+            for backdrop in images:
+              fanartLink = "http://localhost:15001/?id=" + str(id) + "&type=b" + "&index=" + str(index)
+              if (fanartLink not in self.movie_art_links):
+                  self.movie_art_links.append(fanartLink)
+              index = index + 1
         
         random.shuffle(self.movie_art_links)
         xbmc.log("Background Movie Art Links : " + str(len(self.movie_art_links)))
         
-        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&Fields=&Filters=IsNotFolder&IncludeItemTypes=Episode&format=json"
+        tvUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&IncludeItemTypes=Series&format=json"
 
-        requesthandle = urllib.urlopen(recentUrl, proxies={})
+        requesthandle = urllib2.urlopen(tvUrl, timeout=60)
         jsonData = requesthandle.read()
         requesthandle.close()   
         
@@ -586,15 +612,50 @@ class BackgroundRotationThread(threading.Thread):
             result = []   
 
         for item in result:
-            fanartLink = "http://localhost:15001/?id=" + str(item.get("SeriesId")) + "&type=b"
-            if (fanartLink not in self.tv_art_links):
-                self.tv_art_links.append(fanartLink)     
-            
+            images = item.get("BackdropImageTags")
+            id = item.get("Id")
+            if (images == None):
+                images = []
+            index = 0
+            for backdrop in images:
+              fanartLink = "http://localhost:15001/?id=" + str(id) + "&type=b" + "&index=" + str(index)
+              if (fanartLink not in self.tv_art_links):
+                  self.tv_art_links.append(fanartLink)    
+              index = index + 1
+              
         random.shuffle(self.tv_art_links)
         xbmc.log("Background Tv Art Links : " + str(len(self.tv_art_links)))
 
+        musicUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&IncludeItemTypes=MusicArtist&format=json"
+        
+        requesthandle = urllib2.urlopen(musicUrl, timeout=60)
+        jsonData = requesthandle.read()
+        requesthandle.close()   
+        
+        result = json.loads(jsonData)        
+        
+        result = result.get("Items")
+        if(result == None):
+            result = []   
+
+        for item in result:
+            images = item.get("BackdropImageTags")
+            id = item.get("Id")
+            if (images == None):
+                images = []
+            index = 0
+            for backdrop in images:
+              fanartLink = "http://localhost:15001/?id=" + str(id) + "&type=b" + "&index=" + str(index)
+              if (fanartLink not in self.music_art_links):
+                  self.music_art_links.append(fanartLink)
+              index = index + 1
+
+        random.shuffle(self.music_art_links)
+        xbmc.log("Background Music Art Links : " + str(len(self.music_art_links)))
+
         self.global_art_links.extend(self.movie_art_links)
         self.global_art_links.extend(self.tv_art_links)
+        self.global_art_links.extend(self.music_art_links)
         random.shuffle(self.global_art_links)
         xbmc.log("Background Global Art Links : " + str(len(self.global_art_links)))        
         
