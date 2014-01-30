@@ -1084,6 +1084,15 @@ class NextUpUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
+            # Process UserData
+            userData = item.get("UserData")
+            if(userData != None):
+                resume = str(userData.get("PlaybackPositionTicks"))
+                if (resume == "0"):
+                    resume = "False"
+                else:
+                    resume = "True"
+
             self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, debugLogging)
             self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, debugLogging)
             self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".EpisodeNo = " + tempEpisodeNumber, debugLogging)
@@ -1096,6 +1105,7 @@ class NextUpUpdaterThread(threading.Thread):
             self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, debugLogging)  
             self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, debugLogging)
             self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Resume  = " + resume, debugLogging)
             
             
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".EpisodeTitle", title)
@@ -1110,6 +1120,7 @@ class NextUpUpdaterThread(threading.Thread):
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Plot", plot)
+            WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Resume", resume)
             
             
             item_count = item_count + 1
