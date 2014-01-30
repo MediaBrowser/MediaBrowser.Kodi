@@ -459,6 +459,65 @@ newThread.start()
 #################################################################################################
 
 #################################################################################################
+# Start of BackgroundRotationThread
+# Sets a backgound property to a fan art link
+#################################################################################################
+
+class BackgroundRotationThread(threading.Thread):
+
+    def logMsg(self, msg, debugLogging):
+        if(debugLogging == "true"):
+            xbmc.log("XBMB3C Recent Info Thread -> " + msg)
+    
+    def run(self):
+        xbmc.log("BackgroundRotationThread Started")
+        
+        self.updateArtLinks()
+        lastRun = datetime.today()
+        
+        while (xbmc.abortRequested == False):
+            td = datetime.today() - lastRun
+            secTotal = td.seconds
+            
+            if(secTotal > 300):
+
+                lastRun = datetime.today()
+
+            xbmc.sleep(3000)
+                        
+        xbmc.log("BackgroundRotationThread Exited")
+
+    def updateArtLinks(self):
+        xbmc.log("updateArtLinks Called")
+        
+        mb3Host = __settings__.getSetting('ipaddress')
+        mb3Port =__settings__.getSetting('port')    
+        userName = __settings__.getSetting('username')     
+        debugLogging = __settings__.getSetting('debug')           
+        
+        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
+        
+        requesthandle = urllib.urlopen(userUrl, proxies={})
+        jsonData = requesthandle.read()
+        requesthandle.close()        
+        
+        userid = ""
+        result = json.loads(jsonData)
+        for user in result:
+            if(user.get("Name") == userName):
+                userid = user.get("Id")    
+                break
+        
+        xbmc.log("updateArtLinks UserID : " + userid)
+
+backgroundUpdaterThread = BackgroundRotationThread()
+backgroundUpdaterThread.start()
+
+#################################################################################################
+# End of BackgroundRotationThread
+#################################################################################################
+
+#################################################################################################
 # Random Info Updater
 # 
 #################################################################################################
