@@ -591,27 +591,17 @@ def getURL( url, suppress=False, type="GET", popup=0 ):
             return ""
         else:
             link = ""
-
-    except socket.gaierror :
-        error = 'Unable to lookup host: ' + server + "\nCheck host name is correct"
+    except Exception, msg:
+        error = "Unable to connect to " + str(server) + " : " + str(msg)
         xbmc.log (error)
-        if suppress is False:
-            if popup==0:
-                xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to find server,)")
-            else:
-                xbmcgui.Dialog().ok("","Unable to contact host")
-        xbmc.log (error)
-        return False
-    except socket.error, msg :
-        error="Unable to connect to " + server +"\nReason: " + str(msg)
-        xbmc.log (error)
-        if suppress is False:
-            if popup == 0:
-                xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to connect to server,)")
-            else:
-                xbmcgui.Dialog().ok("","Unable to connect to host")
-        xbmc.log (error)
-        return False
+        xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to connect to server,)")
+        xbmcgui.Dialog().ok("","Unable to connect to host")
+        #if suppress is False:
+        #    if popup == 0:
+        #        xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to connect to server,)")
+        #    else:
+        #        xbmcgui.Dialog().ok("","Unable to connect to host")
+        raise
     else:
         try: conn.close()
         except: pass

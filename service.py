@@ -15,30 +15,34 @@ _MODE_BASICPLAY=12
 import xml.etree.ElementTree as xml
 
 def loadMenuOptions():
+    
+    favourites_file = os.path.join(xbmc.translatePath('special://userdata'), "favourites.xml")
+    
+    WINDOW = xbmcgui.Window( 10000 )
+    menuItem = 0
+    
     try:
-        favourites_file = os.path.join(xbmc.translatePath('special://userdata'), "favourites.xml")
-        
-        WINDOW = xbmcgui.Window( 10000 )
-        menuItem = 0
-        
         tree = xml.parse(favourites_file)
         rootElement = tree.getroot()
-        for child in rootElement.findall('favourite'):
-            name = child.get('name')
-            action = child.text
-        
-            index = action.find("plugin://plugin.video.xbmb3c")
-            if(index > -1 and len(action) > 10):
-                action_url = action[index:len(action) - 2]
-                
-                WINDOW.setProperty("xbmb3c_menuitem_name_" + str(menuItem), name)
-                WINDOW.setProperty("xbmb3c_menuitem_action_" + str(menuItem), action_url)
-                xbmc.log("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name)
-                xbmc.log("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url)
-                
-                menuItem = menuItem + 1
-    except:
-        xbmc.log("No favourites file")
+    except Exception, e:
+        xbmc.log("loadMenuOptions Error Parsing favourites.xml : " + str(e))
+        return
+    
+    for child in rootElement.findall('favourite'):
+        name = child.get('name')
+        action = child.text
+    
+        index = action.find("plugin://plugin.video.xbmb3c")
+        if(index > -1 and len(action) > 10):
+            action_url = action[index:len(action) - 2]
+            
+            WINDOW.setProperty("xbmb3c_menuitem_name_" + str(menuItem), name)
+            WINDOW.setProperty("xbmb3c_menuitem_action_" + str(menuItem), action_url)
+            xbmc.log("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name)
+            xbmc.log("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url)
+            
+            menuItem = menuItem + 1
+
 
 loadMenuOptions()
 
@@ -85,6 +89,10 @@ class MyHandler(BaseHTTPRequestHandler):
         
         params = parse_qs(self.path[2:])
         self.logMsg("Params : " + str(params), debugLogging)
+        
+        if(params.get("id") == None):
+            return
+        
         itemId = params["id"][0]
         requestType = params["type"][0]
         
@@ -121,10 +129,15 @@ class MyHandler(BaseHTTPRequestHandler):
         
         # get the remote image
         self.logMsg("Downloading Image", debugLogging)
-        requesthandle = urllib.urlopen(remoteUrl, proxies={})
-        pngData = requesthandle.read()
-        requesthandle.close()
         
+        try:
+            requesthandle = urllib.urlopen(remoteUrl, proxies={})
+            pngData = requesthandle.read()
+            requesthandle.close()            
+        except Exception, e:
+            xbmc.log("Image Proxy MyHandler urlopen : " + str(e) + " (" + remoteUrl + ")")
+            return
+
         datestring = time.strftime('%a, %d %b %Y %H:%M:%S GMT')
         length = len(pngData)
         
@@ -209,10 +222,14 @@ class RecentInfoUpdaterThread(threading.Thread):
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
-        requesthandle = urllib.urlopen(userUrl, proxies={})
-        jsonData = requesthandle.read()
-        requesthandle.close()        
-        
+        try:
+            requesthandle = urllib.urlopen(userUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()              
+        except Exception, e:
+            xbmc.log("RecentInfoUpdaterThread updateRecent urlopen : " + str(e) + " (" + userUrl + ")")
+            return
+
         userid = ""
         result = json.loads(jsonData)
         for user in result:
@@ -226,9 +243,13 @@ class RecentInfoUpdaterThread(threading.Thread):
         
         recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
         
-        requesthandle = urllib.urlopen(recentUrl, proxies={})
-        jsonData = requesthandle.read()
-        requesthandle.close()     
+        try:
+            requesthandle = urllib.urlopen(recentUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()              
+        except Exception, e:
+            xbmc.log("RecentInfoUpdaterThread updateRecent urlopen : " + str(e) + " (" + recentUrl + ")")
+            return    
 
         result = json.loads(jsonData)
         xbmc.log("Recent Movie Json Data : " + str(result))
@@ -299,10 +320,14 @@ class RecentInfoUpdaterThread(threading.Thread):
         
         recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json"
         
-        requesthandle = urllib.urlopen(recentUrl, proxies={})
-        jsonData = requesthandle.read()
-        requesthandle.close()         
-        
+        try:
+            requesthandle = urllib.urlopen(recentUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()               
+        except Exception, e:
+            xbmc.log("RecentInfoUpdaterThread updateRecent urlopen : " + str(e) + " (" + recentUrl + ")")
+            return
+
         result = json.loads(jsonData)
         xbmc.log("Recent TV Show Json Data : " + str(result))
         
@@ -368,7 +393,6 @@ class RecentInfoUpdaterThread(threading.Thread):
             self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, debugLogging)
             self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
             
-            
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".EpisodeTitle", title)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".ShowTitle", seriesName)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".EpisodeNo", tempEpisodeNumber)
@@ -382,16 +406,19 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Plot", plot)
             
-            
             item_count = item_count + 1
             
             xbmc.log("Updating Recent MusicList")
         
             recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=MusicAlbum&format=json"
         
-            requesthandle = urllib.urlopen(recentUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()         
+            try:
+                requesthandle = urllib.urlopen(recentUrl, proxies={})
+                jsonData = requesthandle.read()
+                requesthandle.close()                 
+            except Exception, e:
+                xbmc.log("RecentInfoUpdaterThread updateRecent urlopen : " + str(e) + " (" + recentUrl + ")")
+                return
         
             result = json.loads(jsonData)
             xbmc.log("Recent MusicList Json Data : " + str(result))
@@ -456,7 +483,6 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestAlbumMB3." + str(item_count) + ".Art(poster)", thumbnail)
             WINDOW.setProperty("LatestAlbumMB3." + str(item_count) + ".Plot", plot)
             
-            
             item_count = item_count + 1
         
         
@@ -497,13 +523,21 @@ class BackgroundRotationThread(threading.Thread):
         self.setBackgroundLink()
         lastRun = datetime.today()
         
+        backgroundRefresh = int(__settings__.getSetting('backgroundRefresh'))
+        if(backgroundRefresh < 10):
+            backgroundRefresh = 10
+        
         while (xbmc.abortRequested == False):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             
-            if(secTotal > 10):
+            if(secTotal > backgroundRefresh):
                 self.setBackgroundLink()
                 lastRun = datetime.today()
+                
+                backgroundRefresh = int(__settings__.getSetting('backgroundRefresh'))
+                if(backgroundRefresh < 10):
+                    backgroundRefresh = 10                
 
             xbmc.sleep(3000)
                         
@@ -512,41 +546,42 @@ class BackgroundRotationThread(threading.Thread):
     def setBackgroundLink(self):
     
         WINDOW = xbmcgui.Window( 10000 )
+        debugLogging = __settings__.getSetting('debug')
         
         if(len(self.movie_art_links) > 0):
-            xbmc.log("setBackgroundLink index movie_art_links " + str(self.current_movie_art) + " of " + str(len(self.movie_art_links)))
+            self.logMsg("setBackgroundLink index movie_art_links " + str(self.current_movie_art + 1) + " of " + str(len(self.movie_art_links)), debugLogging)
             artUrl =  self.movie_art_links[self.current_movie_art]
             WINDOW.setProperty("MB3.Background.Movie.FanArt", artUrl)
-            xbmc.log("MB3.Background.Movie.FanArt=" + artUrl)
+            self.logMsg("MB3.Background.Movie.FanArt=" + artUrl, debugLogging)
             self.current_movie_art = self.current_movie_art + 1
-            if(self.current_movie_art >= len(self.movie_art_links) - 1):
+            if(self.current_movie_art == len(self.movie_art_links)):
                 self.current_movie_art = 0
         
         if(len(self.tv_art_links) > 0):
-            xbmc.log("setBackgroundLink index tv_art_links " + str(self.current_tv_art) + " of " + str(len(self.tv_art_links)))
+            self.logMsg("setBackgroundLink index tv_art_links " + str(self.current_tv_art + 1) + " of " + str(len(self.tv_art_links)), debugLogging)
             artUrl =  self.tv_art_links[self.current_tv_art]
             WINDOW.setProperty("MB3.Background.TV.FanArt", artUrl)
-            xbmc.log("MB3.Background.TV.FanArt=" + artUrl)
+            self.logMsg("MB3.Background.TV.FanArt=" + artUrl, debugLogging)
             self.current_tv_art = self.current_tv_art + 1
-            if(self.current_tv_art >= len(self.tv_art_links) - 1):
+            if(self.current_tv_art == len(self.tv_art_links)):
                 self.current_tv_art = 0
                 
         if(len(self.music_art_links) > 0):
-            xbmc.log("setBackgroundLink index music_art_links " + str(self.current_music_art) + " of " + str(len(self.music_art_links)))
+            self.logMsg("setBackgroundLink index music_art_links " + str(self.current_music_art + 1) + " of " + str(len(self.music_art_links)), debugLogging)
             artUrl =  self.music_art_links[self.current_music_art]
-            WINDOW.setProperty("MB3.Background.Music.FanArt", artUrl)
-            xbmc.log("MB3.Background.Music.FanArt=" + artUrl)
+            WINDOW.setProperty("MB3.Background.Music.FanArt", artUrl, debugLogging)
+            self.logMsg("MB3.Background.Music.FanArt=" + artUrl)
             self.current_music_art = self.current_music_art + 1
-            if(self.current_music_art >= len(self.music_art_links) - 1):
+            if(self.current_music_art == len(self.music_art_links)):
                 self.current_music_art = 0
             
         if(len(self.global_art_links) > 0):
-            xbmc.log("setBackgroundLink index global_art_links " + str(self.current_global_art) + " of " + str(len(self.global_art_links)))
+            self.logMsg("setBackgroundLink index global_art_links " + str(self.current_global_art + 1) + " of " + str(len(self.global_art_links)), debugLogging)
             artUrl =  self.global_art_links[self.current_global_art]
             WINDOW.setProperty("MB3.Background.Global.FanArt", artUrl)
-            xbmc.log("MB3.Background.Global.FanArt=" + artUrl)
+            self.logMsg("MB3.Background.Global.FanArt=" + artUrl, debugLogging)
             self.current_global_art = self.current_global_art + 1         
-            if(self.current_global_art >= len(self.global_art_links) - 1):
+            if(self.current_global_art == len(self.global_art_links)):
                 self.current_global_art = 0
                 
     def updateArtLinks(self):
@@ -559,9 +594,13 @@ class BackgroundRotationThread(threading.Thread):
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
-        requesthandle = urllib.urlopen(userUrl, proxies={})
-        jsonData = requesthandle.read()
-        requesthandle.close()        
+        try:
+            requesthandle = urllib.urlopen(userUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()   
+        except Exception, e:
+            xbmc.log("BackgroundRotationThread updateArtLinks urlopen : " + str(e) + " (" + userUrl + ")")
+            return        
         
         userid = ""
         result = json.loads(jsonData)
@@ -574,9 +613,13 @@ class BackgroundRotationThread(threading.Thread):
         
         moviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&IncludeItemTypes=Movie&format=json"
 
-        requesthandle = urllib2.urlopen(moviesUrl, timeout=60)
-        jsonData = requesthandle.read()
-        requesthandle.close()   
+        try:
+            requesthandle = urllib2.urlopen(moviesUrl, timeout=60)
+            jsonData = requesthandle.read()
+            requesthandle.close()   
+        except Exception, e:
+            xbmc.log("BackgroundRotationThread updateArtLinks urlopen : " + str(e) + " (" + moviesUrl + ")")
+            return          
         
         result = json.loads(jsonData)
         
@@ -601,9 +644,13 @@ class BackgroundRotationThread(threading.Thread):
         
         tvUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&IncludeItemTypes=Series&format=json"
 
-        requesthandle = urllib2.urlopen(tvUrl, timeout=60)
-        jsonData = requesthandle.read()
-        requesthandle.close()   
+        try:
+            requesthandle = urllib2.urlopen(tvUrl, timeout=60)
+            jsonData = requesthandle.read()
+            requesthandle.close()   
+        except Exception, e:
+            xbmc.log("BackgroundRotationThread updateArtLinks urlopen : " + str(e) + " (" + tvUrl + ")")
+            return          
         
         result = json.loads(jsonData)        
         
@@ -628,9 +675,13 @@ class BackgroundRotationThread(threading.Thread):
 
         musicUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&IncludeItemTypes=MusicArtist&format=json"
         
-        requesthandle = urllib2.urlopen(musicUrl, timeout=60)
-        jsonData = requesthandle.read()
-        requesthandle.close()   
+        try:
+            requesthandle = urllib2.urlopen(musicUrl, timeout=60)
+            jsonData = requesthandle.read()
+            requesthandle.close()   
+        except Exception, e:
+            xbmc.log("BackgroundRotationThread updateArtLinks urlopen : " + str(e) + " (" + musicUrl + ")")
+            return           
         
         result = json.loads(jsonData)        
         
@@ -709,9 +760,13 @@ class RandomInfoUpdaterThread(threading.Thread):
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
-        requesthandle = urllib.urlopen(userUrl, proxies={})
-        jsonData = requesthandle.read()
-        requesthandle.close()        
+        try:
+            requesthandle = urllib.urlopen(userUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()      
+        except Exception, e:
+            xbmc.log("RandomInfoUpdaterThread updateRandom urlopen : " + str(e) + " (" + userUrl + ")")
+            return           
         
         userid = ""
         result = json.loads(jsonData)
@@ -726,9 +781,13 @@ class RandomInfoUpdaterThread(threading.Thread):
         
         randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
         
-        requesthandle = urllib.urlopen(randomUrl, proxies={})
-        jsonData = requesthandle.read()
-        requesthandle.close()     
+        try:
+            requesthandle = urllib.urlopen(randomUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()     
+        except Exception, e:
+            xbmc.log("RandomInfoUpdaterThread updateRandom urlopen : " + str(e) + " (" + randomUrl + ")")
+            return           
 
         result = json.loads(jsonData)
         xbmc.log("Random Movie Json Data : " + str(result))
@@ -799,9 +858,13 @@ class RandomInfoUpdaterThread(threading.Thread):
         
         randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json"
         
-        requesthandle = urllib.urlopen(randomUrl, proxies={})
-        jsonData = requesthandle.read()
-        requesthandle.close()         
+        try:
+            requesthandle = urllib.urlopen(randomUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()         
+        except Exception, e:
+            xbmc.log("RandomInfoUpdaterThread updateRandom urlopen : " + str(e) + " (" + randomUrl + ")")
+            return          
         
         result = json.loads(jsonData)
         xbmc.log("Random TV Show Json Data : " + str(result))
@@ -889,9 +952,13 @@ class RandomInfoUpdaterThread(threading.Thread):
         
             randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=MusicAlbum&format=json"
         
-            requesthandle = urllib.urlopen(randomUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()         
+            try:
+                requesthandle = urllib.urlopen(randomUrl, proxies={})
+                jsonData = requesthandle.read()
+                requesthandle.close()     
+            except Exception, e:
+                xbmc.log("RandomInfoUpdaterThread updateRandom urlopen : " + str(e) + " (" + randomUrl + ")")
+                return  
         
             result = json.loads(jsonData)
             xbmc.log("Random MusicList Json Data : " + str(result))
@@ -956,7 +1023,6 @@ class RandomInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("RandomAlbumMB3." + str(item_count) + ".Art(poster)", thumbnail)
             WINDOW.setProperty("RandomAlbumMB3." + str(item_count) + ".Plot", plot)
             
-            
             item_count = item_count + 1
         
         
@@ -1010,9 +1076,13 @@ class NextUpUpdaterThread(threading.Thread):
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
-        requesthandle = urllib.urlopen(userUrl, proxies={})
-        jsonData = requesthandle.read()
-        requesthandle.close()        
+        try:
+            requesthandle = urllib.urlopen(userUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()     
+        except Exception, e:
+            xbmc.log("NextUpUpdaterThread updateNextUp urlopen : " + str(e) + " (" + userUrl + ")")
+            return  
         
         userid = ""
         result = json.loads(jsonData)
@@ -1027,9 +1097,13 @@ class NextUpUpdaterThread(threading.Thread):
         
         nextUpUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Shows/NextUp?UserId=" + userid + "&Fields=Path,Genres,MediaStreams,Overview&format=json"
         
-        requesthandle = urllib.urlopen(nextUpUrl, proxies={})
-        jsonData = requesthandle.read()
-        requesthandle.close()         
+        try:
+            requesthandle = urllib.urlopen(nextUpUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()   
+        except Exception, e:
+            xbmc.log("NextUpUpdaterThread updateNextUp urlopen : " + str(e) + " (" + nextUpUrl + ")")
+            return  
         
         result = json.loads(jsonData)
         xbmc.log("NextUP TV Show Json Data : " + str(result))
@@ -1176,9 +1250,13 @@ class InfoUpdaterThread(threading.Thread):
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
-        requesthandle = urllib.urlopen(userUrl, proxies={})
-        jsonData = requesthandle.read()
-        requesthandle.close()        
+        try:
+            requesthandle = urllib.urlopen(userUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()        
+        except Exception, e:
+            xbmc.log("InfoUpdaterThread updateInfo urlopen : " + str(e) + " (" + userUrl + ")")
+            return          
         
         userid = ""
         result = json.loads(jsonData)
@@ -1193,9 +1271,13 @@ class InfoUpdaterThread(threading.Thread):
         
         infoUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=CollectionType&format=json"
         
-        requesthandle = urllib.urlopen(infoUrl, proxies={})
-        jsonData = requesthandle.read()
-        requesthandle.close()         
+        try:
+            requesthandle = urllib.urlopen(infoUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()      
+        except Exception, e:
+            xbmc.log("InfoUpdaterThread updateInfo urlopen : " + str(e) + " (" + infoUrl + ")")
+            return  
         
         result = json.loads(jsonData)
         xbmc.log("Info Json Data : " + str(result))
@@ -1287,10 +1369,14 @@ class InfoUpdaterThread(threading.Thread):
         xbmc.log("InfoTV start")
         infoTVUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?&IncludeItemTypes=Series&Recursive=true&SeriesStatus=Continuing&format=json"
         
-        requesthandle = urllib.urlopen(infoTVUrl, proxies={})
-        xbmc.log("InfoTV start open")
-        jsonData = requesthandle.read()
-        requesthandle.close()         
+        try:
+            requesthandle = urllib.urlopen(infoTVUrl, proxies={})
+            xbmc.log("InfoTV start open")
+            jsonData = requesthandle.read()
+            requesthandle.close()  
+        except Exception, e:
+            xbmc.log("InfoUpdaterThread updateInfo urlopen : " + str(e) + " (" + infoTVUrl + ")")
+            return  
         
         result = json.loads(jsonData)
         xbmc.log("InfoTV Json Data : " + str(result))
@@ -1302,9 +1388,13 @@ class InfoUpdaterThread(threading.Thread):
         xbmc.log("InfoNextAired start")
         InfoNextAiredUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?IsUnaired=true&SortBy=PremiereDate%2CAirTime%2CSortName&SortOrder=Ascending&IncludeItemTypes=Episode&Limit=1&Recursive=true&Fields=SeriesInfo%2CUserData&format=json"
         
-        requesthandle = urllib.urlopen(InfoNextAiredUrl, proxies={})
-        jsonData = requesthandle.read()
-        requesthandle.close()         
+        try:
+            requesthandle = urllib.urlopen(InfoNextAiredUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()   
+        except Exception, e:
+            xbmc.log("InfoUpdaterThread updateInfo urlopen : " + str(e) + " (" + InfoNextAiredUrl + ")")
+            return  
         
         result = json.loads(jsonData)
         xbmc.log("InfoNextAired Json Data : " + str(result))
