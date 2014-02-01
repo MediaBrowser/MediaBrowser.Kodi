@@ -1449,7 +1449,7 @@ def markWatched (url):
 def setPosition (url, method):
     WINDOW = xbmcgui.Window( 10000 )
     userid=WINDOW.getProperty("userid")
-    authString='MediaBrowser UserId=\"' + userid + '\",Client=\"XBMC\",Device=\"XBMB3C\",DeviceId=\"42\",Version=\"0.7.5\"'
+    authString='MediaBrowser UserId=\"' + userid + '\",Client=\"XBMC\",Device=\"XBMB3C\",DeviceId=\"42\",Version=\"0.8.0\"'
     headers={'Accept-encoding': 'gzip','Authorization' : authString}
     xbmc.log('XBMB3C Service -> Setting position via: ' + url)
     if method == 'POST':
