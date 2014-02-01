@@ -1362,7 +1362,7 @@ def processDirectory(url, result):
         # Process UserData
         userData = item.get("UserData")
         if(userData != None):
-            if userData.get("PlayCount") != 0:
+            if userData.get("Played") != True:
                 overlay = "7"
                 watched = "true"
             else:
@@ -1380,13 +1380,16 @@ def processDirectory(url, result):
             else:
                 PlaybackPositionTicks = '100'
 
+        playCount = 0
+        if(userData.get("Played") == True):
+            playCount = 1
         # Populate the details list
         details={'title'        : tempTitle,
                  'plot'         : item.get("Overview"),
                  'episode'      : tempEpisode,
                  #'watched'      : watched,
                  'Overlay'      : overlay,
-                 'playcount'    : str(userData.get("PlayCount")),
+                 'playcount'    : str(playCount),
                  #'aired'       : episode.get('originallyAvailableAt','') ,
                  'SeriesName'  :  item.get("SeriesName"),
                  'season'       : tempSeason
@@ -1427,7 +1430,7 @@ def processDirectory(url, result):
                    'premieredate' : premieredate,
                    'studio'       : studio,
                    'genre'        : genre,
-                   'playcount'    : str(userData.get("PlayCount")),
+                   'playcount'    : str(playCount),
                    'director'     : director,
                    'writer'       : writer,
                    'channels'     : channels,
