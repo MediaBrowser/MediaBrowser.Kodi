@@ -7,11 +7,10 @@
 			<width>1280</width>
 			<height>720</height>
 			<aspectratio>scale</aspectratio>
-			<!--<texture>$INFO[Skin.CurrentTheme,special://skin/backgrounds/,.jpg]</texture>-->
-            <texture>$INFO[Window.Property(MB3.Background.TV.FanArt)]</texture>
+            <texture>$INFO[Skin.CurrentTheme,special://skin/backgrounds/,.jpg]</texture>
 			<visible>![Skin.HasSetting(UseCustomBackground) + !IsEmpty(Skin.String(CustomBackgroundPath))]</visible>
 			<include>VisibleFadeEffect</include>
-		</control>
+		</control>       
 		<control type="image">
 			<description>User Set Background Image</description>
 			<posx>0</posx>
@@ -68,6 +67,18 @@
 			<texture flipy="true">HomeNowPlayingBack.png</texture>
 			<visible>[Player.HasVideo + !Skin.HasSetting(ShowBackgroundVideo)] | [Player.HasAudio + ![Skin.HasSetting(ShowBackgroundVis) | SubString(Window(videolibrary).Property(TvTunesIsAlive),True)]] | [!Skin.HasSetting(HideBackGroundFanart) + !IsEmpty(ListItem.Property(Fanart_Image))]</visible>
 			<include>VisibleFadeEffect</include>
+		</control>
+		<control type="image">
+			<description>MB3 FanArt Background</description>
+			<posx>0</posx>
+			<posy>0</posy>
+			<width>1280</width>
+			<height>720</height>
+			<aspectratio>scale</aspectratio>
+            <texture>$INFO[Window.Property(MB3.Background.Global.FanArt)]</texture>
+			<visible>true</visible>
+			<include>backgroundfade</include>
+			<fadetime>FanartCrossfadeTime</fadetime>
 		</control>
 	</include>
 	<include name="ContentPanelBackgrounds">

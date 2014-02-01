@@ -33,6 +33,9 @@ def loadMenuOptions():
         action = child.text
     
         index = action.find("plugin://plugin.video.xbmb3c")
+        if (index == -1):
+            index = action.find("plugin://plugin.video.sbview")
+            
         if(index > -1 and len(action) > 10):
             action_url = action[index:len(action) - 2]
             
@@ -519,6 +522,11 @@ class BackgroundRotationThread(threading.Thread):
     def run(self):
         xbmc.log("BackgroundRotationThread Started")
         
+        try:
+            self.loadLastBackground()
+        except Exception, e:
+            xbmc.log(str(e))
+        
         self.updateArtLinks()
         self.setBackgroundLink()
         lastRun = datetime.today()
@@ -539,10 +547,62 @@ class BackgroundRotationThread(threading.Thread):
                 if(backgroundRefresh < 10):
                     backgroundRefresh = 10                
 
-            xbmc.sleep(3000)
-                        
+            xbmc.sleep(1000)
+        
+        try:
+            self.saveLastBackground()
+        except Exception, e:
+            xbmc.log(str(e))  
+            
         xbmc.log("BackgroundRotationThread Exited")
 
+        
+    def loadLastBackground(self):
+        
+        lastDataPath = __addondir__ + "LastBgLinks.json"
+        dataFile = open(lastDataPath, 'r')
+        jsonData = dataFile.read()
+        dataFile.close()
+        
+        xbmc.log(jsonData)
+        result = json.loads(jsonData)
+        
+        WINDOW = xbmcgui.Window( 10000 )
+        if(result.get("global") != None):
+            xbmc.log("Setting Global Last : " + result.get("global"))
+            WINDOW.setProperty("MB3.Background.Global.FanArt", result.get("global"))       
+
+        if(result.get("movie") != None):
+            xbmc.log("Setting Movie Last : " + result.get("movie"))
+            WINDOW.setProperty("MB3.Background.Movie.FanArt", result.get("movie"))      
+            
+        if(result.get("tv") != None):
+            xbmc.log("Setting TV Last : " + result.get("tv"))
+            WINDOW.setProperty("MB3.Background.TV.FanArt", result.get("tv"))    
+
+        if(result.get("music") != None):
+            xbmc.log("Setting Music Last : " + result.get("music"))
+            WINDOW.setProperty("MB3.Background.Music.FanArt", result.get("music"))   
+        
+    def saveLastBackground(self):
+    
+        data = {}
+        if(len(self.global_art_links) > 0):
+            data["global"] = self.global_art_links[self.current_global_art]
+        if(len(self.movie_art_links) > 0):
+            data["movie"] = self.movie_art_links[self.current_movie_art]
+        if(len(self.tv_art_links) > 0):
+            data["tv"] = self.tv_art_links[self.current_tv_art]
+        if(len(self.music_art_links) > 0):
+            data["music"] = self.music_art_links[self.current_music_art]
+
+        lastDataPath = __addondir__ + "LastBgLinks.json"
+        dataFile = open(lastDataPath, 'w')
+        stringdata = json.dumps(data)
+        xbmc.log("Last Background Links : " + stringdata)
+        dataFile.write(stringdata)
+        dataFile.close()        
+    
     def setBackgroundLink(self):
     
         WINDOW = xbmcgui.Window( 10000 )
@@ -569,7 +629,7 @@ class BackgroundRotationThread(threading.Thread):
         if(len(self.music_art_links) > 0):
             self.logMsg("setBackgroundLink index music_art_links " + str(self.current_music_art + 1) + " of " + str(len(self.music_art_links)), debugLogging)
             artUrl =  self.music_art_links[self.current_music_art]
-            WINDOW.setProperty("MB3.Background.Music.FanArt=" + artUrl, debugLogging)
+            WINDOW.setProperty("MB3.Background.Music.FanArt", artUrl, debugLogging)
             self.logMsg("MB3.Background.Music.FanArt=" + artUrl)
             self.current_music_art = self.current_music_art + 1
             if(self.current_music_art == len(self.music_art_links)):
