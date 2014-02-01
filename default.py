@@ -801,7 +801,8 @@ def addGUIItem( url, details, extraData, folder=True ):
         list.setInfo('video', {'year' : extraData.get('year')})
         list.setInfo('video', {'studio' : extraData.get('studio')})
         list.setInfo('video', {'genre' : extraData.get('genre')})
-        #list.setInfo('video', {'cast' : extraData.get('cast')}) --- Broken in Frodo
+        if extraData.get('cast')!=None:
+            list.setInfo('video', {'cast' : tuple(extraData.get('cast'))}) #--- Broken in Frodo
         #list.setInfo('video', {'castandrole' : extraData.get('cast')}) --- Broken in Frodo
         #list.setInfo('video', {'plotoutline' : extraData.get('cast')}) # Hack to get cast data into skin
         list.setInfo('video', {'episode': details.get('episode')})
@@ -1229,6 +1230,7 @@ def loadJasonData(jsonData):
     return json.loads(jsonData)
     
 def processDirectory(url, result):
+    cast=['None']
     printDebug("== ENTER: processDirectory ==", False)
     parsed = urlparse(url)
     parsedserver,parsedport=parsed.netloc.split(':')
@@ -1324,7 +1326,7 @@ def processDirectory(url, result):
         # Process People
         director=''
         writer=''
-        cast=''
+        cast=[]
         people = item.get("People")
         if(people != None):
             for person in people:
@@ -1337,10 +1339,7 @@ def processDirectory(url, result):
                     Role = person.get("Role")
                     if Role == None:
                         Role = ''
-                    if cast == '':
-                        cast = Name + ' as ' + Role
-                    else:
-                        cast = cast + '\n' + Name + ' as ' + Role
+                    cast.append(Name)
 
         # Process Studios
         studio = ""
