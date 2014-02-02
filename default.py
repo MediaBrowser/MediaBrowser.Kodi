@@ -1096,7 +1096,13 @@ def getCacheValidator (server,url):
     
     printDebug ("RecursiveItemCount: " + str(result.get("RecursiveItemCount")))
     printDebug ("RecursiveUnplayedCount: " + str(result.get("RecursiveUnplayedItemCount")))
-    playedTime = "{0:09.6f}".format(result.get("PlayedPercentage"))
+    printDebug ("RecursiveUnplayedCount: " + str(result.get("PlayedPercentage")))
+    
+    playedPercentage = 0.0
+    if(result.get("PlayedPercentage") != None):
+        playedPercentage = result.get("PlayedPercentage")
+    
+    playedTime = "{0:09.6f}".format(playedPercentage)
     playedTime = playedTime.replace(".","-")
     validatorString = str(result.get("RecursiveItemCount")) + "_" + str(result.get("RecursiveUnplayedItemCount")) + "_" + playedTime
     printDebug ("getCacheValidator : " + validatorString)
