@@ -944,6 +944,7 @@ class RandomInfoUpdaterThread(threading.Thread):
                 seriesName = item.get("SeriesName").encode('utf-8')   
 
             eppNumber = "X"
+            tempEpisodeNumber = ""
             if(item.get("IndexNumber") != None):
                 eppNumber = item.get("IndexNumber")
                 if eppNumber < 10:
@@ -1474,6 +1475,7 @@ class InfoUpdaterThread(threading.Thread):
                 title = item.get("Name").encode('utf-8')
                 
             eppNumber = ""
+            tempEpisodeNumber = ""
             if(item.get("IndexNumber") != None):
                 eppNumber = item.get("IndexNumber")
                 if eppNumber < 10:
