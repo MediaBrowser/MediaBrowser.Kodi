@@ -996,6 +996,8 @@ def PLAY( url, handle ):
 
             if (result.get("VideoType") == "Dvd"):
                 playurl = playurl+"/VIDEO_TS/VIDEO_TS.IFO"
+            if (result.get("LocationType") == "Virtual"):
+                playurl = __cwd__ + "/resources/media/offair.mp4"
             if __settings__.getSetting('smbusername')=='':
                 playurl = playurl.replace("\\\\","smb://")
             else:
@@ -1413,8 +1415,8 @@ def processDirectory(url, result):
                 tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
                 RunTimeTicks = str(item.get("CumulativeRunTimeTicks"))
             except TypeError:
-                tempDuration = "100"
-                RunTimeTicks = "100"
+                tempDuration = "0"
+                RunTimeTicks = "0"
         
         if(item.get("PremiereDate") != None):
             premieredatelist = (item.get("PremiereDate")).split("T")
