@@ -1138,7 +1138,11 @@ def getCacheValidatorFromData(result):
                     PlayedPercentage=0
                 totalPlayedPercentage = totalPlayedPercentage + (item.get("RecursiveItemCount") * PlayedPercentage)
             
-    totalPlayedPercentage = totalPlayedPercentage / float(itemCount)
+    if(itemCount == 0):
+        totalPlayedPercentage = 0.0
+    else:
+        totalPlayedPercentage = totalPlayedPercentage / float(itemCount)
+        
     playedTime = "{0:09.6f}".format(totalPlayedPercentage)
     playedTime = playedTime.replace(".","-")
     validatorString = "_" + str(itemCount) + "_" + str(unwatchedItemCount) + "_" + playedTime
