@@ -993,6 +993,15 @@ def PLAY( url, handle ):
         if __settings__.getSetting('playFromStream') == 'false':
 
             playurl = result.get("Path")
+            # mapped paths
+            mappedpath = ""
+            mappedpaths = result.get("MappedPaths")
+            if(mappedpaths != None):
+              for mappedpath_string in mappedpaths:
+                  if mappedpath=="": #Just take the first one
+                      mappedpath=mappedpath_string
+                      break
+              playurl = mappedpath
 
             if (result.get("VideoType") == "Dvd"):
                 playurl = playurl+"/VIDEO_TS/VIDEO_TS.IFO"
