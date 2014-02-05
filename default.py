@@ -1309,7 +1309,18 @@ def processDirectory(url, result):
         if item.get("Type") == "Audio":
             xbmcplugin.setContent(pluginhandle, 'songs')            
         if item.get("Type") == "Series":
-            xbmcplugin.setContent(pluginhandle, 'tvshows')         
+            xbmcplugin.setContent(pluginhandle, 'tvshows')
+        
+        if(item.get("PremiereDate") != None):
+            premieredatelist = (item.get("PremiereDate")).split("T")
+            premieredate = premieredatelist[0]
+        else:
+            premieredate = ""
+        
+        # add the premiered date for Upcoming TV    
+        if item.get("LocationType") == "Virtual":
+            airtime = item.get("AirTime")
+            tempTitle = tempTitle + ' - ' + str(premieredate) + ' - ' + str(airtime)     
 
         #Add show name to special TV collections RAL, NextUp etc
         WINDOW = xbmcgui.Window( 10000 )
@@ -1426,12 +1437,6 @@ def processDirectory(url, result):
             except TypeError:
                 tempDuration = "0"
                 RunTimeTicks = "0"
-        
-        if(item.get("PremiereDate") != None):
-            premieredatelist = (item.get("PremiereDate")).split("T")
-            premieredate = premieredatelist[0]
-        else:
-            premieredate = ""
 
         # Populate the extraData list
         extraData={'thumb'        : getArtwork(item,'t') ,
