@@ -1434,14 +1434,14 @@ def processDirectory(url, result):
             premieredate = ""
 
         # Populate the extraData list
-        extraData={'thumb'        : getThumb(item) ,
-                   'fanart_image' : getFanart(item) ,
-                   'poster'       : getThumb(item) ,
-                   'banner'       : getBanner(item) ,
-                   'logo'         : getLogo(item) ,
-                   'disc'         : getDisc(item) ,
-                   'clearart'     : getClearArt(item) ,
-                   'landscape'    : getLandscape(item) ,
+        extraData={'thumb'        : getArtwork(item,'t') ,
+                   'fanart_image' : getArtwork(item, 'b') ,
+                   'poster'       : getArtwork(item, 't') ,
+                   'banner'       : getArtwork(item, 'banner') ,
+                   'logo'         : getArtwork(item, 'logo') ,
+                   'disc'         : getArtwork(item, 'disc') ,
+                   'clearart'     : getArtwork(item, 'clearart') ,
+                   'landscape'    : getArtwork(item, 'landscape') ,
                    'id'           : id ,
                    'mpaa'         : item.get("OfficialRating"),
                    'rating'       : item.get("CommunityRating"),
@@ -1504,84 +1504,17 @@ def processDirectory(url, result):
     
     return dirItems
 
-def getThumb( data ):
-    
-    id = data.get("Id")
-    if __settings__.getSetting('useSeriesArt') == "true":
-        if data.get("Type") == "Episode":
-            id = data.get("SeriesId")
-
-    # use the local image proxy server that is made available by this addons service
-    thumbnail = ("http://localhost:15001/?id=" + str(id) + "&type=t")
-    printDebug("getThumb : " + thumbnail)
-    return thumbnail
-    
-def getFanart( data ):
-
-    id = data.get("Id")
-    if data.get("Type") == "Episode" or data.get("Type") == "Season":
-        id = data.get("SeriesId")   
-    
-    # use the local image proxy server that is made available by this addons service
-    fanArt = ("http://localhost:15001/?id=" + str(id) + "&type=b")
-    printDebug("getFanart : " + fanArt)
-    return fanArt
-    
-def getBanner( data ):
-
-    id = data.get("Id")
-    if data.get("Type") == "Episode" or data.get("Type") == "Season":
-        id = data.get("SeriesId")   
-    
-    # use the local image proxy server that is made available by this addons service
-    banner = ("http://localhost:15001/?id=" + str(id) + "&type=banner")
-    printDebug("getBanner : " + banner)
-    return banner
-
-def getLogo( data ):
-
-    id = data.get("Id")
-    if data.get("Type") == "Episode" or data.get("Type") == "Season":
-        id = data.get("SeriesId")   
-    
-    # use the local image proxy server that is made available by this addons service
-    logo = ("http://localhost:15001/?id=" + str(id) + "&type=logo")
-    printDebug("getLogo : " + logo)
-    return logo
-
-def getDisc( data ):
+def getArtwork(data,type):
     
     id = data.get("Id")
     if data.get("Type") == "Episode" or data.get("Type") == "Season":
         id = data.get("SeriesId")   
     
     # use the local image proxy server that is made available by this addons service
-    disc = ("http://localhost:15001/?id=" + str(id) + "&type=disc")
-    printDebug("getDisc : " + disc)
-    return disc
+    artwork = ("http://localhost:15001/?id=" + str(id) + "&type="+type)
+    printDebug("getArtwork : " + artwork)
+    return artwork
 
-def getClearArt( data ):
-    
-    id = data.get("Id")
-    if data.get("Type") == "Episode" or data.get("Type") == "Season":
-        id = data.get("SeriesId")   
-    
-    # use the local image proxy server that is made available by this addons service
-    art = ("http://localhost:15001/?id=" + str(id) + "&type=clearart")
-    printDebug("getClearArt : " + art)
-    return art
-
-def getLandscape( data ):
-    
-    id = data.get("Id")
-    if data.get("Type") == "Episode" or data.get("Type") == "Season":
-        id = data.get("SeriesId")   
-    
-    # use the local image proxy server that is made available by this addons service
-    landscape = ("http://localhost:15001/?id=" + str(id) + "&type=landscape")
-    printDebug("getLandscape : " + landscape)
-    return landscape
-    
 def getServerFromURL( url ):
     '''
     Simply split the URL up and get the server portion, sans port
