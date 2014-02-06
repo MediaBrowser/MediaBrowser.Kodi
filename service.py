@@ -1493,7 +1493,27 @@ class InfoUpdaterThread(threading.Thread):
         
         self.logMsg("MB3NextAiredEpisode"  + episode, debugLogging)
         WINDOW.setProperty("MB3NextAiredEpisode", episode)
-        xbmc.log("InfoNextAired end")        
+        xbmc.log("InfoNextAired end")
+        
+        today = datetime.today()    
+        dateformat = today.strftime("%Y-%m-%d") 
+        nextAiredUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?IsUnaired=true&SortBy=PremiereDate%2CAirTime%2CSortName&SortOrder=Ascending&IncludeItemTypes=Episode&Recursive=true&Fields=SeriesInfo%2CUserData&MinPremiereDate="  + str(dateformat) + "&MaxPremiereDate=" + str(dateformat) + "&format=json"
+        
+        try:
+            requesthandle = urllib.urlopen(nextAiredUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()   
+        except Exception, e:
+            xbmc.log("InfoUpdaterThread updateInfo total urlopen : " + str(e) + " (" + nextAiredUrl + ")")
+            return  
+        
+        result = json.loads(jsonData)
+        xbmc.log("InfoNextAired total url: " + nextAiredUrl)
+        xbmc.log("InfoNextAired total Json Data : " + str(result))
+        
+        totalToday = result.get("TotalRecordCount")
+        self.logMsg("MB3NextAiredTotalToday "  + str(totalToday), debugLogging)
+        WINDOW.setProperty("MB3NextAiredTotalToday", str(totalToday))  
         
 newThread = InfoUpdaterThread()
 newThread.start()
