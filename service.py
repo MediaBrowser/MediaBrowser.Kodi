@@ -629,8 +629,8 @@ class BackgroundRotationThread(threading.Thread):
         if(len(self.music_art_links) > 0):
             self.logMsg("setBackgroundLink index music_art_links " + str(self.current_music_art + 1) + " of " + str(len(self.music_art_links)), debugLogging)
             artUrl =  self.music_art_links[self.current_music_art]
-            WINDOW.setProperty("MB3.Background.Music.FanArt", artUrl, debugLogging)
-            self.logMsg("MB3.Background.Music.FanArt=" + artUrl)
+            WINDOW.setProperty("MB3.Background.Music.FanArt", artUrl)
+            self.logMsg("MB3.Background.Music.FanArt=" + artUrl, debugLogging)
             self.current_music_art = self.current_music_art + 1
             if(self.current_music_art == len(self.music_art_links)):
                 self.current_music_art = 0
