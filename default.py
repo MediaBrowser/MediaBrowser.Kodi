@@ -311,6 +311,34 @@ def getServerSections( ip_address, port, name, uuid):
             'section'    : "tvshows",
             'owned'      : '1' })    
             
+    # Add In Progress Movies
+    temp_list.append( {'title' : 'In Progress Movies',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=' + detailsString + '&Filters=IsResumable&IncludeItemTypes=Movie&format=json') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'section'    : "movie",
+            'owned'      : '1' })     
+
+    # Add In Progress Episodes
+    temp_list.append( {'title' : 'In Progress Episodes',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=' + detailsString + '&Filters=IsResumable&IncludeItemTypes=Episode&format=json') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'section'    : "tvshows",
+            'owned'      : '1' })              
+            
     # Add NextUp Episodes
     temp_list.append( {'title'      : 'Next Episodes',
             'address'    : ip_address+":"+port ,
@@ -323,7 +351,8 @@ def getServerSections( ip_address, port, name, uuid):
             'local'      : '1' ,
             'type'       : "movie",
             'section'    : "tvshows",
-            'owned'      : '1' })            
+            'owned'      : '1' })     
+            
     # Add Favorite Movies
     temp_list.append( {'title'      : 'Favorite Movies',
             'address'    : ip_address+":"+port ,
