@@ -695,6 +695,16 @@ def addGUIItem( url, details, extraData, folder=True ):
                 listItemName = listItemName + " (" + str(extraData.get("RecursiveItemCount") - extraData.get("RecursiveUnplayedItemCount")) + "/" + str(extraData.get("RecursiveItemCount")) + ")"
             list = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         printDebug("Setting thumbnail as " + thumbPath)
+        
+        # add resume percentage text to titles
+        addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
+        if (addResumePercent and details.get('title') != None and extraData.get('resumetime') != None and int(extraData.get('resumetime')) > 0):
+            duration = float(extraData.get('duration'))
+            resume = float(extraData.get('resumetime')) / 60.0
+            percentage = (resume / duration) * 100.0
+            perasint = int(percentage)
+            details['title'] = details.get('title') + " (" + str(perasint) + "%)"
+        
         #Set the properties of the item, such as summary, name, season, etc
         list.setInfo( type=extraData.get('type','Video'), infoLabels=details )
 
@@ -706,9 +716,6 @@ def addGUIItem( url, details, extraData, folder=True ):
                 list.setProperty('TotalTime', str(extraData.get('duration')))
                 list.setProperty('ResumeTime', str(extraData.get('resume')))
             
-
-                
-
         #Set the poster image if it has been enabled
         poster=str(extraData.get('poster',''))
         if '?' in poster:
@@ -726,7 +733,6 @@ def addGUIItem( url, details, extraData, folder=True ):
 
         printDebug( "Setting fan art as " + fanart )
         
-
         #Set the logo image if it has been enabled
         logo=str(extraData.get('logo',''))
         logoPath=logo.encode('utf-8')
