@@ -1,53 +1,104 @@
-﻿import xbmc, xbmcgui, xbmcaddon, urllib, httplib, os, time, requests
-__settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-__cwd__ = __settings__.getAddonInfo('path')
+﻿import xbmc
+import xbmcgui
+import xbmcaddon
+import urllib
+import httplib
+import os
+import time
+import requests
+
+import threading
+import json
+from datetime import datetime
+import xml.etree.ElementTree as xml
+
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+import mimetypes
+from threading import Thread
+from SocketServer import ThreadingMixIn
+from urlparse import parse_qs
+from urllib import urlretrieve
+
+from random import randint
+import random
+import urllib2
+
+#__settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+__cwd__ = xbmcaddon.Addon(id='plugin.video.xbmb3c').getAddonInfo('path')
 BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
-PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
-__addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-__addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') ) 
+sys.path.append(BASE_RESOURCE_PATH)
 
 _MODE_BASICPLAY=12
 
 #################################################################################################
-# menu item loader
-# this loads the favourites.xml and sets the windows props for the menus to auto display
+# menu item loader thread
+# this loads the favourites.xml and sets the windows props for the menus to auto display in skins
 #################################################################################################
-import xml.etree.ElementTree as xml
 
-def loadMenuOptions():
-    
-    favourites_file = os.path.join(xbmc.translatePath('special://userdata'), "favourites.xml")
-    
-    WINDOW = xbmcgui.Window( 10000 )
-    menuItem = 0
-    
-    try:
-        tree = xml.parse(favourites_file)
-        rootElement = tree.getroot()
-    except Exception, e:
-        xbmc.log("loadMenuOptions Error Parsing favourites.xml : " + str(e))
-        return
-    
-    for child in rootElement.findall('favourite'):
-        name = child.get('name')
-        action = child.text
-    
-        index = action.find("plugin://plugin.video.xbmb3c")
-        if (index == -1):
-            index = action.find("plugin://plugin.video.sbview")
-            
-        if(index > -1 and len(action) > 10):
-            action_url = action[index:len(action) - 2]
-            
-            WINDOW.setProperty("xbmb3c_menuitem_name_" + str(menuItem), name)
-            WINDOW.setProperty("xbmb3c_menuitem_action_" + str(menuItem), action_url)
-            xbmc.log("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name)
-            xbmc.log("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url)
-            
-            menuItem = menuItem + 1
+class LoadMenuOptionsThread(threading.Thread):
 
+    def run(self):
+        xbmc.log("LoadMenuOptionsThread Started")
+        
+        lastFavPath = ""
+        favourites_file = os.path.join(xbmc.translatePath('special://profile'), "favourites.xml")
+        self.loadMenuOptions(favourites_file)
+        lastFavPath = favourites_file
+        
+        while (xbmc.abortRequested == False):
+            
+            favourites_file = os.path.join(xbmc.translatePath('special://profile'), "favourites.xml")
+            
+            if(lastFavPath != favourites_file):
+                self.loadMenuOptions(favourites_file)
+                lastFavPath = favourites_file
+                
+            xbmc.sleep(3000)
+                        
+        xbmc.log("LoadMenuOptionsThread Exited")
 
-loadMenuOptions()
+    def loadMenuOptions(self, pathTofavourites):
+               
+        xbmc.log("LoadMenuOptionsThread -> Loading menu items from : " + pathTofavourites)
+        WINDOW = xbmcgui.Window( 10000 )
+        menuItem = 0
+        
+        try:
+            tree = xml.parse(pathTofavourites)
+            rootElement = tree.getroot()
+        except Exception, e:
+            xbmc.log("LoadMenuOptionsThread -> Error Parsing favourites.xml : " + str(e))
+            for x in range(0, 10):
+                WINDOW.setProperty("xbmb3c_menuitem_name_" + str(x), "")
+                WINDOW.setProperty("xbmb3c_menuitem_action_" + str(x), "")
+            return
+        
+        for child in rootElement.findall('favourite'):
+            name = child.get('name')
+            action = child.text
+        
+            index = action.find("plugin://plugin.video.xbmb3c") # this addon
+            if (index == -1):
+                index = action.find("plugin://plugin.video.sbview") # sick beard addon
+                
+            if(index > -1 and len(action) > 10):
+                action_url = action[index:len(action) - 2]
+                
+                WINDOW.setProperty("xbmb3c_menuitem_name_" + str(menuItem), name)
+                WINDOW.setProperty("xbmb3c_menuitem_action_" + str(menuItem), action_url)
+                xbmc.log("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name)
+                xbmc.log("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url)
+                
+                menuItem = menuItem + 1
+
+        for x in range(menuItem, menuItem+10):
+                WINDOW.setProperty("xbmb3c_menuitem_name_" + str(x), "")
+                WINDOW.setProperty("xbmb3c_menuitem_action_" + str(x), "")
+                #xbmc.log("xbmb3c_menuitem_name_" + str(x) + " : ")
+                #xbmc.log("xbmb3c_menuitem_action_" + str(x) + " : ")
+            
+newMenuThread = LoadMenuOptionsThread()
+newMenuThread.start()
 
 #################################################################################################
 # end menu item loader
@@ -60,14 +111,6 @@ loadMenuOptions()
 # this proxy handles all the requests and allows XBMC to call the MB3 server
 #################################################################################################
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-import os
-import mimetypes
-from threading import Thread
-from SocketServer import ThreadingMixIn
-from urlparse import parse_qs
-from urllib import urlretrieve
-
 class MyHandler(BaseHTTPRequestHandler):
     
     def logMsg(self, msg, debugLogging):
@@ -76,7 +119,8 @@ class MyHandler(BaseHTTPRequestHandler):
     
     #overload the default log func to stop stderr message from showing up in the xbmc log
     def log_message(self, format, *args):
-        debugLogging = __settings__.getSetting('debug')
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        debugLogging = addonSettings.getSetting('debug')
         if(debugLogging == "true"):
             the_string = [str(i) for i in range(len(args))]
             the_string = '"{' + '}" "{'.join(the_string) + '}"'
@@ -86,9 +130,10 @@ class MyHandler(BaseHTTPRequestHandler):
     
     def do_GET(self):
     
-        mb3Host = __settings__.getSetting('ipaddress')
-        mb3Port = __settings__.getSetting('port')
-        debugLogging = __settings__.getSetting('debug')   
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        mb3Host = addonSettings.getSetting('ipaddress')
+        mb3Port = addonSettings.getSetting('port')
+        debugLogging = addonSettings.getSetting('debug')   
         
         params = parse_qs(self.path[2:])
         self.logMsg("Params : " + str(params), debugLogging)
@@ -186,10 +231,6 @@ xbmc.log("XBMB3s -> HTTP Image Proxy Server NOW SERVING IMAGES")
 # Recent Info Updater
 # 
 #################################################################################################
-import threading
-import json
-from datetime import datetime
-import time
 
 class RecentInfoUpdaterThread(threading.Thread):
 
@@ -202,26 +243,36 @@ class RecentInfoUpdaterThread(threading.Thread):
         
         self.updateRecent()
         lastRun = datetime.today()
+        lastProfilePath = xbmc.translatePath('special://profile')
         
         while (xbmc.abortRequested == False):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             
-            if(secTotal > 300):
+            profilePath = xbmc.translatePath('special://profile')
+            
+            updateInterval = 60
+            if (xbmc.Player().isPlaying()):
+                updateInterval = 300
+                
+            if(secTotal > updateInterval or lastProfilePath != profilePath):
                 self.updateRecent()
                 lastRun = datetime.today()
 
+            lastProfilePath = profilePath
+            
             xbmc.sleep(3000)
                         
         xbmc.log("RecentInfoUpdaterThread Exited")
         
     def updateRecent(self):
-        xbmc.log("updateRecentMovies Called")
+        xbmc.log("updateRecent Called")
         
-        mb3Host = __settings__.getSetting('ipaddress')
-        mb3Port =__settings__.getSetting('port')    
-        userName = __settings__.getSetting('username')     
-        debugLogging = __settings__.getSetting('debug')           
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        mb3Host = addonSettings.getSetting('ipaddress')
+        mb3Port = addonSettings.getSetting('port')    
+        userName = addonSettings.getSetting('username')     
+        debugLogging = addonSettings.getSetting('debug')           
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
@@ -240,7 +291,7 @@ class RecentInfoUpdaterThread(threading.Thread):
                 userid = user.get("Id")    
                 break
         
-        xbmc.log("updateRecentMovies UserID : " + userid)
+        xbmc.log("updateRecentMovies UserName : " + userName + " UserID : " + userid)
         
         xbmc.log("Updating Recent Movie List")
         
@@ -279,7 +330,10 @@ class RecentInfoUpdaterThread(threading.Thread):
                 plot=''
             plot=plot.encode('utf-8')
             year = item.get("ProductionYear")
-            runtime = str(int(item.get("RunTimeTicks"))/(10000000*60))
+            if(item.get("RunTimeTicks") != None):
+                runtime = str(int(item.get("RunTimeTicks"))/(10000000*60))
+            else:
+                runtime = "0"
 
             item_id = item.get("Id")
             thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
@@ -500,9 +554,6 @@ newThread.start()
 # Start of BackgroundRotationThread
 # Sets a backgound property to a fan art link
 #################################################################################################
-from random import randint
-import random
-import urllib2
 
 class BackgroundRotationThread(threading.Thread):
 
@@ -514,6 +565,7 @@ class BackgroundRotationThread(threading.Thread):
     current_tv_art = 0
     current_music_art = 0
     current_global_art = 0
+    linksLoaded = False
     
     def logMsg(self, msg, debugLogging):
         if(debugLogging == "true"):
@@ -531,7 +583,8 @@ class BackgroundRotationThread(threading.Thread):
         self.setBackgroundLink()
         lastRun = datetime.today()
         
-        backgroundRefresh = int(__settings__.getSetting('backgroundRefresh'))
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        backgroundRefresh = int(addonSettings.getSetting('backgroundRefresh'))
         if(backgroundRefresh < 10):
             backgroundRefresh = 10
         
@@ -540,10 +593,12 @@ class BackgroundRotationThread(threading.Thread):
             secTotal = td.seconds
             
             if(secTotal > backgroundRefresh):
+                if(self.linksLoaded == False):
+                    self.updateArtLinks()
                 self.setBackgroundLink()
                 lastRun = datetime.today()
                 
-                backgroundRefresh = int(__settings__.getSetting('backgroundRefresh'))
+                backgroundRefresh = int(addonSettings.getSetting('backgroundRefresh'))
                 if(backgroundRefresh < 10):
                     backgroundRefresh = 10                
 
@@ -558,6 +613,9 @@ class BackgroundRotationThread(threading.Thread):
 
         
     def loadLastBackground(self):
+        
+        __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') )         
         
         lastDataPath = __addondir__ + "LastBgLinks.json"
         dataFile = open(lastDataPath, 'r')
@@ -596,6 +654,9 @@ class BackgroundRotationThread(threading.Thread):
         if(len(self.music_art_links) > 0):
             data["music"] = self.music_art_links[self.current_music_art]
 
+        __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') )            
+            
         lastDataPath = __addondir__ + "LastBgLinks.json"
         dataFile = open(lastDataPath, 'w')
         stringdata = json.dumps(data)
@@ -606,7 +667,9 @@ class BackgroundRotationThread(threading.Thread):
     def setBackgroundLink(self):
     
         WINDOW = xbmcgui.Window( 10000 )
-        debugLogging = __settings__.getSetting('debug')
+        
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        debugLogging = addonSettings.getSetting('debug')
         
         if(len(self.movie_art_links) > 0):
             self.logMsg("setBackgroundLink index movie_art_links " + str(self.current_movie_art + 1) + " of " + str(len(self.movie_art_links)), debugLogging)
@@ -647,10 +710,12 @@ class BackgroundRotationThread(threading.Thread):
     def updateArtLinks(self):
         xbmc.log("updateArtLinks Called")
         
-        mb3Host = __settings__.getSetting('ipaddress')
-        mb3Port =__settings__.getSetting('port')    
-        userName = __settings__.getSetting('username')     
-        debugLogging = __settings__.getSetting('debug')           
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        
+        mb3Host = addonSettings.getSetting('ipaddress')
+        mb3Port = addonSettings.getSetting('port')    
+        userName = addonSettings.getSetting('username')     
+        debugLogging = addonSettings.getSetting('debug')           
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
@@ -768,7 +833,8 @@ class BackgroundRotationThread(threading.Thread):
         self.global_art_links.extend(self.tv_art_links)
         self.global_art_links.extend(self.music_art_links)
         random.shuffle(self.global_art_links)
-        xbmc.log("Background Global Art Links : " + str(len(self.global_art_links)))        
+        xbmc.log("Background Global Art Links : " + str(len(self.global_art_links)))
+        self.linksLoaded = True
         
 backgroundUpdaterThread = BackgroundRotationThread()
 backgroundUpdaterThread.start()
@@ -781,10 +847,6 @@ backgroundUpdaterThread.start()
 # Random Info Updater
 # 
 #################################################################################################
-import threading
-import json
-from datetime import datetime
-import time
 
 class RandomInfoUpdaterThread(threading.Thread):
 
@@ -813,10 +875,11 @@ class RandomInfoUpdaterThread(threading.Thread):
     def updateRandom(self):
         xbmc.log("updateRandomMovies Called")
         
-        mb3Host = __settings__.getSetting('ipaddress')
-        mb3Port =__settings__.getSetting('port')    
-        userName = __settings__.getSetting('username')     
-        debugLogging = __settings__.getSetting('debug')           
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        mb3Host = addonSettings.getSetting('ipaddress')
+        mb3Port = addonSettings.getSetting('port')    
+        userName = addonSettings.getSetting('username')     
+        debugLogging = addonSettings.getSetting('debug')           
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
@@ -874,7 +937,10 @@ class RandomInfoUpdaterThread(threading.Thread):
                 plot=''
             plot=plot.encode('utf-8')
             year = item.get("ProductionYear")
-            runtime = str(int(item.get("RunTimeTicks"))/(10000000*60))
+            if(item.get("RunTimeTicks") != None):
+                runtime = str(int(item.get("RunTimeTicks"))/(10000000*60))
+            else:
+                runtime = "0"
 
             item_id = item.get("Id")
             thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
@@ -1098,10 +1164,6 @@ newThread.start()
 # NextUp TV Updater
 # 
 #################################################################################################
-import threading
-import json
-from datetime import datetime
-import time
 
 class NextUpUpdaterThread(threading.Thread):
 
@@ -1130,10 +1192,12 @@ class NextUpUpdaterThread(threading.Thread):
     def updateNextUp(self):
         xbmc.log("updateNextUp Called")
         
-        mb3Host = __settings__.getSetting('ipaddress')
-        mb3Port =__settings__.getSetting('port')    
-        userName = __settings__.getSetting('username')     
-        debugLogging = __settings__.getSetting('debug')           
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        
+        mb3Host = addonSettings.getSetting('ipaddress')
+        mb3Port = addonSettings.getSetting('port')    
+        userName = addonSettings.getSetting('username')     
+        debugLogging = addonSettings.getSetting('debug')           
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
@@ -1272,10 +1336,7 @@ newThread.start()
 # Info Updater
 # 
 #################################################################################################
-import threading
-import json
-from datetime import datetime
-import time
+
 
 class InfoUpdaterThread(threading.Thread):
 
@@ -1304,10 +1365,12 @@ class InfoUpdaterThread(threading.Thread):
     def updateInfo(self):
         xbmc.log("updateInfo Called")
         
-        mb3Host = __settings__.getSetting('ipaddress')
-        mb3Port =__settings__.getSetting('port')    
-        userName = __settings__.getSetting('username')     
-        debugLogging = __settings__.getSetting('debug')           
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        
+        mb3Host = addonSettings.getSetting('ipaddress')
+        mb3Port = addonSettings.getSetting('port')    
+        userName = addonSettings.getSetting('username')     
+        debugLogging = addonSettings.getSetting('debug')           
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
@@ -1521,7 +1584,7 @@ newThread.start()
 #################################################################################################
 # end Info Updater
 #################################################################################################
-sys.path.append(BASE_RESOURCE_PATH)
+
 playTime=0
 def markWatched (url):
     xbmc.log('XBMB3C Service -> Marking watched via: ' + url)
