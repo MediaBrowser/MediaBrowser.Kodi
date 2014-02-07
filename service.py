@@ -45,14 +45,26 @@ class LoadMenuOptionsThread(threading.Thread):
         self.loadMenuOptions(favourites_file)
         lastFavPath = favourites_file
         
+        try:
+            lastModLast = os.stat(favourites_file).st_mtime
+        except:
+            lastModLast = 0;
+        
+        
         while (xbmc.abortRequested == False):
             
             favourites_file = os.path.join(xbmc.translatePath('special://profile'), "favourites.xml")
+            try:
+                lastMod = os.stat(favourites_file).st_mtime
+            except:
+                lastMod = 0;
             
-            if(lastFavPath != favourites_file):
+            if(lastFavPath != favourites_file or lastModLast != lastMod):
                 self.loadMenuOptions(favourites_file)
-                lastFavPath = favourites_file
                 
+            lastFavPath = favourites_file
+            lastModLast = lastMod
+            
             xbmc.sleep(3000)
                         
         xbmc.log("LoadMenuOptionsThread Exited")
