@@ -27,6 +27,7 @@ import urllib2
 __cwd__ = xbmcaddon.Addon(id='plugin.video.xbmb3c').getAddonInfo('path')
 BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
 sys.path.append(BASE_RESOURCE_PATH)
+base_window = xbmcgui.Window( 10000 )
 
 _MODE_BASICPLAY=12
 
@@ -1597,7 +1598,6 @@ newThread.start()
 # end Info Updater
 #################################################################################################
 
-playTime=0
 def markWatched (url):
     xbmc.log('XBMB3C Service -> Marking watched via: ' + url)
     headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
@@ -1613,60 +1613,102 @@ def setPosition (url, method):
         resp = requests.post(url, data='', headers=headers)
     elif method == 'DELETE':
         resp = requests.delete(url, data='', headers=headers)
+        
+def hasData(data):
+    if(data == None or len(data) == 0):
+        return False
+    else:
+        return True
+        
+def stopAll(played_information):
     
-def processPlaybackStop():
-    WINDOW = xbmcgui.Window( 10000 )
-    if (WINDOW.getProperty("watchedurl") != ""):
-        xbmc.log("XBMB3C Service -> stopped at time:" + str(playTime))
-        watchedurl = WINDOW.getProperty("watchedurl")
-        positionurl = WINDOW.getProperty("positionurl")
+    if(len(played_information) == 0):
+        return 
         
-        runtimeTicks = int(WINDOW.getProperty("runtimeticks"))
-        xbmc.log ("XBMB3C Service -> runtimeticks:" + str(runtimeTicks))
-        percentComplete = (playTime * 10000000) / runtimeTicks
-        markPlayedAt = float(__settings__.getSetting("markPlayedAt")) / 100
-        
-        xbmc.log ("XBMB3C Service -> Percent Complete:" + str(percentComplete) + " Mark Played At:" + str(markPlayedAt))
-        if (percentComplete > markPlayedAt):
-            markWatched(watchedurl)
-            setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
-        else:
-            setPosition(positionurl + '?PositionTicks=' + str(int(playTime * 10000000)), 'DELETE')
+    addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+    xbmc.log ("XBMB3C Service -> played_information : " + str(played_information))
+    
+    for item_url in played_information:
+        data = played_information.get(item_url)
+        if(data != None):
+            xbmc.log ("XBMB3C Service -> item_url  : " + item_url)
+            xbmc.log ("XBMB3C Service -> item_data : " + str(data))
             
-        WINDOW.setProperty("watchedurl","")
-        WINDOW.setProperty("positionurl","")
-        WINDOW.setProperty("runtimeticks","")
+            watchedurl = data.get("watchedurl")
+            positionurl = data.get("positionurl")
+            runtime = data.get("runtime")
+            currentPossition = data.get("currentPossition")
+            
+            if(currentPossition != None and hasData(runtime) and hasData(positionurl) and hasData(watchedurl)):
+                runtimeTicks = int(runtime)
+                xbmc.log ("XBMB3C Service -> runtimeticks:" + str(runtimeTicks))
+                percentComplete = (currentPossition * 10000000) / runtimeTicks
+                markPlayedAt = float(addonSettings.getSetting("markPlayedAt")) / 100        
+                
+                xbmc.log ("XBMB3C Service -> Percent Complete:" + str(percentComplete) + " Mark Played At:" + str(markPlayedAt))
+                if (percentComplete > markPlayedAt):
+                    markWatched(watchedurl)
+                    setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
+                else:
+                    setPosition(positionurl + '?PositionTicks=' + str(int(currentPossition * 10000000)), 'DELETE')
+   
+    played_information.clear()
+    
     
 class Service( xbmc.Player ):
 
+    played_information = {}
+    
     def __init__( self, *args ):
         xbmc.log("XBMB3C Service -> starting monitor service")
+        self.played_information = {}
         pass
 
     def onPlayBackStarted( self ):
         # Will be called when xbmc starts playing a file
+        
+        stopAll(self.played_information)
+        
+        currentFile = xbmc.Player().getPlayingFile()
+        
         WINDOW = xbmcgui.Window( 10000 )
-        if (WINDOW.getProperty("watchedurl") != ""):
-            positionurl = WINDOW.getProperty("positionurl")
+        watchedurl = WINDOW.getProperty("watchedurl")
+        positionurl = WINDOW.getProperty("positionurl")
+        runtime = WINDOW.getProperty("runtimeticks")
+        
+        if (watchedurl != "" and positionurl != ""):
+        
+            data = {}
+            data["watchedurl"] = watchedurl
+            data["positionurl"] = positionurl
+            data["runtime"] = runtime
+            self.played_information[currentFile] = data
+            
+            xbmc.log("XBMB3C Service -> ADDING_FILE : " + currentFile)
+            xbmc.log("XBMB3C Service -> ADDING_FILE : " + str(self.played_information))
+
+            # reset in progress possition
             setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
 
     def onPlayBackEnded( self ):
         # Will be called when xbmc stops playing a file
         xbmc.log("XBMB3C Service -> onPlayBackEnded")
-        processPlaybackStop()
+        stopAll(self.played_information)
 
     def onPlayBackStopped( self ):
         # Will be called when user stops xbmc playing a file
         xbmc.log("XBMB3C Service -> onPlayBackStopped")
-        processPlaybackStop()
+        stopAll(self.played_information)
 
-montior = Service()
-   
+monitor = Service()
+
 while not xbmc.abortRequested:
 
     if xbmc.Player().isPlaying():
         try:
             playTime = xbmc.Player().getTime()
+            currentFile = xbmc.Player().getPlayingFile()
+            monitor.played_information[currentFile]["currentPossition"] = playTime
         except:
             pass
 
