@@ -1336,7 +1336,7 @@ def processDirectory(url, result):
         if (str(item.get("ParentIndexNumber")) != None):
             tempSeason = str(item.get("ParentIndexNumber"))
       
-        if item.get("Type") == "Episode":
+        if item.get("Type") == "Episode" and __settings__.getSetting('addEpisodeNumber') == 'true':
             tempTitle = str(tempEpisode) + ' - ' + tempTitle
             xbmcplugin.setContent(pluginhandle, 'episodes')
         if item.get("Type") == "Season":
