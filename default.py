@@ -1031,11 +1031,11 @@ def PLAY( url, handle ):
             # mapped paths
             mappedpath = ""
             mappedpaths = result.get("MappedPaths")
-            if(mappedpaths != None):
+            if(mappedpaths):
               for mappedpath_string in mappedpaths:
                   if mappedpath=="": #Just take the first one
                       mappedpath=mappedpath_string
-                      break
+                  break
               playurl = mappedpath
 
             if (result.get("VideoType") == "Dvd"):
@@ -1079,6 +1079,7 @@ def PLAY( url, handle ):
             if resume_result == -1:
                 return
         xbmc.Player().play(playurl,item)
+        printDebug( "Sent the following url to the xbmc player: "+str(playurl))
         #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         WINDOW = xbmcgui.Window( 10000 )
         WINDOW.setProperty("watchedurl", watchedurl)
