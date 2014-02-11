@@ -23,13 +23,98 @@ from random import randint
 import random
 import urllib2
 
-#__settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = xbmcaddon.Addon(id='plugin.video.xbmb3c').getAddonInfo('path')
 BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
 sys.path.append(BASE_RESOURCE_PATH)
 base_window = xbmcgui.Window( 10000 )
 
+import websocket
+
 _MODE_BASICPLAY=12
+
+#################################################################################################
+# WebSocket Client thread
+#################################################################################################
+
+class WebSocketThread(threading.Thread):
+
+    client = None
+    def stopClient(self):
+        if(self.client != None):
+            xbmc.log( "XBMB3C Service WebSocket -> Stopping Client" )
+            self.client.keep_running = False
+            messageData = {}
+            messageData["MessageType"] = "SessionsStart"
+            messageData["Data"] = "300,0"
+            messageString = json.dumps(messageData)
+            helloMessage = messageString
+            self.client.send(helloMessage)
+        else:
+            xbmc.log( "XBMB3C Service WebSocket -> Stopping Client NO Object ERROR" )
+            
+    def on_message(self, ws, message):
+        xbmc.log( "XBMB3C Service WebSocket -> message : " + str(message) )
+        result = json.loads(message)
+        
+        messageType = result.get("MessageType")
+        playCommand = result.get("PlayCommand")
+        data = result.get("Data")
+        
+        if(messageType != None and messageType == "Play" and data != None):
+            itemIds = data.get("ItemIds")
+            playCommand = data.get("PlayCommand")
+            if(playCommand != None and playCommand == "PlayNow"):
+                xbmc.log("XBMB3C Service WebSocket -> Playing Media With ID : " + itemIds[0])
+                
+                addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+                mb3Host = addonSettings.getSetting('ipaddress')
+                mb3Port = addonSettings.getSetting('port')                   
+                
+                url =  mb3Host + ":" + mb3Port + ',;' + itemIds[0]
+                playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+                playUrl = playUrl.replace("\\\\","smb://")
+                playUrl = playUrl.replace("\\","/")                
+                
+                xbmc.Player().play(playUrl)
+        
+
+    def on_error(self, ws, error):
+        xbmc.log( "XBMB3C Service WebSocket -> error : " + str(error) )
+
+    def on_close(self, ws):
+        xbmc.log( "XBMB3C Service WebSocket -> closed" )
+
+    def on_open(self, ws):
+        messageData = {}
+        messageData["MessageType"] = "Identity"
+        messageData["Data"] = "XBMC|123456789|0.0.0.1|XbmcPlayer"
+        messageString = json.dumps(messageData)
+        helloMessage = messageString
+        xbmc.log( "XBMB3C Service WebSocket -> opened : " + str(helloMessage))
+        ws.send(helloMessage)
+
+    def run(self):
+        websocket.enableTrace(True)
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        mb3Host = addonSettings.getSetting('ipaddress')
+        mb3Port = addonSettings.getSetting('port')           
+        #Make a call to /System/Info. WebSocketPortNumber is the port hosting the web socket.
+        webSocketUrl = "ws://" +  mb3Host + ":" + mb3Port + "/mediabrowser"
+        xbmc.log( "XBMB3C Service WebSocket -> WebSocket URL : " + webSocketUrl)
+        self.client = websocket.WebSocketApp(webSocketUrl,
+                                    on_message = self.on_message,
+                                    on_error = self.on_error,
+                                    on_close = self.on_close)
+        self.client.on_open = self.on_open
+        self.client.run_forever()
+        xbmc.log( "XBMB3C Service WebSocket -> Exited")
+
+newWebSocketThread = WebSocketThread()
+newWebSocketThread.start()
+
+#################################################################################################
+# end WebSocket Client thread
+#################################################################################################
 
 #################################################################################################
 # menu item loader thread
@@ -1714,11 +1799,15 @@ while not xbmc.abortRequested:
 
     xbmc.sleep(1000)
     
+# stop the WebSocket client
+newWebSocketThread.stopClient()
+
 # stop the image proxy
 keepServing = False
 try:
     requesthandle = urllib.urlopen("http://localhost:15001/?id=dummy&type=t", proxies={})
 except:
     xbmc.log("XBMB3C Service -> Tried to stop image proxy server but it was already stopped")
-    
+
 xbmc.log("XBMB3C Service -> Service shutting down")
+

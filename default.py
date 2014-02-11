@@ -1018,6 +1018,7 @@ def getPlayUrl(server, id, result):
     if __settings__.getSetting('playFromStream') == 'false':
         playurl = result.get("Path")
         # mapped paths
+        USER_AGENT = 'iTunes'
         mappedpath = ""
         mappedpaths = result.get("MappedPaths")
         if (mappedpaths):
@@ -1036,7 +1037,7 @@ def getPlayUrl(server, id, result):
             playurl = playurl.replace("\\\\", "smb://" + __settings__.getSetting('smbusername') + ':' + __settings__.getSetting('smbpassword') + '@')
         playurl = playurl.replace("\\", "/")
         
-        if (playurl.find("apple.com")):
+        if ("apple.com" in playurl):
             playurl += '?|User-Agent=%s' % USER_AGENT
             
     elif __settings__.getSetting('transcode') == 'true':
@@ -1053,7 +1054,6 @@ def PLAY( url, handle ):
         userid=getUserId(ip,port)
         seekTime=0
         resume=0
-        USER_AGENT = 'iTunes'
 
         jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
         result = json.loads(jsonData)
