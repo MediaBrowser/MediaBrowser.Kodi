@@ -407,6 +407,20 @@ def getServerSections( ip_address, port, name, uuid):
             'local'      : '1' ,
             'type'       : "movie",
             'section'    : "movies",
+            'owned'      : '1' })
+    
+    # Add Trailers
+    temp_list.append( {'title'      : 'Trailers',
+            'address'    : ip_address+":"+port ,
+            'serverName' : name ,
+            'uuid'       : uuid ,
+            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=Trailer&format=json') ,
+            'token'      : ''  ,
+            'location'   : "local" ,
+            'art'        : '' ,
+            'local'      : '1' ,
+            'type'       : "movie",
+            'section'    : "movies",
             'owned'      : '1' })                            
             
     for item in temp_list:
