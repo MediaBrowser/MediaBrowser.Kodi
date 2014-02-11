@@ -1013,6 +1013,38 @@ def remove_html_tags( data ):
     p = re.compile(r'<.*?>')
     return p.sub('', data)
 
+
+def getPlayUrl(server, id, result):
+    if __settings__.getSetting('playFromStream') == 'false':
+        playurl = result.get("Path")
+        # mapped paths
+        mappedpath = ""
+        mappedpaths = result.get("MappedPaths")
+        if (mappedpaths):
+            for mappedpath_string in mappedpaths:
+                if mappedpath == "": #Just take the first one
+                    mappedpath = mappedpath_string
+            
+            playurl = mappedpath
+        if (result.get("VideoType") == "Dvd"):
+            playurl = playurl + "/VIDEO_TS/VIDEO_TS.IFO"
+        if (result.get("LocationType") == "Virtual"):
+            playurl = __cwd__ + "/resources/media/offair.mp4"
+        if __settings__.getSetting('smbusername') == '':
+            playurl = playurl.replace("\\\\", "smb://")
+        else:
+            playurl = playurl.replace("\\\\", "smb://" + __settings__.getSetting('smbusername') + ':' + __settings__.getSetting('smbpassword') + '@')
+        playurl = playurl.replace("\\", "/")
+        
+        if (playurl.find("apple.com")):
+            playurl += '?|User-Agent=%s' % USER_AGENT
+            
+    elif __settings__.getSetting('transcode') == 'true':
+        playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream.ts'
+    else:
+        playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
+    return playurl
+
 def PLAY( url, handle ):
         printDebug("== ENTER: PLAY ==", False)
         url=urllib.unquote(url)
@@ -1021,40 +1053,12 @@ def PLAY( url, handle ):
         userid=getUserId(ip,port)
         seekTime=0
         resume=0
+        USER_AGENT = 'iTunes'
 
         jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
         result = json.loads(jsonData)
 
-        if __settings__.getSetting('playFromStream') == 'false':
-
-            playurl = result.get("Path")
-            # mapped paths
-            mappedpath = ""
-            mappedpaths = result.get("MappedPaths")
-            if(mappedpaths):
-              for mappedpath_string in mappedpaths:
-                  if mappedpath=="": #Just take the first one
-                      mappedpath=mappedpath_string
-                  break
-              playurl = mappedpath
-
-            if (result.get("VideoType") == "Dvd"):
-                playurl = playurl+"/VIDEO_TS/VIDEO_TS.IFO"
-            if (result.get("LocationType") == "Virtual"):
-                playurl = __cwd__ + "/resources/media/offair.mp4"
-            if __settings__.getSetting('smbusername')=='':
-                playurl = playurl.replace("\\\\","smb://")
-            else:
-                playurl = playurl.replace("\\\\","smb://" + __settings__.getSetting('smbusername') + ':' + __settings__.getSetting('smbpassword') + '@')
-            
-            playurl = playurl.replace("\\","/")
-            
-        else:
-        
-            if __settings__.getSetting('transcode')=='true':
-                playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream.ts'
-            else:
-                playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
+        playurl = getPlayUrl(server, id, result)
                 
         #if (__settings__.getSetting("markWatchedOnPlay")=='true'):
         watchedurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
@@ -1078,6 +1082,7 @@ def PLAY( url, handle ):
             resume_result = resumeScreen.select('Resume', display_list)
             if resume_result == -1:
                 return
+        
         xbmc.Player().play(playurl,item)
         printDebug( "Sent the following url to the xbmc player: "+str(playurl))
         #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
