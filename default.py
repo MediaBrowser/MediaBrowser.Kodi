@@ -51,6 +51,7 @@ import threading
 import hashlib
 import StringIO
 import gzip
+from uuid import getnode as get_mac
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
@@ -90,6 +91,21 @@ def printDebug( msg, functionname=True ):
         else:
             print "XBMB3C -> " + inspect.stack()[1][3] + ": " + str(msg)
 
+def getMachineId():
+    return "%012X"%get_mac()
+    
+def getVersion():
+    return "0.8.0"
+
+def getAuthHeader():
+    txt_mac = getMachineId()
+    version = getVersion()  
+    userid = xbmcgui.Window( 10000 ).getProperty("userid")
+    authString = "MediaBrowser UserId=\"" + userid + "\",Client=\"XBMC\",Device=\"XBMB3C\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+    headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}
+    xbmc.log("XBMB3C Authentication Header : " + str(headers))
+    return headers 
+            
 def getPlatform( ):
 
     if xbmc.getCondVisibility('system.platform.osx'):
@@ -455,9 +471,9 @@ def getAllSections( server_list = None ):
     return section_list
 
 def authenticate (url):
-    headers={'Content-Type': 'application/json'}
-    sha1=hashlib.sha1(__settings__.getSetting('password'))
-    resp = requests.post(url, '{\"password\":\"' +sha1.hexdigest() + '\",\"Username\":\"' + __settings__.getSetting('username') + "\"}", headers=headers)
+    headers = {'Content-Type': 'application/json'}
+    sha1 = hashlib.sha1(__settings__.getSetting('password'))
+    resp = requests.post(url, '{\"password\":\"' + sha1.hexdigest() + '\",\"Username\":\"' + __settings__.getSetting('username') + "\"}", headers=headers)
     code=str(resp).split('[')[1]
     code=code.split(']')[0]
     if int(code) >= 200 and int(code)<300:
@@ -467,29 +483,25 @@ def authenticate (url):
         sys.exit()
 
 def markWatched (url):
-    headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
-    resp = requests.post(url, data='', headers=headers)
+    resp = requests.post(url, data='', headers=getAuthHeader())
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("force_data_reload", "true")  
     xbmc.executebuiltin("Container.Refresh")
 
 def markUnwatched (url):
-    headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
-    resp = requests.delete(url, data='', headers=headers)
+    resp = requests.delete(url, data='', headers=getAuthHeader())
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("force_data_reload", "true")      
     xbmc.executebuiltin("Container.Refresh")
 
 def markFavorite (url):
-    headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
-    resp = requests.post(url, data='', headers=headers)
+    resp = requests.post(url, data='', headers=getAuthHeader())
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("force_data_reload", "true")    
     xbmc.executebuiltin("Container.Refresh")
     
 def unmarkFavorite (url):
-    headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
-    resp = requests.delete(url, data='', headers=headers)
+    resp = requests.delete(url, data='', headers=getAuthHeader())
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("force_data_reload", "true")    
     xbmc.executebuiltin("Container.Refresh")
@@ -563,8 +575,7 @@ def delete (url):
         printDebug('Deleting via URL: ' + url)
         progress = xbmcgui.DialogProgress()
         progress.create(__language__(30052), __language__(30053))
-        headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
-        resp = requests.delete(url, data='', headers=headers)
+        resp = requests.delete(url, data='', headers=getAuthHeader())
         deleteSleep=0
         while deleteSleep<10:
             xbmc.sleep(1000)
@@ -1104,6 +1115,7 @@ def PLAY( url, handle ):
         WINDOW.setProperty("watchedurl", watchedurl)
         WINDOW.setProperty("positionurl", positionurl)
         WINDOW.setProperty("runtimeticks", str(result.get("RunTimeTicks")))
+        WINDOW.setProperty("item_id", id)
 
         #Set a loop to wait for positive confirmation of playback
         count = 0

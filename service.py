@@ -29,8 +29,24 @@ sys.path.append(BASE_RESOURCE_PATH)
 base_window = xbmcgui.Window( 10000 )
 
 import websocket
+from uuid import getnode as get_mac
 
 _MODE_BASICPLAY=12
+
+def getMachineId():
+    return "%012X"%get_mac()
+    
+def getVersion():
+    return "0.8.0"
+
+def getAuthHeader():
+    txt_mac = getMachineId()
+    version = getVersion()  
+    userid = xbmcgui.Window( 10000 ).getProperty("userid")
+    authString = "MediaBrowser UserId=\"" + userid + "\",Client=\"XBMC\",Device=\"XBMB3C\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+    headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}
+    xbmc.log("XBMB3C Authentication Header : " + str(headers))
+    return headers 
 
 #################################################################################################
 # WebSocket Client thread
@@ -39,7 +55,35 @@ _MODE_BASICPLAY=12
 class WebSocketThread(threading.Thread):
 
     client = None
+    
+    def playbackStarted(self, itemId):
+        if(self.client != None):
+            xbmc.log( "XBMB3C Service WebSocket -> Sending Playback Started" )
+            messageData = {}
+            messageData["MessageType"] = "PlaybackStart"
+            messageData["Data"] = itemId + "|true|audio,video"
+            messageString = json.dumps(messageData)
+            xbmc.log(messageString)
+            self.client.send(messageString)
+        else:
+            xbmc.log( "XBMB3C Service WebSocket -> Sending Playback Started NO Object ERROR" )
+            
+    def playbackStopped(self, itemId, ticks):
+        if(self.client != None):
+            xbmc.log( "XBMB3C Service WebSocket -> Sending Playback Stopped" )
+            messageData = {}
+            messageData["MessageType"] = "PlaybackStopped"
+            messageData["Data"] = itemId + "|" + str(ticks)
+            messageString = json.dumps(messageData)
+            xbmc.log(messageString)
+            self.client.send(messageString)
+        else:
+            xbmc.log( "XBMB3C Service WebSocket -> Sending Playback Stopped NO Object ERROR" )
+            
     def stopClient(self):
+        # stopping the client is tricky, first set keep_running to false and then trigger one 
+        # more message by requesting one SessionsStart message, this causes the 
+        # client to receive the message and then exit
         if(self.client != None):
             xbmc.log( "XBMB3C Service WebSocket -> Stopping Client" )
             self.client.keep_running = False
@@ -47,8 +91,8 @@ class WebSocketThread(threading.Thread):
             messageData["MessageType"] = "SessionsStart"
             messageData["Data"] = "300,0"
             messageString = json.dumps(messageData)
-            helloMessage = messageString
-            self.client.send(helloMessage)
+            xbmc.log(messageString)
+            self.client.send(messageString)
         else:
             xbmc.log( "XBMB3C Service WebSocket -> Stopping Client NO Object ERROR" )
             
@@ -76,7 +120,12 @@ class WebSocketThread(threading.Thread):
                 playUrl = playUrl.replace("\\","/")                
                 
                 xbmc.Player().play(playUrl)
-        
+                
+        elif(messageType != None and messageType == "Playstate"):
+            command = data.get("Command")
+            if(command != None and command == "Stop"):
+                xbmc.log("XBMB3C Service WebSocket -> Playback Stopped")
+                xbmc.Player().stop()
 
     def on_error(self, ws, error):
         xbmc.log( "XBMB3C Service WebSocket -> error : " + str(error) )
@@ -85,13 +134,14 @@ class WebSocketThread(threading.Thread):
         xbmc.log( "XBMB3C Service WebSocket -> closed" )
 
     def on_open(self, ws):
+        machineId = getMachineId()
+        version = getVersion()
         messageData = {}
         messageData["MessageType"] = "Identity"
-        messageData["Data"] = "XBMC|123456789|0.0.0.1|XbmcPlayer"
+        messageData["Data"] = "XBMC|" + machineId + "|" + version + "|XbmcPlayer"
         messageString = json.dumps(messageData)
-        helloMessage = messageString
-        xbmc.log( "XBMB3C Service WebSocket -> opened : " + str(helloMessage))
-        ws.send(helloMessage)
+        xbmc.log( "XBMB3C Service WebSocket -> opened : " + str(messageString))
+        ws.send(messageString)
 
     def run(self):
         websocket.enableTrace(True)
@@ -1685,19 +1735,14 @@ newThread.start()
 
 def markWatched (url):
     xbmc.log('XBMB3C Service -> Marking watched via: ' + url)
-    headers={'Accept-encoding': 'gzip','Authorization' : 'MediaBrowser', 'Client' : 'Dashboard', 'Device' : "Chrome 31.0.1650.57", 'DeviceId' : "f50543a4c8e58e4b4fbb2a2bcee3b50535e1915e", 'Version':"3.0.5070.20258", 'UserId':"ff"}
-    resp = requests.post(url, data='', headers=headers)
+    resp = requests.post(url, data='', headers=getAuthHeader())
 
 def setPosition (url, method):
-    WINDOW = xbmcgui.Window( 10000 )
-    userid=WINDOW.getProperty("userid")
-    authString='MediaBrowser UserId=\"' + userid + '\",Client=\"XBMC\",Device=\"XBMB3C\",DeviceId=\"42\",Version=\"0.8.0\"'
-    headers={'Accept-encoding': 'gzip','Authorization' : authString}
     xbmc.log('XBMB3C Service -> Setting position via: ' + url)
     if method == 'POST':
-        resp = requests.post(url, data='', headers=headers)
+        resp = requests.post(url, data='', headers=getAuthHeader())
     elif method == 'DELETE':
-        resp = requests.delete(url, data='', headers=headers)
+        resp = requests.delete(url, data='', headers=getAuthHeader())
         
 def hasData(data):
     if(data == None or len(data) == 0):
@@ -1723,17 +1768,20 @@ def stopAll(played_information):
             positionurl = data.get("positionurl")
             runtime = data.get("runtime")
             currentPossition = data.get("currentPossition")
+            item_id = data.get("item_id")
             
             if(currentPossition != None and hasData(runtime) and hasData(positionurl) and hasData(watchedurl)):
                 runtimeTicks = int(runtime)
                 xbmc.log ("XBMB3C Service -> runtimeticks:" + str(runtimeTicks))
                 percentComplete = (currentPossition * 10000000) / runtimeTicks
-                markPlayedAt = float(addonSettings.getSetting("markPlayedAt")) / 100        
+                markPlayedAt = float(addonSettings.getSetting("markPlayedAt")) / 100    
+
+                newWebSocketThread.playbackStopped(item_id, str(int(currentPossition * 10000000)))
                 
                 xbmc.log ("XBMB3C Service -> Percent Complete:" + str(percentComplete) + " Mark Played At:" + str(markPlayedAt))
                 if (percentComplete > markPlayedAt):
                     markWatched(watchedurl)
-                    setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
+                    #setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
                 else:
                     setPosition(positionurl + '?PositionTicks=' + str(int(currentPossition * 10000000)), 'DELETE')
    
@@ -1760,6 +1808,9 @@ class Service( xbmc.Player ):
         watchedurl = WINDOW.getProperty("watchedurl")
         positionurl = WINDOW.getProperty("positionurl")
         runtime = WINDOW.getProperty("runtimeticks")
+        item_id = WINDOW.getProperty("item_id")
+        
+        newWebSocketThread.playbackStarted(item_id)
         
         if (watchedurl != "" and positionurl != ""):
         
@@ -1767,6 +1818,7 @@ class Service( xbmc.Player ):
             data["watchedurl"] = watchedurl
             data["positionurl"] = positionurl
             data["runtime"] = runtime
+            data["item_id"] = item_id
             self.played_information[currentFile] = data
             
             xbmc.log("XBMB3C Service -> ADDING_FILE : " + currentFile)
