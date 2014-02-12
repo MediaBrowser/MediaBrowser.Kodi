@@ -72,7 +72,7 @@ xbmc.log ("XBMB3C -> running XBMB3C: " + str(XBMB3C_VERSION))
 xbmc.log (xbmc.getInfoLabel( "System.BuildVersion" ))
 
 #Get the setting from the appropriate file.
-DEFAULT_PORT="32400"
+CP_ADD_URL = 'XBMC.RunPlugin(plugin://plugin.video.couchpotato_manager/movies/add?title=%s)'
 _MODE_GETCONTENT=0
 _MODE_MOVIES=0
 _MODE_BASICPLAY=12
@@ -846,6 +846,8 @@ def addGUIItem( url, details, extraData, folder=True ):
             commands.append(( __language__(30042), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             argsToPass = 'delete,' + extraData.get('deleteurl')
             commands.append(( __language__(30043), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            if  extraData.get('itemtype') == 'Trailer':
+                commands.append(( __language__(30046),"XBMC.RunPlugin(%s)" % CP_ADD_URL % details.get('title'),))
             list.addContextMenuItems( commands, g_contextReplace )
 
         list.setInfo('video', {'duration' : extraData.get('duration')})
@@ -1542,7 +1544,8 @@ def processDirectory(url, result):
                    'totaltime'    : tempDuration,
                    'duration'     : tempDuration,
                    'RecursiveItemCount' : item.get("RecursiveItemCount"),
-                   'RecursiveUnplayedItemCount' : item.get("RecursiveUnplayedItemCount")}
+                   'RecursiveUnplayedItemCount' : item.get("RecursiveUnplayedItemCount"),
+                   'itemtype'     : item_type}
                    
         if extraData['thumb'] == '':
             extraData['thumb'] = extraData['fanart_image']
