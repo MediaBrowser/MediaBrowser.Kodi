@@ -142,14 +142,41 @@ class WebSocketThread(threading.Thread):
         messageString = json.dumps(messageData)
         xbmc.log( "XBMB3C Service WebSocket -> opened : " + str(messageString))
         ws.send(messageString)
+        
+    def getWebSocketPort(self, host, port):
+        
+        userUrl = "http://" + host + ":" + port + "/mediabrowser/System/Info?format=json"
+        
+        try:
+            requesthandle = urllib.urlopen(userUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()              
+        except Exception, e:
+            xbmc.log("WebSocketThread getWebSocketPort urlopen : " + str(e) + " (" + userUrl + ")")
+            return -1
+
+        result = json.loads(jsonData)     
+
+        wsPort = result.get("WebSocketPortNumber")
+        if(wsPort != None):
+            return wsPort
+        else:
+            return -1
 
     def run(self):
         websocket.enableTrace(True)
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         mb3Host = addonSettings.getSetting('ipaddress')
-        mb3Port = addonSettings.getSetting('port')           
+        mb3Port = addonSettings.getSetting('port') 
+
+        wsPort = self.getWebSocketPort(mb3Host, mb3Port);
+        xbmc.log( "XBMB3C Service WebSocket -> WebSocketPortNumber = " + str(wsPort))
+        if(wsPort == -1):
+            xbmc.log( "XBMB3C Service WebSocket -> Could not retrieve WebSocket port, can not run WebScoket Client")
+            return
+        
         #Make a call to /System/Info. WebSocketPortNumber is the port hosting the web socket.
-        webSocketUrl = "ws://" +  mb3Host + ":" + mb3Port + "/mediabrowser"
+        webSocketUrl = "ws://" +  mb3Host + ":" + str(wsPort) + "/mediabrowser"
         xbmc.log( "XBMB3C Service WebSocket -> WebSocket URL : " + webSocketUrl)
         self.client = websocket.WebSocketApp(webSocketUrl,
                                     on_message = self.on_message,
