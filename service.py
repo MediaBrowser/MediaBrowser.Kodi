@@ -80,6 +80,18 @@ class WebSocketThread(threading.Thread):
         else:
             xbmc.log( "XBMB3C Service WebSocket -> Sending Playback Stopped NO Object ERROR" )
             
+    def sendProgressUpdate(self, itemId, ticks):
+        if(self.client != None):
+            #xbmc.log( "XBMB3C Service WebSocket -> Sending Progress Update" )
+            messageData = {}
+            messageData["MessageType"] = "PlaybackProgress"
+            messageData["Data"] = itemId + "|" + str(ticks) + "|false|false"
+            messageString = json.dumps(messageData)
+            xbmc.log(messageString)
+            self.client.send(messageString)
+        else:
+            xbmc.log( "XBMB3C Service WebSocket -> Sending Progress Update NO Object ERROR" )
+            
     def stopClient(self):
         # stopping the client is tricky, first set keep_running to false and then trigger one 
         # more message by requesting one SessionsStart message, this causes the 
@@ -108,6 +120,8 @@ class WebSocketThread(threading.Thread):
             itemIds = data.get("ItemIds")
             playCommand = data.get("PlayCommand")
             if(playCommand != None and playCommand == "PlayNow"):
+            
+                startPositionTicks = data.get("StartPositionTicks")
                 xbmc.log("XBMB3C Service WebSocket -> Playing Media With ID : " + itemIds[0])
                 
                 addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -115,6 +129,11 @@ class WebSocketThread(threading.Thread):
                 mb3Port = addonSettings.getSetting('port')                   
                 
                 url =  mb3Host + ":" + mb3Port + ',;' + itemIds[0]
+                if(startPositionTicks == None):
+                    url  += ",;" + "-1"
+                else:
+                    url  += ",;" + str(startPositionTicks)
+                    
                 playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
                 playUrl = playUrl.replace("\\\\","smb://")
                 playUrl = playUrl.replace("\\","/")                
@@ -125,7 +144,14 @@ class WebSocketThread(threading.Thread):
             command = data.get("Command")
             if(command != None and command == "Stop"):
                 xbmc.log("XBMB3C Service WebSocket -> Playback Stopped")
+                xbmc.executebuiltin('xbmc.activatewindow(10000)')
                 xbmc.Player().stop()
+                
+            if(command != None and command == "Seek"):
+                seekPositionTicks = data.get("SeekPositionTicks")
+                xbmc.log("XBMB3C Service WebSocket -> Playback Seek : " + str(seekPositionTicks))
+                seekTime = (seekPositionTicks / 1000) / 10000
+                xbmc.Player().seekTime(seekTime)
 
     def on_error(self, ws, error):
         xbmc.log( "XBMB3C Service WebSocket -> error : " + str(error) )
@@ -1865,15 +1891,30 @@ class Service( xbmc.Player ):
         stopAll(self.played_information)
 
 monitor = Service()
-
+lastProgressUpdate = datetime.today()
+            
 while not xbmc.abortRequested:
 
     if xbmc.Player().isPlaying():
         try:
+        
             playTime = xbmc.Player().getTime()
             currentFile = xbmc.Player().getPlayingFile()
-            monitor.played_information[currentFile]["currentPossition"] = playTime
-        except:
+            
+            if(monitor.played_information.get(currentFile) != None):
+                monitor.played_information[currentFile]["currentPossition"] = playTime
+            
+            # send update
+            td = datetime.today() - lastProgressUpdate
+            secDiff = td.seconds
+            if(secDiff > 10):
+                if(monitor.played_information.get(currentFile) != None and monitor.played_information.get(currentFile).get("item_id") != None):
+                    item_id =  monitor.played_information.get(currentFile).get("item_id")
+                    newWebSocketThread.sendProgressUpdate(item_id, str(int(playTime * 10000000)))
+                lastProgressUpdate = datetime.today()
+            
+        except Exception, e:
+            xbmc.log("XBMB3C Service -> Exception in Playback Monitor : " + str(e))
             pass
 
     xbmc.sleep(1000)

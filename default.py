@@ -1076,11 +1076,21 @@ def getPlayUrl(server, id, result):
 def PLAY( url, handle ):
         printDebug("== ENTER: PLAY ==", False)
         url=urllib.unquote(url)
-        server,id=url.split(',;')
-        ip,port=server.split(':')
-        userid=getUserId(ip,port)
-        seekTime=0
-        resume=0
+        
+        #server,id=url.split(',;')
+        urlParts = url.split(',;')
+        xbmc.log("PLAY ACTION URL PARTS : " + str(urlParts))
+        server = urlParts[0]
+        id = urlParts[1]
+        autoResume = 0
+        if(len(urlParts) > 2):
+            autoResume = int(urlParts[2])
+            xbmc.log("PLAY ACTION URL AUTO RESUME : " + str(autoResume))
+        
+        ip,port = server.split(':')
+        userid = getUserId(ip, port)
+        seekTime = 0
+        resume = 0
 
         jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
         result = json.loads(jsonData)
@@ -1098,26 +1108,36 @@ def PLAY( url, handle ):
         item.setProperty('IsFolder', 'false')
         #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
         #tree=etree.fromstring(html).getiterator(sDto + "BaseItemDto")
-        userData = result.get("UserData")
-        resume_result = 0
-        if userData.get("PlaybackPositionTicks") != 0 and __settings__.getSetting('transcode') == 'false':
-            reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
-            seekTime = reasonableTicks / 10000
-            displayTime = str(datetime.timedelta(seconds=seekTime))
-            display_list = [ "Resume from " + displayTime, "Start from beginning"]
-            resumeScreen = xbmcgui.Dialog()
-            resume_result = resumeScreen.select('Resume', display_list)
-            if resume_result == -1:
-                return
         
-        xbmc.Player().play(playurl,item)
-        printDebug( "Sent the following url to the xbmc player: "+str(playurl))
-        #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
+        if(autoResume != 0):
+            if(autoResume == -1):
+                resume_result = 1
+            else:
+                resume_result = 0
+                seekTime = (autoResume / 1000) / 10000
+        else:
+            userData = result.get("UserData")
+            resume_result = 0
+            if userData.get("PlaybackPositionTicks") != 0 and __settings__.getSetting('transcode') == 'false':
+                reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
+                seekTime = reasonableTicks / 10000
+                displayTime = str(datetime.timedelta(seconds=seekTime))
+                display_list = [ "Resume from " + displayTime, "Start from beginning"]
+                resumeScreen = xbmcgui.Dialog()
+                resume_result = resumeScreen.select('Resume', display_list)
+                if resume_result == -1:
+                    return
+        
+        # set the current playing info
         WINDOW = xbmcgui.Window( 10000 )
         WINDOW.setProperty("watchedurl", watchedurl)
         WINDOW.setProperty("positionurl", positionurl)
         WINDOW.setProperty("runtimeticks", str(result.get("RunTimeTicks")))
         WINDOW.setProperty("item_id", id)
+        
+        xbmc.Player().play(playurl,item)
+        printDebug( "Sent the following url to the xbmc player: "+str(playurl))
+        #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
 
         #Set a loop to wait for positive confirmation of playback
         count = 0
@@ -1132,7 +1152,7 @@ def PLAY( url, handle ):
         if resume_result == 0:
             jumpBackSec = int(__settings__.getSetting("resumeJumpBack"))
             seekToTime = seekTime - jumpBackSec
-            while xbmc.Player().getTime() < seekToTime:
+            while xbmc.Player().getTime() < (seekToTime - 5):
                 xbmc.Player().pause
                 xbmc.sleep(100)
                 xbmc.Player().seekTime(seekToTime)
