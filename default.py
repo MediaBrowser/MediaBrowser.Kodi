@@ -471,9 +471,12 @@ def getAllSections( server_list = None ):
     return section_list
 
 def authenticate (url):
-    headers = getAuthHeader()
+    txt_mac = getMachineId()
+    version = getVersion()
+    authString = "Mediabrowser Client=\"XBMC\",Device=\"XBMB3C\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+    headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}    
     sha1 = hashlib.sha1(__settings__.getSetting('password'))
-    resp = requests.post(url, '{\"password\":\"' + sha1.hexdigest() + '\",\"Username\":\"' + __settings__.getSetting('username') + "\"}", headers=headers)
+    resp = requests.post(url, data={'password':sha1.hexdigest(),'Username':__settings__.getSetting('username')}, headers=headers)
     code=str(resp).split('[')[1]
     code=code.split(']')[0]
     if int(code) >= 200 and int(code)<300:
