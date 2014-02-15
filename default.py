@@ -471,7 +471,7 @@ def getAllSections( server_list = None ):
     return section_list
 
 def authenticate (url):
-    headers = {'Content-Type': 'application/json'}
+    headers = getAuthHeader()
     sha1 = hashlib.sha1(__settings__.getSetting('password'))
     resp = requests.post(url, '{\"password\":\"' + sha1.hexdigest() + '\",\"Username\":\"' + __settings__.getSetting('username') + "\"}", headers=headers)
     code=str(resp).split('[')[1]
