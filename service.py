@@ -43,7 +43,7 @@ def getAuthHeader():
     txt_mac = getMachineId()
     version = getVersion()  
     userid = xbmcgui.Window( 10000 ).getProperty("userid")
-    authString = "MediaBrowser UserId=\"" + userid + "\",Client=\"XBMC\",Device=\"XBMB3C\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+    authString = "MediaBrowser UserId=\"" + userid + "\",Client=\"XBMC\",Device=\"" + __settings__.getSetting('deviceName') + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
     headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}
     xbmc.log("XBMB3C Authentication Header : " + str(headers))
     return headers 
