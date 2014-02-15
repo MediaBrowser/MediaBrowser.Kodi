@@ -602,7 +602,8 @@ def getURL( url, suppress=False, type="GET", popup=0 ):
         printDebug("urlPath = "+str(urlPath))
         conn = httplib.HTTPConnection(server, timeout=20)
         #head = {"Accept-Encoding" : "gzip,deflate", "Accept-Charset" : "UTF-8,*"} 
-        head = {"Accept-Encoding" : "gzip", "Accept-Charset" : "UTF-8,*"} 
+        #head = {"Accept-Encoding" : "gzip", "Accept-Charset" : "UTF-8,*"} 
+        head = getAuthHeader()
         conn.request(method=type, url=urlPath, headers=head)
         #conn.request(method=type, url=urlPath)
         data = conn.getresponse()
