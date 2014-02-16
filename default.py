@@ -818,10 +818,41 @@ def addGUIItem( url, details, extraData, folder=True ):
             setArt(list,'landscape','landscapePath')
 
         printDebug( "Setting landscape as " + landscapePath )
-        #if extraData.get('banner'):
-        #    list.setProperty('banner', extraData.get('banner'))
-        #    printDebug( "Setting banner as " + extraData.get('banner'))
+        
+        list.addContextMenuItems( addContextMenu(extraData), g_contextReplace )
+        
+        list.setInfo('video', {'duration' : extraData.get('duration')})
+        list.setInfo('video', {'playcount' : extraData.get('playcount')})
+        list.setProperty('CriticRating', str(extraData.get('criticrating')))
+        if extraData.get('favorite')=='true':
+            list.setInfo('video', {'top250' : '1'})
+        if extraData.get('totaltime') != None:
+            list.setProperty('TotalTime', extraData.get('totaltime'))
+            #list.setProperty('ResumeTime', str(int(extraData.get('resumetime'))/60))
+        list.setInfo('video', {'director' : extraData.get('director')})
+        list.setInfo('video', {'writer' : extraData.get('writer')})
+        list.setInfo('video', {'year' : extraData.get('year')})
+        list.setInfo('video', {'studio' : extraData.get('studio')})
+        list.setInfo('video', {'genre' : extraData.get('genre')})
+        if extraData.get('cast')!=None:
+            list.setInfo('video', {'cast' : tuple(extraData.get('cast'))}) #--- Broken in Frodo
+        #list.setInfo('video', {'castandrole' : extraData.get('cast')}) --- Broken in Frodo
+        #list.setInfo('video', {'plotoutline' : extraData.get('cast')}) # Hack to get cast data into skin
+        list.setInfo('video', {'episode': details.get('episode')})
+        list.setInfo('video', {'season': details.get('season')})        
+        list.setInfo('video', {'mpaa': extraData.get('mpaa')})
+        list.setInfo('video', {'rating': extraData.get('rating')})
+        watched = extraData.get('watchedurl')
+        if watched != None:
+            list.setProperty('watchedurl', extraData.get('watchedurl'))
+        list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
+        list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
+        xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE  )
+        
+        return (u, list, folder)
 
+        
+def addContextMenu(extraData):
         printDebug("Building Context Menus")
         commands = []
         watched = extraData.get('watchedurl')
@@ -859,36 +890,7 @@ def addGUIItem( url, details, extraData, folder=True ):
             commands.append(( __language__(30043), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
             if  extraData.get('itemtype') == 'Trailer':
                 commands.append(( __language__(30046),"XBMC.RunPlugin(%s)" % CP_ADD_URL % details.get('title'),))
-            list.addContextMenuItems( commands, g_contextReplace )
-
-        list.setInfo('video', {'duration' : extraData.get('duration')})
-        list.setInfo('video', {'playcount' : extraData.get('playcount')})
-        list.setProperty('CriticRating', str(extraData.get('criticrating')))
-        if extraData.get('favorite')=='true':
-            list.setInfo('video', {'top250' : '1'})
-        if extraData.get('totaltime') != None:
-            list.setProperty('TotalTime', extraData.get('totaltime'))
-            #list.setProperty('ResumeTime', str(int(extraData.get('resumetime'))/60))
-        list.setInfo('video', {'director' : extraData.get('director')})
-        list.setInfo('video', {'writer' : extraData.get('writer')})
-        list.setInfo('video', {'year' : extraData.get('year')})
-        list.setInfo('video', {'studio' : extraData.get('studio')})
-        list.setInfo('video', {'genre' : extraData.get('genre')})
-        if extraData.get('cast')!=None:
-            list.setInfo('video', {'cast' : tuple(extraData.get('cast'))}) #--- Broken in Frodo
-        #list.setInfo('video', {'castandrole' : extraData.get('cast')}) --- Broken in Frodo
-        #list.setInfo('video', {'plotoutline' : extraData.get('cast')}) # Hack to get cast data into skin
-        list.setInfo('video', {'episode': details.get('episode')})
-        list.setInfo('video', {'season': details.get('season')})        
-        list.setInfo('video', {'mpaa': extraData.get('mpaa')})
-        list.setInfo('video', {'rating': extraData.get('rating')})
-        if watched != None:
-            list.setProperty('watchedurl', extraData.get('watchedurl'))
-        list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
-        list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
-        xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE  )
-        
-        return (u, list, folder)
+        return(commands)
 
 def displaySections( filter=None, shared=False ):
         printDebug("== ENTER: displaySections() ==", False)
@@ -1668,54 +1670,6 @@ def getLinkURL( url, pathData, server ):
 
     return url
 
-def install( url, name ):
-    printDebug("== ENTER: install ==", False)
-    tree=getXML(url)
-    if tree is None:
-        return
-
-    operations={}
-    i=0
-    for plums in tree.findall('Directory'):
-        operations[i]=plums.get('title')
-
-        #If we find an install option, switch to a yes/no dialog box
-        if operations[i].lower() == "install":
-            printDebug("Not installed.  Print dialog")
-            ret = xbmcgui.Dialog().yesno("XBMB3C","About to install " + name)
-
-            if ret:
-                printDebug("Installing....")
-                installed = getURL(url+"/install")
-                tree = etree.fromstring(installed)
-
-                msg=tree.get('message','(blank)')
-                printDebug(msg)
-                xbmcgui.Dialog().ok("XBMB3C",msg)
-            return
-
-        i+=1
-
-    #Else continue to a selection dialog box
-    ret = xbmcgui.Dialog().select("This plugin is already installed..",operations.values())
-
-    if ret == -1:
-        printDebug("No option selected, cancelling")
-        return
-
-    printDebug("Option " + str(ret) + " selected.  Operation is " + operations[ret])
-    u=url+"/"+operations[ret].lower()
-
-    action = getURL(u)
-    tree = etree.fromstring(action)
-
-    msg=tree.get('message')
-    printDebug(msg)
-    xbmcgui.Dialog().ok("XBMB3C",msg)
-    xbmc.executebuiltin("Container.Refresh")
-
-    return
-
 def displayServers( url ):
     printDebug("== ENTER: displayServers ==", False)
     type=url.split('/')[2]
@@ -1778,30 +1732,6 @@ def setWindowHeading(url) :
     elif 'IncludeItemTypes=Episode' in url:
         WINDOW.setProperty("addshowname", "true")
 
-def setMasterServer () :
-    printDebug("== ENTER: setmasterserver ==", False)
-
-    servers=getMasterServer(True)
-    printDebug(str(servers))
-    
-    current_master=__settings__.getSetting('masterServer')
-    
-    displayList=[]
-    for address in servers:
-        found_server = address['name']
-        if found_server == current_master:
-            found_server = found_server+"*"
-        displayList.append(found_server)
-    
-    audioScreen = xbmcgui.Dialog()
-    result = audioScreen.select('Select master server',displayList)
-    if result == -1:
-        return False
-
-    printDebug("Setting master server to: %s" % (servers[result]['name'],))
-    __settings__.setSetting('masterServer',servers[result]['name'])
-    return
-    
 
 ###########################################################################  
 ##Start of Main
@@ -1832,10 +1762,6 @@ WINDOW = xbmcgui.Window( 10000 )
 WINDOW.setProperty("addshowname","false")
 if str(sys.argv[1]) == "skin":
      skin()
-elif str(sys.argv[1]) == "shelf":
-     shelf()
-elif str(sys.argv[1]) == "channelShelf":
-     shelfChannel()
 elif sys.argv[1] == "update":
     url=sys.argv[2]
     libraryRefresh(url)
