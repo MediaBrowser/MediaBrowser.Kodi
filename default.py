@@ -101,7 +101,9 @@ def getAuthHeader():
     txt_mac = getMachineId()
     version = getVersion()  
     userid = xbmcgui.Window( 10000 ).getProperty("userid")
-    authString = "MediaBrowser UserId=\"" + userid + "\",Client=\"XBMC\",Device=\"" + __settings__.getSetting('deviceName') + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+    deviceName = __settings__.getSetting('deviceName')
+    deviceName = deviceName.replace("\"", "_")
+    authString = "MediaBrowser UserId=\"" + userid + "\",Client=\"XBMC\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
     headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}
     xbmc.log("XBMB3C Authentication Header : " + str(headers))
     return headers 
@@ -473,7 +475,11 @@ def getAllSections( server_list = None ):
 def authenticate (url):
     txt_mac = getMachineId()
     version = getVersion()
-    authString = "Mediabrowser Client=\"XBMC\",Device=\"" + __settings__.getSetting('deviceName') + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+    
+    deviceName = __settings__.getSetting('deviceName')
+    deviceName = deviceName.replace("\"", "_")
+        
+    authString = "Mediabrowser Client=\"XBMC\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
     headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}    
     sha1 = hashlib.sha1(__settings__.getSetting('password'))
     resp = requests.post(url, data={'password':sha1.hexdigest(),'Username':__settings__.getSetting('username')}, headers=headers)

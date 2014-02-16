@@ -40,10 +40,13 @@ def getVersion():
     return "0.8.0"
 
 def getAuthHeader():
+    addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+    deviceName = addonSettings.getSetting('deviceName')
+    deviceName = deviceName.replace("\"", "_") # might need to url encode this as it is getting added to the header and is user entered data
     txt_mac = getMachineId()
     version = getVersion()  
     userid = xbmcgui.Window( 10000 ).getProperty("userid")
-    authString = "MediaBrowser UserId=\"" + userid + "\",Client=\"XBMC\",Device=\"" + __settings__.getSetting('deviceName') + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+    authString = "MediaBrowser UserId=\"" + userid + "\",Client=\"XBMC\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
     headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}
     xbmc.log("XBMB3C Authentication Header : " + str(headers))
     return headers 
@@ -164,7 +167,12 @@ class WebSocketThread(threading.Thread):
         version = getVersion()
         messageData = {}
         messageData["MessageType"] = "Identity"
-        messageData["Data"] = "XBMC|" + machineId + "|" + version + "|XbmcPlayer"
+        
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        deviceName = addonSettings.getSetting('deviceName')
+        deviceName = deviceName.replace("\"", "_")
+    
+        messageData["Data"] = "XBMC|" + machineId + "|" + version + "|" + deviceName
         messageString = json.dumps(messageData)
         xbmc.log( "XBMB3C Service WebSocket -> opened : " + str(messageString))
         ws.send(messageString)
