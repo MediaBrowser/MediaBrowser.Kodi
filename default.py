@@ -1615,8 +1615,9 @@ def processDirectory(url, result):
 def getArtwork(data,type):
     
     id = data.get("Id")
-    if data.get("Type") == "Episode" or data.get("Type") == "Season":
-        id = data.get("SeriesId")   
+    if __settings__.getSetting('useSeriesArt') == "true":
+        if data.get("Type") == "Episode" or data.get("Type") == "Season":
+            id = data.get("SeriesId")   
     
     # use the local image proxy server that is made available by this addons service
     artwork = ("http://localhost:15001/?id=" + str(id) + "&type="+type)
