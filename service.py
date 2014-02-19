@@ -612,6 +612,7 @@ class RecentInfoUpdaterThread(threading.Thread):
                 seriesName = item.get("SeriesName").encode('utf-8')   
 
             eppNumber = "X"
+            tempEpisodeNumber = "00"
             if(item.get("IndexNumber") != None):
                 eppNumber = item.get("IndexNumber")
                 if eppNumber < 10:
@@ -1806,7 +1807,7 @@ def setPosition (url, method):
         resp = requests.delete(url, data='', headers=getAuthHeader())
         
 def hasData(data):
-    if(data == None or len(data) == 0):
+    if(data == None or len(data) == 0 or data == "None"):
         return False
     else:
         return True
