@@ -152,41 +152,7 @@ g_sessionID=None
 genreList=[__language__(30069),__language__(30070),__language__(30071),__language__(30072),__language__(30073),__language__(30074),__language__(30075),__language__(30076),__language__(30077),__language__(30078),__language__(30079),__language__(30080),__language__(30081),__language__(30082),__language__(30083),__language__(30084),__language__(30085),__language__(30086),__language__(30087),__language__(30088),__language__(30089)]
 sortbyList=[__language__(30060),__language__(30061),__language__(30062),__language__(30063),__language__(30064),__language__(30065),__language__(30066),__language__(30067)]
 
-def discoverAllServers( ):
-    '''
-        Take the users settings and add the required master servers
-        to the server list.  These are the devices which will be queried
-        for complete library listings.  There are 3 types:
-            local server - from IP configuration
-            bonjour server - from a bonjour lookup
-        Alters the global g_serverDict value
-        @input: None
-        @return: None
-    '''
-    printDebug("== ENTER: discoverAllServers ==", False)
-    
-    das_servers={}
-    das_server_index=0
-    
-    das_host = __settings__.getSetting('ipaddress')
-    das_port =__settings__.getSetting('port')
-
-    if not das_host or das_host == "<none>":
-        das_host=None
-    elif not das_port:
-        printDebug( "XBMB3C -> No port defined.  Using default of " + DEFAULT_PORT, False)
-        das_port=DEFAULT_PORT
-       
-    printDebug( "XBMB3C -> Settings hostname and port: %s : %s" % ( das_host, das_port), False)
-
-    if das_host is not None:
-        local_server = getLocalServers(das_host, das_port)
-        if local_server:
-            das_servers[das_server_index] = local_server
-            das_server_index = das_server_index + 1
-
-    return das_servers
-    
+   
 def getUserId( ip_address, port ):
 
     jsonData = getURL(ip_address+":"+port+"/mediabrowser/Users?format=json")
@@ -219,31 +185,6 @@ def getUserId( ip_address, port ):
     
     return userid
     
-def getLocalServers( ip_address, port ):
-    '''
-        Connect to the defined local server (either direct or via bonjour discovery)
-        and get a list of all known servers.
-        @input: nothing
-        @return: a list of servers (as Dict)
-    '''
-    printDebug("== ENTER: getLocalServers ==", False)
-    url_path="/mediabrowser/Users/" + getUserId( ip_address, port) + "/items?format=json"
-    jsonData = getURL(ip_address + ":" + port + url_path)
-
-    if jsonData is False:
-         return []
-         
-    result = json.loads(jsonData)
-
-    return {'serverName': result.get('friendlyName','Unknown').encode('utf-8') ,
-                        'server'    : ip_address,
-                        'port'      : port ,
-                        'discovery' : 'local' ,
-                        'token'     : None ,
-                        'uuid'      : result.get('machineIdentifier') ,
-                        'owned'     : '1' ,
-                        'master'    : 1 }
-
 def getServerSections( ip_address, port, name, uuid):
     printDebug("== ENTER: getServerSections ==", False)
     userid=str(getUserId( ip_address, port))
@@ -445,33 +386,6 @@ def getServerSections( ip_address, port, name, uuid):
     for item in temp_list:
         printDebug ("temp_list: " + str(item))
     return temp_list
-
-def getAllSections( server_list = None ):
-    '''
-        from server_list, get a list of all the available sections
-        and deduplicate the sections list
-        @input: None
-        @return: None (alters the global value g_sectionList)
-    '''
-    printDebug("== ENTER: getAllSections ==", False)
-    
-    if not server_list:
-        server_list = discoverAllServers()
-    
-    printDebug("Using servers list: " + str(server_list))
-
-    section_list=[]
-    local_complete=False
-    
-    for server in server_list.itervalues():
-
-        if server['discovery'] == "local" or server['discovery'] == "auto":
-            section_details =  getServerSections( server['server'], server['port'] , server['serverName'], server['uuid']) 
-            section_list += section_details
-            printDebug ("Sectionlist:" + str(section_list))
-            local_complete=True
-            
-    return section_list
 
 def authenticate (url):
     txt_mac = getMachineId()
@@ -819,7 +733,9 @@ def addGUIItem( url, details, extraData, folder=True ):
 
         printDebug( "Setting landscape as " + landscapePath )
         
-        list.addContextMenuItems( addContextMenu(extraData), g_contextReplace )
+        menuItems = addContextMenu(extraData)
+        if(len(menuItems) > 0):
+            list.addContextMenuItems( menuItems, g_contextReplace )
         
         list.setInfo('video', {'duration' : extraData.get('duration')})
         list.setInfo('video', {'playcount' : extraData.get('playcount')})
@@ -892,76 +808,60 @@ def addContextMenu(extraData):
                 commands.append(( __language__(30046),"XBMC.RunPlugin(%s)" % CP_ADD_URL % details.get('title'),))
         return(commands)
 
-def displaySections( filter=None, shared=False ):
+def displaySections( filter=None ):
         printDebug("== ENTER: displaySections() ==", False)
         xbmcplugin.setContent(pluginhandle, 'files')
-        ds_servers=discoverAllServers()
-        numOfServers=len(ds_servers)
-        printDebug( "Using list of "+str(numOfServers)+" servers: " +  str(ds_servers))
         
         dirItems = []
         
-        for section in getAllSections(ds_servers):
+        das_host = __settings__.getSetting('ipaddress')
+        das_port =__settings__.getSetting('port')
+    
+        allSections = getServerSections( das_host, das_port, "MB3", "SERVER_GUID")
         
-            if shared and section.get('owned') == '1':
-                continue
-                
-        
-            details={'title' : section.get('title', 'Unknown') }
+        for section in allSections:
 
-            if len(ds_servers) > 1:
-                details['title']=section.get('serverName')+": "+details['title']
+            details = {'title' : section.get('title', 'Unknown') }
 
-            extraData={ 'fanart_image' : '' ,
+            extraData = { 'fanart_image' : '' ,
                         'type'         : "Video" ,
                         'thumb'        : '' ,
                         'token'        : section.get('token',None) }
 
-                        #Determine what we are going to do process after a link is selected by the user, based on the content we find
-
-            path=section['path']
+            path = section['path']
 
             if section.get('type') == 'show':
-                mode=_MODE_TVSHOWS
+                mode = _MODE_TVSHOWS
                 if (filter is not None) and (filter != "tvshows"):
                     continue
 
             elif section.get('type') == 'movie':
-                mode=_MODE_MOVIES
+                mode = _MODE_MOVIES
                 printDebug("MovieType!")
                 if (filter is not None) and (filter != "movies"):
                     continue
 
             elif section.get('type') == 'artist':
-                mode=_MODE_ARTISTS
+                mode = _MODE_ARTISTS
                 if (filter is not None) and (filter != "music"):
                     continue
 
             elif section.get('type') == 'photo':
-                mode=_MODE_PHOTOS
+                mode = _MODE_PHOTOS
                 if (filter is not None) and (filter != "photos"):
                     continue
             else:
-                printDebug("Ignoring section "+details['title']+" of type " + section.get('type') + " as unable to process")
+                printDebug("Ignoring section " + details['title'] + " of type " + section.get('type') + " as unable to process")
                 continue
 
-            path=path+'/all'
+            #path = path + '/all'
 
-            extraData['mode']=mode
-            s_url='http://%s%s' % ( section['address'], path)
+            extraData['mode'] = mode
+            s_url = 'http://%s%s' % ( section['address'], path)
 
             #Build that listing..
-            printDebug("addGUIItem:"+str(s_url)+str(details)+str(extraData))
+            printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
             dirItems.append(addGUIItem(s_url, details, extraData))
-
-        if shared:
-            xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
-            xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
-            return
-                    
-        #For each of the servers we have identified
-        allservers=ds_servers
-        numOfServers=len(allservers)
 
         #All XML entries have been parsed and we are ready to allow the user to browse around.  So end the screen listing.
         xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
@@ -977,7 +877,12 @@ def skin( filter=None, shared=False ):
         sectionCount=0
         dirItems = []
         
-        for section in getAllSections(ds_servers):
+        das_host = __settings__.getSetting('ipaddress')
+        das_port =__settings__.getSetting('port')
+    
+        allSections = getServerSections( das_host, das_port, "MB3", "SERVER_GUID")
+        
+        for section in allSections:
         
             if shared and section.get('owned') == '1':
                 continue
@@ -1672,30 +1577,6 @@ def getLinkURL( url, pathData, server ):
 
     return url
 
-def displayServers( url ):
-    printDebug("== ENTER: displayServers ==", False)
-    type=url.split('/')[2]
-    printDebug("Displaying entries for " + type)
-    Servers = discoverAllServers()
-    Servers_list=len(Servers)
-
-    dirItems = []
-    
-    #For each of the servers we have identified
-    for mediaserver in Servers.values():
-
-        details={'title' : mediaserver.get('serverName','Unknown') }
-
-        if mediaserver.get('token',None):
-            extraData={'token' : mediaserver.get('token') }
-        else:
-            extraData={}
-
-        dirItems.append(addGUIItem(s_url, details, extraData ))
-
-    xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
-    xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
-
 def setArt (list,name,path):
     if xbmcVersionNum >= 13:
         list.setArt({name:path})
@@ -1785,8 +1666,6 @@ elif sys.argv[1] == "setting":
     if WINDOW == 10000:
         printDebug("Currently in home - refreshing to allow new settings to be taken")
         xbmc.executebuiltin("XBMC.ActivateWindow(Home)")
-#elif sys.argv[1] == "refresh":
-#    server_list = discoverAllServers()
 elif sys.argv[1] == "delete":
     url=sys.argv[2]
     delete(url)
