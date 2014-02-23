@@ -16,7 +16,8 @@
         <setting id="smbpassword" type="text" label="30008" default="" option="hidden" visible="true" enable="true"/>        
         <setting id="playFromStream" type="bool" label="30002" default="false" visible="true" enable="true"/>
         <setting id="transcode" type="bool" label="30009" default="false" visible="true" enable="true"/>        
-        <setting id="deviceName" type="text" label="30016" default="XBMB3C" visible="true" enable="true"/>                
+        <setting id="deviceName" type="text" label="30016" default="XBMB3C" visible="true" enable="true"/>
+        <setting id="showLoadProgress" type="bool" label="30120" default="false" visible="true" enable="true"/>
 	</category>    
 
 	<category label="30110"> <!-- Media Data -->

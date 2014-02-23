@@ -1200,6 +1200,12 @@ def getContent( url ):
     force_data_reload = WINDOW.getProperty("force_data_reload")
     WINDOW.setProperty("force_data_reload", "false")
     
+    progress = None
+    if(__settings__.getSetting('showLoadProgress') == "true"):
+        progress = xbmcgui.DialogProgress()
+        progress.create(__language__(30121))
+        progress.update(0, __language__(30122))    
+    
     # if a cached file exists use it
     # if one does not exist then load data from the url
     if(os.path.exists(cacheDataPath)) and validator != 'special' and force_data_reload != "true":
@@ -1207,6 +1213,8 @@ def getContent( url ):
         jsonData = cachedfie.read()
         cachedfie.close()
         xbmc.log("Data Read From Cache : " + cacheDataPath)
+        if(progress != None):
+            progress.update(0, __language__(30123))  
         try:
             result = loadJasonData(jsonData)
         except:
@@ -1223,7 +1231,11 @@ def getContent( url ):
         for i in r:
             os.remove(i)
         xbmc.log("No Cache Data, download data now")
+        if(progress != None):
+            progress.update(0, __language__(30124))
         jsonData = getURL(url, suppress=False, popup=1 )
+        if(progress != None):
+            progress.update(0, __language__(30123))  
         try:
             result = loadJasonData(jsonData)
         except:
@@ -1241,23 +1253,29 @@ def getContent( url ):
                 xbmc.log("Saving data to cache : " + cacheDataPath)
                 cachedfie = open(cacheDataPath, 'w')
                 cachedfie.write(jsonData)
-                cachedfie.close()        
+                cachedfie.close()
 
     if jsonData == "":
+        if(progress != None):
+            progress.close()
         return
     
     printDebug("JSON DATA: " + str(result))
-    dirItems = processDirectory(url, result)
+    dirItems = processDirectory(url, result, progress)
     
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
+    
+    if(progress != None):
+        progress.update(100, __language__(30125))
+        progress.close()
     
     return
 
 def loadJasonData(jsonData):
     return json.loads(jsonData)
     
-def processDirectory(url, result):
+def processDirectory(url, result, progress):
     cast=['None']
     printDebug("== ENTER: processDirectory ==", False)
     parsed = urlparse(url)
@@ -1285,8 +1303,16 @@ def processDirectory(url, result):
     if(result == None):
         result = []
 
+    item_count = len(result)
+    current_item = 1;
+        
     for item in result:
     
+        if(progress != None):
+            percentDone = (float(current_item) / float(item_count)) * 100
+            progress.update(percentDone, __language__(30126) + str(current_item))
+            current_item = current_item + 1
+        
         if(item.get("Name") != None):
             tempTitle = item.get("Name").encode('utf-8')
         else:
