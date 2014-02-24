@@ -869,9 +869,6 @@ def displaySections( filter=None ):
         
 def skin( filter=None, shared=False ):
         printDebug("== ENTER: skin() ==", False)
-        ds_servers=discoverAllServers()
-        numOfServers=len(ds_servers)
-        printDebug( "Using list of "+str(numOfServers)+" servers: " +  str(ds_servers))
         #Get the global host variable set in settings
         WINDOW = xbmcgui.Window( 10000 )
         sectionCount=0
@@ -889,9 +886,6 @@ def skin( filter=None, shared=False ):
                 
         
             details={'title' : section.get('title', 'Unknown') }
-
-            if len(ds_servers) > 1:
-                details['title']=section.get('serverName')+": "+details['title']
 
             extraData={ 'fanart_image' : '' ,
                         'type'         : "Video" ,
@@ -949,10 +943,6 @@ def skin( filter=None, shared=False ):
             printDebug("Building window properties index [" + str(sectionCount) + "] which is [" + section.get('title') + " section - " + section.get('section') + " total - " + str(total) + "]")
             printDebug("PATH in use is: ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
             sectionCount += 1
-
-            #For each of the servers we have identified
-            allservers=ds_servers
-            numOfServers=len(allservers)
 
 def remove_html_tags( data ):
     p = re.compile(r'<.*?>')
@@ -1736,7 +1726,6 @@ else:
             p.sort_stats('cumulative').print_stats()
         else:
             getContent(param_url)
-        
 
     elif mode == _MODE_BASICPLAY:
         PLAY(param_url, pluginhandle)
