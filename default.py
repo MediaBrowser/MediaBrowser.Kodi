@@ -1300,7 +1300,7 @@ def processDirectory(url, result, progress):
     
         if(progress != None):
             percentDone = (float(current_item) / float(item_count)) * 100
-            progress.update(percentDone, __language__(30126) + str(current_item))
+            progress.update(int(percentDone), __language__(30126) + str(current_item))
             current_item = current_item + 1
         
         if(item.get("Name") != None):
