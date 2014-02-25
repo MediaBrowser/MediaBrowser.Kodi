@@ -733,7 +733,7 @@ def addGUIItem( url, details, extraData, folder=True ):
 
         printDebug( "Setting landscape as " + landscapePath )
         
-        menuItems = addContextMenu(extraData)
+        menuItems = addContextMenu(details, extraData)
         if(len(menuItems) > 0):
             list.addContextMenuItems( menuItems, g_contextReplace )
         
@@ -768,7 +768,7 @@ def addGUIItem( url, details, extraData, folder=True ):
         return (u, list, folder)
 
         
-def addContextMenu(extraData):
+def addContextMenu(details, extraData):
         printDebug("Building Context Menus")
         commands = []
         watched = extraData.get('watchedurl')
