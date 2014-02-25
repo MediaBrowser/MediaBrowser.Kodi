@@ -964,8 +964,6 @@ def getPlayUrl(server, id, result):
             playurl = mappedpath
         if (result.get("VideoType") == "Dvd"):
             playurl = playurl + "/VIDEO_TS/VIDEO_TS.IFO"
-        if (result.get("LocationType") == "Virtual"):
-            playurl = __cwd__ + "/resources/media/offair.mp4"
         if __settings__.getSetting('smbusername') == '':
             playurl = playurl.replace("\\\\", "smb://")
         else:
@@ -1003,6 +1001,11 @@ def PLAY( url, handle ):
         jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
         result = json.loads(jsonData)
 
+        # Can not play virtual items
+        if (result.get("LocationType") == "Virtual"):
+            xbmcgui.Dialog().ok(__language__(30128), __language__(30129))
+            return
+        
         playurl = getPlayUrl(server, id, result)
                 
         #if (__settings__.getSetting("markWatchedOnPlay")=='true'):
