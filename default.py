@@ -1008,6 +1008,7 @@ def PLAY( url, handle ):
         #if (__settings__.getSetting("markWatchedOnPlay")=='true'):
         watchedurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
         positionurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
+        deleteurl='http://' + server + '/mediabrowser/Items/' + id
             #print watchedurl
             #markWatched (urllib.unquote(watchedurl))
         
@@ -1040,6 +1041,10 @@ def PLAY( url, handle ):
         WINDOW = xbmcgui.Window( 10000 )
         WINDOW.setProperty("watchedurl", watchedurl)
         WINDOW.setProperty("positionurl", positionurl)
+        WINDOW.setProperty("deleteurl", "")
+        if result.get("Type")=="Episode" and __settings__.getSetting("offerDelete")=="true":
+           WINDOW.setProperty("deleteurl", deleteurl)
+        
         WINDOW.setProperty("runtimeticks", str(result.get("RunTimeTicks")))
         WINDOW.setProperty("item_id", id)
         

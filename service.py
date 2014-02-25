@@ -24,6 +24,8 @@ import random
 import urllib2
 
 __cwd__ = xbmcaddon.Addon(id='plugin.video.xbmb3c').getAddonInfo('path')
+__addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+__language__     = __addon__.getLocalizedString
 BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
 sys.path.append(BASE_RESOURCE_PATH)
 base_window = xbmcgui.Window( 10000 )
@@ -1794,7 +1796,21 @@ newThread.start()
 #################################################################################################
 # end Info Updater
 #################################################################################################
-
+def delete (url):
+    return_value = xbmcgui.Dialog().yesno(__language__(30091),__language__(30092))
+    if return_value:
+        xbmc.log('Deleting via URL: ' + url)
+        progress = xbmcgui.DialogProgress()
+        progress.create(__language__(30052), __language__(30053))
+        resp = requests.delete(url, data='', headers=getAuthHeader())
+        deleteSleep=0
+        while deleteSleep<10:
+            xbmc.sleep(1000)
+            deleteSleep=deleteSleep+1
+            progress.update(deleteSleep*10,__language__(30053))
+        progress.close()
+        xbmc.executebuiltin("Container.Refresh")
+        
 def markWatched (url):
     xbmc.log('XBMB3C Service -> Marking watched via: ' + url)
     resp = requests.post(url, data='', headers=getAuthHeader())
@@ -1813,7 +1829,7 @@ def hasData(data):
         return True
         
 def stopAll(played_information):
-    
+    WINDOW = xbmcgui.Window( 10000 )
     if(len(played_information) == 0):
         return 
         
@@ -1843,10 +1859,13 @@ def stopAll(played_information):
                 xbmc.log ("XBMB3C Service -> Percent Complete:" + str(percentComplete) + " Mark Played At:" + str(markPlayedAt))
                 if (percentComplete > markPlayedAt):
                     markWatched(watchedurl)
+                    if WINDOW.getProperty("deleteurl") != "":
+                        xbmc.log ("XBMB3C Service -> Offering Delete:" + str(WINDOW.getProperty("deleteurl")))
+                        delete(WINDOW.getProperty("deleteurl"))
                     #setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
                 else:
                     setPosition(positionurl + '?PositionTicks=' + str(int(currentPossition * 10000000)), 'DELETE')
-   
+    WINDOW.setProperty("deleteurl","")
     played_information.clear()
     
     
