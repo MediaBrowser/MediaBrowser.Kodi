@@ -733,7 +733,7 @@ def addGUIItem( url, details, extraData, folder=True ):
 
         printDebug( "Setting landscape as " + landscapePath )
         
-        menuItems = addContextMenu(extraData)
+        menuItems = addContextMenu(details, extraData)
         if(len(menuItems) > 0):
             list.addContextMenuItems( menuItems, g_contextReplace )
         
@@ -768,7 +768,7 @@ def addGUIItem( url, details, extraData, folder=True ):
         return (u, list, folder)
 
         
-def addContextMenu(extraData):
+def addContextMenu(details, extraData):
         printDebug("Building Context Menus")
         commands = []
         watched = extraData.get('watchedurl')
@@ -956,8 +956,6 @@ def getPlayUrl(server, id, result):
         
         if (result.get("VideoType") == "Dvd"):
             playurl = playurl + "/VIDEO_TS/VIDEO_TS.IFO"
-        if (result.get("LocationType") == "Virtual"):
-            playurl = __cwd__ + "/resources/media/offair.mp4"
         if __settings__.getSetting('smbusername') == '':
             playurl = playurl.replace("\\\\", "smb://")
         else:
@@ -995,11 +993,17 @@ def PLAY( url, handle ):
         jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
         result = json.loads(jsonData)
 
+        # Can not play virtual items
+        if (result.get("LocationType") == "Virtual"):
+            xbmcgui.Dialog().ok(__language__(30128), __language__(30129))
+            return
+        
         playurl = getPlayUrl(server, id, result)
                 
         #if (__settings__.getSetting("markWatchedOnPlay")=='true'):
         watchedurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
         positionurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
+        deleteurl='http://' + server + '/mediabrowser/Items/' + id
             #print watchedurl
             #markWatched (urllib.unquote(watchedurl))
         
@@ -1032,6 +1036,10 @@ def PLAY( url, handle ):
         WINDOW = xbmcgui.Window( 10000 )
         WINDOW.setProperty("watchedurl", watchedurl)
         WINDOW.setProperty("positionurl", positionurl)
+        WINDOW.setProperty("deleteurl", "")
+        if result.get("Type")=="Episode" and __settings__.getSetting("offerDelete")=="true":
+           WINDOW.setProperty("deleteurl", deleteurl)
+        
         WINDOW.setProperty("runtimeticks", str(result.get("RunTimeTicks")))
         WINDOW.setProperty("item_id", id)
         

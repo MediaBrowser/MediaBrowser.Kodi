@@ -100,5 +100,8 @@
     <string id="30124">Downloading Jason Data</string>
     <string id="30125">Done</string>
     <string id="30126">Processing Item : </string>
+    <string id="30127">Offer delete for watched episodes</string>   
+    <string id="30128">Play Error</string>
+    <string id="30129">This item is not playable</string>    
 
 </strings>
