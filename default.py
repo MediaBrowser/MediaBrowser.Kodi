@@ -952,16 +952,8 @@ def remove_html_tags( data ):
 def getPlayUrl(server, id, result):
     if __settings__.getSetting('playFromStream') == 'false':
         playurl = result.get("Path")
-        # mapped paths
-        USER_AGENT = 'iTunes'
-        mappedpath = ""
-        mappedpaths = result.get("MappedPaths")
-        if (mappedpaths):
-            for mappedpath_string in mappedpaths:
-                if mappedpath == "": #Just take the first one
-                    mappedpath = mappedpath_string
-            
-            playurl = mappedpath
+        USER_AGENT = 'QuickTime/7.7.4'
+        
         if (result.get("VideoType") == "Dvd"):
             playurl = playurl + "/VIDEO_TS/VIDEO_TS.IFO"
         if (result.get("LocationType") == "Virtual"):
