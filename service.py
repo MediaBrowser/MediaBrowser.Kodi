@@ -1,4 +1,4 @@
-﻿import xbmc
+import xbmc
 import xbmcgui
 import xbmcaddon
 import urllib
