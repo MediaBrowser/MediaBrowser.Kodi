@@ -3,7 +3,7 @@
     @package    : XBMB3C add-on
     @authors    : xnappo, null_pointer, im85288
     @copyleft   : 2013, xnappo
-    @version    : 0.8.0 (frodo)
+    @version    : 0.8.5 (frodo/gotham)
 
     @license    : Gnu General Public License - see LICENSE.TXT
     @description: XBMB3C XBMC add-on
@@ -63,7 +63,7 @@ BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'li
 PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
 
 sys.path.append(BASE_RESOURCE_PATH)
-XBMB3C_VERSION="0.8.0"
+XBMB3C_VERSION="0.8.5"
 
 xbmc.log ("===== XBMB3C START =====")
 
@@ -95,7 +95,7 @@ def getMachineId():
     return "%012X"%get_mac()
     
 def getVersion():
-    return "0.8.0"
+    return "0.8.5"
 
 def getAuthHeader():
     txt_mac = getMachineId()

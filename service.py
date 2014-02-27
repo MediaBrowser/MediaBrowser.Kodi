@@ -39,7 +39,7 @@ def getMachineId():
     return "%012X"%get_mac()
     
 def getVersion():
-    return "0.8.0"
+    return "0.8.5"
 
 def getAuthHeader():
     addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
