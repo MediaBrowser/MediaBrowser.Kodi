@@ -89,7 +89,7 @@ def printDebug( msg, functionname=True ):
         if functionname is False:
             xbmc.log (str(msg))
         else:
-            print "XBMB3C -> " + inspect.stack()[1][3] + ": " + str(msg)
+            xbmc.log ("XBMB3C -> " + inspect.stack()[1][3] + ": " + str(msg))
 
 def getMachineId():
     return "%012X"%get_mac()
@@ -956,6 +956,8 @@ def getPlayUrl(server, id, result):
         
         if (result.get("VideoType") == "Dvd"):
             playurl = playurl + "/VIDEO_TS/VIDEO_TS.IFO"
+        if (result.get("VideoType") == "Bluray"):
+            playurl = playurl + "/BDMV/index.bdmv"            
         if __settings__.getSetting('smbusername') == '':
             playurl = playurl.replace("\\\\", "smb://")
         else:
