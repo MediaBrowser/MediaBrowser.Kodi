@@ -956,7 +956,7 @@ def getPlayUrl(server, id, result):
         
         if (result.get("VideoType") == "Dvd"):
             playurl = playurl + "/VIDEO_TS/VIDEO_TS.IFO"
-        if (result.get("VideoType") == "Bluray"):
+        if (result.get("VideoType") == "BluRay"):
             playurl = playurl + "/BDMV/index.bdmv"            
         if __settings__.getSetting('smbusername') == '':
             playurl = playurl.replace("\\\\", "smb://")
