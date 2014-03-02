@@ -993,6 +993,7 @@ def PLAY( url, handle ):
         resume = 0
 
         jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
+        printDebug("Play jsonData: " + jsonData)
         result = json.loads(jsonData)
 
         # Can not play virtual items
