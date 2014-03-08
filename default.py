@@ -151,17 +151,21 @@ g_sessionID=None
 genreList=[__language__(30069),__language__(30070),__language__(30071),__language__(30072),__language__(30073),__language__(30074),__language__(30075),__language__(30076),__language__(30077),__language__(30078),__language__(30079),__language__(30080),__language__(30081),__language__(30082),__language__(30083),__language__(30084),__language__(30085),__language__(30086),__language__(30087),__language__(30088),__language__(30089)]
 sortbyList=[__language__(30060),__language__(30061),__language__(30062),__language__(30063),__language__(30064),__language__(30065),__language__(30066),__language__(30067)]
 
-   
-def getUserId( ip_address, port ):
+def getUserId():
 
-    jsonData = getURL(ip_address+":"+port+"/mediabrowser/Users?format=json")
+    port = __settings__.getSetting('port')
+    host = __settings__.getSetting('ipaddress')
+    userName = __settings__.getSetting('username')
+    
+    printDebug("Looking for user name: " + userName)
+
+    jsonData = getURL(host + ":" + port + "/mediabrowser/Users?format=json")
     
     if(jsonData == False):
         return ""
         
     userid=""
-    userName = __settings__.getSetting('username')
-    printDebug("Looking for user name: " + userName)
+
     printDebug("jsonData : " + str(jsonData), level=3)
     result = json.loads(jsonData)
     
@@ -171,7 +175,7 @@ def getUserId( ip_address, port ):
             printDebug('Username Found:' + user.get("Name"))
 
     if __settings__.getSetting('password') != "":
-        authenticate('http://'+ip_address+":"+port+"/mediabrowser/Users/AuthenticateByName")
+        authenticate('http://' + host + ":" + port + "/mediabrowser/Users/AuthenticateByName")
         
     if userid=='':
         return_value = xbmcgui.Dialog().ok(__language__(30045),__language__(30045))
@@ -186,7 +190,7 @@ def getUserId( ip_address, port ):
     
 def getServerSections( ip_address, port, name, uuid):
     printDebug("== ENTER: getServerSections ==")
-    userid=str(getUserId( ip_address, port))
+    userid = str(getUserId())
     jsonData = getURL(ip_address+":"+port+"/mediabrowser/Users/"+userid+"/Items/Root?format=json")
     printDebug("jsonData : " + jsonData, level=3)
     result = json.loads(jsonData)
@@ -987,7 +991,7 @@ def PLAY( url, handle ):
         xbmc.log("PLAY ACTION URL AUTO RESUME : " + str(autoResume))
     
     ip,port = server.split(':')
-    userid = getUserId(ip, port)
+    userid = getUserId()
     seekTime = 0
     resume = 0
 
@@ -1003,17 +1007,39 @@ def PLAY( url, handle ):
     playurl = getPlayUrl(server, id, result)
             
     #if (__settings__.getSetting("markWatchedOnPlay")=='true'):
-    watchedurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
-    positionurl='http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
-    deleteurl='http://' + server + '/mediabrowser/Items/' + id
-        #print watchedurl
-        #markWatched (urllib.unquote(watchedurl))
+    watchedurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
+    positionurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
+    deleteurl = 'http://' + server + '/mediabrowser/Items/' + id
     
-    item = xbmcgui.ListItem(path=playurl)
+    # set up item and item info
+    thumbID = id
+    eppNum = -1
+    seasonNum = -1
+    if(result.get("Type") == "Episode"):
+        thumbID = result.get("SeriesId")
+        seasonNum = result.get("ParentIndexNumber")
+        eppNum = result.get("IndexNumber")
+    thumbPath = "http://localhost:15001/?id=" + str(thumbID) + "&type=t"
+    
+    item = xbmcgui.ListItem(path=playurl, iconImage=thumbPath, thumbnailImage=thumbPath)
     item.setProperty('IsPlayable', 'true')
     item.setProperty('IsFolder', 'false')
     #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
     #tree=etree.fromstring(html).getiterator(sDto + "BaseItemDto")
+    
+    # add some info about the item being played
+    details = {
+             'title'        : result.get("Name", "Missing Name").encode('utf-8')
+             }
+             
+    if(eppNum > -1):
+        details["episode"] = str(eppNum)
+        
+    if(seasonNum > -1):
+        details["season"] = str(seasonNum)        
+    
+    item.setInfo( "Video", infoLabels=details )
+    
     
     if(autoResume != 0):
         if(autoResume == -1):
@@ -1045,7 +1071,7 @@ def PLAY( url, handle ):
     WINDOW.setProperty("runtimeticks", str(result.get("RunTimeTicks")))
     WINDOW.setProperty("item_id", id)
     
-    xbmc.Player().play(playurl,item)
+    xbmc.Player().play(playurl, item)
     printDebug( "Sent the following url to the xbmc player: "+str(playurl))
     #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
 
@@ -1097,7 +1123,7 @@ def get_params( paramstring ):
 
 def getCacheValidator (server,url):
     parsedserver,parsedport = server.split(':')
-    userid = getUserId(parsedserver, parsedport)
+    userid = getUserId()
     idAndOptions = url.split("ParentId=")
     id = idAndOptions[1].split("&")
     jsonData = getURL("http://"+server+"/mediabrowser/Users/" + userid + "/Items/" +id[0]+"?format=json", suppress=False, popup=1 )
@@ -1271,11 +1297,11 @@ def processDirectory(url, result, progress):
     printDebug("== ENTER: processDirectory ==")
     parsed = urlparse(url)
     parsedserver,parsedport=parsed.netloc.split(':')
-    userid=getUserId(parsedserver,parsedport)
+    userid = getUserId()
     printDebug("Processing secondary menus")
     xbmcplugin.setContent(pluginhandle, 'movies')
 
-    server=getServerFromURL(url)
+    server = getServerFromURL(url)
     setWindowHeading(url)
     
     detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
@@ -1541,7 +1567,6 @@ def getArtwork(data,type):
         if type != "t" or __settings__.getSetting('useSeriesArt') == "true":
             id = data.get("SeriesId")
         
-    
     # use the local image proxy server that is made available by this addons service
     artwork = ("http://localhost:15001/?id=" + str(id) + "&type="+type)
     printDebug("getArtwork : " + artwork, level=3)
