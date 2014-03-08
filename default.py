@@ -1235,7 +1235,7 @@ def getContent( url ):
         try:
             result = loadJasonData(jsonData)
         except:
-            xbmc.log("Json load failed from cache data")
+            printDebug("Json load failed from cache data")
             result = []
         dataLen = len(result)
         printDebug("Json Load Result : " + str(dataLen))
@@ -1247,7 +1247,7 @@ def getContent( url ):
         r = glob.glob(__addondir__ + urlHash + "*")
         for i in r:
             os.remove(i)
-        xbmc.log("No Cache Data, download data now")
+        printDebug("No Cache Data, download data now")
         if(progress != None):
             progress.update(0, __language__(30124))
         jsonData = getURL(url, suppress=False, popup=1 )
@@ -1259,15 +1259,15 @@ def getContent( url ):
             xbmc.log("Json load failed from downloaded data")
             result = []
         dataLen = len(result)
-        xbmc.log("Json Load Result : " + str(dataLen))
+        printDebug("Json Load Result : " + str(dataLen))
         if(dataLen > 0 and validator != 'special'):
             cacheValidationString = getCacheValidatorFromData(result)
-            xbmc.log("getCacheValidator : " + validator)
-            xbmc.log("getCacheValidatorFromData : " + cacheValidationString)
+            printDebug("getCacheValidator : " + validator)
+            printDebug("getCacheValidatorFromData : " + cacheValidationString)
             if(validator == cacheValidationString):
-                xbmc.log("Validator String Match, Saving Cache Data")
+                printDebug("Validator String Match, Saving Cache Data")
                 cacheDataPath = __addondir__ + urlHash + cacheValidationString
-                xbmc.log("Saving data to cache : " + cacheDataPath)
+                printDebug("Saving data to cache : " + cacheDataPath)
                 cachedfie = open(cacheDataPath, 'w')
                 cachedfie.write(jsonData)
                 cachedfie.close()
@@ -1277,7 +1277,7 @@ def getContent( url ):
             progress.close()
         return
     
-    printDebug("JSON DATA: " + str(result))
+    printDebug("JSON DATA: " + str(result), level=3)
     dirItems = processDirectory(url, result, progress)
     
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)

@@ -618,6 +618,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             
             item_count = item_count + 1
         
+        #Updating Recent TV Show List
         self.logMsg("Updating Recent TV Show List")
         
         recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json"
@@ -711,24 +712,25 @@ class RecentInfoUpdaterThread(threading.Thread):
             
             item_count = item_count + 1
             
-            self.logMsg("Updating Recent MusicList")
-        
-            recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=MusicAlbum&format=json"
-        
-            try:
-                requesthandle = urllib.urlopen(recentUrl, proxies={})
-                jsonData = requesthandle.read()
-                requesthandle.close()                 
-            except Exception, e:
-                xbmc.log("RecentInfoUpdaterThread updateRecent urlopen : " + str(e) + " (" + recentUrl + ")")
-                return
-        
-            result = json.loads(jsonData)
-            self.logMsg("Recent MusicList Json Data : " + str(result))
-        
-            result = result.get("Items")
-            if(result == None):
-              result = []   
+        #Updating Recent MusicList
+        self.logMsg("Updating Recent MusicList")
+    
+        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=MusicAlbum&format=json"
+    
+        try:
+            requesthandle = urllib.urlopen(recentUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()                 
+        except Exception, e:
+            xbmc.log("RecentInfoUpdaterThread updateRecent urlopen : " + str(e) + " (" + recentUrl + ")")
+            return
+    
+        result = json.loads(jsonData)
+        self.logMsg("Recent MusicList Json Data : " + str(result))
+    
+        result = result.get("Items")
+        if(result == None):
+          result = []   
 
         item_count = 1
         for item in result:
