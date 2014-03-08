@@ -59,6 +59,7 @@ def getAuthHeader():
 
 class WebSocketThread(threading.Thread):
 
+    logLevel = 0
     client = None
     
     def playbackStarted(self, itemId):
@@ -200,10 +201,18 @@ class WebSocketThread(threading.Thread):
             return -1
 
     def run(self):
-        websocket.enableTrace(True)
+    
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         mb3Host = addonSettings.getSetting('ipaddress')
-        mb3Port = addonSettings.getSetting('port') 
+        mb3Port = addonSettings.getSetting('port')
+        level = addonSettings.getSetting('logLevel')
+        self.logLevel = 0
+        if(level != None):
+            self.logLevel = int(level)
+        xbmc.log("XBMB3C Log Level : " + str(self.logLevel))
+        
+        if(self.logLevel >= 1):
+            websocket.enableTrace(True)        
 
         wsPort = self.getWebSocketPort(mb3Host, mb3Port);
         xbmc.log( "XBMB3C Service WebSocket -> WebSocketPortNumber = " + str(wsPort))
@@ -236,8 +245,20 @@ newWebSocketThread.start()
 
 class LoadMenuOptionsThread(threading.Thread):
 
+    logLevel = 0
+    
+    def logMsg(self, msg, level = 1):
+        if(self.logLevel >= level):
+            xbmc.log("XBMB3C Load Menu -> " + msg) 
+    
     def run(self):
         xbmc.log("LoadMenuOptionsThread Started")
+        
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        level = addonSettings.getSetting('logLevel')
+        self.logLevel = 0
+        if(level != None):
+            self.logLevel = int(level)    
         
         lastFavPath = ""
         favourites_file = os.path.join(xbmc.translatePath('special://profile'), "favourites.xml")
@@ -270,7 +291,7 @@ class LoadMenuOptionsThread(threading.Thread):
 
     def loadMenuOptions(self, pathTofavourites):
                
-        xbmc.log("LoadMenuOptionsThread -> Loading menu items from : " + pathTofavourites)
+        self.logMsg("LoadMenuOptionsThread -> Loading menu items from : " + pathTofavourites)
         WINDOW = xbmcgui.Window( 10000 )
         menuItem = 0
         
@@ -297,16 +318,16 @@ class LoadMenuOptionsThread(threading.Thread):
                 
                 WINDOW.setProperty("xbmb3c_menuitem_name_" + str(menuItem), name)
                 WINDOW.setProperty("xbmb3c_menuitem_action_" + str(menuItem), action_url)
-                xbmc.log("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name)
-                xbmc.log("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url)
+                self.logMsg("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name, level=3)
+                self.logMsg("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url, level=3)
                 
                 menuItem = menuItem + 1
 
         for x in range(menuItem, menuItem+10):
                 WINDOW.setProperty("xbmb3c_menuitem_name_" + str(x), "")
                 WINDOW.setProperty("xbmb3c_menuitem_action_" + str(x), "")
-                #xbmc.log("xbmb3c_menuitem_name_" + str(x) + " : ")
-                #xbmc.log("xbmb3c_menuitem_action_" + str(x) + " : ")
+                self.logMsg("xbmb3c_menuitem_name_" + str(x) + " : ", level=3)
+                self.logMsg("xbmb3c_menuitem_action_" + str(x) + " : ", level=3)
             
 newMenuThread = LoadMenuOptionsThread()
 newMenuThread.start()
@@ -324,15 +345,23 @@ newMenuThread.start()
 
 class MyHandler(BaseHTTPRequestHandler):
     
-    def logMsg(self, msg, debugLogging):
-        if(debugLogging == "true"):
+    logLevel = 0
+    
+    def __init__(self, *args):
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        level = addonSettings.getSetting('logLevel')
+        self.logLevel = 0
+        if(level != None):
+            self.logLevel = int(level)
+        BaseHTTPRequestHandler.__init__(self, *args)
+    
+    def logMsg(self, msg, level = 1):
+        if(self.logLevel >= level):
             xbmc.log("XBMB3C Image Proxy -> " + msg)
     
     #overload the default log func to stop stderr message from showing up in the xbmc log
     def log_message(self, format, *args):
-        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        debugLogging = addonSettings.getSetting('debug')
-        if(debugLogging == "true"):
+        if(self.logLevel >= 1):
             the_string = [str(i) for i in range(len(args))]
             the_string = '"{' + '}" "{'.join(the_string) + '}"'
             the_string = the_string.format(*args)
@@ -344,10 +373,9 @@ class MyHandler(BaseHTTPRequestHandler):
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         mb3Host = addonSettings.getSetting('ipaddress')
         mb3Port = addonSettings.getSetting('port')
-        debugLogging = addonSettings.getSetting('debug')   
         
         params = parse_qs(self.path[2:])
-        self.logMsg("Params : " + str(params), debugLogging)
+        self.logMsg("Params : " + str(params))
         
         if(params.get("id") == None):
             return
@@ -356,7 +384,7 @@ class MyHandler(BaseHTTPRequestHandler):
         requestType = params["type"][0]
         
         if (len(params) > 2):
-          self.logMsg("Params with Index: " + str(params), debugLogging)  
+          self.logMsg("Params with Index: " + str(params))  
           index = params['index'][0]
         else:
           index = None
@@ -380,14 +408,14 @@ class MyHandler(BaseHTTPRequestHandler):
         else:
           remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType +  "/" + index  + "?Format=png"
                   
-        self.logMsg("MB3 Host : " + mb3Host, debugLogging)
-        self.logMsg("MB3 Port : " + mb3Port, debugLogging)
-        self.logMsg("Item ID : " + itemId, debugLogging)
-        self.logMsg("Request Type : " + requestType, debugLogging)
-        self.logMsg("Remote URL : " + remoteUrl, debugLogging)
+        self.logMsg("MB3 Host : " + mb3Host)
+        self.logMsg("MB3 Port : " + mb3Port)
+        self.logMsg("Item ID : " + itemId)
+        self.logMsg("Request Type : " + requestType)
+        self.logMsg("Remote URL : " + remoteUrl)
         
         # get the remote image
-        self.logMsg("Downloading Image", debugLogging)
+        self.logMsg("Downloading Image")
         
         try:
             requesthandle = urllib.urlopen(remoteUrl, proxies={})
@@ -400,14 +428,14 @@ class MyHandler(BaseHTTPRequestHandler):
         datestring = time.strftime('%a, %d %b %Y %H:%M:%S GMT')
         length = len(pngData)
         
-        self.logMsg("ReSending Image", debugLogging)
+        self.logMsg("ReSending Image")
         self.send_response(200)
         self.send_header('Content-type', 'image/png')
         self.send_header('Content-Length', length)
         self.send_header('Last-Modified', datestring)        
         self.end_headers()
         self.wfile.write(pngData)
-        self.logMsg("Image Sent", debugLogging)
+        self.logMsg("Image Sent")
         
     def do_HEAD(self):
         datestring = time.strftime('%a, %d %b %Y %H:%M:%S GMT')
@@ -445,8 +473,10 @@ xbmc.log("XBMB3s -> HTTP Image Proxy Server NOW SERVING IMAGES")
 
 class RecentInfoUpdaterThread(threading.Thread):
 
-    def logMsg(self, msg, debugLogging):
-        if(debugLogging == "true"):
+    logLevel = 0
+    
+    def logMsg(self, msg, level = 1):
+        if(self.logLevel >= level):
             xbmc.log("XBMB3C Recent Info Thread -> " + msg)
     
     def run(self):
@@ -455,6 +485,12 @@ class RecentInfoUpdaterThread(threading.Thread):
         self.updateRecent()
         lastRun = datetime.today()
         lastProfilePath = xbmc.translatePath('special://profile')
+        
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        level = addonSettings.getSetting('logLevel')        
+        self.logLevel = 0
+        if(level != None):
+            self.logLevel = int(level)        
         
         while (xbmc.abortRequested == False):
             td = datetime.today() - lastRun
@@ -477,13 +513,12 @@ class RecentInfoUpdaterThread(threading.Thread):
         xbmc.log("RecentInfoUpdaterThread Exited")
         
     def updateRecent(self):
-        xbmc.log("updateRecent Called")
+        self.logMsg("updateRecent Called")
         
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         mb3Host = addonSettings.getSetting('ipaddress')
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')     
-        debugLogging = addonSettings.getSetting('debug')           
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
@@ -502,9 +537,9 @@ class RecentInfoUpdaterThread(threading.Thread):
                 userid = user.get("Id")    
                 break
         
-        xbmc.log("updateRecentMovies UserName : " + userName + " UserID : " + userid)
+        self.logMsg("updateRecentMovies UserName : " + userName + " UserID : " + userid)
         
-        xbmc.log("Updating Recent Movie List")
+        self.logMsg("Updating Recent Movie List")
         
         recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
         
@@ -517,7 +552,6 @@ class RecentInfoUpdaterThread(threading.Thread):
             return    
 
         result = json.loads(jsonData)
-        xbmc.log("Recent Movie Json Data : " + str(result))
         
         result = result.get("Items")
         if(result == None):
@@ -556,18 +590,18 @@ class RecentInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Title = " + title, debugLogging)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, debugLogging)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Path  = " + playUrl, debugLogging)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, debugLogging)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, debugLogging)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, debugLogging)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Rating  = " + str(rating), debugLogging)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".CriticRating  = " + str(criticrating), debugLogging)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".CriticRatingSummary  = " + criticratingsummary, debugLogging)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Year  = " + str(year), debugLogging)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Runtime  = " + str(runtime), debugLogging)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Title = " + title, level=3)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, level=3)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Path  = " + playUrl, level=3)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=3)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=3)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=3)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Rating  = " + str(rating), level=3)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".CriticRating  = " + str(criticrating), level=3)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".CriticRatingSummary  = " + criticratingsummary, level=3)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Plot  = " + plot, level=3)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Year  = " + str(year), level=3)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Runtime  = " + str(runtime), level=3)
             
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Title", title)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Thumb", thumbnail)
@@ -584,7 +618,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             
             item_count = item_count + 1
         
-        xbmc.log("Updating Recent TV Show List")
+        self.logMsg("Updating Recent TV Show List")
         
         recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json"
         
@@ -597,7 +631,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             return
 
         result = json.loads(jsonData)
-        xbmc.log("Recent TV Show Json Data : " + str(result))
+        self.logMsg("Recent TV Show Json Data : " + str(result))
         
         result = result.get("Items")
         if(result == None):
@@ -649,18 +683,18 @@ class RecentInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, debugLogging)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, debugLogging)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".EpisodeNo = " + tempEpisodeNumber, debugLogging)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".SeasonNo = " + tempSeasonNumber, debugLogging)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail, debugLogging)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Path  = " + playUrl, debugLogging)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Rating  = " + rating, debugLogging)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, debugLogging)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, debugLogging)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, debugLogging)  
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, debugLogging)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, level=3)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, level=3)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".EpisodeNo = " + tempEpisodeNumber, level=3)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".SeasonNo = " + tempSeasonNumber, level=3)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail, level=3)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Path  = " + playUrl, level=3)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Rating  = " + rating, level=3)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, level=3)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, level=3)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, level=3)  
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, level=3)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Plot  = " + plot, level=3)
             
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".EpisodeTitle", title)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".ShowTitle", seriesName)
@@ -677,7 +711,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             
             item_count = item_count + 1
             
-            xbmc.log("Updating Recent MusicList")
+            self.logMsg("Updating Recent MusicList")
         
             recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=MusicAlbum&format=json"
         
@@ -690,7 +724,7 @@ class RecentInfoUpdaterThread(threading.Thread):
                 return
         
             result = json.loads(jsonData)
-            xbmc.log("Recent MusicList Json Data : " + str(result))
+            self.logMsg("Recent MusicList Json Data : " + str(result))
         
             result = result.get("Items")
             if(result == None):
@@ -728,16 +762,16 @@ class RecentInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Title = " + title, debugLogging)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Artist = " + artist, debugLogging)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Year = " + year, debugLogging)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Thumb = " + thumbnail, debugLogging)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Path  = " + playUrl, debugLogging)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(fanart)  = " + fanart, debugLogging)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, debugLogging)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(banner)  = " + banner, debugLogging)  
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, debugLogging)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Title = " + title, level=3)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Artist = " + artist, level=3)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Year = " + year, level=3)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Thumb = " + thumbnail, level=3)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Path  = " + playUrl, level=3)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=3)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=3)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(banner)  = " + banner, level=3)  
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=3)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Plot  = " + plot, level=3)
             
             
             WINDOW.setProperty("LatestAlbumMB3." + str(item_count) + ".Title", title)
@@ -778,9 +812,10 @@ class BackgroundRotationThread(threading.Thread):
     current_music_art = 0
     current_global_art = 0
     linksLoaded = False
+    logLevel = 0
     
-    def logMsg(self, msg, debugLogging):
-        if(debugLogging == "true"):
+    def logMsg(self, msg, level = 1):
+        if(self.logLevel >= level):
             xbmc.log("XBMB3C Background Image Thread -> " + msg)
     
     def run(self):
@@ -789,13 +824,18 @@ class BackgroundRotationThread(threading.Thread):
         try:
             self.loadLastBackground()
         except Exception, e:
-            xbmc.log(str(e))
+            xbmc.log("BackgroundRotationThread loadLastBackground Exception : " + str(e))
         
         self.updateArtLinks()
         self.setBackgroundLink()
         lastRun = datetime.today()
         
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        level = addonSettings.getSetting('logLevel')
+        self.logLevel = 0
+        if(level != None):
+            self.logLevel = int(level)
+        
         backgroundRefresh = int(addonSettings.getSetting('backgroundRefresh'))
         if(backgroundRefresh < 10):
             backgroundRefresh = 10
@@ -834,24 +874,24 @@ class BackgroundRotationThread(threading.Thread):
         jsonData = dataFile.read()
         dataFile.close()
         
-        xbmc.log(jsonData)
+        self.logMsg(jsonData)
         result = json.loads(jsonData)
         
         WINDOW = xbmcgui.Window( 10000 )
         if(result.get("global") != None):
-            xbmc.log("Setting Global Last : " + result.get("global"))
+            self.logMsg("Setting Global Last : " + result.get("global"), level=3)
             WINDOW.setProperty("MB3.Background.Global.FanArt", result.get("global"))       
 
         if(result.get("movie") != None):
-            xbmc.log("Setting Movie Last : " + result.get("movie"))
+            self.logMsg("Setting Movie Last : " + result.get("movie"), level=3)
             WINDOW.setProperty("MB3.Background.Movie.FanArt", result.get("movie"))      
             
         if(result.get("tv") != None):
-            xbmc.log("Setting TV Last : " + result.get("tv"))
+            self.logMsg("Setting TV Last : " + result.get("tv"), level=3)
             WINDOW.setProperty("MB3.Background.TV.FanArt", result.get("tv"))    
 
         if(result.get("music") != None):
-            xbmc.log("Setting Music Last : " + result.get("music"))
+            self.logMsg("Setting Music Last : " + result.get("music"), level=3)
             WINDOW.setProperty("MB3.Background.Music.FanArt", result.get("music"))   
         
     def saveLastBackground(self):
@@ -872,7 +912,7 @@ class BackgroundRotationThread(threading.Thread):
         lastDataPath = __addondir__ + "LastBgLinks.json"
         dataFile = open(lastDataPath, 'w')
         stringdata = json.dumps(data)
-        xbmc.log("Last Background Links : " + stringdata)
+        self.logMsg("Last Background Links : " + stringdata)
         dataFile.write(stringdata)
         dataFile.close()        
     
@@ -880,54 +920,50 @@ class BackgroundRotationThread(threading.Thread):
     
         WINDOW = xbmcgui.Window( 10000 )
         
-        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        debugLogging = addonSettings.getSetting('debug')
-        
         if(len(self.movie_art_links) > 0):
-            self.logMsg("setBackgroundLink index movie_art_links " + str(self.current_movie_art + 1) + " of " + str(len(self.movie_art_links)), debugLogging)
+            self.logMsg("setBackgroundLink index movie_art_links " + str(self.current_movie_art + 1) + " of " + str(len(self.movie_art_links)), level=3)
             artUrl =  self.movie_art_links[self.current_movie_art]
             WINDOW.setProperty("MB3.Background.Movie.FanArt", artUrl)
-            self.logMsg("MB3.Background.Movie.FanArt=" + artUrl, debugLogging)
+            self.logMsg("MB3.Background.Movie.FanArt=" + artUrl, level=3)
             self.current_movie_art = self.current_movie_art + 1
             if(self.current_movie_art == len(self.movie_art_links)):
                 self.current_movie_art = 0
         
         if(len(self.tv_art_links) > 0):
-            self.logMsg("setBackgroundLink index tv_art_links " + str(self.current_tv_art + 1) + " of " + str(len(self.tv_art_links)), debugLogging)
+            self.logMsg("setBackgroundLink index tv_art_links " + str(self.current_tv_art + 1) + " of " + str(len(self.tv_art_links)), level=3)
             artUrl =  self.tv_art_links[self.current_tv_art]
             WINDOW.setProperty("MB3.Background.TV.FanArt", artUrl)
-            self.logMsg("MB3.Background.TV.FanArt=" + artUrl, debugLogging)
+            self.logMsg("MB3.Background.TV.FanArt=" + artUrl, level=3)
             self.current_tv_art = self.current_tv_art + 1
             if(self.current_tv_art == len(self.tv_art_links)):
                 self.current_tv_art = 0
                 
         if(len(self.music_art_links) > 0):
-            self.logMsg("setBackgroundLink index music_art_links " + str(self.current_music_art + 1) + " of " + str(len(self.music_art_links)), debugLogging)
+            self.logMsg("setBackgroundLink index music_art_links " + str(self.current_music_art + 1) + " of " + str(len(self.music_art_links)), level=3)
             artUrl =  self.music_art_links[self.current_music_art]
             WINDOW.setProperty("MB3.Background.Music.FanArt", artUrl)
-            self.logMsg("MB3.Background.Music.FanArt=" + artUrl, debugLogging)
+            self.logMsg("MB3.Background.Music.FanArt=" + artUrl, level=3)
             self.current_music_art = self.current_music_art + 1
             if(self.current_music_art == len(self.music_art_links)):
                 self.current_music_art = 0
             
         if(len(self.global_art_links) > 0):
-            self.logMsg("setBackgroundLink index global_art_links " + str(self.current_global_art + 1) + " of " + str(len(self.global_art_links)), debugLogging)
+            self.logMsg("setBackgroundLink index global_art_links " + str(self.current_global_art + 1) + " of " + str(len(self.global_art_links)), level=3)
             artUrl =  self.global_art_links[self.current_global_art]
             WINDOW.setProperty("MB3.Background.Global.FanArt", artUrl)
-            self.logMsg("MB3.Background.Global.FanArt=" + artUrl, debugLogging)
+            self.logMsg("MB3.Background.Global.FanArt=" + artUrl, level=3)
             self.current_global_art = self.current_global_art + 1         
             if(self.current_global_art == len(self.global_art_links)):
                 self.current_global_art = 0
                 
     def updateArtLinks(self):
-        xbmc.log("updateArtLinks Called")
+        self.logMsg("updateArtLinks Called")
         
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         
         mb3Host = addonSettings.getSetting('ipaddress')
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')     
-        debugLogging = addonSettings.getSetting('debug')           
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
@@ -946,7 +982,7 @@ class BackgroundRotationThread(threading.Thread):
                 userid = user.get("Id")    
                 break
         
-        xbmc.log("updateArtLinks UserID : " + userid)
+        self.logMsg("updateArtLinks UserID : " + userid)
         
         moviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&IncludeItemTypes=Movie&format=json"
 
@@ -977,7 +1013,7 @@ class BackgroundRotationThread(threading.Thread):
               index = index + 1
         
         random.shuffle(self.movie_art_links)
-        xbmc.log("Background Movie Art Links : " + str(len(self.movie_art_links)))
+        self.logMsg("Background Movie Art Links : " + str(len(self.movie_art_links)))
         
         tvUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&IncludeItemTypes=Series&format=json"
 
@@ -1008,7 +1044,7 @@ class BackgroundRotationThread(threading.Thread):
               index = index + 1
               
         random.shuffle(self.tv_art_links)
-        xbmc.log("Background Tv Art Links : " + str(len(self.tv_art_links)))
+        self.logMsg("Background Tv Art Links : " + str(len(self.tv_art_links)))
 
         musicUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&IncludeItemTypes=MusicArtist&format=json"
         
@@ -1039,13 +1075,13 @@ class BackgroundRotationThread(threading.Thread):
               index = index + 1
 
         random.shuffle(self.music_art_links)
-        xbmc.log("Background Music Art Links : " + str(len(self.music_art_links)))
+        self.logMsg("Background Music Art Links : " + str(len(self.music_art_links)))
 
         self.global_art_links.extend(self.movie_art_links)
         self.global_art_links.extend(self.tv_art_links)
         self.global_art_links.extend(self.music_art_links)
         random.shuffle(self.global_art_links)
-        xbmc.log("Background Global Art Links : " + str(len(self.global_art_links)))
+        self.logMsg("Background Global Art Links : " + str(len(self.global_art_links)))
         self.linksLoaded = True
         
 backgroundUpdaterThread = BackgroundRotationThread()
@@ -1062,12 +1098,20 @@ backgroundUpdaterThread.start()
 
 class RandomInfoUpdaterThread(threading.Thread):
 
-    def logMsg(self, msg, debugLogging):
-        if(debugLogging == "true"):
+    logLevel = 0
+    
+    def logMsg(self, msg, level = 1):
+        if(self.logLevel >= level):
             xbmc.log("XBMB3C Random Info Thread -> " + msg)
     
     def run(self):
         xbmc.log("RandomInfoUpdaterThread Started")
+        
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        level = addonSettings.getSetting('logLevel')
+        self.logLevel = 0
+        if(level != None):
+            self.logLevel = int(level)
         
         self.updateRandom()
         lastRun = datetime.today()
@@ -1085,13 +1129,12 @@ class RandomInfoUpdaterThread(threading.Thread):
         xbmc.log("RandomInfoUpdaterThread Exited")
         
     def updateRandom(self):
-        xbmc.log("updateRandomMovies Called")
+        self.logMsg("updateRandomMovies Called")
         
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         mb3Host = addonSettings.getSetting('ipaddress')
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')     
-        debugLogging = addonSettings.getSetting('debug')           
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
@@ -1110,9 +1153,9 @@ class RandomInfoUpdaterThread(threading.Thread):
                 userid = user.get("Id")    
                 break
         
-        xbmc.log("updateRandomMovies UserID : " + userid)
+        self.logMsg("updateRandomMovies UserID : " + userid)
         
-        xbmc.log("Updating Random Movie List")
+        self.logMsg("Updating Random Movie List")
         
         randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
         
@@ -1125,7 +1168,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             return           
 
         result = json.loads(jsonData)
-        xbmc.log("Random Movie Json Data : " + str(result))
+        self.logMsg("Random Movie Json Data : " + str(result))
         
         result = result.get("Items")
         if(result == None):
@@ -1164,18 +1207,18 @@ class RandomInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Title = " + title, debugLogging)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, debugLogging)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Path  = " + playUrl, debugLogging)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, debugLogging)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, debugLogging)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, debugLogging)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Rating  = " + str(rating), debugLogging)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".CriticRating  = " + str(criticrating), debugLogging)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".CriticRatingSummary  = " + criticratingsummary, debugLogging)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Year  = " + str(year), debugLogging)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Runtime  = " + str(runtime), debugLogging)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Title = " + title, level=3)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, level=3)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Path  = " + playUrl, level=3)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=3)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=3)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=3)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Rating  = " + str(rating), level=3)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".CriticRating  = " + str(criticrating), level=3)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".CriticRatingSummary  = " + criticratingsummary, level=3)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Plot  = " + plot, level=3)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Year  = " + str(year), level=3)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Runtime  = " + str(runtime), level=3)
             
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Title", title)
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Thumb", thumbnail)
@@ -1192,7 +1235,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             
             item_count = item_count + 1
         
-        xbmc.log("Updating Random TV Show List")
+        self.logMsg("Updating Random TV Show List")
         
         randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json"
         
@@ -1205,7 +1248,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             return          
         
         result = json.loads(jsonData)
-        xbmc.log("Random TV Show Json Data : " + str(result))
+        self.logMsg("Random TV Show Json Data : " + str(result))
         
         result = result.get("Items")
         if(result == None):
@@ -1257,18 +1300,18 @@ class RandomInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, debugLogging)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, debugLogging)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".EpisodeNo = " + tempEpisodeNumber, debugLogging)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".SeasonNo = " + tempSeasonNumber, debugLogging)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail, debugLogging)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Path  = " + playUrl, debugLogging)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Rating  = " + rating, debugLogging)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, debugLogging)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, debugLogging)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, debugLogging)  
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, debugLogging)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, level=3)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, level=3)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".EpisodeNo = " + tempEpisodeNumber, level=3)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".SeasonNo = " + tempSeasonNumber, level=3)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail, level=3)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Path  = " + playUrl, level=3)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Rating  = " + rating, level=3)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, level=3)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, level=3)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, level=3)  
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, level=3)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Plot  = " + plot, level=3)
             
             
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".EpisodeTitle", title)
@@ -1287,24 +1330,25 @@ class RandomInfoUpdaterThread(threading.Thread):
             
             item_count = item_count + 1
             
-            xbmc.log("Updating Random MusicList")
-        
-            randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=MusicAlbum&format=json"
-        
-            try:
-                requesthandle = urllib.urlopen(randomUrl, proxies={})
-                jsonData = requesthandle.read()
-                requesthandle.close()     
-            except Exception, e:
-                xbmc.log("RandomInfoUpdaterThread updateRandom urlopen : " + str(e) + " (" + randomUrl + ")")
-                return  
-        
-            result = json.loads(jsonData)
-            xbmc.log("Random MusicList Json Data : " + str(result))
-        
-            result = result.get("Items")
-            if(result == None):
-              result = []   
+        # update random music
+        self.logMsg("Updating Random MusicList")
+    
+        randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=MusicAlbum&format=json"
+    
+        try:
+            requesthandle = urllib.urlopen(randomUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()     
+        except Exception, e:
+            xbmc.log("RandomInfoUpdaterThread updateRandom urlopen : " + str(e) + " (" + randomUrl + ")")
+            return  
+    
+        result = json.loads(jsonData)
+        self.logMsg("Random MusicList Json Data : " + str(result), level=3)
+    
+        result = result.get("Items")
+        if(result == None):
+          result = []   
 
         item_count = 1
         for item in result:
@@ -1338,16 +1382,16 @@ class RandomInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Title = " + title, debugLogging)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Artist = " + artist, debugLogging)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Year = " + year, debugLogging)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Thumb = " + thumbnail, debugLogging)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Path  = " + playUrl, debugLogging)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(fanart)  = " + fanart, debugLogging)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, debugLogging)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(banner)  = " + banner, debugLogging)  
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, debugLogging)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Title = " + title, level=3)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Artist = " + artist, level=3)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Year = " + year, level=3)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Thumb = " + thumbnail, level=3)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Path  = " + playUrl, level=3)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=3)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=3)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(banner)  = " + banner, level=3)  
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=3)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Plot  = " + plot, level=3)
             
             
             WINDOW.setProperty("RandomAlbumMB3." + str(item_count) + ".Title", title)
@@ -1379,12 +1423,20 @@ newThread.start()
 
 class NextUpUpdaterThread(threading.Thread):
 
-    def logMsg(self, msg, debugLogging):
-        if(debugLogging == "true"):
+    logLevel = 0
+    
+    def logMsg(self, msg, level = 1):
+        if(self.logLevel >= level):
             xbmc.log("XBMB3C NextUp Thread -> " + msg)
     
     def run(self):
         xbmc.log("NextUpUpdaterThread Started")
+        
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        level = addonSettings.getSetting('logLevel')
+        self.logLevel = 0
+        if(level != None):
+            self.logLevel = int(level)           
         
         self.updateNextUp()
         lastRun = datetime.today()
@@ -1409,7 +1461,6 @@ class NextUpUpdaterThread(threading.Thread):
         mb3Host = addonSettings.getSetting('ipaddress')
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')     
-        debugLogging = addonSettings.getSetting('debug')           
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
@@ -1428,9 +1479,9 @@ class NextUpUpdaterThread(threading.Thread):
                 userid = user.get("Id")    
                 break
         
-        xbmc.log("updateNextUp UserID : " + userid)
+        self.logMsg("updateNextUp UserID : " + userid)
         
-        xbmc.log("Updating NextUp List")
+        self.logMsg("Updating NextUp List")
         
         nextUpUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Shows/NextUp?UserId=" + userid + "&Fields=Path,Genres,MediaStreams,Overview&format=json"
         
@@ -1443,7 +1494,7 @@ class NextUpUpdaterThread(threading.Thread):
             return  
         
         result = json.loads(jsonData)
-        xbmc.log("NextUP TV Show Json Data : " + str(result))
+        self.logMsg("NextUP TV Show Json Data : " + str(result))
         
         result = result.get("Items")
         WINDOW = xbmcgui.Window( 10000 )
@@ -1504,19 +1555,19 @@ class NextUpUpdaterThread(threading.Thread):
                 else:
                     resume = "True"
 
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, debugLogging)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, debugLogging)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".EpisodeNo = " + tempEpisodeNumber, debugLogging)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".SeasonNo = " + tempSeasonNumber, debugLogging)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail, debugLogging)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Path  = " + playUrl, debugLogging)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Rating  = " + rating, debugLogging)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, debugLogging)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, debugLogging)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, debugLogging)  
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, debugLogging)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Plot  = " + plot, debugLogging)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Resume  = " + resume, debugLogging)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, level=3)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, level=3)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".EpisodeNo = " + tempEpisodeNumber, level=3)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".SeasonNo = " + tempSeasonNumber, level=3)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail, level=3)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Path  = " + playUrl, level=3)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Rating  = " + rating, level=3)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, level=3)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, level=3)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, level=3)  
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, level=3)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Plot  = " + plot, level=3)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Resume  = " + resume, level=3)
             
             
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".EpisodeTitle", title)
@@ -1533,10 +1584,8 @@ class NextUpUpdaterThread(threading.Thread):
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Plot", plot)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Resume", resume)
             
-            
             item_count = item_count + 1
-        
-        
+
 newThread = NextUpUpdaterThread()
 newThread.start()
 
@@ -1552,12 +1601,20 @@ newThread.start()
 
 class InfoUpdaterThread(threading.Thread):
 
-    def logMsg(self, msg, debugLogging):
-        if(debugLogging == "true"):
+    logLevel = 0
+    
+    def logMsg(self, msg, level = 1):
+        if(self.logLevel >= level):
             xbmc.log("XBMB3C Info Thread -> " + msg)
     
     def run(self):
         xbmc.log("InfoUpdaterThread Started")
+        
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        level = addonSettings.getSetting('logLevel')
+        self.logLevel = 0
+        if(level != None):
+            self.logLevel = int(level)       
         
         self.updateInfo()
         lastRun = datetime.today()
@@ -1575,14 +1632,13 @@ class InfoUpdaterThread(threading.Thread):
         xbmc.log("InfoUpdaterThread Exited")
         
     def updateInfo(self):
-        xbmc.log("updateInfo Called")
+        self.logMsg("updateInfo Called")
         
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         
         mb3Host = addonSettings.getSetting('ipaddress')
         mb3Port = addonSettings.getSetting('port')    
-        userName = addonSettings.getSetting('username')     
-        debugLogging = addonSettings.getSetting('debug')           
+        userName = addonSettings.getSetting('username')        
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
         
@@ -1601,9 +1657,9 @@ class InfoUpdaterThread(threading.Thread):
                 userid = user.get("Id")    
                 break
         
-        xbmc.log("updateInfo UserID : " + userid)
+        self.logMsg("updateInfo UserID : " + userid)
         
-        xbmc.log("Updating info List")
+        self.logMsg("Updating info List")
         
         infoUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=CollectionType&format=json"
         
@@ -1616,7 +1672,6 @@ class InfoUpdaterThread(threading.Thread):
             return  
         
         result = json.loads(jsonData)
-        xbmc.log("Info Json Data : " + str(result))
         
         result = result.get("Items")
         WINDOW = xbmcgui.Window( 10000 )
@@ -1641,7 +1696,7 @@ class InfoUpdaterThread(threading.Thread):
             collectionType = item.get("CollectionType")
             if collectionType==None:
                 collectionType="unknown"
-            self.logMsg("collectionType "  + collectionType, debugLogging)    
+            self.logMsg("collectionType "  + collectionType)    
             if(collectionType == "movies"):
                 movie_count = movie_count + item.get("RecursiveItemCount")
                 movie_unwatched_count = movie_unwatched_count + item.get("RecursiveUnplayedItemCount")
@@ -1664,18 +1719,18 @@ class InfoUpdaterThread(threading.Thread):
                 trailers_count = trailers_count + item.get("RecursiveItemCount")
                 trailers_unwatched_count = trailers_unwatched_count + item.get("RecursiveUnplayedItemCount")
                
-        self.logMsg("MoviesCount "  + str(movie_count), debugLogging)
-        self.logMsg("MoviesUnWatchedCount "  + str(movie_unwatched_count), debugLogging)
-        self.logMsg("MusicVideosCount "  + str(musicvideos_count), debugLogging)
-        self.logMsg("MusicVideosUnWatchedCount "  + str(musicvideos_unwatched_count), debugLogging)
-        self.logMsg("TVCount "  + str(tv_count), debugLogging)
-        self.logMsg("EpisodeCount "  + str(episode_count), debugLogging)
-        self.logMsg("EpisodeUnWatchedCount "  + str(episode_unwatched_count), debugLogging)
-        self.logMsg("MusicCount "  + str(music_count), debugLogging)
-        self.logMsg("SongsCount "  + str(music_songs_count), debugLogging)
-        self.logMsg("SongsUnPlayedCount "  + str(music_songs_unplayed_count), debugLogging)
-        self.logMsg("TrailersCount" + str(trailers_count), debugLogging)
-        self.logMsg("TrailersUnWatchedCount" + str(trailers_unwatched_count) , debugLogging)
+        self.logMsg("MoviesCount "  + str(movie_count), level=3)
+        self.logMsg("MoviesUnWatchedCount "  + str(movie_unwatched_count), level=3)
+        self.logMsg("MusicVideosCount "  + str(musicvideos_count), level=3)
+        self.logMsg("MusicVideosUnWatchedCount "  + str(musicvideos_unwatched_count), level=3)
+        self.logMsg("TVCount "  + str(tv_count), level=3)
+        self.logMsg("EpisodeCount "  + str(episode_count), level=3)
+        self.logMsg("EpisodeUnWatchedCount "  + str(episode_unwatched_count), level=3)
+        self.logMsg("MusicCount "  + str(music_count), level=3)
+        self.logMsg("SongsCount "  + str(music_songs_count), level=3)
+        self.logMsg("SongsUnPlayedCount "  + str(music_songs_unplayed_count), level=3)
+        self.logMsg("TrailersCount" + str(trailers_count), level=3)
+        self.logMsg("TrailersUnWatchedCount" + str(trailers_unwatched_count), level=3)
     
             #item_count = item_count + 1
         
@@ -1702,12 +1757,12 @@ class InfoUpdaterThread(threading.Thread):
         WINDOW.setProperty("MB3TotalUnWatchedTrailers", str(trailers_unwatched_count))
         WINDOW.setProperty("MB3TotalWatchedTrailers", str(trailers_watched_count))
 
-        xbmc.log("InfoTV start")
+        self.logMsg("InfoTV start")
         infoTVUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?&IncludeItemTypes=Series&Recursive=true&SeriesStatus=Continuing&format=json"
         
         try:
             requesthandle = urllib.urlopen(infoTVUrl, proxies={})
-            xbmc.log("InfoTV start open")
+            self.logMsg("InfoTV start open")
             jsonData = requesthandle.read()
             requesthandle.close()  
         except Exception, e:
@@ -1715,13 +1770,13 @@ class InfoUpdaterThread(threading.Thread):
             return  
         
         result = json.loads(jsonData)
-        xbmc.log("InfoTV Json Data : " + str(result))
+        self.logMsg("InfoTV Json Data : " + str(result))
         
         totalRunning = result.get("TotalRecordCount")
-        self.logMsg("TotalRunningCount "  + str(totalRunning), debugLogging)
+        self.logMsg("TotalRunningCount "  + str(totalRunning))
         WINDOW.setProperty("MB3TotalRunningTvShows", str(totalRunning))
         
-        xbmc.log("InfoNextAired start")
+        self.logMsg("InfoNextAired start")
         InfoNextAiredUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?IsUnaired=true&SortBy=PremiereDate%2CAirTime%2CSortName&SortOrder=Ascending&IncludeItemTypes=Episode&Limit=1&Recursive=true&Fields=SeriesInfo%2CUserData&format=json"
         
         try:
@@ -1733,7 +1788,7 @@ class InfoUpdaterThread(threading.Thread):
             return  
         
         result = json.loads(jsonData)
-        xbmc.log("InfoNextAired Json Data : " + str(result))
+        self.logMsg("InfoNextAired Json Data : " + str(result))
         
         result = result.get("Items")
         if(result == None):
@@ -1766,9 +1821,9 @@ class InfoUpdaterThread(threading.Thread):
                
             episode = seriesName + " - " + title + " - S" + tempSeasonNumber + "E" + tempEpisodeNumber
         
-        self.logMsg("MB3NextAiredEpisode"  + episode, debugLogging)
+        self.logMsg("MB3NextAiredEpisode"  + episode)
         WINDOW.setProperty("MB3NextAiredEpisode", episode)
-        xbmc.log("InfoNextAired end")
+        self.logMsg("InfoNextAired end")
         
         today = datetime.today()    
         dateformat = today.strftime("%Y-%m-%d") 
@@ -1783,11 +1838,11 @@ class InfoUpdaterThread(threading.Thread):
             return  
         
         result = json.loads(jsonData)
-        xbmc.log("InfoNextAired total url: " + nextAiredUrl)
-        xbmc.log("InfoNextAired total Json Data : " + str(result))
+        self.logMsg("InfoNextAired total url: " + nextAiredUrl)
+        self.logMsg("InfoNextAired total Json Data : " + str(result))
         
         totalToday = result.get("TotalRecordCount")
-        self.logMsg("MB3NextAiredTotalToday "  + str(totalToday), debugLogging)
+        self.logMsg("MB3NextAiredTotalToday "  + str(totalToday))
         WINDOW.setProperty("MB3NextAiredTotalToday", str(totalToday))  
         
 newThread = InfoUpdaterThread()

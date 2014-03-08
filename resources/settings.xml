@@ -36,7 +36,7 @@
 	</category>
     
     <category label="30022" > <!-- Advanced -->
-        <setting id="debug" type="bool" label="30004" default="false" />
+        <setting id="logLevel" type="enum" label="30004" values="None(0)|Info(1)|Warning(2)|Debug(3)" default="0" />
         <setting id="profile" type="bool" label="30010" default="false" visible="true" enable="true"/>
         <setting id="useJson" type="bool" label="30026" default="false" visible="true" enable="true"/>
     </category>
