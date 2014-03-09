@@ -90,8 +90,10 @@ else:
     
 def printDebug( msg, level = 1):
     if(logLevel >= level):
-        xbmc.log("XBMB3C " + str(level) + " -> " + str(msg))
-        #xbmc.log ("XBMB3C -> " + inspect.stack()[1][3] + " : " + str(msg))
+        if(logLevel == 2):
+            xbmc.log("XBMB3C " + str(level) + " -> " + inspect.stack()[1][3] + " : " + str(msg))
+        else:
+            xbmc.log("XBMB3C " + str(level) + " -> " + str(msg))
 
 def getMachineId():
     return "%012X"%get_mac()
@@ -166,7 +168,7 @@ def getUserId():
         
     userid=""
 
-    printDebug("jsonData : " + str(jsonData), level=3)
+    printDebug("jsonData : " + str(jsonData), level=2)
     result = json.loads(jsonData)
     
     for user in result:
@@ -192,7 +194,7 @@ def getServerSections( ip_address, port, name, uuid):
     printDebug("== ENTER: getServerSections ==")
     userid = str(getUserId())
     jsonData = getURL(ip_address+":"+port+"/mediabrowser/Users/"+userid+"/Items/Root?format=json")
-    printDebug("jsonData : " + jsonData, level=3)
+    printDebug("jsonData : " + jsonData, level=2)
     result = json.loads(jsonData)
     
     parentid = result.get("Id")
@@ -200,7 +202,7 @@ def getServerSections( ip_address, port, name, uuid):
        
     htmlpath = ("http://%s:%s/mediabrowser/Users/" % ( ip_address, port))
     jsonData = getURL(htmlpath + userid + "/items?ParentId=" + parentid + "&format=json")
-    printDebug("jsonData : " + jsonData, level=3)
+    printDebug("jsonData : " + jsonData, level=2)
     temp_list=[]
 
     if jsonData is False:
@@ -525,8 +527,8 @@ def getURL( url, suppress=False, type="GET", popup=0 ):
         urlPath="/"+"/".join(url.split('/')[urlsplit:])
 
         printDebug("url = " + url)
-        printDebug("server = "+str(server), level=3)
-        printDebug("urlPath = "+str(urlPath), level=3)
+        printDebug("server = "+str(server), level=2)
+        printDebug("urlPath = "+str(urlPath), level=2)
         conn = httplib.HTTPConnection(server, timeout=20)
         #head = {"Accept-Encoding" : "gzip,deflate", "Accept-Charset" : "UTF-8,*"} 
         head = {"Accept-Encoding" : "gzip", "Accept-Charset" : "UTF-8,*"} 
@@ -534,7 +536,7 @@ def getURL( url, suppress=False, type="GET", popup=0 ):
         conn.request(method=type, url=urlPath, headers=head)
         #conn.request(method=type, url=urlPath)
         data = conn.getresponse()
-        printDebug("GET URL HEADERS : " + str(data.getheaders()), level=3)
+        printDebug("GET URL HEADERS : " + str(data.getheaders()), level=2)
         link = ""
         contentType = "none"
         if int(data.status) == 200:
@@ -591,10 +593,10 @@ def getURL( url, suppress=False, type="GET", popup=0 ):
     return link
 
 def addGUIItem( url, details, extraData, folder=True ):
-    printDebug("== ENTER: addGUIItem ==", level=3)
-    printDebug("Adding GuiItem for [%s]" % details.get('title','Unknown'), level=3)
-    printDebug("Passed details: " + str(details), level=3)
-    printDebug("Passed extraData: " + str(extraData), level=3)
+
+    printDebug("Adding GuiItem for [%s]" % details.get('title','Unknown'), level=2)
+    printDebug("Passed details: " + str(details), level=2)
+    printDebug("Passed extraData: " + str(extraData), level=2)
     #printDebug("urladdgui:" + str(url))
     if details.get('title','') == '':
         return
@@ -647,7 +649,7 @@ def addGUIItem( url, details, extraData, folder=True ):
         if(addCounts and extraData.get("RecursiveItemCount") != None and extraData.get("RecursiveItemCount") != None):
             listItemName = listItemName + " (" + str(extraData.get("RecursiveItemCount") - extraData.get("RecursiveUnplayedItemCount")) + "/" + str(extraData.get("RecursiveItemCount")) + ")"
         list = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
-    printDebug("Setting thumbnail as " + thumbPath, level=3)
+    printDebug("Setting thumbnail as " + thumbPath, level=2)
     
     # add resume percentage text to titles
     addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
@@ -675,7 +677,7 @@ def addGUIItem( url, details, extraData, folder=True ):
         setArt(list,'poster', poster)
     else:
         setArt(list,'poster', poster)
-    printDebug( "Setting poster as " + poster, level=3)
+    printDebug( "Setting poster as " + poster, level=2)
 
     #Set the fanart image if it has been enabled
     fanart=str(extraData.get('fanart_image',''))
@@ -684,7 +686,7 @@ def addGUIItem( url, details, extraData, folder=True ):
     else:
         list.setProperty('fanart_image', fanart)
 
-    printDebug( "Setting fan art as " + fanart, level=3)
+    printDebug( "Setting fan art as " + fanart, level=2)
     
     #Set the logo image if it has been enabled
     logo=str(extraData.get('logo',''))
@@ -694,7 +696,7 @@ def addGUIItem( url, details, extraData, folder=True ):
     else:
         setArt(list,'clearlogo','logoPath')
 
-    printDebug( "Setting logo as " + logoPath, level=3)
+    printDebug( "Setting logo as " + logoPath, level=2)
     
      #Set the disc image if it has been enabled
     disc=str(extraData.get('disc',''))
@@ -704,7 +706,7 @@ def addGUIItem( url, details, extraData, folder=True ):
     else:
         setArt(list,'discart','discPath')
 
-    printDebug( "Setting disc as " + discPath, level=3)
+    printDebug( "Setting disc as " + discPath, level=2)
     
      #Set the banner image if it has been enabled
     banner=str(extraData.get('banner',''))
@@ -714,7 +716,7 @@ def addGUIItem( url, details, extraData, folder=True ):
     else:
         setArt(list,'banner','bannerPath')
 
-    printDebug("Setting banner as " + bannerPath, level=3)
+    printDebug("Setting banner as " + bannerPath, level=2)
     
      #Set the clearart image if it has been enabled
     art=str(extraData.get('clearart',''))
@@ -724,7 +726,7 @@ def addGUIItem( url, details, extraData, folder=True ):
     else:
         setArt(list,'clearart','artPath')
 
-    printDebug( "Setting clearart as " + artPath, level=3)
+    printDebug( "Setting clearart as " + artPath, level=2)
     
      #Set the landscape image if it has been enabled
     landscape=str(extraData.get('landscape',''))
@@ -734,7 +736,7 @@ def addGUIItem( url, details, extraData, folder=True ):
     else:
         setArt(list,'landscape','landscapePath')
 
-    printDebug( "Setting landscape as " + landscapePath, level=3)
+    printDebug( "Setting landscape as " + landscapePath, level=2)
     
     menuItems = addContextMenu(details, extraData)
     if(len(menuItems) > 0):
@@ -772,7 +774,7 @@ def addGUIItem( url, details, extraData, folder=True ):
 
         
 def addContextMenu(details, extraData):
-    printDebug("Building Context Menus", level=3)
+    printDebug("Building Context Menus", level=2)
     commands = []
     watched = extraData.get('watchedurl')
     if watched != None:
@@ -1097,7 +1099,7 @@ def PLAY( url, handle ):
     return
 
 def get_params( paramstring ):
-    printDebug("Parameter string: " + paramstring, level=3)
+    printDebug("Parameter string: " + paramstring, level=2)
     param={}
     if len(paramstring)>=2:
             params=paramstring
@@ -1118,7 +1120,7 @@ def get_params( paramstring ):
                             param[splitparams[0]]=splitparams[1]
                     elif (len(splitparams))==3:
                             param[splitparams[0]]=splitparams[1]+"="+splitparams[2]
-    printDebug("XBMB3C -> Detected parameters: " + str(param), level=3)
+    printDebug("XBMB3C -> Detected parameters: " + str(param), level=2)
     return param
 
 def getCacheValidator (server,url):
@@ -1277,7 +1279,7 @@ def getContent( url ):
             progress.close()
         return
     
-    printDebug("JSON DATA: " + str(result), level=3)
+    printDebug("JSON DATA: " + str(result), level=2)
     dirItems = processDirectory(url, result, progress)
     
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
@@ -1569,7 +1571,7 @@ def getArtwork(data,type):
         
     # use the local image proxy server that is made available by this addons service
     artwork = ("http://localhost:15001/?id=" + str(id) + "&type="+type)
-    printDebug("getArtwork : " + artwork, level=3)
+    printDebug("getArtwork : " + artwork, level=2)
     return artwork
 
 def getServerFromURL( url ):
@@ -1661,6 +1663,9 @@ def setWindowHeading(url) :
 ###########################################################################  
 ##Start of Main
 ###########################################################################
+if(logLevel == 2):
+    xbmcgui.Dialog().ok("Warning", "Debug logging enabled.", "This will affect performance.")
+
 printDebug( "XBMB3C -> Script argument is " + str(sys.argv[1]))
 xbmcVersionNum = getXbmcVersion()
 try:

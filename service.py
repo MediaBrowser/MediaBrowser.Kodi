@@ -318,16 +318,16 @@ class LoadMenuOptionsThread(threading.Thread):
                 
                 WINDOW.setProperty("xbmb3c_menuitem_name_" + str(menuItem), name)
                 WINDOW.setProperty("xbmb3c_menuitem_action_" + str(menuItem), action_url)
-                self.logMsg("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name, level=3)
-                self.logMsg("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url, level=3)
+                self.logMsg("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name, level=2)
+                self.logMsg("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url, level=2)
                 
                 menuItem = menuItem + 1
 
         for x in range(menuItem, menuItem+10):
                 WINDOW.setProperty("xbmb3c_menuitem_name_" + str(x), "")
                 WINDOW.setProperty("xbmb3c_menuitem_action_" + str(x), "")
-                self.logMsg("xbmb3c_menuitem_name_" + str(x) + " : ", level=3)
-                self.logMsg("xbmb3c_menuitem_action_" + str(x) + " : ", level=3)
+                self.logMsg("xbmb3c_menuitem_name_" + str(x) + " : ", level=2)
+                self.logMsg("xbmb3c_menuitem_action_" + str(x) + " : ", level=2)
             
 newMenuThread = LoadMenuOptionsThread()
 newMenuThread.start()
@@ -590,18 +590,18 @@ class RecentInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Title = " + title, level=3)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, level=3)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Path  = " + playUrl, level=3)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=3)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=3)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=3)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Rating  = " + str(rating), level=3)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".CriticRating  = " + str(criticrating), level=3)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".CriticRatingSummary  = " + criticratingsummary, level=3)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Plot  = " + plot, level=3)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Year  = " + str(year), level=3)
-            self.logMsg("LatestMovieMB3." + str(item_count) + ".Runtime  = " + str(runtime), level=3)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Title = " + title, level=2)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, level=2)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=2)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=2)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=2)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Rating  = " + str(rating), level=2)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".CriticRating  = " + str(criticrating), level=2)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".CriticRatingSummary  = " + criticratingsummary, level=2)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Plot  = " + plot, level=2)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Year  = " + str(year), level=2)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Runtime  = " + str(runtime), level=2)
             
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Title", title)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Thumb", thumbnail)
@@ -684,18 +684,18 @@ class RecentInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, level=3)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, level=3)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".EpisodeNo = " + tempEpisodeNumber, level=3)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".SeasonNo = " + tempSeasonNumber, level=3)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail, level=3)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Path  = " + playUrl, level=3)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Rating  = " + rating, level=3)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, level=3)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, level=3)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, level=3)  
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, level=3)
-            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Plot  = " + plot, level=3)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, level=2)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, level=2)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".EpisodeNo = " + tempEpisodeNumber, level=2)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".SeasonNo = " + tempSeasonNumber, level=2)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail, level=2)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Rating  = " + rating, level=2)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, level=2)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, level=2)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, level=2)  
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, level=2)
+            self.logMsg("LatestEpisodeMB3." + str(item_count) + ".Plot  = " + plot, level=2)
             
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".EpisodeTitle", title)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".ShowTitle", seriesName)
@@ -764,16 +764,16 @@ class RecentInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Title = " + title, level=3)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Artist = " + artist, level=3)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Year = " + year, level=3)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Thumb = " + thumbnail, level=3)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Path  = " + playUrl, level=3)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=3)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=3)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(banner)  = " + banner, level=3)  
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=3)
-            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Plot  = " + plot, level=3)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Title = " + title, level=2)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Artist = " + artist, level=2)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Year = " + year, level=2)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Thumb = " + thumbnail, level=2)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=2)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=2)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(banner)  = " + banner, level=2)  
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=2)
+            self.logMsg("LatestAlbumMB3." + str(item_count) + ".Plot  = " + plot, level=2)
             
             
             WINDOW.setProperty("LatestAlbumMB3." + str(item_count) + ".Title", title)
@@ -881,19 +881,19 @@ class BackgroundRotationThread(threading.Thread):
         
         WINDOW = xbmcgui.Window( 10000 )
         if(result.get("global") != None):
-            self.logMsg("Setting Global Last : " + result.get("global"), level=3)
+            self.logMsg("Setting Global Last : " + result.get("global"), level=2)
             WINDOW.setProperty("MB3.Background.Global.FanArt", result.get("global"))       
 
         if(result.get("movie") != None):
-            self.logMsg("Setting Movie Last : " + result.get("movie"), level=3)
+            self.logMsg("Setting Movie Last : " + result.get("movie"), level=2)
             WINDOW.setProperty("MB3.Background.Movie.FanArt", result.get("movie"))      
             
         if(result.get("tv") != None):
-            self.logMsg("Setting TV Last : " + result.get("tv"), level=3)
+            self.logMsg("Setting TV Last : " + result.get("tv"), level=2)
             WINDOW.setProperty("MB3.Background.TV.FanArt", result.get("tv"))    
 
         if(result.get("music") != None):
-            self.logMsg("Setting Music Last : " + result.get("music"), level=3)
+            self.logMsg("Setting Music Last : " + result.get("music"), level=2)
             WINDOW.setProperty("MB3.Background.Music.FanArt", result.get("music"))   
         
     def saveLastBackground(self):
@@ -923,37 +923,37 @@ class BackgroundRotationThread(threading.Thread):
         WINDOW = xbmcgui.Window( 10000 )
         
         if(len(self.movie_art_links) > 0):
-            self.logMsg("setBackgroundLink index movie_art_links " + str(self.current_movie_art + 1) + " of " + str(len(self.movie_art_links)), level=3)
+            self.logMsg("setBackgroundLink index movie_art_links " + str(self.current_movie_art + 1) + " of " + str(len(self.movie_art_links)), level=2)
             artUrl =  self.movie_art_links[self.current_movie_art]
             WINDOW.setProperty("MB3.Background.Movie.FanArt", artUrl)
-            self.logMsg("MB3.Background.Movie.FanArt=" + artUrl, level=3)
+            self.logMsg("MB3.Background.Movie.FanArt=" + artUrl, level=2)
             self.current_movie_art = self.current_movie_art + 1
             if(self.current_movie_art == len(self.movie_art_links)):
                 self.current_movie_art = 0
         
         if(len(self.tv_art_links) > 0):
-            self.logMsg("setBackgroundLink index tv_art_links " + str(self.current_tv_art + 1) + " of " + str(len(self.tv_art_links)), level=3)
+            self.logMsg("setBackgroundLink index tv_art_links " + str(self.current_tv_art + 1) + " of " + str(len(self.tv_art_links)), level=2)
             artUrl =  self.tv_art_links[self.current_tv_art]
             WINDOW.setProperty("MB3.Background.TV.FanArt", artUrl)
-            self.logMsg("MB3.Background.TV.FanArt=" + artUrl, level=3)
+            self.logMsg("MB3.Background.TV.FanArt=" + artUrl, level=2)
             self.current_tv_art = self.current_tv_art + 1
             if(self.current_tv_art == len(self.tv_art_links)):
                 self.current_tv_art = 0
                 
         if(len(self.music_art_links) > 0):
-            self.logMsg("setBackgroundLink index music_art_links " + str(self.current_music_art + 1) + " of " + str(len(self.music_art_links)), level=3)
+            self.logMsg("setBackgroundLink index music_art_links " + str(self.current_music_art + 1) + " of " + str(len(self.music_art_links)), level=2)
             artUrl =  self.music_art_links[self.current_music_art]
             WINDOW.setProperty("MB3.Background.Music.FanArt", artUrl)
-            self.logMsg("MB3.Background.Music.FanArt=" + artUrl, level=3)
+            self.logMsg("MB3.Background.Music.FanArt=" + artUrl, level=2)
             self.current_music_art = self.current_music_art + 1
             if(self.current_music_art == len(self.music_art_links)):
                 self.current_music_art = 0
             
         if(len(self.global_art_links) > 0):
-            self.logMsg("setBackgroundLink index global_art_links " + str(self.current_global_art + 1) + " of " + str(len(self.global_art_links)), level=3)
+            self.logMsg("setBackgroundLink index global_art_links " + str(self.current_global_art + 1) + " of " + str(len(self.global_art_links)), level=2)
             artUrl =  self.global_art_links[self.current_global_art]
             WINDOW.setProperty("MB3.Background.Global.FanArt", artUrl)
-            self.logMsg("MB3.Background.Global.FanArt=" + artUrl, level=3)
+            self.logMsg("MB3.Background.Global.FanArt=" + artUrl, level=2)
             self.current_global_art = self.current_global_art + 1         
             if(self.current_global_art == len(self.global_art_links)):
                 self.current_global_art = 0
@@ -1209,18 +1209,18 @@ class RandomInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Title = " + title, level=3)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, level=3)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Path  = " + playUrl, level=3)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=3)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=3)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=3)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Rating  = " + str(rating), level=3)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".CriticRating  = " + str(criticrating), level=3)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".CriticRatingSummary  = " + criticratingsummary, level=3)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Plot  = " + plot, level=3)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Year  = " + str(year), level=3)
-            self.logMsg("RandomMovieMB3." + str(item_count) + ".Runtime  = " + str(runtime), level=3)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Title = " + title, level=2)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, level=2)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=2)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=2)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=2)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Rating  = " + str(rating), level=2)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".CriticRating  = " + str(criticrating), level=2)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".CriticRatingSummary  = " + criticratingsummary, level=2)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Plot  = " + plot, level=2)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Year  = " + str(year), level=2)
+            self.logMsg("RandomMovieMB3." + str(item_count) + ".Runtime  = " + str(runtime), level=2)
             
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Title", title)
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Thumb", thumbnail)
@@ -1302,18 +1302,18 @@ class RandomInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, level=3)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, level=3)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".EpisodeNo = " + tempEpisodeNumber, level=3)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".SeasonNo = " + tempSeasonNumber, level=3)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail, level=3)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Path  = " + playUrl, level=3)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Rating  = " + rating, level=3)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, level=3)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, level=3)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, level=3)  
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, level=3)
-            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Plot  = " + plot, level=3)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, level=2)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, level=2)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".EpisodeNo = " + tempEpisodeNumber, level=2)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".SeasonNo = " + tempSeasonNumber, level=2)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail, level=2)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Rating  = " + rating, level=2)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, level=2)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, level=2)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, level=2)  
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, level=2)
+            self.logMsg("RandomEpisodeMB3." + str(item_count) + ".Plot  = " + plot, level=2)
             
             
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".EpisodeTitle", title)
@@ -1346,7 +1346,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             return  
     
         result = json.loads(jsonData)
-        self.logMsg("Random MusicList Json Data : " + str(result), level=3)
+        self.logMsg("Random MusicList Json Data : " + str(result), level=2)
     
         result = result.get("Items")
         if(result == None):
@@ -1384,16 +1384,16 @@ class RandomInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\\\","smb://")
             playUrl = playUrl.replace("\\","/")    
 
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Title = " + title, level=3)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Artist = " + artist, level=3)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Year = " + year, level=3)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Thumb = " + thumbnail, level=3)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Path  = " + playUrl, level=3)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=3)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=3)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(banner)  = " + banner, level=3)  
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=3)
-            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Plot  = " + plot, level=3)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Title = " + title, level=2)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Artist = " + artist, level=2)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Year = " + year, level=2)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Thumb = " + thumbnail, level=2)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=2)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=2)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(banner)  = " + banner, level=2)  
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=2)
+            self.logMsg("RandomAlbumMB3." + str(item_count) + ".Plot  = " + plot, level=2)
             
             
             WINDOW.setProperty("RandomAlbumMB3." + str(item_count) + ".Title", title)
@@ -1557,19 +1557,19 @@ class NextUpUpdaterThread(threading.Thread):
                 else:
                     resume = "True"
 
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, level=3)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, level=3)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".EpisodeNo = " + tempEpisodeNumber, level=3)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".SeasonNo = " + tempSeasonNumber, level=3)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail, level=3)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Path  = " + playUrl, level=3)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Rating  = " + rating, level=3)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, level=3)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, level=3)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, level=3)  
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, level=3)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Plot  = " + plot, level=3)
-            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Resume  = " + resume, level=3)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, level=2)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, level=2)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".EpisodeNo = " + tempEpisodeNumber, level=2)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".SeasonNo = " + tempSeasonNumber, level=2)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Thumb = " + thumbnail, level=2)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Rating  = " + rating, level=2)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)  = " + fanart, level=2)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)  = " + logo, level=2)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)  = " + banner, level=2)  
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)  = " + poster, level=2)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Plot  = " + plot, level=2)
+            self.logMsg("NextUpEpisodeMB3." + str(item_count) + ".Resume  = " + resume, level=2)
             
             
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".EpisodeTitle", title)
@@ -1721,18 +1721,18 @@ class InfoUpdaterThread(threading.Thread):
                 trailers_count = trailers_count + item.get("RecursiveItemCount")
                 trailers_unwatched_count = trailers_unwatched_count + item.get("RecursiveUnplayedItemCount")
                
-        self.logMsg("MoviesCount "  + str(movie_count), level=3)
-        self.logMsg("MoviesUnWatchedCount "  + str(movie_unwatched_count), level=3)
-        self.logMsg("MusicVideosCount "  + str(musicvideos_count), level=3)
-        self.logMsg("MusicVideosUnWatchedCount "  + str(musicvideos_unwatched_count), level=3)
-        self.logMsg("TVCount "  + str(tv_count), level=3)
-        self.logMsg("EpisodeCount "  + str(episode_count), level=3)
-        self.logMsg("EpisodeUnWatchedCount "  + str(episode_unwatched_count), level=3)
-        self.logMsg("MusicCount "  + str(music_count), level=3)
-        self.logMsg("SongsCount "  + str(music_songs_count), level=3)
-        self.logMsg("SongsUnPlayedCount "  + str(music_songs_unplayed_count), level=3)
-        self.logMsg("TrailersCount" + str(trailers_count), level=3)
-        self.logMsg("TrailersUnWatchedCount" + str(trailers_unwatched_count), level=3)
+        self.logMsg("MoviesCount "  + str(movie_count), level=2)
+        self.logMsg("MoviesUnWatchedCount "  + str(movie_unwatched_count), level=2)
+        self.logMsg("MusicVideosCount "  + str(musicvideos_count), level=2)
+        self.logMsg("MusicVideosUnWatchedCount "  + str(musicvideos_unwatched_count), level=2)
+        self.logMsg("TVCount "  + str(tv_count), level=2)
+        self.logMsg("EpisodeCount "  + str(episode_count), level=2)
+        self.logMsg("EpisodeUnWatchedCount "  + str(episode_unwatched_count), level=2)
+        self.logMsg("MusicCount "  + str(music_count), level=2)
+        self.logMsg("SongsCount "  + str(music_songs_count), level=2)
+        self.logMsg("SongsUnPlayedCount "  + str(music_songs_unplayed_count), level=2)
+        self.logMsg("TrailersCount" + str(trailers_count), level=2)
+        self.logMsg("TrailersUnWatchedCount" + str(trailers_unwatched_count), level=2)
     
             #item_count = item_count + 1
         
