@@ -1029,7 +1029,8 @@ def PLAY( url, handle ):
     
     # add some info about the item being played
     details = {
-             'title'        : result.get("Name", "Missing Name").encode('utf-8')
+             'title'        : result.get("Name", "Missing Name").encode('utf-8'),
+             'plot'         : result.get("Overview")
              }
              
     if(eppNum > -1):
@@ -1039,7 +1040,6 @@ def PLAY( url, handle ):
         details["season"] = str(seasonNum)        
     
     item.setInfo( "Video", infoLabels=details )
-    
     
     if(autoResume != 0):
         if(autoResume == -1):
