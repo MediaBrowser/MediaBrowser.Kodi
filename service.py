@@ -1853,7 +1853,7 @@ newThread.start()
 #################################################################################################
 # end Info Updater
 #################################################################################################
-def delete (url):
+def deleteItem (url):
     return_value = xbmcgui.Dialog().yesno(__language__(30091),__language__(30092))
     if return_value:
         xbmc.log('Deleting via URL: ' + url)
@@ -1867,6 +1867,9 @@ def delete (url):
             progress.update(deleteSleep*10,__language__(30053))
         progress.close()
         xbmc.executebuiltin("Container.Refresh")
+        return 1
+    else:
+        return 0
         
 def markWatched(url):
     xbmc.log('XBMB3C Service -> Marking watched via: ' + url)
@@ -1918,10 +1921,13 @@ def stopAll(played_information):
 
                 xbmc.log ("XBMB3C Service -> Percent Complete:" + str(percentComplete) + " Mark Played At:" + str(markPlayedAt))
                 if (percentComplete > markPlayedAt):
+                
+                    gotDeleted = 0
                     if(deleteurl != None and deleteurl != ""):
                         xbmc.log ("XBMB3C Service -> Offering Delete:" + str(deleteurl))
-                        delete(deleteurl)
-                    else:
+                        gotDeleted = deleteItem(deleteurl)
+                        
+                    if(gotDeleted == 0):
                         setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
                         newWebSocketThread.playbackStopped(item_id, str(0))
                         markWatched(watchedurl)
