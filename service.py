@@ -1868,9 +1868,13 @@ def delete (url):
         progress.close()
         xbmc.executebuiltin("Container.Refresh")
         
-def markWatched (url):
+def markWatched(url):
     xbmc.log('XBMB3C Service -> Marking watched via: ' + url)
     resp = requests.post(url, data='', headers=getAuthHeader())
+    
+def markUnWatched(url):
+    xbmc.log('XBMB3C Service -> Marking watched via: ' + url)
+    resp = requests.delete(url, data='', headers=getAuthHeader())    
 
 def setPosition (url, method):
     xbmc.log('XBMB3C Service -> Setting position via: ' + url)
@@ -1886,7 +1890,7 @@ def hasData(data):
         return True
         
 def stopAll(played_information):
-    WINDOW = xbmcgui.Window( 10000 )
+
     if(len(played_information) == 0):
         return 
         
@@ -1901,6 +1905,7 @@ def stopAll(played_information):
             
             watchedurl = data.get("watchedurl")
             positionurl = data.get("positionurl")
+            deleteurl = data.get("deleteurl")
             runtime = data.get("runtime")
             currentPossition = data.get("currentPossition")
             item_id = data.get("item_id")
@@ -1911,21 +1916,22 @@ def stopAll(played_information):
                 percentComplete = (currentPossition * 10000000) / runtimeTicks
                 markPlayedAt = float(addonSettings.getSetting("markPlayedAt")) / 100    
 
-                newWebSocketThread.playbackStopped(item_id, str(int(currentPossition * 10000000)))
-                
                 xbmc.log ("XBMB3C Service -> Percent Complete:" + str(percentComplete) + " Mark Played At:" + str(markPlayedAt))
                 if (percentComplete > markPlayedAt):
-                    markWatched(watchedurl)
-                    if WINDOW.getProperty("deleteurl") != "":
-                        xbmc.log ("XBMB3C Service -> Offering Delete:" + str(WINDOW.getProperty("deleteurl")))
-                        delete(WINDOW.getProperty("deleteurl"))
-                    #setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
+                    if(deleteurl != None and deleteurl != ""):
+                        xbmc.log ("XBMB3C Service -> Offering Delete:" + str(deleteurl))
+                        delete(deleteurl)
+                    else:
+                        setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
+                        newWebSocketThread.playbackStopped(item_id, str(0))
+                        markWatched(watchedurl)
                 else:
+                    markUnWatched(watchedurl)
+                    newWebSocketThread.playbackStopped(item_id, str(int(currentPossition * 10000000)))
                     setPosition(positionurl + '?PositionTicks=' + str(int(currentPossition * 10000000)), 'DELETE')
-    WINDOW.setProperty("deleteurl","")
+                    
     played_information.clear()
-    
-    
+
 class Service( xbmc.Player ):
 
     played_information = {}
@@ -1944,6 +1950,7 @@ class Service( xbmc.Player ):
         
         WINDOW = xbmcgui.Window( 10000 )
         watchedurl = WINDOW.getProperty("watchedurl")
+        deleteurl = WINDOW.getProperty("deleteurl")
         positionurl = WINDOW.getProperty("positionurl")
         runtime = WINDOW.getProperty("runtimeticks")
         item_id = WINDOW.getProperty("item_id")
@@ -1954,6 +1961,7 @@ class Service( xbmc.Player ):
         
             data = {}
             data["watchedurl"] = watchedurl
+            data["deleteurl"] = deleteurl
             data["positionurl"] = positionurl
             data["runtime"] = runtime
             data["item_id"] = item_id

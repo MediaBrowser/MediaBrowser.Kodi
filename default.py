@@ -412,6 +412,7 @@ def authenticate (url):
         sys.exit()
 
 def markWatched (url):
+    resp = requests.delete(url, data='', headers=getAuthHeader()) # mark unwatched first to reset any play position
     resp = requests.post(url, data='', headers=getAuthHeader())
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("force_data_reload", "true")  
@@ -669,7 +670,7 @@ def addGUIItem( url, details, extraData, folder=True ):
 
         if extraData.get('type','video').lower() == "video":
             list.setProperty('TotalTime', str(extraData.get('duration')))
-            list.setProperty('ResumeTime', str(extraData.get('resume')))
+            list.setProperty('ResumeTime', str(extraData.get('resumetime')))
         
     #Set the poster image if it has been enabled
     poster=str(extraData.get('poster',''))
