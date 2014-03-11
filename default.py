@@ -27,6 +27,7 @@
 
 '''
 
+import struct
 import urllib
 import glob
 import re
@@ -152,6 +153,39 @@ g_sessionID=None
 
 genreList=[__language__(30069),__language__(30070),__language__(30071),__language__(30072),__language__(30073),__language__(30074),__language__(30075),__language__(30076),__language__(30077),__language__(30078),__language__(30079),__language__(30080),__language__(30081),__language__(30082),__language__(30083),__language__(30084),__language__(30085),__language__(30086),__language__(30087),__language__(30088),__language__(30089)]
 sortbyList=[__language__(30060),__language__(30061),__language__(30062),__language__(30063),__language__(30064),__language__(30065),__language__(30066),__language__(30067)]
+
+def getServerDetails():
+
+    printDebug("Getting Server Details from Network")
+
+    MESSAGE = "who is MediaBrowserServer?"
+    MULTI_GROUP = ("224.3.29.71", 7359)
+    #MULTI_GROUP = ("127.0.0.1", 7359)
+    
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.settimeout(2.0)
+    
+    ttl = struct.pack('b', 20)
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
+    
+    #sock.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_LOOP, 1)
+    #sock.setsockopt(socket.IPPROTO_IP, socket.SO_REUSEADDR, 1)
+    
+    xbmc.log("MutliGroup       : " + str(MULTI_GROUP));
+    xbmc.log("Sending UDP Data : " + MESSAGE);
+    sock.sendto(MESSAGE, MULTI_GROUP)
+
+    try:
+        data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
+        xbmc.log("Received Response : " + data)
+        if(data[0:18] == "MediaBrowserServer"):
+            xbmc.log("Found Server : " + data[19:])
+            return data[19:]
+    except:
+        xbmc.log("No UDP Response")
+        pass
+    
+    return ""
 
 def getUserId():
 
