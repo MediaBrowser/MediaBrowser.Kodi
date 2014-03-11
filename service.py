@@ -32,6 +32,7 @@ base_window = xbmcgui.Window( 10000 )
 
 import websocket
 from uuid import getnode as get_mac
+from InProgressItems import InProgressUpdaterThread
 
 _MODE_BASICPLAY=12
 
@@ -53,6 +54,13 @@ def getAuthHeader():
     xbmc.log("XBMB3C Authentication Header : " + str(headers))
     return headers 
 
+
+    
+# start some worker threads
+newInProgressThread = InProgressUpdaterThread()
+newInProgressThread.start()
+
+    
 #################################################################################################
 # WebSocket Client thread
 #################################################################################################
