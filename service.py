@@ -33,6 +33,7 @@ base_window = xbmcgui.Window( 10000 )
 from InProgressItems import InProgressUpdaterThread
 from WebSocketClient import WebSocketThread
 from ClientInformation import ClientInformation
+from MenuLoad import LoadMenuOptionsThread
 
 _MODE_BASICPLAY=12
 
@@ -56,107 +57,9 @@ newInProgressThread.start()
 newWebSocketThread = WebSocketThread()
 newWebSocketThread.start()
 
-#################################################################################################
-# end WebSocket Client thread
-#################################################################################################
-
-#################################################################################################
-# menu item loader thread
-# this loads the favourites.xml and sets the windows props for the menus to auto display in skins
-#################################################################################################
-
-class LoadMenuOptionsThread(threading.Thread):
-
-    logLevel = 0
-    
-    def logMsg(self, msg, level = 1):
-        if(self.logLevel >= level):
-            xbmc.log("XBMB3C Load Menu -> " + msg) 
-    
-    def run(self):
-        xbmc.log("LoadMenuOptionsThread Started")
-        
-        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        level = addonSettings.getSetting('logLevel')
-        self.logLevel = 0
-        if(level != None):
-            self.logLevel = int(level)    
-        
-        lastFavPath = ""
-        favourites_file = os.path.join(xbmc.translatePath('special://profile'), "favourites.xml")
-        self.loadMenuOptions(favourites_file)
-        lastFavPath = favourites_file
-        
-        try:
-            lastModLast = os.stat(favourites_file).st_mtime
-        except:
-            lastModLast = 0;
-        
-        
-        while (xbmc.abortRequested == False):
-            
-            favourites_file = os.path.join(xbmc.translatePath('special://profile'), "favourites.xml")
-            try:
-                lastMod = os.stat(favourites_file).st_mtime
-            except:
-                lastMod = 0;
-            
-            if(lastFavPath != favourites_file or lastModLast != lastMod):
-                self.loadMenuOptions(favourites_file)
-                
-            lastFavPath = favourites_file
-            lastModLast = lastMod
-            
-            xbmc.sleep(3000)
-                        
-        xbmc.log("LoadMenuOptionsThread Exited")
-
-    def loadMenuOptions(self, pathTofavourites):
-               
-        self.logMsg("LoadMenuOptionsThread -> Loading menu items from : " + pathTofavourites)
-        WINDOW = xbmcgui.Window( 10000 )
-        menuItem = 0
-        
-        try:
-            tree = xml.parse(pathTofavourites)
-            rootElement = tree.getroot()
-        except Exception, e:
-            xbmc.log("LoadMenuOptionsThread -> Error Parsing favourites.xml : " + str(e))
-            for x in range(0, 10):
-                WINDOW.setProperty("xbmb3c_menuitem_name_" + str(x), "")
-                WINDOW.setProperty("xbmb3c_menuitem_action_" + str(x), "")
-            return
-        
-        for child in rootElement.findall('favourite'):
-            name = child.get('name')
-            action = child.text
-        
-            index = action.find("plugin://plugin.video.xbmb3c") # this addon
-            if (index == -1):
-                index = action.find("plugin://plugin.video.sbview") # sick beard addon
-                
-            if(index > -1 and len(action) > 10):
-                action_url = action[index:len(action) - 2]
-                
-                WINDOW.setProperty("xbmb3c_menuitem_name_" + str(menuItem), name)
-                WINDOW.setProperty("xbmb3c_menuitem_action_" + str(menuItem), action_url)
-                self.logMsg("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name, level=2)
-                self.logMsg("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url, level=2)
-                
-                menuItem = menuItem + 1
-
-        for x in range(menuItem, menuItem+10):
-                WINDOW.setProperty("xbmb3c_menuitem_name_" + str(x), "")
-                WINDOW.setProperty("xbmb3c_menuitem_action_" + str(x), "")
-                self.logMsg("xbmb3c_menuitem_name_" + str(x) + " : ", level=2)
-                self.logMsg("xbmb3c_menuitem_action_" + str(x) + " : ", level=2)
-            
 newMenuThread = LoadMenuOptionsThread()
 newMenuThread.start()
 
-#################################################################################################
-# end menu item loader
-#################################################################################################
 
 #################################################################################################
 # http image proxy server 
