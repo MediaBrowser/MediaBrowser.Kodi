@@ -30,214 +30,28 @@ BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'li
 sys.path.append(BASE_RESOURCE_PATH)
 base_window = xbmcgui.Window( 10000 )
 
-import websocket
-from uuid import getnode as get_mac
 from InProgressItems import InProgressUpdaterThread
+from WebSocketClient import WebSocketThread
+from ClientInformation import ClientInformation
 
 _MODE_BASICPLAY=12
-
-def getMachineId():
-    return "%012X"%get_mac()
-    
-def getVersion():
-    return "0.8.5"
 
 def getAuthHeader():
     addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
     deviceName = addonSettings.getSetting('deviceName')
     deviceName = deviceName.replace("\"", "_") # might need to url encode this as it is getting added to the header and is user entered data
-    txt_mac = getMachineId()
-    version = getVersion()  
+    clientInfo = ClientInformation()
+    txt_mac = clientInfo.getMachineId()
+    version = clientInfo.getVersion()  
     userid = xbmcgui.Window( 10000 ).getProperty("userid")
     authString = "MediaBrowser UserId=\"" + userid + "\",Client=\"XBMC\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
     headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}
     xbmc.log("XBMB3C Authentication Header : " + str(headers))
     return headers 
 
-
-    
 # start some worker threads
 newInProgressThread = InProgressUpdaterThread()
 newInProgressThread.start()
-
-    
-#################################################################################################
-# WebSocket Client thread
-#################################################################################################
-
-class WebSocketThread(threading.Thread):
-
-    logLevel = 0
-    client = None
-    
-    def playbackStarted(self, itemId):
-        if(self.client != None):
-            xbmc.log( "XBMB3C Service WebSocket -> Sending Playback Started" )
-            messageData = {}
-            messageData["MessageType"] = "PlaybackStart"
-            messageData["Data"] = itemId + "|true|audio,video"
-            messageString = json.dumps(messageData)
-            xbmc.log(messageString)
-            self.client.send(messageString)
-        else:
-            xbmc.log( "XBMB3C Service WebSocket -> Sending Playback Started NO Object ERROR" )
-            
-    def playbackStopped(self, itemId, ticks):
-        if(self.client != None):
-            xbmc.log( "XBMB3C Service WebSocket -> Sending Playback Stopped" )
-            messageData = {}
-            messageData["MessageType"] = "PlaybackStopped"
-            messageData["Data"] = itemId + "|" + str(ticks)
-            messageString = json.dumps(messageData)
-            xbmc.log(messageString)
-            self.client.send(messageString)
-        else:
-            xbmc.log( "XBMB3C Service WebSocket -> Sending Playback Stopped NO Object ERROR" )
-            
-    def sendProgressUpdate(self, itemId, ticks):
-        if(self.client != None):
-            #xbmc.log( "XBMB3C Service WebSocket -> Sending Progress Update" )
-            messageData = {}
-            messageData["MessageType"] = "PlaybackProgress"
-            messageData["Data"] = itemId + "|" + str(ticks) + "|false|false"
-            messageString = json.dumps(messageData)
-            xbmc.log(messageString)
-            self.client.send(messageString)
-        else:
-            xbmc.log( "XBMB3C Service WebSocket -> Sending Progress Update NO Object ERROR" )
-            
-    def stopClient(self):
-        # stopping the client is tricky, first set keep_running to false and then trigger one 
-        # more message by requesting one SessionsStart message, this causes the 
-        # client to receive the message and then exit
-        if(self.client != None):
-            xbmc.log( "XBMB3C Service WebSocket -> Stopping Client" )
-            self.client.keep_running = False
-            messageData = {}
-            messageData["MessageType"] = "SessionsStart"
-            messageData["Data"] = "300,0"
-            messageString = json.dumps(messageData)
-            xbmc.log(messageString)
-            self.client.send(messageString)
-        else:
-            xbmc.log( "XBMB3C Service WebSocket -> Stopping Client NO Object ERROR" )
-            
-    def on_message(self, ws, message):
-        xbmc.log( "XBMB3C Service WebSocket -> message : " + str(message) )
-        result = json.loads(message)
-        
-        messageType = result.get("MessageType")
-        playCommand = result.get("PlayCommand")
-        data = result.get("Data")
-        
-        if(messageType != None and messageType == "Play" and data != None):
-            itemIds = data.get("ItemIds")
-            playCommand = data.get("PlayCommand")
-            if(playCommand != None and playCommand == "PlayNow"):
-            
-                startPositionTicks = data.get("StartPositionTicks")
-                xbmc.log("XBMB3C Service WebSocket -> Playing Media With ID : " + itemIds[0])
-                
-                addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-                mb3Host = addonSettings.getSetting('ipaddress')
-                mb3Port = addonSettings.getSetting('port')                   
-                
-                url =  mb3Host + ":" + mb3Port + ',;' + itemIds[0]
-                if(startPositionTicks == None):
-                    url  += ",;" + "-1"
-                else:
-                    url  += ",;" + str(startPositionTicks)
-                    
-                playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-                playUrl = playUrl.replace("\\\\","smb://")
-                playUrl = playUrl.replace("\\","/")                
-                
-                xbmc.Player().play(playUrl)
-                
-        elif(messageType != None and messageType == "Playstate"):
-            command = data.get("Command")
-            if(command != None and command == "Stop"):
-                xbmc.log("XBMB3C Service WebSocket -> Playback Stopped")
-                xbmc.executebuiltin('xbmc.activatewindow(10000)')
-                xbmc.Player().stop()
-                
-            if(command != None and command == "Seek"):
-                seekPositionTicks = data.get("SeekPositionTicks")
-                xbmc.log("XBMB3C Service WebSocket -> Playback Seek : " + str(seekPositionTicks))
-                seekTime = (seekPositionTicks / 1000) / 10000
-                xbmc.Player().seekTime(seekTime)
-
-    def on_error(self, ws, error):
-        xbmc.log( "XBMB3C Service WebSocket -> error : " + str(error) )
-
-    def on_close(self, ws):
-        xbmc.log( "XBMB3C Service WebSocket -> closed" )
-
-    def on_open(self, ws):
-        machineId = getMachineId()
-        version = getVersion()
-        messageData = {}
-        messageData["MessageType"] = "Identity"
-        
-        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        deviceName = addonSettings.getSetting('deviceName')
-        deviceName = deviceName.replace("\"", "_")
-    
-        messageData["Data"] = "XBMC|" + machineId + "|" + version + "|" + deviceName
-        messageString = json.dumps(messageData)
-        xbmc.log( "XBMB3C Service WebSocket -> opened : " + str(messageString))
-        ws.send(messageString)
-        
-    def getWebSocketPort(self, host, port):
-        
-        userUrl = "http://" + host + ":" + port + "/mediabrowser/System/Info?format=json"
-        
-        try:
-            requesthandle = urllib.urlopen(userUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()              
-        except Exception, e:
-            xbmc.log("WebSocketThread getWebSocketPort urlopen : " + str(e) + " (" + userUrl + ")")
-            return -1
-
-        result = json.loads(jsonData)     
-
-        wsPort = result.get("WebSocketPortNumber")
-        if(wsPort != None):
-            return wsPort
-        else:
-            return -1
-
-    def run(self):
-    
-        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        mb3Host = addonSettings.getSetting('ipaddress')
-        mb3Port = addonSettings.getSetting('port')
-        level = addonSettings.getSetting('logLevel')
-        self.logLevel = 0
-        if(level != None):
-            self.logLevel = int(level)
-        xbmc.log("XBMB3C Log Level : " + str(self.logLevel))
-        
-        if(self.logLevel >= 1):
-            websocket.enableTrace(True)        
-
-        wsPort = self.getWebSocketPort(mb3Host, mb3Port);
-        xbmc.log( "XBMB3C Service WebSocket -> WebSocketPortNumber = " + str(wsPort))
-        if(wsPort == -1):
-            xbmc.log( "XBMB3C Service WebSocket -> Could not retrieve WebSocket port, can not run WebScoket Client")
-            return
-        
-        #Make a call to /System/Info. WebSocketPortNumber is the port hosting the web socket.
-        webSocketUrl = "ws://" +  mb3Host + ":" + str(wsPort) + "/mediabrowser"
-        xbmc.log( "XBMB3C Service WebSocket -> WebSocket URL : " + webSocketUrl)
-        self.client = websocket.WebSocketApp(webSocketUrl,
-                                    on_message = self.on_message,
-                                    on_error = self.on_error,
-                                    on_close = self.on_close)
-        self.client.on_open = self.on_open
-        self.client.run_forever()
-        xbmc.log( "XBMB3C Service WebSocket -> Exited")
 
 newWebSocketThread = WebSocketThread()
 newWebSocketThread.start()

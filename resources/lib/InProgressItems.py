@@ -67,7 +67,7 @@ class InProgressUpdaterThread(threading.Thread):
             jsonData = requesthandle.read()
             requesthandle.close()              
         except Exception, e:
-            xbmc.log("InProgressThread updateRecent urlopen : " + str(e) + " (" + userUrl + ")")
+            self.logMsg("updateRecent urlopen : " + str(e) + " (" + userUrl + ")", level=0)
             return
 
         userid = ""
@@ -88,7 +88,7 @@ class InProgressUpdaterThread(threading.Thread):
             jsonData = requesthandle.read()
             requesthandle.close()              
         except Exception, e:
-            xbmc.log("InProgressThread updateRecent urlopen : " + str(e) + " (" + recentUrl + ")")
+            self.logMsg("updateRecent urlopen : " + str(e) + " (" + recentUrl + ")", level=0)
             return    
 
         result = json.loads(jsonData)
@@ -178,7 +178,7 @@ class InProgressUpdaterThread(threading.Thread):
             jsonData = requesthandle.read()
             requesthandle.close()               
         except Exception, e:
-            xbmc.log("InProgressThread updateRecent urlopen : " + str(e) + " (" + recentUrl + ")")
+            self.logMsg("updateRecent urlopen : " + str(e) + " (" + recentUrl + ")", level=0)
             return
 
         result = json.loads(jsonData)
