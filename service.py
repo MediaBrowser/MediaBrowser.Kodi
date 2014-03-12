@@ -12,10 +12,8 @@ import json
 from datetime import datetime
 import xml.etree.ElementTree as xml
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import mimetypes
 from threading import Thread
-from SocketServer import ThreadingMixIn
 from urlparse import parse_qs
 from urllib import urlretrieve
 
@@ -34,6 +32,8 @@ from InProgressItems import InProgressUpdaterThread
 from WebSocketClient import WebSocketThread
 from ClientInformation import ClientInformation
 from MenuLoad import LoadMenuOptionsThread
+from ImageProxy import MyHandler
+from ImageProxy import ThreadingHTTPServer
 
 _MODE_BASICPLAY=12
 
@@ -60,136 +60,19 @@ newWebSocketThread.start()
 newMenuThread = LoadMenuOptionsThread()
 newMenuThread.start()
 
-
-#################################################################################################
-# http image proxy server 
-# This acts as a HTTP Image proxy server for all thumbs and artwork requests
-# this is needed due to the fact XBMC can not use the MB3 API as it has issues with the HTTP response format
-# this proxy handles all the requests and allows XBMC to call the MB3 server
-#################################################################################################
-
-class MyHandler(BaseHTTPRequestHandler):
-    
-    logLevel = 0
-    
-    def __init__(self, *args):
-        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        level = addonSettings.getSetting('logLevel')
-        self.logLevel = 0
-        if(level != None):
-            self.logLevel = int(level)
-        BaseHTTPRequestHandler.__init__(self, *args)
-    
-    def logMsg(self, msg, level = 1):
-        if(self.logLevel >= level):
-            xbmc.log("XBMB3C Image Proxy -> " + msg)
-    
-    #overload the default log func to stop stderr message from showing up in the xbmc log
-    def log_message(self, format, *args):
-        if(self.logLevel >= 1):
-            the_string = [str(i) for i in range(len(args))]
-            the_string = '"{' + '}" "{'.join(the_string) + '}"'
-            the_string = the_string.format(*args)
-            xbmc.log("XBMB3C Image Proxy -> BaseHTTPRequestHandler : " + the_string)
-        return    
-    
-    def do_GET(self):
-    
-        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        mb3Host = addonSettings.getSetting('ipaddress')
-        mb3Port = addonSettings.getSetting('port')
-        
-        params = parse_qs(self.path[2:])
-        self.logMsg("Params : " + str(params))
-        
-        if(params.get("id") == None):
-            return
-        
-        itemId = params["id"][0]
-        requestType = params["type"][0]
-        
-        if (len(params) > 2):
-          self.logMsg("Params with Index: " + str(params))  
-          index = params['index'][0]
-        else:
-          index = None
-
-        imageType = "Primary"
-        if(requestType == "b"):
-            imageType = "Backdrop"
-        elif(requestType == "logo"):
-            imageType = "Logo"
-        elif(requestType == "banner"):
-            imageType = "Banner"
-        elif(requestType == "disc"):
-            imageType = "Disc"
-        elif(requestType == "clearart"):
-            imageType = "Art"
-        elif(requestType == "landscape"):
-            imageType = "Thumb"
-        
-        if (index == None):  
-          remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType  + "?Format=png"
-        else:
-          remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType +  "/" + index  + "?Format=png"
-                  
-        self.logMsg("MB3 Host : " + mb3Host)
-        self.logMsg("MB3 Port : " + mb3Port)
-        self.logMsg("Item ID : " + itemId)
-        self.logMsg("Request Type : " + requestType)
-        self.logMsg("Remote URL : " + remoteUrl)
-        
-        # get the remote image
-        self.logMsg("Downloading Image")
-        
-        try:
-            requesthandle = urllib.urlopen(remoteUrl, proxies={})
-            pngData = requesthandle.read()
-            requesthandle.close()            
-        except Exception, e:
-            xbmc.log("Image Proxy MyHandler urlopen : " + str(e) + " (" + remoteUrl + ")")
-            return
-
-        datestring = time.strftime('%a, %d %b %Y %H:%M:%S GMT')
-        length = len(pngData)
-        
-        self.logMsg("ReSending Image")
-        self.send_response(200)
-        self.send_header('Content-type', 'image/png')
-        self.send_header('Content-Length', length)
-        self.send_header('Last-Modified', datestring)        
-        self.end_headers()
-        self.wfile.write(pngData)
-        self.logMsg("Image Sent")
-        
-    def do_HEAD(self):
-        datestring = time.strftime('%a, %d %b %Y %H:%M:%S GMT')
-        self.send_response(200)
-        self.send_header('Content-type', 'image/png')
-        self.send_header('Last-Modified', datestring)
-        self.end_headers()        
-        
-class ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
-    pass
-
+# start the image proxy server
 keepServing = True
-def startServer():
+def startImageProxyServer():
 
+    xbmc.log("XBMB3S -> HTTP Image Proxy Server Starting")
     server = ThreadingHTTPServer(("",15001), MyHandler)
     
     while (keepServing):
         server.handle_request()
-    #server.serve_forever()
     
-    xbmc.log("XBMB3s -> HTTP Image Proxy Server EXITING")
+    xbmc.log("XBMB3S -> HTTP Image Proxy Server EXITING")
     
-xbmc.log("XBMB3s -> HTTP Image Proxy Server Starting")
-Thread(target=startServer).start()
-xbmc.log("XBMB3s -> HTTP Image Proxy Server NOW SERVING IMAGES")
-
-#################################################################################################
-# end http image proxy server 
-#################################################################################################
+Thread(target=startImageProxyServer).start()
 
 #################################################################################################
 # Recent Info Updater
