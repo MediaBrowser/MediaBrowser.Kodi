@@ -143,7 +143,7 @@ class BackgroundRotationThread(threading.Thread):
             self.logMsg("setBackgroundLink index movie_art_links " + str(self.current_movie_art + 1) + " of " + str(len(self.movie_art_links)), level=2)
             artUrl =  self.movie_art_links[self.current_movie_art]
             WINDOW.setProperty("MB3.Background.Movie.FanArt", artUrl)
-            self.logMsg("MB3.Background.Movie.FanArt=" + artUrl, level=2)
+            self.logMsg("MB3.Background.Movie.FanArt=" + artUrl)
             self.current_movie_art = self.current_movie_art + 1
             if(self.current_movie_art == len(self.movie_art_links)):
                 self.current_movie_art = 0
@@ -152,7 +152,7 @@ class BackgroundRotationThread(threading.Thread):
             self.logMsg("setBackgroundLink index tv_art_links " + str(self.current_tv_art + 1) + " of " + str(len(self.tv_art_links)), level=2)
             artUrl =  self.tv_art_links[self.current_tv_art]
             WINDOW.setProperty("MB3.Background.TV.FanArt", artUrl)
-            self.logMsg("MB3.Background.TV.FanArt=" + artUrl, level=2)
+            self.logMsg("MB3.Background.TV.FanArt=" + artUrl)
             self.current_tv_art = self.current_tv_art + 1
             if(self.current_tv_art == len(self.tv_art_links)):
                 self.current_tv_art = 0
@@ -161,7 +161,7 @@ class BackgroundRotationThread(threading.Thread):
             self.logMsg("setBackgroundLink index music_art_links " + str(self.current_music_art + 1) + " of " + str(len(self.music_art_links)), level=2)
             artUrl =  self.music_art_links[self.current_music_art]
             WINDOW.setProperty("MB3.Background.Music.FanArt", artUrl)
-            self.logMsg("MB3.Background.Music.FanArt=" + artUrl, level=2)
+            self.logMsg("MB3.Background.Music.FanArt=" + artUrl)
             self.current_music_art = self.current_music_art + 1
             if(self.current_music_art == len(self.music_art_links)):
                 self.current_music_art = 0
@@ -170,7 +170,7 @@ class BackgroundRotationThread(threading.Thread):
             self.logMsg("setBackgroundLink index global_art_links " + str(self.current_global_art + 1) + " of " + str(len(self.global_art_links)), level=2)
             artUrl =  self.global_art_links[self.current_global_art]
             WINDOW.setProperty("MB3.Background.Global.FanArt", artUrl)
-            self.logMsg("MB3.Background.Global.FanArt=" + artUrl, level=2)
+            self.logMsg("MB3.Background.Global.FanArt=" + artUrl)
             self.current_global_art = self.current_global_art + 1         
             if(self.current_global_art == len(self.global_art_links)):
                 self.current_global_art = 0
