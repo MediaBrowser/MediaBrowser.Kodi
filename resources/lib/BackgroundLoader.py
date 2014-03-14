@@ -137,16 +137,32 @@ class BackgroundRotationThread(threading.Thread):
     
     def setBackgroundLink(self):
     
+        # load the background blacklist
+        __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') )         
+        lastDataPath = __addondir__ + "BlackListedBgLinks.json"
+        
+        black_list = []
+        
+        # load blacklist data
+        try:
+            dataFile = open(lastDataPath, 'r')
+            jsonData = dataFile.read()
+            dataFile.close()        
+            black_list = json.loads(jsonData)
+            self.logMsg("Loaded Background Black List : " + str(black_list))
+        except:
+            self.logMsg("No Background Black List found, starting with empty Black List")
+            black_list = []    
+
+
         WINDOW = xbmcgui.Window( 10000 )
         
         if(len(self.movie_art_links) > 0):
-            self.logMsg("setBackgroundLink index movie_art_links " + str(self.current_movie_art + 1) + " of " + str(len(self.movie_art_links)), level=2)
-            artUrl =  self.movie_art_links[self.current_movie_art]
-            WINDOW.setProperty("MB3.Background.Movie.FanArt", artUrl)
-            self.logMsg("MB3.Background.Movie.FanArt=" + artUrl)
-            self.current_movie_art = self.current_movie_art + 1
-            if(self.current_movie_art == len(self.movie_art_links)):
-                self.current_movie_art = 0
+            next, url = self.findNextLink(self.movie_art_links, black_list, self.current_movie_art)
+            self.current_movie_art = next
+            WINDOW.setProperty("MB3.Background.Movie.FanArt", url)
+            self.logMsg("MB3.Background.Movie.FanArt=" + url)
         
         if(len(self.tv_art_links) > 0):
             self.logMsg("setBackgroundLink index tv_art_links " + str(self.current_tv_art + 1) + " of " + str(len(self.tv_art_links)), level=2)
@@ -167,14 +183,23 @@ class BackgroundRotationThread(threading.Thread):
                 self.current_music_art = 0
             
         if(len(self.global_art_links) > 0):
-            self.logMsg("setBackgroundLink index global_art_links " + str(self.current_global_art + 1) + " of " + str(len(self.global_art_links)), level=2)
-            artUrl =  self.global_art_links[self.current_global_art]
-            WINDOW.setProperty("MB3.Background.Global.FanArt", artUrl)
-            self.logMsg("MB3.Background.Global.FanArt=" + artUrl)
-            self.current_global_art = self.current_global_art + 1         
-            if(self.current_global_art == len(self.global_art_links)):
-                self.current_global_art = 0
+            next, url = self.findNextLink(self.global_art_links, black_list, self.current_global_art)
+            self.current_global_art = next
+            WINDOW.setProperty("MB3.Background.Global.FanArt", url)
+            self.logMsg("MB3.Background.Global.FanArt=" + url)
                 
+    def findNextLink(self, linkList, blackList, startIndex):
+        currentIndex = startIndex
+        artUrl =  linkList[currentIndex]
+        while(artUrl in blackList):
+            currentIndex = currentIndex + 1
+            if(currentIndex == len(linkList)):
+                currentIndex = 0 # loop back to beginning
+            if(currentIndex == startIndex):
+                return (currentIndex+1, artUrl) # we checked everything and nothing was ok so return the first one again                
+            artUrl =  linkList[currentIndex]
+        return (currentIndex+1, artUrl)
+    
     def updateArtLinks(self):
         self.logMsg("updateArtLinks Called")
         

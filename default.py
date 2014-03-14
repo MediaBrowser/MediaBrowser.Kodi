@@ -3,7 +3,6 @@
     @package    : XBMB3C add-on
     @authors    : xnappo, null_pointer, im85288
     @copyleft   : 2013, xnappo
-    @version    : 0.8.5 (frodo/gotham)
 
     @license    : Gnu General Public License - see LICENSE.TXT
     @description: XBMB3C XBMC add-on
@@ -61,10 +60,13 @@ __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') )
 __language__     = __addon__.getLocalizedString
 
 BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'lib' ) )
-PLUGINPATH=xbmc.translatePath( os.path.join( __cwd__) )
-
 sys.path.append(BASE_RESOURCE_PATH)
-XBMB3C_VERSION="0.8.5"
+PLUGINPATH = xbmc.translatePath( os.path.join( __cwd__) )
+
+from BackgroundEdit import BackgroundEdit
+from ClientInformation import ClientInformation
+
+XBMB3C_VERSION = ClientInformation().getVersion()
 
 xbmc.log ("===== XBMB3C START =====")
 
@@ -77,6 +79,7 @@ CP_ADD_URL = 'XBMC.RunPlugin(plugin://plugin.video.couchpotato_manager/movies/ad
 _MODE_GETCONTENT=0
 _MODE_MOVIES=0
 _MODE_BASICPLAY=12
+_MODE_BG_EDIT=13
 
 #Check debug first...
 levelString = __settings__.getSetting('logLevel')
@@ -903,6 +906,11 @@ def displaySections( filter=None ):
         printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
         dirItems.append(addGUIItem(s_url, details, extraData))
 
+    # add addon action items
+    list = xbmcgui.ListItem("Edit Background Image List")
+    url = sys.argv[0] + '?mode=' + str(_MODE_BG_EDIT)
+    dirItems.append((url, list, True))
+        
     #All XML entries have been parsed and we are ready to allow the user to browse around.  So end the screen listing.
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
@@ -1702,6 +1710,7 @@ if(logLevel == 2):
     xbmcgui.Dialog().ok("Warning", "Debug logging enabled.", "This will affect performance.")
 
 printDebug( "XBMB3C -> Script argument is " + str(sys.argv[1]))
+printDebug( "XBMB3C -> Script params is " + str(sys.argv[2]))
 xbmcVersionNum = getXbmcVersion()
 try:
     params=get_params(sys.argv[2])
@@ -1717,12 +1726,12 @@ param_url=params.get('url',None)
 if param_url and ( param_url.startswith('http') or param_url.startswith('file') ):
     param_url = urllib.unquote(param_url)
 
-param_name=urllib.unquote_plus(params.get('name',""))
-mode=int(params.get('mode',-1))
-param_transcodeOverride=int(params.get('transcode',0))
-param_identifier=params.get('identifier',None)
-param_indirect=params.get('indirect',None)
-force=params.get('force')
+param_name = urllib.unquote_plus(params.get('name',""))
+mode = int(params.get('mode',-1))
+param_transcodeOverride = int(params.get('transcode',0))
+param_identifier = params.get('identifier',None)
+param_indirect = params.get('indirect',None)
+force = params.get('force')
 WINDOW = xbmcgui.Window( 10000 )
 WINDOW.setProperty("addshowname","false")
 
@@ -1764,7 +1773,9 @@ elif sys.argv[1] == "genrefilter":
     genrefilter()
 elif sys.argv[1] == "playall":
     startId=sys.argv[2]
-    playall(startId)    
+    playall(startId)
+elif mode == _MODE_BG_EDIT:
+    BackgroundEdit().showBackgrounds(sys.argv[0], int(sys.argv[1]), params)
 else:
 
     pluginhandle = int(sys.argv[1])
