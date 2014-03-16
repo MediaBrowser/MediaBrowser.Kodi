@@ -227,37 +227,26 @@ def getUserId():
     
     return userid
     
-def getServerSections( ip_address, port, name, uuid):
+def getCollections(detailsString):
     printDebug("== ENTER: getServerSections ==")
     userid = str(getUserId())
-    jsonData = getURL(ip_address+":"+port+"/mediabrowser/Users/"+userid+"/Items/Root?format=json")
+    jsonData = getURL(__settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port')+"/mediabrowser/Users/"+userid+"/Items/Root?format=json")
     printDebug("jsonData : " + jsonData, level=2)
     result = json.loads(jsonData)
     
     parentid = result.get("Id")
     printDebug("parentid : " + parentid)
        
-    htmlpath = ("http://%s:%s/mediabrowser/Users/" % ( ip_address, port))
+    htmlpath = ("http://%s:%s/mediabrowser/Users/" % ( __settings__.getSetting('ipaddress'), __settings__.getSetting('port')))
     jsonData = getURL(htmlpath + userid + "/items?ParentId=" + parentid + "&format=json")
     printDebug("jsonData : " + jsonData, level=2)
-    temp_list=[]
+    collections=[]
 
     if jsonData is False:
         return {}
 
     result = json.loads(jsonData)
     result = result.get("Items")
-    
-    detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
-    
-    if(__settings__.getSetting('includeStreamInfo') == "true"):
-        detailsString += ",MediaStreams"
-    
-    if(__settings__.getSetting('includePeople') == "true"):
-        detailsString += ",People"
-        
-    if(__settings__.getSetting('includeOverview') == "true"):
-        detailsString += ",Overview"        
     
     for item in result:
         if(item.get("RecursiveItemCount") != "0"):
@@ -270,164 +259,12 @@ def getServerSections( ip_address, port, name, uuid):
             section = item.get("CollectionType")
             if (section == None):
               section = "movies"
-            temp_list.append( {'title'      : Name,
-                    'address'    : ip_address+":"+port ,
-                    'serverName' : name ,
-                    'uuid'       : uuid ,
-                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json') ,
-                    'token'      : item.get("Id")  ,
-                    'location'   : "local" ,
-                    'art'        : item.get("?") ,
-                    'local'      : '1' ,
-                    'type'       : "movie",
-                    'section'    : section,
-                    'total'      : total,
-                    'owned'      : '1' })
+            collections.append( {'title'      : Name,
+                    'address'    : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') ,
+                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json')})
             printDebug("Title " + Name)    
-    
-    # Add recent movies
-    temp_list.append( {'title'      : 'Recently Added Movies',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'section'    : "movies",
-            'owned'      : '1' })
             
-    # Add recent Episodes
-    temp_list.append( {'title'      : 'Recently Added Episodes',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'section'    : "tvshows",
-            'owned'      : '1' })    
-            
-    # Add In Progress Movies
-    temp_list.append( {'title' : 'In Progress Movies',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=' + detailsString + '&Filters=IsResumable&IncludeItemTypes=Movie&format=json') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'section'    : "movie",
-            'owned'      : '1' })     
-
-    # Add In Progress Episodes
-    temp_list.append( {'title' : 'In Progress Episodes',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=' + detailsString + '&Filters=IsResumable&IncludeItemTypes=Episode&format=json') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'section'    : "tvshows",
-            'owned'      : '1' })              
-            
-    # Add NextUp Episodes
-    temp_list.append( {'title'      : 'Next Episodes',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'section'    : "tvshows",
-            'owned'      : '1' })     
-            
-    # Add Favorite Movies
-    temp_list.append( {'title'      : 'Favorite Movies',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=json') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'section'    : "movies",
-            'owned'      : '1' })            
-
-    # Add Favorite Episodes
-    temp_list.append( {'title'      : 'Favorite Episodes',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=json') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'section'    : "tvshows",
-            'owned'      : '1' })                       
-            
-    # Add Upcoming TV
-    temp_list.append( {'title'      : 'Upcoming TV',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + detailsString + '&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=json') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'section'    : "tvshows",
-            'owned'      : '1' })                            
-
-    # Add BoxSets
-    temp_list.append( {'title'      : 'BoxSets',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=BoxSet&format=json') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'section'    : "movies",
-            'owned'      : '1' })
-    
-    # Add Trailers
-    temp_list.append( {'title'      : 'Trailers',
-            'address'    : ip_address+":"+port ,
-            'serverName' : name ,
-            'uuid'       : uuid ,
-            'path'       : ('/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=Trailer&format=json') ,
-            'token'      : ''  ,
-            'location'   : "local" ,
-            'art'        : '' ,
-            'local'      : '1' ,
-            'type'       : "movie",
-            'section'    : "movies",
-            'owned'      : '1' })                            
-            
-    for item in temp_list:
-        printDebug ("temp_list: " + str(item))
-    return temp_list
+    return collections
 
 def authenticate (url):
     txt_mac = getMachineId()
@@ -854,58 +691,50 @@ def addContextMenu(details, extraData):
 def displaySections( filter=None ):
     printDebug("== ENTER: displaySections() ==")
     xbmcplugin.setContent(pluginhandle, 'files')
+
+    detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
     
+    if(__settings__.getSetting('includeStreamInfo') == "true"):
+        detailsString += ",MediaStreams"
+    
+    if(__settings__.getSetting('includePeople') == "true"):
+        detailsString += ",People"
+        
+    if(__settings__.getSetting('includeOverview') == "true"):
+        detailsString += ",Overview"       
+
     dirItems = []
+    userid = str(getUserId())    
+    extraData = { 'fanart_image' : '' ,
+                  'type'         : "Video" ,
+                  'thumb'        : '' }
     
-    das_host = __settings__.getSetting('ipaddress')
-    das_port =__settings__.getSetting('port')
-
-    allSections = getServerSections( das_host, das_port, "MB3", "SERVER_GUID")
-    
-    for section in allSections:
-
-        details = {'title' : section.get('title', 'Unknown') }
-
-        extraData = { 'fanart_image' : '' ,
-                    'type'         : "Video" ,
-                    'thumb'        : '' ,
-                    'token'        : section.get('token',None) }
-
-        path = section['path']
-
-        if section.get('type') == 'show':
-            mode = _MODE_TVSHOWS
-            if (filter is not None) and (filter != "tvshows"):
-                continue
-
-        elif section.get('type') == 'movie':
-            mode = _MODE_MOVIES
-            printDebug("MovieType!")
-            if (filter is not None) and (filter != "movies"):
-                continue
-
-        elif section.get('type') == 'artist':
-            mode = _MODE_ARTISTS
-            if (filter is not None) and (filter != "music"):
-                continue
-
-        elif section.get('type') == 'photo':
-            mode = _MODE_PHOTOS
-            if (filter is not None) and (filter != "photos"):
-                continue
-        else:
-            printDebug("Ignoring section " + details['title'] + " of type " + section.get('type') + " as unable to process")
-            continue
-
-        #path = path + '/all'
-
-        extraData['mode'] = mode
-        s_url = 'http://%s%s' % ( section['address'], path)
-
-        #Build that listing..
+# Add collections
+    collections = getCollections(detailsString)
+    for collection in collections:
+        details = {'title' : collection.get('title', 'Unknown') }
+        path = collection['path']
+        extraData['mode'] = _MODE_MOVIES
+        s_url = 'http://%s%s' % ( collection['address'], path)
         printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
         dirItems.append(addGUIItem(s_url, details, extraData))
-
+    
+# Add standard nodes
+    nodeUrl = 'http://' + __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port')
+    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Movie&format=json',{'title':'All Movies'},extraData))
+    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Series&format=json',{'title':'All TV'},extraData))
+    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json',{'title':'Recently Added Movies'},extraData))
+    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json',{'title':'Recently Added Movies'},extraData))
+    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json',{'title':'Recently Added Movies'},extraData))
+    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json',{'title':'Recently Added Episodes'},extraData))
+    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=' + detailsString + '&Filters=IsResumable&IncludeItemTypes=Movie&format=json',{'title':'In Progress Movies'},extraData))
+    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=' + detailsString + '&Filters=IsResumable&IncludeItemTypes=Episode&format=json',{'title':'In Progress Episodes'},extraData))
+    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json',{'title':'Next Episodes'},extraData))
+    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=json',{'title':'Favorite Movies'},extraData))
+    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=json',{'title':'Favorite Episodes'},extraData))
+    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + detailsString + '&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=json',{'title':'Upcoming TV'},extraData))
+    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=BoxSet&format=json',{'title':'BoxSets'},extraData))
+    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=Trailer&format=json',{'title':'Trailers'},extraData))    
     # add addon action items
     list = xbmcgui.ListItem("Edit Background Image List")
     url = sys.argv[0] + '?mode=' + str(_MODE_BG_EDIT)
@@ -1710,13 +1539,13 @@ if(logLevel == 2):
     xbmcgui.Dialog().ok("Warning", "Debug logging enabled.", "This will affect performance.")
 
 printDebug( "XBMB3C -> Script argument is " + str(sys.argv[1]))
-printDebug( "XBMB3C -> Script params is " + str(sys.argv[2]))
 xbmcVersionNum = getXbmcVersion()
 try:
     params=get_params(sys.argv[2])
 except:
     params={}
-#Check to see if XBMC is playing - we don't want to do anything if so
+printDebug( "XBMB3C -> Script params is " + str(params))
+    #Check to see if XBMC is playing - we don't want to do anything if so
 #if xbmc.Player().isPlaying():
 #    printDebug ('Already Playing! Exiting...')
 #    sys.exit()
