@@ -260,8 +260,11 @@ def getCollections(detailsString):
             if (section == None):
               section = "movies"
             collections.append( {'title'      : Name,
-                    'address'    : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') ,
-                    'path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json')})
+                    'address'      : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') ,
+                    'thumb'        : getArtwork(item,'t') ,
+                    'fanart_image' : getArtwork(item, 'b') ,
+                    'poster'       : getArtwork(item, 't') ,
+                   'path'          : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json')})
             printDebug("Title " + Name)    
             
     return collections
@@ -693,13 +696,10 @@ def displaySections( filter=None ):
     xbmcplugin.setContent(pluginhandle, 'files')
 
     detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
-    
     if(__settings__.getSetting('includeStreamInfo') == "true"):
         detailsString += ",MediaStreams"
-    
     if(__settings__.getSetting('includePeople') == "true"):
         detailsString += ",People"
-        
     if(__settings__.getSetting('includeOverview') == "true"):
         detailsString += ",Overview"       
 
@@ -715,6 +715,9 @@ def displaySections( filter=None ):
         details = {'title' : collection.get('title', 'Unknown') }
         path = collection['path']
         extraData['mode'] = _MODE_MOVIES
+        extraData['thumb'] = collection['thumb']
+        extraData['poster'] = collection['poster']
+        extraData['fanart_image'] = collection['fanart_image']
         s_url = 'http://%s%s' % ( collection['address'], path)
         printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
         dirItems.append(addGUIItem(s_url, details, extraData))
@@ -1177,13 +1180,10 @@ def processDirectory(url, result, progress):
     setWindowHeading(url)
     
     detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
-    
     if(__settings__.getSetting('includeStreamInfo') == "true"):
         detailsString += ",MediaStreams"
-    
     if(__settings__.getSetting('includePeople') == "true"):
         detailsString += ",People"
-        
     if(__settings__.getSetting('includeOverview') == "true"):
         detailsString += ",Overview"            
     
