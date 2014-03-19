@@ -31,6 +31,13 @@ class RandomInfoUpdaterThread(threading.Thread):
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
             xbmc.log("XBMB3C RandomInfoUpdaterThread -> " + msg)
+            
+    def getImageLink(self, item, type):
+        item_id = item.get("Id")
+        imageTag = "none"
+        if(item.get("ImageTags") != None and item.get("ImageTags").get(type) != None):
+            imageTag = item.get("ImageTags").get(type)            
+        return "http://localhost:15001/?id=" + str(item_id) + "&type=" + type + "&tag=" + imageTag                
     
     def run(self):
         self.logMsg("Started")
@@ -120,9 +127,9 @@ class RandomInfoUpdaterThread(threading.Thread):
                 runtime = "0"
 
             item_id = item.get("Id")
-            thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
-            logo = "http://localhost:15001/?id=" + str(item_id) + "&type=logo"
-            fanart = "http://localhost:15001/?id=" + str(item_id) + "&type=b"
+            thumbnail = self.getImageLink(item, "Primary")
+            logo = self.getImageLink(item, "Logo")
+            fanart = self.getImageLink(item, "Backdrop")
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
@@ -211,11 +218,11 @@ class RandomInfoUpdaterThread(threading.Thread):
             if item.get("Type") == "Episode" or item.get("Type") == "Season":
                series_id = item.get("SeriesId")
             
-            poster = "http://localhost:15001/?id=" + str(series_id) + "&type=t"
-            thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
-            logo = "http://localhost:15001/?id=" + str(series_id) + "&type=logo"
-            fanart = "http://localhost:15001/?id=" + str(series_id) + "&type=b"
-            banner = "http://localhost:15001/?id=" + str(series_id) + "&type=banner"
+            poster = self.getImageLink(item, "Primary")
+            thumbnail = self.getImageLink(item, "Primary")
+            logo = self.getImageLink(item, "Logo")
+            fanart = self.getImageLink(item, "Backdrop")
+            banner = self.getImageLink(item, "Banner")
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
@@ -294,10 +301,10 @@ class RandomInfoUpdaterThread(threading.Thread):
             if item.get("Type") == "MusicAlbum":
                parentId = item.get("ParentLogoItemId")
             
-            thumbnail = "http://localhost:15001/?id=" + str(item_id) + "&type=t"
-            logo = "http://localhost:15001/?id=" + str(parentId) + "&type=logo"
-            fanart = "http://localhost:15001/?id=" + str(parentId) + "&type=b"
-            banner = "http://localhost:15001/?id=" + str(parentId) + "&type=banner"
+            thumbnail = self.getImageLink(item, "Primary")
+            logo = self.getImageLink(item, "Logo")
+            fanart = self.getImageLink(item, "Backdrop")
+            banner = self.getImageLink(item, "Banner")
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)

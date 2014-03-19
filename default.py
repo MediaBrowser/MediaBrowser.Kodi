@@ -261,10 +261,10 @@ def getCollections(detailsString):
               section = "movies"
             collections.append( {'title'      : Name,
                     'address'      : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') ,
-                    'thumb'        : getArtwork(item,'t') ,
-                    'fanart_image' : getArtwork(item, 'b') ,
-                    'poster'       : getArtwork(item, 't') ,
-                   'path'          : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json')})
+                    'thumb'        : getArtwork(item,"Primary") ,
+                    'fanart_image' : getArtwork(item, "Backdrop") ,
+                    'poster'       : getArtwork(item,"Primary") ,
+                    'path'          : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json')})
             printDebug("Title " + Name)    
             
     return collections
@@ -894,7 +894,12 @@ def PLAY( url, handle ):
         thumbID = result.get("SeriesId")
         seasonNum = result.get("ParentIndexNumber")
         eppNum = result.get("IndexNumber")
-    thumbPath = "http://localhost:15001/?id=" + str(thumbID) + "&type=t"
+        
+    # get image tag
+    imageTag = "none"
+    if(result.get("ImageTags") != None and result.get("ImageTags").get("Primary") != None):
+        imageTag = result.get("ImageTags").get("Primary")
+    thumbPath = "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag
     
     item = xbmcgui.ListItem(path=playurl, iconImage=thumbPath, thumbnailImage=thumbPath)
     item.setProperty('IsPlayable', 'true')
@@ -1361,14 +1366,14 @@ def processDirectory(url, result, progress):
                 RunTimeTicks = "0"
 
         # Populate the extraData list
-        extraData={'thumb'        : getArtwork(item,'t') ,
-                   'fanart_image' : getArtwork(item, 'b') ,
-                   'poster'       : getArtwork(item, 't') ,
-                   'banner'       : getArtwork(item, 'banner') ,
-                   'logo'         : getArtwork(item, 'logo') ,
-                   'disc'         : getArtwork(item, 'disc') ,
-                   'clearart'     : getArtwork(item, 'clearart') ,
-                   'landscape'    : getArtwork(item, 'landscape') ,
+        extraData={'thumb'        : getArtwork(item, "Primary") ,
+                   'fanart_image' : getArtwork(item, "Backdrop") ,
+                   'poster'       : getArtwork(item, "Primary") ,
+                   'banner'       : getArtwork(item, "Banner") ,
+                   'logo'         : getArtwork(item, "Logo") ,
+                   'disc'         : getArtwork(item, "Disc") ,
+                   'clearart'     : getArtwork(item, "Art") ,
+                   'landscape'    : getArtwork(item, "Thumb") ,
                    'id'           : id ,
                    'mpaa'         : item.get("OfficialRating"),
                    'rating'       : item.get("CommunityRating"),
@@ -1432,15 +1437,19 @@ def processDirectory(url, result, progress):
     
     return dirItems
 
-def getArtwork(data,type):
+def getArtwork(data, type):
     
     id = data.get("Id")
     if data.get("Type") == "Episode" or data.get("Type") == "Season":    
         if type != "t" or __settings__.getSetting('useSeriesArt') == "true":
             id = data.get("SeriesId")
         
+    imageTag = "none"
+    if(data.get("ImageTags") != None and data.get("ImageTags").get(type) != None):
+        imageTag = data.get("ImageTags").get(type)   
+            
     # use the local image proxy server that is made available by this addons service
-    artwork = ("http://localhost:15001/?id=" + str(id) + "&type="+type)
+    artwork = "http://localhost:15001/?id=" + str(id) + "&type=" + type + "&tag=" + imageTag
     printDebug("getArtwork : " + artwork, level=2)
     return artwork
 

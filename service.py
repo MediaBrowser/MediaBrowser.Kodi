@@ -270,7 +270,7 @@ newWebSocketThread.stopClient()
 # stop the image proxy
 keepServing = False
 try:
-    requesthandle = urllib.urlopen("http://localhost:15001/?id=dummy&type=t", proxies={})
+    requesthandle = urllib.urlopen("http://localhost:15001/?id=dummy&type=Primary", proxies={})
 except:
     xbmc.log("XBMB3C Service -> Tried to stop image proxy server but it was already stopped")
 

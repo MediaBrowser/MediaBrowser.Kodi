@@ -251,7 +251,7 @@ class BackgroundRotationThread(threading.Thread):
                 images = []
             index = 0
             for backdrop in images:
-              fanartLink = "http://localhost:15001/?id=" + str(id) + "&type=b" + "&index=" + str(index)
+              fanartLink = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
               if (fanartLink not in self.movie_art_links):
                   self.movie_art_links.append(fanartLink)
               index = index + 1
@@ -282,7 +282,7 @@ class BackgroundRotationThread(threading.Thread):
                 images = []
             index = 0
             for backdrop in images:
-              fanartLink = "http://localhost:15001/?id=" + str(id) + "&type=b" + "&index=" + str(index)
+              fanartLink = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
               if (fanartLink not in self.tv_art_links):
                   self.tv_art_links.append(fanartLink)    
               index = index + 1
@@ -313,7 +313,7 @@ class BackgroundRotationThread(threading.Thread):
                 images = []
             index = 0
             for backdrop in images:
-              fanartLink = "http://localhost:15001/?id=" + str(id) + "&type=b" + "&index=" + str(index)
+              fanartLink = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
               if (fanartLink not in self.music_art_links):
                   self.music_art_links.append(fanartLink)
               index = index + 1

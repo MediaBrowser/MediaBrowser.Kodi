@@ -56,29 +56,16 @@ class MyHandler(BaseHTTPRequestHandler):
         if(params.get("id") == None):
             return
         
-        itemId = params["id"][0]
-        requestType = params["type"][0]
-        
-        if (len(params) > 2):
+        itemId = params.get("id")[0]
+        imageType = params.get("type")[0]
+        indexParam = params.get("index")
+            
+        if (indexParam != None):
           self.logMsg("Params with Index: " + str(params), level=2)  
-          index = params['index'][0]
+          index = indexParam[0]
         else:
           index = None
 
-        imageType = "Primary"
-        if(requestType == "b"):
-            imageType = "Backdrop"
-        elif(requestType == "logo"):
-            imageType = "Logo"
-        elif(requestType == "banner"):
-            imageType = "Banner"
-        elif(requestType == "disc"):
-            imageType = "Disc"
-        elif(requestType == "clearart"):
-            imageType = "Art"
-        elif(requestType == "landscape"):
-            imageType = "Thumb"
-        
         if (index == None):  
           remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType  + "?Format=png"
         else:
@@ -87,7 +74,7 @@ class MyHandler(BaseHTTPRequestHandler):
         self.logMsg("MB3 Host : " + mb3Host, level=2)
         self.logMsg("MB3 Port : " + mb3Port, level=2)
         self.logMsg("Item ID : " + itemId, level=2)
-        self.logMsg("Request Type : " + requestType, level=2)
+        self.logMsg("Image Type : " + imageType, level=2)
         self.logMsg("Remote URL : " + remoteUrl, level=2)
         
         # get the remote image
