@@ -190,4 +190,23 @@ class NextUpUpdaterThread(threading.Thread):
             
             item_count = item_count + 1
             
+        if(item_count < 10):
+            # blank any not available
+            for x in range(item_count, 11):           
+                WINDOW.setProperty("NextUpEpisodeMB3." + str(x) + ".EpisodeTitle", "")
+                WINDOW.setProperty("NextUpEpisodeMB3." + str(x) + ".ShowTitle", "")
+                WINDOW.setProperty("NextUpEpisodeMB3." + str(x) + ".EpisodeNo", "")
+                WINDOW.setProperty("NextUpEpisodeMB3." + str(x) + ".SeasonNo", "")
+                WINDOW.setProperty("NextUpEpisodeMB3." + str(x) + ".Thumb", "")
+                WINDOW.setProperty("NextUpEpisodeMB3." + str(x) + ".Path", "")            
+                WINDOW.setProperty("NextUpEpisodeMB3." + str(x) + ".Rating", "")
+                WINDOW.setProperty("NextUpEpisodeMB3." + str(x) + ".Art(tvshow.fanart)", "")
+                WINDOW.setProperty("NextUpEpisodeMB3." + str(x) + ".Art(tvshow.clearlogo)", "")
+                WINDOW.setProperty("NextUpEpisodeMB3." + str(x) + ".Art(tvshow.banner)", "")
+                WINDOW.setProperty("NextUpEpisodeMB3." + str(x) + ".Art(tvshow.poster)", "")
+                WINDOW.setProperty("NextUpEpisodeMB3." + str(x) + ".Plot", "")
+                WINDOW.setProperty("NextUpEpisodeMB3." + str(x) + ".Resume", "")        
+            
+            
+            
             

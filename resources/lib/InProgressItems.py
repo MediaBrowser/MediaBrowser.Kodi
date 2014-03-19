@@ -174,6 +174,21 @@ class InProgressUpdaterThread(threading.Thread):
             
             item_count = item_count + 1
         
+        # blank any not available
+        for x in range(item_count, 11):
+            WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Title", "")
+            WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Thumb", "")
+            WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Path", "")
+            WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Art(fanart)", "")
+            WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Art(clearlogo)", "")
+            WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Art(poster)", "")
+            WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Rating", "")
+            WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".CriticRating", "")
+            WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".CriticRatingSummary", "")
+            WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Plot", "")
+            WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Year", "")
+            WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Runtime", "")
+        
         
         #Updating Recent TV Show List
         self.logMsg("Updating In Progress Episode List")
@@ -283,5 +298,20 @@ class InProgressUpdaterThread(threading.Thread):
             
             item_count = item_count + 1
             
+        # blank any not available
+        for x in range(item_count, 11):            
+            WINDOW.setProperty("InProgresstEpisodeMB3." + str(x) + ".EpisodeTitle", "")
+            WINDOW.setProperty("InProgresstEpisodeMB3." + str(x) + ".ShowTitle", "")
+            WINDOW.setProperty("InProgresstEpisodeMB3." + str(x) + ".EpisodeNo", "")
+            WINDOW.setProperty("InProgresstEpisodeMB3." + str(x) + ".SeasonNo", "")
+            WINDOW.setProperty("InProgresstEpisodeMB3." + str(x) + ".Thumb", "")
+            WINDOW.setProperty("InProgresstEpisodeMB3." + str(x) + ".Path", "")            
+            WINDOW.setProperty("InProgresstEpisodeMB3." + str(x) + ".Rating", "")
+            WINDOW.setProperty("InProgresstEpisodeMB3." + str(x) + ".Art(tvshow.fanart)", "")
+            WINDOW.setProperty("InProgresstEpisodeMB3." + str(x) + ".Art(tvshow.clearlogo)", "")
+            WINDOW.setProperty("InProgresstEpisodeMB3." + str(x) + ".Art(tvshow.banner)", "")
+            WINDOW.setProperty("InProgresstEpisodeMB3." + str(x) + ".Art(tvshow.poster)", "")
+            WINDOW.setProperty("InProgresstEpisodeMB3." + str(x) + ".Plot", "")        
+        
         
         
