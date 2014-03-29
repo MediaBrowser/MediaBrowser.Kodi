@@ -875,7 +875,7 @@ def PLAY( url, handle ):
     result = json.loads(jsonData)
 
     # Can not play virtual items
-    if (result.get("LocationType") == "Virtual"):
+    if (result.get("LocationType") == "Virtual") or (result.get("IsPlaceholder")=="true"):
         xbmcgui.Dialog().ok(__language__(30128), __language__(30129))
         return
     
