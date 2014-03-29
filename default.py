@@ -690,11 +690,8 @@ def addContextMenu(details, extraData):
         if  extraData.get('itemtype') == 'Trailer':
             commands.append(( __language__(30046),"XBMC.RunPlugin(%s)" % CP_ADD_URL % details.get('title'),))
     return(commands)
-
-def displaySections( filter=None ):
-    printDebug("== ENTER: displaySections() ==")
-    xbmcplugin.setContent(pluginhandle, 'files')
-
+    
+def getDetailsString():
     detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
     if(__settings__.getSetting('includeStreamInfo') == "true"):
         detailsString += ",MediaStreams"
@@ -702,6 +699,11 @@ def displaySections( filter=None ):
         detailsString += ",People"
     if(__settings__.getSetting('includeOverview') == "true"):
         detailsString += ",Overview"       
+    return (detailsString)
+    
+def displaySections( filter=None ):
+    printDebug("== ENTER: displaySections() ==")
+    xbmcplugin.setContent(pluginhandle, 'files')
 
     dirItems = []
     userid = str(getUserId())    
@@ -710,6 +712,7 @@ def displaySections( filter=None ):
                   'thumb'        : '' }
     
 # Add collections
+    detailsString=getDetailsString()
     collections = getCollections(detailsString)
     for collection in collections:
         details = {'title' : collection.get('title', 'Unknown') }
@@ -754,8 +757,8 @@ def skin( filter=None, shared=False ):
     
     das_host = __settings__.getSetting('ipaddress')
     das_port =__settings__.getSetting('port')
-
-    allSections = getServerSections( das_host, das_port, "MB3", "SERVER_GUID")
+    
+    allSections = getCollections(getDetailsString())
     
     for section in allSections:
     
@@ -799,7 +802,7 @@ def skin( filter=None, shared=False ):
             if (filter is not None) and (filter != "photos"):
                 continue
         else:
-            printDebug("Ignoring section "+details['title']+" of type " + section.get('type') + " as unable to process")
+            printDebug("Ignoring section")
             continue
 
         path=path+'/all'
