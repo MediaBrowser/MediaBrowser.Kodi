@@ -228,7 +228,7 @@ def getUserId():
     return userid
     
 def getCollections(detailsString):
-    printDebug("== ENTER: getServerSections ==")
+    printDebug("== ENTER: getCollections ==")
     userid = str(getUserId())
     jsonData = getURL(__settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port')+"/mediabrowser/Users/"+userid+"/Items/Root?format=json")
     printDebug("jsonData : " + jsonData, level=2)
@@ -549,72 +549,13 @@ def addGUIItem( url, details, extraData, folder=True ):
             list.setProperty('TotalTime', str(extraData.get('duration')))
             list.setProperty('ResumeTime', str(extraData.get('resumetime')))
         
-    #Set the poster image if it has been enabled
-    poster=str(extraData.get('poster',''))
-    if '?' in poster:
-        setArt(list,'poster', poster)
-    else:
-        setArt(list,'poster', poster)
-    printDebug( "Setting poster as " + poster, level=2)
-
-    #Set the fanart image if it has been enabled
-    fanart=str(extraData.get('fanart_image',''))
-    if '?' in fanart:
-        list.setProperty('fanart_image', fanart)
-    else:
-        list.setProperty('fanart_image', fanart)
-
-    printDebug( "Setting fan art as " + fanart, level=2)
     
-    #Set the logo image if it has been enabled
-    logo=str(extraData.get('logo',''))
-    logoPath=logo.encode('utf-8')
-    if '?' in logo:
-        setArt(list,'clearlogo',logo)
-    else:
-        setArt(list,'clearlogo','logoPath')
-
-    printDebug( "Setting logo as " + logoPath, level=2)
+    artTypes=['poster', 'fanart_image', 'clearlogo', 'discart', 'banner', 'clearart', 'landscape']
     
-     #Set the disc image if it has been enabled
-    disc=str(extraData.get('disc',''))
-    discPath=disc.encode('utf-8')
-    if '?' in disc:
-        setArt(list,'discart',disc)
-    else:
-        setArt(list,'discart','discPath')
-
-    printDebug( "Setting disc as " + discPath, level=2)
-    
-     #Set the banner image if it has been enabled
-    banner=str(extraData.get('banner',''))
-    bannerPath=banner.encode('utf-8')
-    if '?' in banner:
-        setArt(list,'banner',banner)
-    else:
-        setArt(list,'banner','bannerPath')
-
-    printDebug("Setting banner as " + bannerPath, level=2)
-    
-     #Set the clearart image if it has been enabled
-    art=str(extraData.get('clearart',''))
-    artPath=art.encode('utf-8')
-    if '?' in art:
-        setArt(list,'clearart',art)
-    else:
-        setArt(list,'clearart','artPath')
-
-    printDebug( "Setting clearart as " + artPath, level=2)
-    
-     #Set the landscape image if it has been enabled
-    landscape=str(extraData.get('landscape',''))
-    landscapePath=landscape.encode('utf-8')
-    if '?' in landscape:
-        setArt(list,'landscape',landscape)
-    else:
-        setArt(list,'landscape','landscapePath')
-
-    printDebug( "Setting landscape as " + landscapePath, level=2)
+    for artType in artTypes:
+        imagePath=str(extraData.get(artType,''))
+        setArt(list,artType, imagePath)
+        printDebug( "Setting " + artType + " as " + imagePath, level=2)
     
     menuItems = addContextMenu(details, extraData)
     if(len(menuItems) > 0):
@@ -1373,8 +1314,8 @@ def processDirectory(url, result, progress):
                    'fanart_image' : getArtwork(item, "Backdrop") ,
                    'poster'       : getArtwork(item, "Primary") ,
                    'banner'       : getArtwork(item, "Banner") ,
-                   'logo'         : getArtwork(item, "Logo") ,
-                   'disc'         : getArtwork(item, "Disc") ,
+                   'clearlogo'    : getArtwork(item, "Logo") ,
+                   'discart'         : getArtwork(item, "Disc") ,
                    'clearart'     : getArtwork(item, "Art") ,
                    'landscape'    : getArtwork(item, "Thumb") ,
                    'id'           : id ,
@@ -1504,7 +1445,9 @@ def getLinkURL( url, pathData, server ):
     return url
 
 def setArt (list,name,path):
-    if xbmcVersionNum >= 13:
+    if name=='poster' or name=='fanart_image':
+        list.setProperty(name, path)
+    elif xbmcVersionNum >= 13:
         list.setArt({name:path})
         
 def getXbmcVersion():

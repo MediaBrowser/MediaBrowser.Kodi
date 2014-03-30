@@ -132,7 +132,10 @@ class InProgressUpdaterThread(threading.Thread):
                 seekTime = reasonableTicks / 10000
                 duration = float(runtime)
                 resume = float(seekTime) / 60.0
-                percentage = (resume / duration) * 100.0
+                if (duration == 0):
+                    percentage=0
+                else:
+                    percentage = (resume / duration) * 100.0
                 perasint = int(percentage)
                 title = str(perasint) + "% " + title        
                 
@@ -250,7 +253,10 @@ class InProgressUpdaterThread(threading.Thread):
                 seekTime = reasonableTicks / 10000
                 duration = float(runtime)
                 resume = float(seekTime) / 60.0
-                percentage = (resume / duration) * 100.0
+                if (duration == 0):
+                    percentage=0
+                else:
+                    percentage = (resume / duration) * 100.0
                 perasint = int(percentage)
                 title = str(perasint) + "% " + title               
 
