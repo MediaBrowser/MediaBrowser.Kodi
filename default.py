@@ -495,14 +495,7 @@ def addGUIItem( url, details, extraData, folder=True ):
         u=u.replace("\\","/")
     
     #Create the ListItem that will be displayed
-    thumb=str(extraData.get('thumb',''))
-    if thumb.startswith('http'):
-        if '?' in thumb:
-            thumbPath=thumb
-        else:
-            thumbPath=thumb.encode('utf-8') 
-    else:
-        thumbPath=thumb
+    thumbPath=str(extraData.get('thumb',''))
     
     addCounts = __settings__.getSetting('addCounts') == 'true'
     
@@ -550,13 +543,13 @@ def addGUIItem( url, details, extraData, folder=True ):
             list.setProperty('ResumeTime', str(extraData.get('resumetime')))
         
     
-    artTypes=['poster', 'fanart_image', 'clearlogo', 'discart', 'banner', 'clearart', 'landscape']
+    artTypes=['poster', 'tvshow.poster', 'fanart_image', 'clearlogo', 'discart', 'banner', 'clearart', 'landscape']
     
     for artType in artTypes:
         imagePath=str(extraData.get(artType,''))
-        setArt(list,artType, imagePath)
+        list=setArt(list,artType, imagePath)
         printDebug( "Setting " + artType + " as " + imagePath, level=2)
-    
+
     menuItems = addContextMenu(details, extraData)
     if(len(menuItems) > 0):
         list.addContextMenuItems( menuItems, g_contextReplace )
@@ -840,7 +833,7 @@ def PLAY( url, handle ):
         eppNum = result.get("IndexNumber")
         
     # get image tag
-    imageTag = "none"
+    imageTag = ""
     if(result.get("ImageTags") != None and result.get("ImageTags").get("Primary") != None):
         imageTag = result.get("ImageTags").get("Primary")
     thumbPath = "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag
@@ -1313,11 +1306,12 @@ def processDirectory(url, result, progress):
         extraData={'thumb'        : getArtwork(item, "Primary") ,
                    'fanart_image' : getArtwork(item, "Backdrop") ,
                    'poster'       : getArtwork(item, "Primary") ,
+                   'tvshow.poster'       : getArtwork(item, "Primary") ,
                    'banner'       : getArtwork(item, "Banner") ,
                    'clearlogo'    : getArtwork(item, "Logo") ,
                    'discart'         : getArtwork(item, "Disc") ,
                    'clearart'     : getArtwork(item, "Art") ,
-                   'landscape'    : getArtwork(item, "Thumb") ,
+                   'landscape'    : getArtwork(item, "Backdrop") ,
                    'id'           : id ,
                    'mpaa'         : item.get("OfficialRating"),
                    'rating'       : item.get("CommunityRating"),
@@ -1388,7 +1382,7 @@ def getArtwork(data, type):
         if type != "Primary" or __settings__.getSetting('useSeriesArt') == "true":
             id = data.get("SeriesId")
         
-    imageTag = "none"
+    imageTag = ""
     if(data.get("ImageTags") != None and data.get("ImageTags").get(type) != None):
         imageTag = data.get("ImageTags").get(type)   
             
@@ -1445,10 +1439,11 @@ def getLinkURL( url, pathData, server ):
     return url
 
 def setArt (list,name,path):
-    if name=='poster' or name=='fanart_image':
+    if name=='thumb' or name=='fanart_image':
         list.setProperty(name, path)
     elif xbmcVersionNum >= 13:
         list.setArt({name:path})
+    return list
         
 def getXbmcVersion():
     version = 0.0
