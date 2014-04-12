@@ -32,8 +32,7 @@ class RandomInfoUpdaterThread(threading.Thread):
         if(self.logLevel >= level):
             xbmc.log("XBMB3C RandomInfoUpdaterThread -> " + msg)
             
-    def getImageLink(self, item, type):
-        item_id = item.get("Id")
+    def getImageLink(self, item, type, item_id):
         imageTag = "none"
         if(item.get("ImageTags") != None and item.get("ImageTags").get(type) != None):
             imageTag = item.get("ImageTags").get(type)            
@@ -218,11 +217,11 @@ class RandomInfoUpdaterThread(threading.Thread):
             if item.get("Type") == "Episode" or item.get("Type") == "Season":
                series_id = item.get("SeriesId")
             
-            poster = self.getImageLink(item, "Primary")
-            thumbnail = self.getImageLink(item, "Primary")
-            logo = self.getImageLink(item, "Logo")
-            fanart = self.getImageLink(item, "Backdrop")
-            banner = self.getImageLink(item, "Banner")
+            poster = self.getImageLink(item, "Primary", str(series_id))
+            thumbnail = self.getImageLink(item, "Primary", str(item_id))         
+            logo = self.getImageLink(item, "Logo", str(series_id))             
+            fanart = self.getImageLink(item, "Backdrop", str(series_id))
+            banner = self.getImageLink(item, "Banner", str(series_id))
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
