@@ -310,9 +310,9 @@ class RecentInfoUpdaterThread(threading.Thread):
                parentId = item.get("ParentLogoItemId")
             
             thumbnail = self.getImageLink(item, "Primary", str(item_id))
-            logo = self.getImageLink(item, "Logo", str(parent_id))
-            fanart = self.getImageLink(item, "Backdrop", str(parent_id))
-            banner = self.getImageLink(item, "Banner", str(parent_id))
+            logo = self.getImageLink(item, "Logo", str(parentId))
+            fanart = self.getImageLink(item, "Backdrop", str(parentId))
+            banner = self.getImageLink(item, "Banner", str(parentId))
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
