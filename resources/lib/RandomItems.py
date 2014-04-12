@@ -126,9 +126,9 @@ class RandomInfoUpdaterThread(threading.Thread):
                 runtime = "0"
 
             item_id = item.get("Id")
-            thumbnail = self.getImageLink(item, "Primary")
-            logo = self.getImageLink(item, "Logo")
-            fanart = self.getImageLink(item, "Backdrop")
+            thumbnail = self.getImageLink(item, "Primary",str(item_id))
+            logo = self.getImageLink(item, "Logo",str(item_id))
+            fanart = self.getImageLink(item, "Backdrop",str(item_id))
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
@@ -300,10 +300,10 @@ class RandomInfoUpdaterThread(threading.Thread):
             if item.get("Type") == "MusicAlbum":
                parentId = item.get("ParentLogoItemId")
             
-            thumbnail = self.getImageLink(item, "Primary")
-            logo = self.getImageLink(item, "Logo")
-            fanart = self.getImageLink(item, "Backdrop")
-            banner = self.getImageLink(item, "Banner")
+            thumbnail = self.getImageLink(item, "Primary", str(item_id))
+            logo = self.getImageLink(item, "Logo", str(parent_id))
+            fanart = self.getImageLink(item, "Backdrop", str(parent_id))
+            banner = self.getImageLink(item, "Banner", str(parent_id))
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)

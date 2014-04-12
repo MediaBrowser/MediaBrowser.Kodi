@@ -1385,7 +1385,7 @@ def getArtwork(data, type):
     
     id = data.get("Id")
     if data.get("Type") == "Episode" or data.get("Type") == "Season":    
-        if type != "t" or __settings__.getSetting('useSeriesArt') == "true":
+        if type != "Primary" or __settings__.getSetting('useSeriesArt') == "true":
             id = data.get("SeriesId")
         
     imageTag = "none"
