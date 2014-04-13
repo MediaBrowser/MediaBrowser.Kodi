@@ -266,6 +266,21 @@ def getCollections(detailsString):
                     'poster'       : getArtwork(item,"Primary") ,
                     'path'          : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json')})
             printDebug("Title " + Name)    
+    
+    # Add standard nodes
+    nodeUrl = 'http://' + __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port')
+    collections.append({'title':'All Movies'             , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Movie&format=json' ,'thumb':'', 'poster':'', 'fanart_image':''})
+    collections.append({'title':'All TV'                 , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Series&format=json','thumb':'', 'poster':'', 'fanart_image':'' })
+    collections.append({'title':'Recently Added Movies'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json','thumb':'', 'poster':'', 'fanart_image':''})
+    collections.append({'title':'Recently Added Episodes', 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json','thumb':'', 'poster':'', 'fanart_image':''})
+    collections.append({'title':'In Progress Movies'     , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=' + detailsString + '&Filters=IsResumable&IncludeItemTypes=Movie&format=json','thumb':'', 'poster':'', 'fanart_image':''})
+    collections.append({'title':'In Progress Episodes'   , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=' + detailsString + '&Filters=IsResumable&IncludeItemTypes=Episode&format=json','thumb':'', 'poster':'', 'fanart_image':''})
+    collections.append({'title':'Next Episodes'          , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json','thumb':'', 'poster':'', 'fanart_image':''})
+    collections.append({'title':'Favorite Movies'        , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=json','thumb':'', 'poster':'', 'fanart_image':''})
+    collections.append({'title':'Favorite Episodes'      , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=json','thumb':'', 'poster':'', 'fanart_image':''})
+    collections.append({'title':'Upcoming TV'            , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + detailsString + '&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=json','thumb':'', 'poster':'', 'fanart_image':''})
+    collections.append({'title':'BoxSets'                , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=BoxSet&format=json','thumb':'', 'poster':'', 'fanart_image':''})
+    collections.append({'title':'Trailers'               , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=Trailer&format=json','thumb':'', 'poster':'', 'fanart_image':''})
             
     return collections
 
@@ -659,20 +674,6 @@ def displaySections( filter=None ):
         printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
         dirItems.append(addGUIItem(s_url, details, extraData))
     
-# Add standard nodes
-    nodeUrl = 'http://' + __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port')
-    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Movie&format=json',{'title':'All Movies'},extraData))
-    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Series&format=json',{'title':'All TV'},extraData))
-    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json',{'title':'Recently Added Movies'},extraData))
-    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json',{'title':'Recently Added Episodes'},extraData))
-    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=' + detailsString + '&Filters=IsResumable&IncludeItemTypes=Movie&format=json',{'title':'In Progress Movies'},extraData))
-    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=' + detailsString + '&Filters=IsResumable&IncludeItemTypes=Episode&format=json',{'title':'In Progress Episodes'},extraData))
-    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json',{'title':'Next Episodes'},extraData))
-    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=json',{'title':'Favorite Movies'},extraData))
-    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=json',{'title':'Favorite Episodes'},extraData))
-    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + detailsString + '&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=json',{'title':'Upcoming TV'},extraData))
-    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=BoxSet&format=json',{'title':'BoxSets'},extraData))
-    dirItems.append(addGUIItem(nodeUrl+'/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=Trailer&format=json',{'title':'Trailers'},extraData))    
     # add addon action items
     list = xbmcgui.ListItem("Edit Background Image List")
     url = sys.argv[0] + '?mode=' + str(_MODE_BG_EDIT)
@@ -696,50 +697,16 @@ def skin( filter=None, shared=False ):
     
     for section in allSections:
     
-        if shared and section.get('owned') == '1':
-            continue
-            
-    
         details={'title' : section.get('title', 'Unknown') }
 
         extraData={ 'fanart_image' : '' ,
                     'type'         : "Video" ,
                     'thumb'        : '' ,
                     'token'        : section.get('token',None) }
-
-                    #Determine what we are going to do process after a link is selected by the user, based on the content we find
-
         path=section['path']
 
-        if section.get('type') == 'show':
-            mode=_MODE_TVSHOWS
-            window="VideoLibrary"
-            if (filter is not None) and (filter != "tvshows"):
-                continue
-
-        elif section.get('type') == 'movie':
-            mode=_MODE_MOVIES
-            window="VideoLibrary"
-            printDebug("MovieType!")
-            if (filter is not None) and (filter != "movies"):
-                continue
-
-        elif section.get('type') == 'artist':
-            mode=_MODE_ARTISTS
-            window="MusicFiles"
-            if (filter is not None) and (filter != "music"):
-                continue
-
-        elif section.get('type') == 'photo':
-            mode=_MODE_PHOTOS
-            window="Pictures"
-            if (filter is not None) and (filter != "photos"):
-                continue
-        else:
-            printDebug("Ignoring section")
-            continue
-
-        path=path+'/all'
+        mode=_MODE_MOVIES
+        window="VideoLibrary"
 
         extraData['mode']=mode
         modeurl="&mode=0"
@@ -755,7 +722,7 @@ def skin( filter=None, shared=False ):
         WINDOW.setProperty("xbmb3c.%d.type"     % (sectionCount) , section.get('section'))
         WINDOW.setProperty("xbmb3c.%d.total" % (sectionCount) , str(total))
 
-        printDebug("Building window properties index [" + str(sectionCount) + "] which is [" + section.get('title') + " section - " + section.get('section') + " total - " + str(total) + "]")
+        printDebug("Building window properties index [" + str(sectionCount) + "] which is [" + section.get('title') + " section - " + section.get('path') + " total - " + str(total) + "]")
         printDebug("PATH in use is: ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
         sectionCount += 1
 
