@@ -924,7 +924,10 @@ def getCacheValidator (server,url):
     
     playedTime = "{0:09.6f}".format(playedPercentage)
     playedTime = playedTime.replace(".","-")
-    validatorString = str(result.get("RecursiveItemCount")) + "_" + str(result.get("RecursiveUnplayedItemCount")) + "_" + playedTime
+    if int(result.get("RecursiveItemCount"))<=25:
+        validatorString='nocache'
+    else:
+        validatorString = str(result.get("RecursiveItemCount")) + "_" + str(result.get("RecursiveUnplayedItemCount")) + "_" + playedTime
     printDebug ("getCacheValidator : " + validatorString)
     return validatorString
     
@@ -983,7 +986,7 @@ def getContent( url ):
     printDebug("URL suffix: " + str(lastbit))
     printDebug("server: " + str(server))
     printDebug("URL: " + str(url))    
-    validator='special' #Ugly hack to allow special queries (recently added etc) to work
+    validator='nocache' #Don't cache special queries (recently added etc)
     if "Parent" in url:
         validator = "_" + getCacheValidator(server,url)
         
@@ -1010,7 +1013,7 @@ def getContent( url ):
     
     # if a cached file exists use it
     # if one does not exist then load data from the url
-    if(os.path.exists(cacheDataPath)) and validator != 'special' and force_data_reload != "true":
+    if(os.path.exists(cacheDataPath)) and validator != 'nocache' and force_data_reload != "true":
         cachedfie = open(cacheDataPath, 'r')
         jsonData = cachedfie.read()
         cachedfie.close()
@@ -1045,7 +1048,7 @@ def getContent( url ):
             result = []
         dataLen = len(result)
         printDebug("Json Load Result : " + str(dataLen))
-        if(dataLen > 0 and validator != 'special'):
+        if(dataLen > 0 and validator != 'nocache'):
             cacheValidationString = getCacheValidatorFromData(result)
             printDebug("getCacheValidator : " + validator)
             printDebug("getCacheValidatorFromData : " + cacheValidationString)
