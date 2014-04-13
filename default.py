@@ -1357,6 +1357,8 @@ def getArtwork(data, type):
     # use the local image proxy server that is made available by this addons service
     artwork = "http://localhost:15001/?id=" + str(id) + "&type=" + type + "&tag=" + imageTag
     printDebug("getArtwork : " + artwork, level=2)
+    if type=="Primary" and imageTag=="":
+        artwork=''
     return artwork
 
 def getServerFromURL( url ):
