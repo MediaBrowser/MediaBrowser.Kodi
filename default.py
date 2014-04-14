@@ -1276,7 +1276,7 @@ def processDirectory(url, result, progress):
         # Populate the extraData list
         extraData={'thumb'        : getArtwork(item, "Primary") ,
                    'fanart_image' : getArtwork(item, "Backdrop") ,
-                   'poster'       : getArtwork(item, "ParentPrimary") ,
+                   'poster'       : getArtwork(item, "Primary") ,
                    'tvshow.poster': getArtwork(item, "ParentPrimary") ,
                    'banner'       : getArtwork(item, "Banner") ,
                    'clearlogo'    : getArtwork(item, "Logo") ,
