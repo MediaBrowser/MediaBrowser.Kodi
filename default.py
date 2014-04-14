@@ -1350,7 +1350,9 @@ def getArtwork(data, type):
     
     id = data.get("Id")
     if data.get("Type") == "Episode":
-        if type != "Primary" or __settings__.getSetting('useSeriesArt') == "true":
+        if type != "Primary":
+            id = data.get("SeasonId")
+        elif __settings__.getSetting('useSeriesArt') == "true":
             id = data.get("SeriesId")
     if type == "ParentPrimary":
         type="Primary"
