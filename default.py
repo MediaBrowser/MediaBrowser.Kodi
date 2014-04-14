@@ -1277,7 +1277,7 @@ def processDirectory(url, result, progress):
         extraData={'thumb'        : getArtwork(item, "Primary") ,
                    'fanart_image' : getArtwork(item, "Backdrop") ,
                    'poster'       : getArtwork(item, "ParentPrimary") ,
-                   'tvshow.poster': getArtwork(item, "ParentPrimary") ,
+                   'tvshow.poster': getArtwork(item, "ShowPrimary") ,
                    'banner'       : getArtwork(item, "Banner") ,
                    'clearlogo'    : getArtwork(item, "Logo") ,
                    'discart'         : getArtwork(item, "Disc") ,
@@ -1349,12 +1349,15 @@ def processDirectory(url, result, progress):
 def getArtwork(data, type):
     
     id = data.get("Id")
+    if data.get("Type") == "Season":
+        if type == "ShowPrimary":
+            id = data.get("SeriesId")
     if data.get("Type") == "Episode":
         if type != "Primary":
             id = data.get("SeasonId")
         elif __settings__.getSetting('useSeriesArt') == "true":
             id = data.get("SeriesId")
-    if type == "ParentPrimary":
+    if type == "ParentPrimary" or type == "ShowPrimary":
         type="Primary"
         
     imageTag = ""
