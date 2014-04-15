@@ -1276,8 +1276,8 @@ def processDirectory(url, result, progress):
         # Populate the extraData list
         extraData={'thumb'        : getArtwork(item, "Primary") ,
                    'fanart_image' : getArtwork(item, "Backdrop") ,
-                   'poster'       : getArtwork(item, "ParentPrimary") ,
-                   'tvshow.poster': getArtwork(item, "ShowPrimary") ,
+                   'poster'       : getArtwork(item, "poster") ,
+                   'tvshow.poster': getArtwork(item, "tvshow.poster") ,
                    'banner'       : getArtwork(item, "Banner") ,
                    'clearlogo'    : getArtwork(item, "Logo") ,
                    'discart'         : getArtwork(item, "Disc") ,
@@ -1349,17 +1349,15 @@ def processDirectory(url, result, progress):
 def getArtwork(data, type):
     
     id = data.get("Id")
-    if data.get("Type") == "Season":
-        if type == "ShowPrimary":
+    if type == "tvshow.poster":
+        if data.get("Type") == "Season" or data.get("Type")== "Episode":
             id = data.get("SeriesId")
-    if data.get("Type") == "Episode":
-        if type != "Primary":
-            id = data.get("SeasonId")
-        elif __settings__.getSetting('useSeriesArt') == "true":
-            id = data.get("SeriesId")
-    if type == "ParentPrimary" or type == "ShowPrimary":
+    elif type == "poster" and data.get("Type")=="Episode":
+        id = data.get("SeasonId")
+    if __settings__.getSetting('useSeriesArt') == "true":
+        id = data.get("SeriesId")
+    if type == "poster" or type == "tvshow.poster":
         type="Primary"
-        
     imageTag = ""
     if(data.get("ImageTags") != None and data.get("ImageTags").get(type) != None):
         imageTag = data.get("ImageTags").get(type)   
