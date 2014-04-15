@@ -1276,7 +1276,7 @@ def processDirectory(url, result, progress):
         # Populate the extraData list
         extraData={'thumb'        : getArtwork(item, "Primary") ,
                    'fanart_image' : getArtwork(item, "Backdrop") ,
-                   'poster'       : getArtwork(item, "poster") ,
+                   'poster'       : getArtwork(item, "poster") , 
                    'tvshow.poster': getArtwork(item, "tvshow.poster") ,
                    'banner'       : getArtwork(item, "Banner") ,
                    'clearlogo'    : getArtwork(item, "Logo") ,
@@ -1349,14 +1349,14 @@ def processDirectory(url, result, progress):
 def getArtwork(data, type):
     
     id = data.get("Id")
-    if type == "tvshow.poster":
+    if type == "tvshow.poster": # Change the Id to the series to get the overall series poster
         if data.get("Type") == "Season" or data.get("Type")== "Episode":
             id = data.get("SeriesId")
-    elif type == "poster" and data.get("Type")=="Episode":
+    elif type == "poster" and data.get("Type")=="Episode": # Change the Id to the Season to get the season poster
         id = data.get("SeasonId")
-    if type == "poster" or type == "tvshow.poster":
+    if type == "poster" or type == "tvshow.poster": # Now that the Ids are right, change type to MB3 name
         type="Primary"
-    if data.get("Type") == "Episode" or data.get("Type") == "Season":    
+    if data.get("Type") == "Episode" or data.get("Type") == "Season":  # If we aren't delling with the poster, use series art
         if type != "Primary" or __settings__.getSetting('useSeriesArt') == "true":
             id = data.get("SeriesId")
     imageTag = ""
