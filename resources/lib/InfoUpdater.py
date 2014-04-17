@@ -111,6 +111,7 @@ class InfoUpdaterThread(threading.Thread):
         musicvideos_unwatched_count = 0
         trailers_count = 0
         trailers_unwatched_count = 0
+        photos_count = 0
         for item in result:
             collectionType = item.get("CollectionType")
             if collectionType==None:
@@ -133,7 +134,10 @@ class InfoUpdaterThread(threading.Thread):
                 music_count = music_count + item.get("ChildCount")
                 music_songs_count = music_songs_count + item.get("RecursiveItemCount")
                 music_songs_unplayed_count = music_songs_unplayed_count + item.get("RecursiveUnplayedItemCount")
-                  
+             
+            if(collectionType == "photos"):
+                photos_count = photos_count + item.get("RecursiveItemCount")
+                     
             if(item.get("Name") == "Trailers"):
                 trailers_count = trailers_count + item.get("RecursiveItemCount")
                 trailers_unwatched_count = trailers_unwatched_count + item.get("RecursiveUnplayedItemCount")
@@ -150,6 +154,7 @@ class InfoUpdaterThread(threading.Thread):
         self.logMsg("SongsUnPlayedCount "  + str(music_songs_unplayed_count), level=2)
         self.logMsg("TrailersCount" + str(trailers_count), level=2)
         self.logMsg("TrailersUnWatchedCount" + str(trailers_unwatched_count), level=2)
+        self.logMsg("PhotosCount" + str(photos_count), level=2)
     
             #item_count = item_count + 1
         
@@ -175,6 +180,7 @@ class InfoUpdaterThread(threading.Thread):
         WINDOW.setProperty("MB3TotalTrailers", str(trailers_count))
         WINDOW.setProperty("MB3TotalUnWatchedTrailers", str(trailers_unwatched_count))
         WINDOW.setProperty("MB3TotalWatchedTrailers", str(trailers_watched_count))
+        WINDOW.setProperty("MB3TotalPhotos", str(photos_count))
 
         self.logMsg("InfoTV start")
         infoTVUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?&IncludeItemTypes=Series&Recursive=true&SeriesStatus=Continuing&format=json"
