@@ -735,7 +735,6 @@ def skin( filter=None, shared=False ):
         WINDOW.setProperty("xbmb3c.%d.path"     % (sectionCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
         WINDOW.setProperty("xbmb3c.%d.type"     % (sectionCount) , section.get('section'))
         WINDOW.setProperty("xbmb3c.%d.total" % (sectionCount) , str(total))
-        printDebug("== ENTER: skin222() section type:=="+section.get('sectype'))
         if section.get('sectype')=='movies':
             WINDOW.setProperty("xbmb3c.usr.movies.%d.title"         % (usrMoviesCount) , section.get('title', 'Unknown'))
             WINDOW.setProperty("xbmb3c.usr.movies.%d.path"          % (usrMoviesCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
@@ -752,7 +751,7 @@ def skin( filter=None, shared=False ):
             usrTVshowsCount +=1
         elif section.get('sectype')=='music':
             WINDOW.setProperty("xbmb3c.usr.music.%d.title"        % (usrMusicCount) , section.get('title', 'Unknown'))
-            WINDOW.setProperty("xbmb3c.usr.music.%d.path"         % (usrMusicCount) , "ActivateWindow("+"MusicLibrary"+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+            WINDOW.setProperty("xbmb3c.usr.music.%d.path"         % (usrMusicCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
             WINDOW.setProperty("xbmb3c.usr.music.%d.type"         % (usrMusicCount) , section.get('section'))
             printDebug("xbmb3c.usr.music.%d.title"  % (usrMusicCount) + "title is:" + section.get('title', 'Unknown'))
             printDebug("xbmb3c.usr.music.%d.type"  % (usrMusicCount) + "section is:" + section.get('section'))
@@ -773,7 +772,7 @@ def skin( filter=None, shared=False ):
             stdTVshowsCount +=1    
         elif section.get('sectype')=='std.music':
             WINDOW.setProperty("xbmb3c.std.music.%d.title"        % (stdMusicCount) , section.get('title', 'Unknown'))
-            WINDOW.setProperty("xbmb3c.std.music.%d.path"         % (stdMusicCount) , "ActivateWindow("+"MusicLibrary"+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+            WINDOW.setProperty("xbmb3c.std.music.%d.path"         % (stdMusicCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
             WINDOW.setProperty("xbmb3c.std.music.%d.type"         % (stdMusicCount) , section.get('section'))
             printDebug("xbmb3c.std.music.%d.title"  % (stdMusicCount) + "title is:" + section.get('title', 'Unknown'))
             printDebug("xbmb3c.std.music.%d.type"  % (stdMusicCount) + "section is:" + section.get('section'))      
