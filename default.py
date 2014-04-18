@@ -796,6 +796,9 @@ def remove_html_tags( data ):
 def getPlayUrl(server, id, result):
     if __settings__.getSetting('playFromStream') == 'false':
         playurl = result.get("Path")
+        if ":\\" in playurl:
+            xbmcgui.Dialog().ok(__language__(30130), __language__(30131) + playurl)
+            sys.exit()
         USER_AGENT = 'QuickTime/7.7.4'
         
         if (result.get("VideoType") == "Dvd"):

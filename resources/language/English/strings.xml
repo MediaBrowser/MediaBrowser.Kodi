@@ -104,5 +104,7 @@
     <string id="30127">Offer delete for watched episodes</string>   
     <string id="30128">Play Error</string>
     <string id="30129">This item is not playable</string>    
+    <string id="30130">Local path detected</string>
+    <string id="30131">Your MB3 Server contains local paths.  Please change server paths to UNC or change XBMB3C setting 'Play from Stream' to true.  Path: </string>
 
 </strings>
