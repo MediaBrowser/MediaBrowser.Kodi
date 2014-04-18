@@ -1640,7 +1640,7 @@ else:
     elif mode == _MODE_BASICPLAY:
         PLAY(param_url, pluginhandle)
     elif mode == _MODE_SEARCH:
-        searchString=xbmcgui.Dialog().input("Search")
+        searchString=urllib.quote(xbmcgui.Dialog().input("Search"))
         if searchString=="":
             sys.exit()
         param_url=param_url.replace("Search/Hints?","Search/Hints?SearchTerm="+searchString + "&UserId=")
