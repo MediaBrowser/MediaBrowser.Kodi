@@ -78,6 +78,7 @@ xbmc.log (xbmc.getInfoLabel( "System.BuildVersion" ))
 CP_ADD_URL = 'XBMC.RunPlugin(plugin://plugin.video.couchpotato_manager/movies/add?title=%s)'
 _MODE_GETCONTENT=0
 _MODE_MOVIES=0
+_MODE_SEARCH=2
 _MODE_BASICPLAY=12
 _MODE_BG_EDIT=13
 
@@ -288,6 +289,8 @@ def getCollections(detailsString):
     collections.append({'title':'Trailers'               , 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=Trailer&format=json','thumb':'', 'poster':'', 'fanart_image':''})
     collections.append({'title':'Music Videos'           , 'sectype' : 'std.music', 'section' : 'musicvideos'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=MusicVideo&format=json','thumb':'', 'poster':'', 'fanart_image':''})
     collections.append({'title':'Photos'                 , 'sectype' : 'std.photo', 'section' : 'photos'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=Photo&format=json','thumb':'', 'poster':'', 'fanart_image':''})
+    collections.append({'title':'Search'                 , 'sectype' : 'std.search', 'section' : 'search'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Search/Hints?' + userid,'thumb':'', 'poster':'', 'fanart_image':''})
+
             
     return collections
 
@@ -509,6 +512,8 @@ def addGUIItem( url, details, extraData, folder=True ):
     #Create the URL to pass to the item
     if 'mediabrowser/Videos' in url:
         u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+    elif 'mediabrowser/Search' in url:
+        u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_SEARCH)
     elif url.startswith('http') or url.startswith('file'):
         u=sys.argv[0]+"?url="+urllib.quote(url)+mode
     else:
@@ -1144,7 +1149,7 @@ def getContent( url ):
 def loadJasonData(jsonData):
     return json.loads(jsonData)
     
-def processDirectory(url, result, progress):
+def processDirectory(url, results, progress):
     cast=['None']
     printDebug("== ENTER: processDirectory ==")
     parsed = urlparse(url)
@@ -1165,9 +1170,11 @@ def processDirectory(url, result, progress):
         detailsString += ",Overview"            
     
     dirItems = []
-    result = result.get("Items")
+    result = results.get("Items")
     if(result == None):
-        result = []
+        result = results.get("SearchHints")
+        if(result == None):
+            result = []
 
     item_count = len(result)
     current_item = 1;
@@ -1185,6 +1192,8 @@ def processDirectory(url, result, progress):
             tempTitle = "Missing Title"
             
         id = str(item.get("Id")).encode('utf-8')
+        if id == 'None': # May be in a search
+            id=str(item.get("ItemId")).encode('utf-8')
         isFolder = item.get("IsFolder")
         item_type = str(item.get("Type")).encode('utf-8')
         
@@ -1292,6 +1301,10 @@ def processDirectory(url, result, progress):
                 
         # Process UserData
         userData = item.get("UserData")
+        overlay=""
+        favorite="false"
+        seekTime=0
+        PlaybackPositionTicks = '100'
         if(userData != None):
             if userData.get("Played") != True:
                 overlay = "7"
@@ -1308,12 +1321,11 @@ def processDirectory(url, result, progress):
                 PlaybackPositionTicks = str(userData.get("PlaybackPositionTicks"))
                 reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
                 seekTime = reasonableTicks / 10000
-            else:
-                PlaybackPositionTicks = '100'
-
+        
         playCount = 0
-        if(userData.get("Played") == True):
-            playCount = 1
+        if(userData != None):
+            if(userData.get("Played") == True):
+                playCount = 1
         # Populate the details list
         details={'title'        : tempTitle,
                  'plot'         : item.get("Overview"),
@@ -1522,7 +1534,6 @@ def setWindowHeading(url) :
     elif 'IncludeItemTypes=Episode' in url:
         WINDOW.setProperty("addshowname", "true")
 
-
 ###########################################################################  
 ##Start of Main
 ###########################################################################
@@ -1628,6 +1639,13 @@ else:
 
     elif mode == _MODE_BASICPLAY:
         PLAY(param_url, pluginhandle)
+    elif mode == _MODE_SEARCH:
+        searchString=xbmcgui.Dialog().input("Search")
+        if searchString=="":
+            sys.exit()
+        param_url=param_url.replace("Search/Hints?","Search/Hints?SearchTerm="+searchString + "&UserId=")
+        param_url=param_url + "&Fields=" + getDetailsString() + "&format=json"
+        getContent(param_url)
     
 xbmc.log ("===== XBMB3C STOP =====")
 
