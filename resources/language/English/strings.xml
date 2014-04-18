@@ -106,5 +106,6 @@
     <string id="30129">This item is not playable</string>    
     <string id="30130">Local path detected</string>
     <string id="30131">Your MB3 Server contains local paths.  Please change server paths to UNC or change XBMB3C setting 'Play from Stream' to true.  Path: </string>
+    <string id="30132">Search</string>
 
 </strings>
