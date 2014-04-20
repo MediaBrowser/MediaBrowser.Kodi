@@ -824,7 +824,7 @@ def getPlayUrl(server, id, result):
         playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream.ts'
     else:
         playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
-    return playurl
+    return playurl.encode('utf-8')
 
 def PLAY( url, handle ):
     printDebug("== ENTER: PLAY ==")
