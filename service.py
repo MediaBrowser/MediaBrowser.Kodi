@@ -182,6 +182,7 @@ def stopAll(played_information):
                     newWebSocketThread.playbackStopped(item_id, str(int(currentPossition * 10000000)))
                     setPosition(positionurl + '?PositionTicks=' + str(int(currentPossition * 10000000)), 'DELETE')
                     
+    NextUpUpdaterThread.updateNextUp(NextUpUpdaterThread())
     played_information.clear()
 
 class Service( xbmc.Player ):
