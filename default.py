@@ -790,7 +790,7 @@ def skin( filter=None, shared=False ):
             printDebug("xbmb3c.std.photo.%d.title"  % (stdPhotoCount) + "title is:" + section.get('title', 'Unknown'))
             printDebug("xbmb3c.std.photo.%d.type"  % (stdPhotoCount) + "section is:" + section.get('section'))    
             stdPhotoCount +=1      
-        printDebug("Building window properties index [" + str(sectionCount) + "] which is [" + section.get('title') + " section - " + section.get('section') + " total - " + str(total) + "]")
+        #printDebug("Building window properties index [" + str(sectionCount) + "] which is [" + section.get('title').encode('utf-8') + " section - " + section.get('section') + " total - " + str(total) + "]")
         printDebug("PATH in use is: ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
         sectionCount += 1
 
@@ -1529,32 +1529,12 @@ def processSearch(url, results, progress):
             extraData['thumb'] = extraData['fanart_image']
 
         extraData['mode'] = _MODE_GETCONTENT
-        
         if isFolder == True:
-            SortByTemp = __settings__.getSetting('sortby')
-            if SortByTemp == '':
-                SortByTemp = 'SortName'
-                
-            if  item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist':
-                u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
-                if (item.get("RecursiveItemCount") != 0):
-                    dirItems.append(addGUIItem(u, details, extraData))
-            else:
-                if __settings__.getSetting('autoEnterSingle') == "true":
-                    if item.get("ChildCount") == 1:
-                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&recursive=true&IncludeItemTypes=Episode&Fields=' + detailsString + '&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
-                    else:
-                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
-                else:
-                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
-
-                if (item.get("RecursiveItemCount") != 0):
-                    dirItems.append(addGUIItem(u, details, extraData))
-
+            u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&format=json'
+            dirItems.append(addGUIItem(u, details, extraData))
         elif tempDuration != '0':
             u = server+',;'+id
             dirItems.append(addGUIItem(u, details, extraData, folder=False))
-    
     return dirItems
     
 def getArtwork(data, type):
