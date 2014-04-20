@@ -1418,18 +1418,12 @@ def processDirectory(url, results, progress):
     
     return dirItems
 
-
-    
-    
-    
-    
 def processSearch(url, results, progress):
     cast=['None']
     printDebug("== ENTER: processSearch ==")
     parsed = urlparse(url)
     parsedserver,parsedport=parsed.netloc.split(':')
     userid = getUserId()
-    printDebug("Processing secondary menus")
     xbmcplugin.setContent(pluginhandle, 'movies')
     detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
     if(__settings__.getSetting('includeStreamInfo') == "true"):
@@ -1482,14 +1476,6 @@ def processSearch(url, results, progress):
       
         if item.get("DisplayMediaType") == "Episode" and __settings__.getSetting('addEpisodeNumber') == 'true':
             tempTitle = str(tempEpisode) + ' - ' + tempTitle
-            xbmcplugin.setContent(pluginhandle, 'episodes')
-        if item.get("DisplayMediaType") == "Season":
-            xbmcplugin.setContent(pluginhandle, 'tvshows')
-        if item.get("DisplayMediaType") == "Audio":
-            xbmcplugin.setContent(pluginhandle, 'songs')            
-        if item.get("DisplayMediaType") == "Series":
-            xbmcplugin.setContent(pluginhandle, 'tvshows')
-        
 
         #Add show name to special TV collections RAL, NextUp etc
         WINDOW = xbmcgui.Window( 10000 )
@@ -1497,13 +1483,12 @@ def processSearch(url, results, progress):
             displayMediaType=''
         else:
             displayMediaType=item.get("DisplayMediaType").encode('utf-8')
-        if WINDOW.getProperty("addshowname") == "true":
-            tempTitle=item.get("Series").encode('utf-8') + " - " + displayMediaType + ": " + tempTitle
+        if item.get("Series")!=None:
+            tempTitle=displayMediaType + ": " + item.get("Series").encode('utf-8') + " - " + tempTitle
         else:
             tempTitle=displayMediaType + ": " +tempTitle
         # Populate the details list
         details={'title'        : tempTitle,
-                 'plot'         : item.get("Overview"),
                  'episode'      : tempEpisode,
                  'SeriesName'  :  item.get("Series"),
                  'season'       : tempSeason
@@ -1538,8 +1523,6 @@ def processSearch(url, results, progress):
                    'parenturl'    : url,
                    'totaltime'    : tempDuration,
                    'duration'     : tempDuration,
-                   'RecursiveItemCount' : item.get("RecursiveItemCount"),
-                   'RecursiveUnplayedItemCount' : item.get("RecursiveUnplayedItemCount"),
                    'itemtype'     : item_type}
                    
         if extraData['thumb'] == '':
@@ -1568,17 +1551,11 @@ def processSearch(url, results, progress):
                 if (item.get("RecursiveItemCount") != 0):
                     dirItems.append(addGUIItem(u, details, extraData))
 
-        else:
+        elif tempDuration != '0':
             u = server+',;'+id
             dirItems.append(addGUIItem(u, details, extraData, folder=False))
     
     return dirItems
-    
-    
-    
-    
-    
-    
     
 def getArtwork(data, type):
     
