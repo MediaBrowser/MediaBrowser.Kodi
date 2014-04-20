@@ -1456,7 +1456,7 @@ def processSearch(url, results, progress):
             tempTitle = "Missing Title"
             
         id=str(item.get("ItemId")).encode('utf-8')
-        if item.get("DisplayMediaType")=="Series":
+        if item.get("DisplayMediaType")=="Series" or item.get("DisplayMediaType")=="MusicArtist" or item.get("DisplayMediaType")=="Album":
             isFolder = True
         else:
             isFolder = False
