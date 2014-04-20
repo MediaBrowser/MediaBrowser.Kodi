@@ -1136,7 +1136,10 @@ def getContent( url ):
         return
     
     printDebug("JSON DATA: " + str(result), level=2)
-    dirItems = processDirectory(url, result, progress)
+    if "Search" in url:
+        dirItems = processSearch(url, result, progress)
+    else:
+        dirItems = processDirectory(url, result, progress)
     
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
@@ -1173,9 +1176,7 @@ def processDirectory(url, results, progress):
     dirItems = []
     result = results.get("Items")
     if(result == None):
-        result = results.get("SearchHints")
-        if(result == None):
-            result = []
+        result = []
 
     item_count = len(result)
     current_item = 1;
@@ -1193,8 +1194,6 @@ def processDirectory(url, results, progress):
             tempTitle = "Missing Title"
             
         id = str(item.get("Id")).encode('utf-8')
-        if id == 'None': # May be in a search
-            id=str(item.get("ItemId")).encode('utf-8')
         isFolder = item.get("IsFolder")
         item_type = str(item.get("Type")).encode('utf-8')
         
@@ -1302,9 +1301,6 @@ def processDirectory(url, results, progress):
                 
         # Process UserData
         userData = item.get("UserData")
-        overlay=""
-        favorite="false"
-        seekTime=0
         PlaybackPositionTicks = '100'
         if(userData != None):
             if userData.get("Played") != True:
@@ -1324,9 +1320,8 @@ def processDirectory(url, results, progress):
                 seekTime = reasonableTicks / 10000
         
         playCount = 0
-        if(userData != None):
-            if(userData.get("Played") == True):
-                playCount = 1
+        if(userData.get("Played") == True):
+            playCount = 1
         # Populate the details list
         details={'title'        : tempTitle,
                  'plot'         : item.get("Overview"),
@@ -1423,6 +1418,168 @@ def processDirectory(url, results, progress):
     
     return dirItems
 
+
+    
+    
+    
+    
+def processSearch(url, results, progress):
+    cast=['None']
+    printDebug("== ENTER: processSearch ==")
+    parsed = urlparse(url)
+    parsedserver,parsedport=parsed.netloc.split(':')
+    userid = getUserId()
+    printDebug("Processing secondary menus")
+    xbmcplugin.setContent(pluginhandle, 'movies')
+    detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
+    if(__settings__.getSetting('includeStreamInfo') == "true"):
+        detailsString += ",MediaStreams"
+    if(__settings__.getSetting('includePeople') == "true"):
+        detailsString += ",People"
+    if(__settings__.getSetting('includeOverview') == "true"):
+        detailsString += ",Overview"            
+    server = getServerFromURL(url)
+    setWindowHeading(url)
+    
+    dirItems = []
+    result = results.get("SearchHints")
+    if(result == None):
+        result = []
+
+    item_count = len(result)
+    current_item = 1;
+        
+    for item in result:
+    
+        if(progress != None):
+            percentDone = (float(current_item) / float(item_count)) * 100
+            progress.update(int(percentDone), __language__(30126) + str(current_item))
+            current_item = current_item + 1
+        
+        if(item.get("Name") != None):
+            tempTitle = item.get("Name").encode('utf-8')
+        else:
+            tempTitle = "Missing Title"
+            
+        id=str(item.get("ItemId")).encode('utf-8')
+        if item.get("DisplayMediaType")=="Series":
+            isFolder = True
+        else:
+            isFolder = False
+        item_type = str(item.get("DisplayMediaType")).encode('utf-8')
+        
+        tempEpisode = ""
+        if (item.get("IndexNumber") != None):
+            episodeNum = item.get("IndexNumber")
+            if episodeNum < 10:
+                tempEpisode = "0" + str(episodeNum)
+            else:
+                tempEpisode = str(episodeNum)
+                
+        tempSeason = ""
+        if (str(item.get("ParentIndexNumber")) != None):
+            tempSeason = str(item.get("ParentIndexNumber"))
+      
+        if item.get("DisplayMediaType") == "Episode" and __settings__.getSetting('addEpisodeNumber') == 'true':
+            tempTitle = str(tempEpisode) + ' - ' + tempTitle
+            xbmcplugin.setContent(pluginhandle, 'episodes')
+        if item.get("DisplayMediaType") == "Season":
+            xbmcplugin.setContent(pluginhandle, 'tvshows')
+        if item.get("DisplayMediaType") == "Audio":
+            xbmcplugin.setContent(pluginhandle, 'songs')            
+        if item.get("DisplayMediaType") == "Series":
+            xbmcplugin.setContent(pluginhandle, 'tvshows')
+        
+
+        #Add show name to special TV collections RAL, NextUp etc
+        WINDOW = xbmcgui.Window( 10000 )
+        if item.get("DisplayMediaType")==None:
+            displayMediaType=''
+        else:
+            displayMediaType=item.get("DisplayMediaType").encode('utf-8')
+        if WINDOW.getProperty("addshowname") == "true":
+            tempTitle=item.get("Series").encode('utf-8') + " - " + displayMediaType + ": " + tempTitle
+        else:
+            tempTitle=displayMediaType + ": " +tempTitle
+        # Populate the details list
+        details={'title'        : tempTitle,
+                 'plot'         : item.get("Overview"),
+                 'episode'      : tempEpisode,
+                 'SeriesName'  :  item.get("Series"),
+                 'season'       : tempSeason
+                 }
+                 
+        try:
+            tempDuration = str(int(item.get("RunTimeTicks"))/(10000000*60))
+            RunTimeTicks = str(item.get("RunTimeTicks"))
+        except TypeError:
+            try:
+                tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
+                RunTimeTicks = str(item.get("CumulativeRunTimeTicks"))
+            except TypeError:
+                tempDuration = "0"
+                RunTimeTicks = "0"
+
+        # Populate the extraData list
+        extraData={'thumb'        : "http://localhost:15001/?id=" + str(id) + "&type=Primary" ,
+                   'fanart_image' : getArtwork(item, "Backdrop") ,
+                   'poster'       : getArtwork(item, "poster") , 
+                   'tvshow.poster': getArtwork(item, "tvshow.poster") ,
+                   'banner'       : getArtwork(item, "Banner") ,
+                   'clearlogo'    : getArtwork(item, "Logo") ,
+                   'discart'      : getArtwork(item, "Disc") ,
+                   'clearart'     : getArtwork(item, "Art") ,
+                   'landscape'    : getArtwork(item, "Backdrop") ,
+                   'id'           : id ,
+                   'year'         : item.get("ProductionYear"),
+                   'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
+                   'favoriteurl'  : 'http://' + server + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id,
+                   'deleteurl'    : 'http://' + server + '/mediabrowser/Items/' + id,                   
+                   'parenturl'    : url,
+                   'totaltime'    : tempDuration,
+                   'duration'     : tempDuration,
+                   'RecursiveItemCount' : item.get("RecursiveItemCount"),
+                   'RecursiveUnplayedItemCount' : item.get("RecursiveUnplayedItemCount"),
+                   'itemtype'     : item_type}
+                   
+        if extraData['thumb'] == '':
+            extraData['thumb'] = extraData['fanart_image']
+
+        extraData['mode'] = _MODE_GETCONTENT
+        
+        if isFolder == True:
+            SortByTemp = __settings__.getSetting('sortby')
+            if SortByTemp == '':
+                SortByTemp = 'SortName'
+                
+            if  item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist':
+                u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
+                if (item.get("RecursiveItemCount") != 0):
+                    dirItems.append(addGUIItem(u, details, extraData))
+            else:
+                if __settings__.getSetting('autoEnterSingle') == "true":
+                    if item.get("ChildCount") == 1:
+                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&recursive=true&IncludeItemTypes=Episode&Fields=' + detailsString + '&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
+                    else:
+                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
+                else:
+                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
+
+                if (item.get("RecursiveItemCount") != 0):
+                    dirItems.append(addGUIItem(u, details, extraData))
+
+        else:
+            u = server+',;'+id
+            dirItems.append(addGUIItem(u, details, extraData, folder=False))
+    
+    return dirItems
+    
+    
+    
+    
+    
+    
+    
 def getArtwork(data, type):
     
     id = data.get("Id")
