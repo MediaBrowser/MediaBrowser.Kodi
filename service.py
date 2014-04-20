@@ -238,9 +238,7 @@ class Service( xbmc.Player ):
 
 monitor = Service()
 lastProgressUpdate = datetime.today()
-            
 while not xbmc.abortRequested:
-
     if xbmc.Player().isPlaying():
         try:
         
@@ -264,7 +262,7 @@ while not xbmc.abortRequested:
             pass
 
     xbmc.sleep(1000)
-    
+    xbmcgui.Window(10000).setProperty("XBMB3C_Service_Timestamp", str(int(time.time())))
 # stop the WebSocket client
 newWebSocketThread.stopClient()
 

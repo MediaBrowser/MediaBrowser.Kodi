@@ -1539,7 +1539,7 @@ def setWindowHeading(url) :
 ##Start of Main
 ###########################################################################
 if(logLevel == 2):
-    xbmcgui.Dialog().ok("Warning", "Debug logging enabled.", "This will affect performance.")
+    xbmcgui.Dialog().ok(__language__(30132), __language__(30133), __language__(30134))
 
 printDebug( "XBMB3C -> Script argument is " + str(sys.argv[1]))
 xbmcVersionNum = getXbmcVersion()
@@ -1557,6 +1557,15 @@ param_url=params.get('url',None)
 
 if param_url and ( param_url.startswith('http') or param_url.startswith('file') ):
     param_url = urllib.unquote(param_url)
+
+if xbmcgui.Window(10000).getProperty("XBMB3C_Service_Timestamp") == "":
+    xbmc.sleep(2000) # Wait for service to start
+printDebug ("XBMB3C Service Timestamp: " + (xbmcgui.Window(10000).getProperty("XBMB3C_Service_Timestamp")))
+printDebug ("XBMB3C Current Timestamp: " + str(int(time.time())))
+if int(xbmcgui.Window(10000).getProperty("XBMB3C_Service_Timestamp")) + 10 < int(time.time()):
+    xbmcgui.Dialog().ok(__language__(30135), __language__(30136), __language__(30137))
+    sys.exit()
+    
 
 param_name = urllib.unquote_plus(params.get('name',""))
 mode = int(params.get('mode',-1))
