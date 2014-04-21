@@ -84,7 +84,10 @@ class LoadMenuOptionsThread(threading.Thread):
             index = action.find("plugin://plugin.video.xbmb3c") # this addon
                 
             if(index > -1 and len(action) > 10):
-                action_url = action[index:len(action) - 2]
+            
+                action_url = action[index:]
+                endIndex = action_url.find("\"")
+                action_url = action_url[:endIndex]
                 
                 WINDOW.setProperty("xbmb3c_menuitem_name_" + str(menuItem), name)
                 WINDOW.setProperty("xbmb3c_menuitem_action_" + str(menuItem), action_url)
