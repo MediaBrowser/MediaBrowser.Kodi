@@ -98,20 +98,20 @@ class BackgroundRotationThread(threading.Thread):
         
         WINDOW = xbmcgui.Window( 10000 )
         if(result.get("global") != None):
-            self.logMsg("Setting Global Last : " + result.get("global"), level=2)
-            WINDOW.setProperty("MB3.Background.Global.FanArt", result.get("global"))       
+            self.logMsg("Setting Global Last : " + str(result.get("global")), level=2)
+            WINDOW.setProperty("MB3.Background.Global.FanArt", result.get("global")["url"])       
 
         if(result.get("movie") != None):
-            self.logMsg("Setting Movie Last : " + result.get("movie"), level=2)
-            WINDOW.setProperty("MB3.Background.Movie.FanArt", result.get("movie"))      
+            self.logMsg("Setting Movie Last : " + str(result.get("movie")), level=2)
+            WINDOW.setProperty("MB3.Background.Movie.FanArt", result.get("movie")["url"])      
             
         if(result.get("tv") != None):
-            self.logMsg("Setting TV Last : " + result.get("tv"), level=2)
-            WINDOW.setProperty("MB3.Background.TV.FanArt", result.get("tv"))    
+            self.logMsg("Setting TV Last : " + str(result.get("tv")), level=2)
+            WINDOW.setProperty("MB3.Background.TV.FanArt", result.get("tv")["url"])    
 
         if(result.get("music") != None):
-            self.logMsg("Setting Music Last : " + result.get("music"), level=2)
-            WINDOW.setProperty("MB3.Background.Music.FanArt", result.get("music"))   
+            self.logMsg("Setting Music Last : " + str(result.get("music")), level=2)
+            WINDOW.setProperty("MB3.Background.Music.FanArt", result.get("music")["url"])   
         
     def saveLastBackground(self):
     
@@ -166,7 +166,7 @@ class BackgroundRotationThread(threading.Thread):
         
         if(len(self.tv_art_links) > 0):
             self.logMsg("setBackgroundLink index tv_art_links " + str(self.current_tv_art + 1) + " of " + str(len(self.tv_art_links)), level=2)
-            artUrl =  self.tv_art_links[self.current_tv_art]
+            artUrl =  self.tv_art_links[self.current_tv_art]["url"]
             WINDOW.setProperty("MB3.Background.TV.FanArt", artUrl)
             self.logMsg("MB3.Background.TV.FanArt=" + artUrl)
             self.current_tv_art = self.current_tv_art + 1
@@ -187,18 +187,33 @@ class BackgroundRotationThread(threading.Thread):
             self.current_global_art = next
             WINDOW.setProperty("MB3.Background.Global.FanArt", url)
             self.logMsg("MB3.Background.Global.FanArt=" + url)
-                
+           
+    def isBlackListed(self, blackList, bgInfo):
+        for blocked in blackList:
+            if(bgInfo["parent"] == blocked["parent"]):
+                self.logMsg("Block List Parents Match On : " + str(bgInfo) + " : " + str(blocked), level=1)
+                if(blocked["index"] == -1 or bgInfo["index"] == blocked["index"]):
+                    self.logMsg("Item Blocked", level=1)
+                    return True
+        return False
+           
     def findNextLink(self, linkList, blackList, startIndex):
         currentIndex = startIndex
-        artUrl =  linkList[currentIndex]
-        while(artUrl in blackList):
+        
+        isBlacklisted = self.isBlackListed(blackList, linkList[currentIndex])
+        
+        while(isBlacklisted):
+        
             currentIndex = currentIndex + 1
+            
             if(currentIndex == len(linkList)):
                 currentIndex = 0 # loop back to beginning
             if(currentIndex == startIndex):
-                return (currentIndex+1, artUrl) # we checked everything and nothing was ok so return the first one again                
-            artUrl =  linkList[currentIndex]
-        return (currentIndex+1, artUrl)
+                return (currentIndex+1, linkList[currentIndex]["url"]) # we checked everything and nothing was ok so return the first one again                
+
+            isBlacklisted = self.isBlackListed(blackList, linkList[currentIndex])
+             
+        return (currentIndex+1, linkList[currentIndex]["url"])
     
     def updateArtLinks(self):
         self.logMsg("updateArtLinks Called")
@@ -247,13 +262,21 @@ class BackgroundRotationThread(threading.Thread):
         for item in result:
             images = item.get("BackdropImageTags")
             id = item.get("Id")
+            name = item.get("Name")
             if (images == None):
                 images = []
             index = 0
             for backdrop in images:
-              fanartLink = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
-              if (fanartLink not in self.movie_art_links):
-                  self.movie_art_links.append(fanartLink)
+              
+              info = {}
+              info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
+              info["index"] = index
+              info["parent"] = id
+              info["name"] = name
+              self.logMsg("BG Movie Image Info : " + str(info), level=2)
+              
+              if (info not in self.movie_art_links):
+                  self.movie_art_links.append(info)
               index = index + 1
         
         random.shuffle(self.movie_art_links)
@@ -278,13 +301,21 @@ class BackgroundRotationThread(threading.Thread):
         for item in result:
             images = item.get("BackdropImageTags")
             id = item.get("Id")
+            name = item.get("Name")
             if (images == None):
                 images = []
             index = 0
             for backdrop in images:
-              fanartLink = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
-              if (fanartLink not in self.tv_art_links):
-                  self.tv_art_links.append(fanartLink)    
+              
+              info = {}
+              info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
+              info["index"] = index
+              info["parent"] = id
+              info["name"] = name
+              self.logMsg("BG TV Image Info : " + str(info), level=2)
+              
+              if (info not in self.tv_art_links):
+                  self.tv_art_links.append(info)    
               index = index + 1
               
         random.shuffle(self.tv_art_links)
@@ -309,13 +340,21 @@ class BackgroundRotationThread(threading.Thread):
         for item in result:
             images = item.get("BackdropImageTags")
             id = item.get("Id")
+            name = item.get("Name")
             if (images == None):
                 images = []
             index = 0
             for backdrop in images:
-              fanartLink = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
-              if (fanartLink not in self.music_art_links):
-                  self.music_art_links.append(fanartLink)
+              
+              info = {}
+              info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
+              info["index"] = index
+              info["parent"] = id
+              info["name"] = name
+              self.logMsg("BG Music Image Info : " + str(info), level=2)
+
+              if (info not in self.music_art_links):
+                  self.music_art_links.append(info)
               index = index + 1
 
         random.shuffle(self.music_art_links)

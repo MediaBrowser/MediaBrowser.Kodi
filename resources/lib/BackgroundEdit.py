@@ -11,6 +11,15 @@ _MODE_BG_EDIT=13
 
 class BackgroundEdit():
 
+    def isBlackListed(self, blackList, bgInfo):
+        for blocked in blackList:
+            if(bgInfo["parent"] == blocked["parent"]):
+                xbmc.log("Block List Parents Match On : " + str(bgInfo) + " : " + str(blocked))
+                if(blocked["index"] == -1 or bgInfo["index"] == blocked["index"]):
+                    xbmc.log("Item Blocked")
+                    return True
+        return False
+
     def showBackgrounds(self, pluginName, pluginHandle, params):
     
         xbmc.log("Shows Backgrounds")
@@ -18,6 +27,12 @@ class BackgroundEdit():
         __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') )         
         lastDataPath = __addondir__ + "BlackListedBgLinks.json"
+        
+        showUrl = params.get("url")
+        if(showUrl != None):
+            showUrl = urllib.unquote(showUrl)
+            #xbmc.Player().play(showUrl)
+            return
         
         black_list = []
         
@@ -31,23 +46,75 @@ class BackgroundEdit():
         except:
             xbmc.log("No Blacklist found, starting with empty BL")
             black_list = []
-        
-        if(params.get("url") != None):
-            newItem = params.get("url")
-            newItem = urllib.unquote(newItem)
             
-            if(newItem in black_list):
-                black_list.remove(newItem)
+        WINDOW = xbmcgui.Window( 10000 )
+        
+        filter = params.get("filter")
+        if(filter != None):
+            WINDOW.setProperty("background_edit_filter", filter)
+            xbmc.executebuiltin("Container.Refresh")
+            return
+            
+        filterType = WINDOW.getProperty("background_edit_filter")
+        if(filterType == None):
+            filterType = "0"
+
+        xbmc.log("Filter Type : " + filterType)
+        
+        if(params.get("block") != None):
+
+            action = params.get("action")
+            index = int(params.get("index"))
+            parent = params.get("parent")
+            
+            if(action == "remove"):
+                newBlackList = []
+                
+                for blItem in black_list:
+                    if(blItem["parent"] == parent and index == -1):
+                        xbmc.log("Removing BL Item : " + str(blItem))
+                    elif(blItem["parent"] == parent and blItem["index"] == index):
+                        xbmc.log("Removing BL Item : " + str(blItem))
+                    else:
+                        newBlackList.append(blItem)
+                        
+                black_list = newBlackList
+                
             else:
-                xbmc.log("Adding background to BG blacklist")
-                black_list.append(newItem)
+                newBlItem = {}
+                newBlItem["parent"] = parent
+                newBlItem["index"] = index
+                
+                found = False
+                for blItem in black_list:
+                    if(blItem["parent"] == newBlItem["parent"] and blItem["index"] == newBlItem["index"]):
+                        found = True
+                        continue
+                    elif(blItem["parent"] == newBlItem["parent"] and blItem["index"] == -1):
+                        found = True
+                        continue
+                        
+                # if parent exclude then remove individual excludes
+                if(newBlItem["index"] == -1):
+                    newBlackList = []
+                    for blItem in black_list:
+                        if(blItem["parent"] != newBlItem["parent"]):
+                            newBlackList.append(blItem)
+                    black_list = newBlackList
+            
+                if(found == False):
+                    xbmc.log("Adding background to BG blacklist : " + str(newBlItem))
+                    black_list.append(newBlItem)
                 
             stringdata = json.dumps(black_list)
             dataFile = open(lastDataPath, 'w')
             dataFile.write(stringdata)
             dataFile.close()   
             
-            xbmc.executebuiltin("Container.Refresh")    
+            #sortOptions = ["SortName", "ProductionYear", "PremiereDate", "DateCreated", "CriticRating", "CommunityRating", "PlayCount", "Budget"]
+            #return_value = xbmcgui.Dialog().select("Action", sortOptions)
+            
+            xbmc.executebuiltin("Container.Refresh")
             return
         
         backgrounds = BackgroundRotationThread()
@@ -57,17 +124,44 @@ class BackgroundEdit():
         dirItems = []
         
         for bg in allbackGrounds:
-            if(bg in black_list):
-                list = xbmcgui.ListItem("DISABLED", iconImage=bg, thumbnailImage=bg)
+        
+            url = bg["url"]
+            name = bg["name"]
+            parent = bg["parent"]
+            index = bg["index"]
+            list = None
+            
+            blackListed = self.isBlackListed(black_list, bg)
+            commands = []
+            
+            if(blackListed):
+                if(filterType == "0" or filterType == "2"):
+                    list = xbmcgui.ListItem("OFF:" + name, iconImage=url, thumbnailImage=url)
+                    commands.append(("UnBlock this item", "Container.Update(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BG_EDIT) + "&block=true&action=remove&parent=" + parent +"&index=" + str(index) + ")", ))
+                    commands.append(("UnBlock parent item", "Container.Update(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BG_EDIT) + "&block=true&action=remove&parent=" + parent +"&index=-1)", ))
             else:
-                list = xbmcgui.ListItem("ENABLED", iconImage=bg, thumbnailImage=bg)
+                if(filterType == "0" or filterType == "1"):
+                    list = xbmcgui.ListItem("ON:" + name, iconImage=url, thumbnailImage=url)
+                    commands.append(("Block this item", "Container.Update(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BG_EDIT) + "&block=true&action=add&parent=" + parent +"&index=" + str(index) + ")", ))
+                    commands.append(("Block parent item", "Container.Update(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BG_EDIT) + "&block=true&action=add&parent=" + parent +"&index=-1)", ))
+            
+            if(list != None):
+            
+                commands.append(("Show ALL", "Container.Update(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BG_EDIT) + "&filter=0)", ))
+                commands.append(("Show ON", "Container.Update(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BG_EDIT) + "&filter=1)", ))
+                commands.append(("Show OFF", "Container.Update(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BG_EDIT) + "&filter=2)", ))
+                list.addContextMenuItems( commands, True )
                 
-            url = pluginName + "?mode=" + str(_MODE_BG_EDIT) + "&url=" + urllib.quote(bg)
-            dirItems.append((url, list, True))
+                action_url = pluginName + "?mode=" + str(_MODE_BG_EDIT) + "&url=" + urllib.quote(url)
+                dirItems.append((action_url, list, False))
         
-        dirItems.sort()
-        
-        xbmcplugin.addDirectoryItems(pluginHandle, dirItems)
+ 
+        if(len(dirItems) > 0):
+            dirItems.sort()
+            xbmcplugin.addDirectoryItems(pluginHandle, dirItems)
+        elif(len(dirItems) == 0 and filterType != "0"):
+            WINDOW.setProperty("background_edit_filter", "0")
+            
         xbmcplugin.endOfDirectory(pluginHandle,cacheToDisc=False)
 
 
