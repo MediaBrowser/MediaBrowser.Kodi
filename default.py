@@ -994,11 +994,13 @@ def getCacheValidator (server,url):
     
     playedTime = "{0:09.6f}".format(playedPercentage)
     playedTime = playedTime.replace(".","-")
-    if int(result.get("RecursiveItemCount"))<=25:
-        validatorString='nocache'
-    else:
-        validatorString = str(result.get("RecursiveItemCount")) + "_" + str(result.get("RecursiveUnplayedItemCount")) + "_" + playedTime
-    printDebug ("getCacheValidator : " + validatorString)
+    validatorString=""
+    if result.get("RecursiveItemCount") != None:
+        if int(result.get("RecursiveItemCount"))<=25:
+            validatorString='nocache'
+        else:
+            validatorString = str(result.get("RecursiveItemCount")) + "_" + str(result.get("RecursiveUnplayedItemCount")) + "_" + playedTime
+        printDebug ("getCacheValidator : " + validatorString)
     return validatorString
     
 def getCacheValidatorFromData(result):
@@ -1445,10 +1447,7 @@ def processSearch(url, results, progress):
         
     for item in result:
         id=str(item.get("ItemId")).encode('utf-8')
-        jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
-        printDebug("Play jsonData: " + jsonData)
-        itemresult = json.loads(jsonData)
-        displayMediaType=itemresult.get("Type").encode('utf-8')
+        type=item.get("Type").encode('utf-8')
         
         if(progress != None):
             percentDone = (float(current_item) / float(item_count)) * 100
@@ -1461,11 +1460,11 @@ def processSearch(url, results, progress):
         else:
             tempTitle = "Missing Title"
             
-        if displayMediaType=="Series" or displayMediaType=="MusicArtist" or displayMediaType=="MusicAlbum":
+        if type=="Series" or type=="MusicArtist" or type=="MusicAlbum" or type=="Folder":
             isFolder = True
         else:
             isFolder = False
-        item_type = str(displayMediaType).encode('utf-8')
+        item_type = str(type).encode('utf-8')
         
         tempEpisode = ""
         if (item.get("IndexNumber") != None):
@@ -1479,18 +1478,18 @@ def processSearch(url, results, progress):
         if (str(item.get("ParentIndexNumber")) != None):
             tempSeason = str(item.get("ParentIndexNumber"))
       
-        if displayMediaType == "Episode" and __settings__.getSetting('addEpisodeNumber') == 'true':
+        if type == "Episode" and __settings__.getSetting('addEpisodeNumber') == 'true':
             tempTitle = str(tempEpisode) + ' - ' + tempTitle
 
         #Add show name to special TV collections RAL, NextUp etc
         WINDOW = xbmcgui.Window( 10000 )
-        if displayMediaType==None:
-            displayMediaType=''
+        if type==None:
+            type=''
         if item.get("Series")!=None:
             series=item.get("Series").encode('utf-8')
-            tempTitle=displayMediaType + ": " + series + " - " + tempTitle
+            tempTitle=type + ": " + series + " - " + tempTitle
         else:
-            tempTitle=displayMediaType + ": " +tempTitle
+            tempTitle=type + ": " +tempTitle
         # Populate the details list
         details={'title'        : tempTitle,
                  'episode'      : tempEpisode,
