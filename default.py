@@ -1444,23 +1444,28 @@ def processSearch(url, results, progress):
     current_item = 1;
         
     for item in result:
-    
+        id=str(item.get("ItemId")).encode('utf-8')
+        jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
+        printDebug("Play jsonData: " + jsonData)
+        itemresult = json.loads(jsonData)
+        displayMediaType=itemresult.get("Type").encode('utf-8')
+        
         if(progress != None):
             percentDone = (float(current_item) / float(item_count)) * 100
             progress.update(int(percentDone), __language__(30126) + str(current_item))
             current_item = current_item + 1
         
         if(item.get("Name") != None):
-            tempTitle = item.get("Name").encode('utf-8')
+            tempTitle = item.get("Name")
+            tempTitle=tempTitle.encode('utf-8')
         else:
             tempTitle = "Missing Title"
             
-        id=str(item.get("ItemId")).encode('utf-8')
-        if item.get("DisplayMediaType")=="Series" or item.get("DisplayMediaType")=="MusicArtist" or item.get("DisplayMediaType")=="Album":
+        if displayMediaType=="Series" or displayMediaType=="MusicArtist" or displayMediaType=="MusicAlbum":
             isFolder = True
         else:
             isFolder = False
-        item_type = str(item.get("DisplayMediaType")).encode('utf-8')
+        item_type = str(displayMediaType).encode('utf-8')
         
         tempEpisode = ""
         if (item.get("IndexNumber") != None):
@@ -1474,17 +1479,16 @@ def processSearch(url, results, progress):
         if (str(item.get("ParentIndexNumber")) != None):
             tempSeason = str(item.get("ParentIndexNumber"))
       
-        if item.get("DisplayMediaType") == "Episode" and __settings__.getSetting('addEpisodeNumber') == 'true':
+        if displayMediaType == "Episode" and __settings__.getSetting('addEpisodeNumber') == 'true':
             tempTitle = str(tempEpisode) + ' - ' + tempTitle
 
         #Add show name to special TV collections RAL, NextUp etc
         WINDOW = xbmcgui.Window( 10000 )
-        if item.get("DisplayMediaType")==None:
+        if displayMediaType==None:
             displayMediaType=''
-        else:
-            displayMediaType=item.get("DisplayMediaType").encode('utf-8')
         if item.get("Series")!=None:
-            tempTitle=displayMediaType + ": " + item.get("Series").encode('utf-8') + " - " + tempTitle
+            series=item.get("Series").encode('utf-8')
+            tempTitle=displayMediaType + ": " + series + " - " + tempTitle
         else:
             tempTitle=displayMediaType + ": " +tempTitle
         # Populate the details list
