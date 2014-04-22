@@ -281,7 +281,8 @@ def getCollections(detailsString):
     collections.append({'title':'In Progress Movies'     , 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=' + detailsString + '&Filters=IsResumable&IncludeItemTypes=Movie&format=json','thumb':'', 'poster':'', 'fanart_image':''})
     collections.append({'title':'In Progress Episodes'   , 'sectype' : 'std.tvshows', 'section' : 'tvshows' , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=' + detailsString + '&Filters=IsResumable&IncludeItemTypes=Episode&format=json','thumb':'', 'poster':'', 'fanart_image':''})
     collections.append({'title':'Next Episodes'          , 'sectype' : 'std.tvshows', 'section' : 'tvshows' , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Shows/NextUp/?Userid=' + userid + '&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json','thumb':'', 'poster':'', 'fanart_image':''})
-    collections.append({'title':'Favorite Movies'        , 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=json','thumb':'', 'poster':'', 'fanart_image':''})
+    collections.append({'title':'Favorite Movies'        , 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=' + detailsString + '&SortOrder=Ascending&Filters=IsFavorite,IsNotFolder&IncludeItemTypes=Movie&format=json','thumb':'', 'poster':'', 'fanart_image':''})
+    collections.append({'title':'Favorite Shows'         , 'sectype' : 'std.movies', 'section' : 'tvshows'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=sortName&Fields=' + detailsString + '&SortOrder=Ascending&Filters=IsFavorite&IncludeItemTypes=Series&format=json','thumb':'', 'poster':'', 'fanart_image':''})    
     collections.append({'title':'Favorite Episodes'      , 'sectype' : 'std.tvshows', 'section' : 'tvshows' , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsFavorite&IncludeItemTypes=Episode&format=json','thumb':'', 'poster':'', 'fanart_image':''})
     collections.append({'title':'Frequent Played Albums' , 'sectype' : 'std.music', 'section' : 'music' , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMusic") + '&Recursive=true&SortBy=PlayCount&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsPlayed&IncludeItemTypes=MusicAlbum&format=json','thumb':'', 'poster':'', 'fanart_image':''})
     collections.append({'title':'Upcoming TV'            , 'sectype' : 'std.tvshows', 'section' : 'tvshows' , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + detailsString + '&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=json','thumb':'', 'poster':'', 'fanart_image':''})
@@ -708,7 +709,6 @@ def skin( filter=None, shared=False ):
     stdTVshowsCount=0
     stdMusicCount=0
     stdPhotoCount=0
-    stdSearchCount=0
     dirItems = []
     
     das_host = __settings__.getSetting('ipaddress')
@@ -733,7 +733,6 @@ def skin( filter=None, shared=False ):
         modeurl="&mode=0"
         s_url='http://%s%s' % ( section['address'], path)
         murl= "?url="+urllib.quote(s_url)+modeurl
-        searchurl = "?url="+urllib.quote(s_url)+"&mode=2"
 
         #Build that listing..
         total = section.get('total')
@@ -791,14 +790,7 @@ def skin( filter=None, shared=False ):
             WINDOW.setProperty("xbmb3c.std.photo.%d.type"         % (stdPhotoCount) , section.get('section'))
             printDebug("xbmb3c.std.photo.%d.title"  % (stdPhotoCount) + "title is:" + section.get('title', 'Unknown'))
             printDebug("xbmb3c.std.photo.%d.type"  % (stdPhotoCount) + "section is:" + section.get('section'))    
-            stdPhotoCount +=1
-        elif section.get('sectype')=='std.search':
-            WINDOW.setProperty("xbmb3c.std.search.%d.title"        % (stdSearchCount) , section.get('title', 'Unknown'))
-            WINDOW.setProperty("xbmb3c.std.search.%d.path"         % (stdSearchCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + searchurl+",return)")
-            WINDOW.setProperty("xbmb3c.std.search.%d.type"         % (stdSearchCount) , section.get('section'))
-            printDebug("xbmb3c.std.search.%d.title"  % (stdSearchCount) + "title is:" + section.get('title', 'Unknown'))
-            printDebug("xbmb3c.std.search.%d.type"  % (stdSearchCount) + "section is:" + section.get('section'))    
-            stdSearchCount +=1      
+            stdPhotoCount +=1      
         #printDebug("Building window properties index [" + str(sectionCount) + "] which is [" + section.get('title').encode('utf-8') + " section - " + section.get('section') + " total - " + str(total) + "]")
         printDebug("PATH in use is: ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
         sectionCount += 1
