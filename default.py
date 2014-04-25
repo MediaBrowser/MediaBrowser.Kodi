@@ -104,7 +104,7 @@ def getMachineId():
     return "%012X"%get_mac()
     
 def getVersion():
-    return "0.8.5"
+    return "0.9.5beta"
 
 def getAuthHeader():
     txt_mac = getMachineId()
@@ -1212,8 +1212,9 @@ def processDirectory(url, results, progress):
         if (str(item.get("ParentIndexNumber")) != None):
             tempSeason = str(item.get("ParentIndexNumber"))
       
-        if item.get("Type") == "Episode" and __settings__.getSetting('addEpisodeNumber') == 'true':
-            tempTitle = str(tempEpisode) + ' - ' + tempTitle
+        if item.get("Type") == "Episode":
+            if __settings__.getSetting('addEpisodeNumber') == 'true':
+                tempTitle = str(tempEpisode) + ' - ' + tempTitle
             xbmcplugin.setContent(pluginhandle, 'episodes')
         if item.get("Type") == "Season":
             xbmcplugin.setContent(pluginhandle, 'tvshows')
