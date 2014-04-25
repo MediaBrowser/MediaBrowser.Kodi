@@ -104,7 +104,7 @@ def getMachineId():
     return "%012X"%get_mac()
     
 def getVersion():
-    return "0.9.0"
+    return "0.9.5beta"
 
 def getAuthHeader():
     txt_mac = getMachineId()
