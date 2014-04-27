@@ -897,6 +897,35 @@ def PLAY( url, handle ):
     
     item.setInfo( "Video", infoLabels=details )
     
+    # Process People
+    director=''
+    writer=''
+    people = result.get("People")
+    if(people != None):
+        for person in people:
+            if(person.get("Type") == "Director"):
+                director = director + person.get("Name") + ' ' 
+            if(person.get("Type") == "Writing"):
+                writer = person.get("Name")
+            if(person.get("Type") == "Writer"):
+                writer = person.get("Name")                
+            
+    
+     # Process Genres
+    genre = ""
+    genres = result.get("Genres")
+    if(genres != None):
+        for genre_string in genres:
+            if genre == "": #Just take the first genre
+                genre = genre_string
+            else:
+                genre = genre + " / " + genre_string
+    
+    item.setInfo('video', {'director' : director})
+    item.setInfo('video', {'writer' : writer})
+    item.setInfo('video', {'mpaa': result.get("OfficialRating")})
+    item.setInfo('video', {'genre': genre})
+    
     if(autoResume != 0):
         if(autoResume == -1):
             resume_result = 1
@@ -1277,7 +1306,9 @@ def processDirectory(url, results, progress):
                 if(person.get("Type") == "Director"):
                     director = director + person.get("Name") + ' ' 
                 if(person.get("Type") == "Writing"):
-                    writer = person.get("Name")                
+                    writer = person.get("Name")
+                if(person.get("Type") == "Writer"):
+                    writer = person.get("Name")                 
                 if(person.get("Type") == "Actor"):
                     Name = person.get("Name")
                     Role = person.get("Role")
