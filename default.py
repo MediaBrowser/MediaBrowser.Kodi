@@ -709,6 +709,7 @@ def skin( filter=None, shared=False ):
     stdTVshowsCount=0
     stdMusicCount=0
     stdPhotoCount=0
+    stdSearchCount=0
     dirItems = []
     
     das_host = __settings__.getSetting('ipaddress')
@@ -733,6 +734,7 @@ def skin( filter=None, shared=False ):
         modeurl="&mode=0"
         s_url='http://%s%s' % ( section['address'], path)
         murl= "?url="+urllib.quote(s_url)+modeurl
+        searchurl = "?url="+urllib.quote(s_url)+"&mode=2"
 
         #Build that listing..
         total = section.get('total')
@@ -790,8 +792,14 @@ def skin( filter=None, shared=False ):
             WINDOW.setProperty("xbmb3c.std.photo.%d.type"         % (stdPhotoCount) , section.get('section'))
             printDebug("xbmb3c.std.photo.%d.title"  % (stdPhotoCount) + "title is:" + section.get('title', 'Unknown'))
             printDebug("xbmb3c.std.photo.%d.type"  % (stdPhotoCount) + "section is:" + section.get('section'))    
-            stdPhotoCount +=1      
-        #printDebug("Building window properties index [" + str(sectionCount) + "] which is [" + section.get('title').encode('utf-8') + " section - " + section.get('section') + " total - " + str(total) + "]")
+            stdPhotoCount +=1
+        elif section.get('sectype')=='std.search':
+            WINDOW.setProperty("xbmb3c.std.search.%d.title"        % (stdSearchCount) , section.get('title', 'Unknown'))
+            WINDOW.setProperty("xbmb3c.std.search.%d.path"         % (stdSearchCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + searchurl+",return)")
+            WINDOW.setProperty("xbmb3c.std.search.%d.type"         % (stdSearchCount) , section.get('section'))
+            printDebug("xbmb3c.std.search.%d.title"  % (stdSearchCount) + "title is:" + section.get('title', 'Unknown'))
+            printDebug("xbmb3c.std.search.%d.type"  % (stdSearchCount) + "section is:" + section.get('section'))    
+            stdSearchCount +=1           #printDebug("Building window properties index [" + str(sectionCount) + "] which is [" + section.get('title').encode('utf-8') + " section - " + section.get('section') + " total - " + str(total) + "]")
         printDebug("PATH in use is: ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
         sectionCount += 1
 
