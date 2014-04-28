@@ -1698,6 +1698,40 @@ def setWindowHeading(url) :
     elif 'IncludeItemTypes=Episode' in url:
         WINDOW.setProperty("addshowname", "true")
 
+def getCastList(pluginName, handle, params):
+
+    printDebug ("XBMB3C Returning Cast List")
+    
+    port = __settings__.getSetting('port')
+    host = __settings__.getSetting('ipaddress')
+    server = host + ":" + port
+    userid = getUserId()
+    seekTime = 0
+    resume = 0
+
+    jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + params.get("id") + "?format=json", suppress=False, popup=1 )     
+    printDebug("CastList jsonData: " + jsonData)
+    result = json.loads(jsonData)
+
+    people = result.get("People")
+    
+    if(people == None):
+        return
+    
+    listItems = []
+
+    for person in people:
+    
+        name = person.get("Name")
+        item = xbmcgui.ListItem(label=name)
+        itemTupple = ("", item, False)
+        listItems.append(itemTupple)
+
+    #item = xbmcgui.ListItem(path=playurl, iconImage=thumbPath, thumbnailImage=thumbPath)
+    
+    xbmcplugin.addDirectoryItems(handle, listItems)
+    xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
+        
 def checkService():
 
     timeStamp = xbmcgui.Window(10000).getProperty("XBMB3C_Service_Timestamp")
@@ -1793,6 +1827,8 @@ elif sys.argv[1] == "playall":
     playall(startId)
 elif mode == _MODE_BG_EDIT:
     BackgroundEdit().showBackgrounds(sys.argv[0], int(sys.argv[1]), params)
+elif mode == _MODE_CASTLIST:
+    getCastList(sys.argv[0], int(sys.argv[1]), params)
 else:
     # check the service is running
     checkService()
