@@ -81,6 +81,7 @@ _MODE_MOVIES=0
 _MODE_SEARCH=2
 _MODE_BASICPLAY=12
 _MODE_BG_EDIT=13
+_MODE_CASTLIST=14
 
 #Check debug first...
 levelString = __settings__.getSetting('logLevel')
@@ -609,6 +610,10 @@ def addGUIItem( url, details, extraData, folder=True ):
         list.setProperty('watchedurl', extraData.get('watchedurl'))
     list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
     list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
+    
+    pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CASTLIST) + "&id=" + str(extraData.get('id'))
+    list.setProperty('CastPluginLink', pluginCastLink)
+    
     xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE  )
     
     return (u, list, folder)
@@ -1693,6 +1698,27 @@ def setWindowHeading(url) :
     elif 'IncludeItemTypes=Episode' in url:
         WINDOW.setProperty("addshowname", "true")
 
+def checkService():
+
+    timeStamp = xbmcgui.Window(10000).getProperty("XBMB3C_Service_Timestamp")
+    loops = 0
+    while(timeStamp == ""):
+        timeStamp = xbmcgui.Window(10000).getProperty("XBMB3C_Service_Timestamp")
+        loops = loops + 1
+        if(loops == 40):
+            printDebug("XBMB3C Service Not Running, no time stamp, exiting", 0)
+            xbmcgui.Dialog().ok(__language__(30135), __language__(30136), __language__(30137))
+            sys.exit()
+        xbmc.sleep(200)
+        
+    printDebug ("XBMB3C Service Timestamp: " + timeStamp)
+    printDebug ("XBMB3C Current Timestamp: " + str(int(time.time())))
+    
+    if((int(timeStamp) + 10) < int(time.time())):
+        printDebug("XBMB3C Service Not Running, time stamp to old, exiting", 0)
+        xbmcgui.Dialog().ok(__language__(30135), __language__(30136), __language__(30137))
+        sys.exit()
+
 ###########################################################################  
 ##Start of Main
 ###########################################################################
@@ -1768,13 +1794,9 @@ elif sys.argv[1] == "playall":
 elif mode == _MODE_BG_EDIT:
     BackgroundEdit().showBackgrounds(sys.argv[0], int(sys.argv[1]), params)
 else:
-    if xbmcgui.Window(10000).getProperty("XBMB3C_Service_Timestamp") == "":
-        xbmc.sleep(2000) # Wait for service to start
-    printDebug ("XBMB3C Service Timestamp: " + (xbmcgui.Window(10000).getProperty("XBMB3C_Service_Timestamp")))
-    printDebug ("XBMB3C Current Timestamp: " + str(int(time.time())))
-    if int(xbmcgui.Window(10000).getProperty("XBMB3C_Service_Timestamp")) + 10 < int(time.time()):
-        xbmcgui.Dialog().ok(__language__(30135), __language__(30136), __language__(30137))
-        sys.exit()
+    # check the service is running
+    checkService()
+    
     pluginhandle = int(sys.argv[1])
 
     WINDOW = xbmcgui.Window( 10000 )
