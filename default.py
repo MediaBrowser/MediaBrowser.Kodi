@@ -1723,11 +1723,17 @@ def getCastList(pluginName, handle, params):
 
     for person in people:
         
-        basename = person.get("Name")
+        
         name = person.get("Name") + " (" + person.get("Type") + ")"
         tag = person.get("PrimaryImageTag")
         if(tag != None):
-            thumbPath = "http://localhost:15001/?name=" + urllib.quote(basename) + "&type=Primary&maxheight=500&tag=" + tag
+            basename = person.get("Name")
+            #urllib.quote(basename)
+            basename = basename.replace(" ", "+")
+            basename = basename.replace("&", "&amp;")
+            basename = basename.replace("=", "_")
+            
+            thumbPath = "http://localhost:15001/?name=" + basename + "&type=Primary&maxheight=500&tag=" + tag
             item = xbmcgui.ListItem(label=name, iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
             item = xbmcgui.ListItem(label=name)
