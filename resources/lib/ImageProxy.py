@@ -59,17 +59,22 @@ class MyHandler(BaseHTTPRequestHandler):
         itemId = params.get("id")[0]
         imageType = params.get("type")[0]
         indexParam = params.get("index")
+        maxheight = params.get("maxheight")
             
         if (indexParam != None):
           self.logMsg("Params with Index: " + str(params), level=2)  
           index = indexParam[0]
         else:
           index = None
-
+          
+        # TODO: add option to return PNG or JPG
         if (index == None):  
-          remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType  + "?Format=png"
+          remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType  + "?Format=jpg"
         else:
-          remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType +  "/" + index  + "?Format=png"
+          remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType +  "/" + index  + "?Format=jpg"
+          
+        if(maxheight != None):
+            remoteUrl = remoteUrl + "&maxheight=" + maxheight[0]
                   
         self.logMsg("MB3 Host : " + mb3Host, level=2)
         self.logMsg("MB3 Port : " + mb3Port, level=2)

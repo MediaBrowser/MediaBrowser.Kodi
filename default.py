@@ -1709,8 +1709,20 @@ def getCastList(pluginName, handle, params):
     seekTime = 0
     resume = 0
 
-    jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + params.get("id") + "?format=json", suppress=False, popup=1 )     
-    printDebug("CastList jsonData: " + jsonData)
+    # get a mapping of names to IDs for a parent item
+    jsonData = getURL("http://" + server + "/mediabrowser/Persons?ParentId=" + params.get("id") + "&format=json", suppress=False, popup=1 )
+    printDebug("CastList(Persons) jsonData: " + jsonData, 0)
+    personResult = json.loads(jsonData)
+    people = personResult.get("Items")
+    peopleIDMap = {}
+    for person in people:
+        name = person.get("Name")
+        id = person.get("Id")
+        peopleIDMap[name] = id
+
+    # get the cast list for an item
+    jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + params.get("id") + "?format=json", suppress=False, popup=1 )    
+    printDebug("CastList(Items) jsonData: " + jsonData, 0)
     result = json.loads(jsonData)
 
     people = result.get("People")
@@ -1722,13 +1734,16 @@ def getCastList(pluginName, handle, params):
 
     for person in people:
     
-        name = person.get("Name")
-        item = xbmcgui.ListItem(label=name)
+        name = person.get("Name") + " (" + person.get("Type") + ")"
+        tag = person.get("PrimaryImageTag")
+        if(tag != None):
+            thumbPath = "http://localhost:15001/?id=" + str(peopleIDMap[person.get("Name")]) + "&type=Primary&maxheight=500&tag=" + tag
+            item = xbmcgui.ListItem(label=name, iconImage=thumbPath, thumbnailImage=thumbPath)
+        else:
+            item = xbmcgui.ListItem(label=name)
         itemTupple = ("", item, False)
         listItems.append(itemTupple)
-
-    #item = xbmcgui.ListItem(path=playurl, iconImage=thumbPath, thumbnailImage=thumbPath)
-    
+        
     xbmcplugin.addDirectoryItems(handle, listItems)
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
         
