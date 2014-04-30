@@ -81,7 +81,8 @@ _MODE_MOVIES=0
 _MODE_SEARCH=2
 _MODE_BASICPLAY=12
 _MODE_BG_EDIT=13
-_MODE_CASTLIST=14
+_MODE_CAST_LIST=14
+_MODE_PERSON_DETAILS=15
 
 #Check debug first...
 levelString = __settings__.getSetting('logLevel')
@@ -611,7 +612,7 @@ def addGUIItem( url, details, extraData, folder=True ):
     list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
     list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
     
-    pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CASTLIST) + "&id=" + str(extraData.get('id'))
+    pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + str(extraData.get('id'))
     list.setProperty('CastPluginLink', pluginCastLink)
     
     xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE  )
@@ -1722,26 +1723,35 @@ def getCastList(pluginName, handle, params):
     listItems = []
 
     for person in people:
-        
-        
-        name = person.get("Name") + " (" + person.get("Type") + ")"
+
+        displayName = person.get("Name") + " (" + person.get("Type") + ")"
         tag = person.get("PrimaryImageTag")
-        if(tag != None):
-            basename = person.get("Name")
-            #urllib.quote(basename)
-            basename = basename.replace(" ", "+")
-            basename = basename.replace("&", "&amp;")
-            basename = basename.replace("=", "_")
+        
+        baseName = person.get("Name")
+        #urllib.quote(baseName)
+        baseName = baseName.replace(" ", "+")
+        baseName = baseName.replace("&", "_")
+        baseName = baseName.replace("?", "_")
+        baseName = baseName.replace("=", "_")
             
-            thumbPath = "http://localhost:15001/?name=" + basename + "&type=Primary&maxheight=500&tag=" + tag
-            item = xbmcgui.ListItem(label=name, iconImage=thumbPath, thumbnailImage=thumbPath)
+        if(tag != None):
+            thumbPath = "http://localhost:15001/?name=" + baseName + "&type=Primary&maxheight=500&tag=" + tag
+            item = xbmcgui.ListItem(label=displayName, iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
-            item = xbmcgui.ListItem(label=name)
-        itemTupple = ("", item, False)
+            item = xbmcgui.ListItem(label=displayName)
+            
+        actionUrl = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_PERSON_DETAILS) +"&name=" + baseName
+            
+        itemTupple = (actionUrl, item, False)
         listItems.append(itemTupple)
         
     xbmcplugin.addDirectoryItems(handle, listItems)
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
+        
+def showPersonInfo(pluginName, handle, params):
+
+    name = params["name"]
+    xbmcgui.Dialog().ok("Selected Name", name)
         
 def checkService():
 
@@ -1838,8 +1848,10 @@ elif sys.argv[1] == "playall":
     playall(startId)
 elif mode == _MODE_BG_EDIT:
     BackgroundEdit().showBackgrounds(sys.argv[0], int(sys.argv[1]), params)
-elif mode == _MODE_CASTLIST:
+elif mode == _MODE_CAST_LIST:
     getCastList(sys.argv[0], int(sys.argv[1]), params)
+elif mode == _MODE_PERSON_DETAILS:    
+    showPersonInfo(sys.argv[0], int(sys.argv[1]), params)
 else:
     # check the service is running
     checkService()
