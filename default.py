@@ -65,6 +65,7 @@ PLUGINPATH = xbmc.translatePath( os.path.join( __cwd__) )
 
 from BackgroundEdit import BackgroundEdit
 from ClientInformation import ClientInformation
+from PersonInfo import PersonInfo
 
 XBMB3C_VERSION = ClientInformation().getVersion()
 
@@ -1742,7 +1743,7 @@ def getCastList(pluginName, handle, params):
             
         actionUrl = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_PERSON_DETAILS) +"&name=" + baseName
             
-        itemTupple = (actionUrl, item, False)
+        itemTupple = (actionUrl, item, True)
         listItems.append(itemTupple)
         
     xbmcplugin.addDirectoryItems(handle, listItems)
@@ -1751,7 +1752,13 @@ def getCastList(pluginName, handle, params):
 def showPersonInfo(pluginName, handle, params):
 
     name = params["name"]
-    xbmcgui.Dialog().ok("Selected Name", name)
+    
+    infoPage = PersonInfo("PersonInfo.xml", __cwd__, "default", "720p")
+    infoPage.setInfo(name)
+    xbmc.log("WINDOW OPEN")
+    infoPage.doModal()
+    del infoPage
+    xbmc.log("WINDOW CLOSED")
         
 def checkService():
 
@@ -1853,6 +1860,7 @@ elif mode == _MODE_CAST_LIST:
 elif mode == _MODE_PERSON_DETAILS:    
     showPersonInfo(sys.argv[0], int(sys.argv[1]), params)
 else:
+    
     # check the service is running
     checkService()
     
