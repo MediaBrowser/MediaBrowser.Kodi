@@ -5,7 +5,7 @@ import xbmc
 
 class PersonInfo(xbmcgui.WindowXMLDialog):
 
-    details = ""
+    details = {}
     
     def __init__(self, *args, **kwargs):
         xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
@@ -13,7 +13,9 @@ class PersonInfo(xbmcgui.WindowXMLDialog):
 
     def onInit(self):
         self.action_exitkeys_id = [10, 13]
-        self.getControl(3001).setText(self.details)
+        
+        self.getControl(3000).setLabel(self.details["name"])
+        self.getControl(3001).setText(self.details["overview"])
         
     def setInfo(self, data):
         self.details = data
@@ -27,6 +29,3 @@ class PersonInfo(xbmcgui.WindowXMLDialog):
     def closeDialog(self):
         self.close()        
 
-        
-        
-        

@@ -1713,7 +1713,7 @@ def getCastList(pluginName, handle, params):
     
     # get the cast list for an item
     jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + params.get("id") + "?format=json", suppress=False, popup=1 )    
-    printDebug("CastList(Items) jsonData: " + jsonData, 0)
+    printDebug("CastList(Items) jsonData: " + jsonData, 2)
     result = json.loads(jsonData)
 
     people = result.get("People")
@@ -1742,8 +1742,11 @@ def getCastList(pluginName, handle, params):
             item = xbmcgui.ListItem(label=displayName)
             
         actionUrl = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_PERSON_DETAILS) +"&name=" + baseName
-            
-        itemTupple = (actionUrl, item, True)
+        
+        item.setProperty('IsPlayable', 'false')
+        item.setProperty('IsFolder', 'false')
+        
+        itemTupple = (actionUrl, item, False)
         listItems.append(itemTupple)
         
     xbmcplugin.addDirectoryItems(handle, listItems)
@@ -1751,14 +1754,30 @@ def getCastList(pluginName, handle, params):
         
 def showPersonInfo(pluginName, handle, params):
 
-    name = params["name"]
+    item = xbmcgui.ListItem(label="Test")
+    xbmcplugin.setResolvedUrl(handle, True, item)
+
+    port = __settings__.getSetting('port')
+    host = __settings__.getSetting('ipaddress')
+    server = host + ":" + port
+    
+    jsonData = getURL("http://" + server + "/mediabrowser/Persons/" + params["name"] + "?format=json", suppress=False, popup=1 )    
+    printDebug("PersonInfo jsonData: " + jsonData, 2)
+    result = json.loads(jsonData)
+    
+    data = {}
+    id = result.get("Id")
+    data["name"] = result.get("Name")
+    
+    overview = result.get("Overview")
+    if(overview == None or overview == ""):
+        overview = "No details available"
+    data["overview"] = overview
     
     infoPage = PersonInfo("PersonInfo.xml", __cwd__, "default", "720p")
-    infoPage.setInfo(name)
-    xbmc.log("WINDOW OPEN")
+    infoPage.setInfo(data)
     infoPage.doModal()
     del infoPage
-    xbmc.log("WINDOW CLOSED")
         
 def checkService():
 

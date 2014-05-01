@@ -54,8 +54,8 @@
 			<ondown>10</ondown>
 			<visible>system.getbool(input.enablemouse)</visible>
 		</control>
-		<control type="textbox" id="3001">
-			<description>text</description>
+		<control type="label" id="3000">
+			<description>person name</description>
 			<left>30</left>
 			<top>60</top>
 			<width>550</width>
@@ -63,7 +63,17 @@
 			<align>left</align>
 			<label>-</label>
 			<font>font13</font>
-			<autoscroll time="3000" delay="4000" repeat="5000">true</autoscroll>
+		</control>        
+		<control type="textbox" id="3001">
+			<description>text</description>
+			<left>30</left>
+			<top>100</top>
+			<width>630</width>
+			<height>350</height>
+			<align>left</align>
+			<label>-</label>
+			<font>font13</font>
+			<autoscroll time="1000" delay="2000" repeat="2000">true</autoscroll>
 		</control>
 	</controls>
 </window>
