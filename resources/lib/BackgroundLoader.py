@@ -20,10 +20,12 @@ class BackgroundRotationThread(threading.Thread):
     tv_art_links = []
     music_art_links = []
     global_art_links = []
+    item_art_links = []
     current_movie_art = 0
     current_tv_art = 0
     current_music_art = 0
     current_global_art = 0
+    current_item_art = 0
     linksLoaded = False
     logLevel = 0
     
@@ -51,28 +53,35 @@ class BackgroundRotationThread(threading.Thread):
             self.logMsg("loadLastBackground Exception : " + str(e), level=0)
         
         self.updateArtLinks()
+        self.updateItemArtLinks()
         self.setBackgroundLink()
         lastRun = datetime.today()
+        itemLastRun = datetime.today()
         
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         
         backgroundRefresh = int(addonSettings.getSetting('backgroundRefresh'))
         if(backgroundRefresh < 10):
             backgroundRefresh = 10
-        
+        itemBackgroundRefresh = 7
         while (xbmc.abortRequested == False):
             td = datetime.today() - lastRun
+            td2 = datetime.today() - itemLastRun
             secTotal = td.seconds
             
             if(secTotal > backgroundRefresh):
                 if(self.linksLoaded == False):
                     self.updateArtLinks()
-                self.setBackgroundLink()
+                self.updateItemArtLinks()                    
                 lastRun = datetime.today()
-                
                 backgroundRefresh = int(addonSettings.getSetting('backgroundRefresh'))
+                self.setBackgroundLink()
                 if(backgroundRefresh < 10):
                     backgroundRefresh = 10                
+            self.updateItemArtLinks()                  
+            if(secTotal > itemBackgroundRefresh):
+                self.setItemBackgroundLink()
+                itemLastRun = datetime.today()
 
             xbmc.sleep(3000)
         
@@ -112,7 +121,11 @@ class BackgroundRotationThread(threading.Thread):
         if(result.get("music") != None):
             self.logMsg("Setting Music Last : " + str(result.get("music")), level=2)
             WINDOW.setProperty("MB3.Background.Music.FanArt", result.get("music")["url"])   
-        
+
+        if(result.get("item") != None):
+            self.logMsg("Setting Item Last : " + str(result.get("item")), level=2)
+            WINDOW.setProperty("MB3.Background.Item.FanArt", result.get("item")["url"])   
+
     def saveLastBackground(self):
     
         data = {}
@@ -124,6 +137,8 @@ class BackgroundRotationThread(threading.Thread):
             data["tv"] = self.tv_art_links[self.current_tv_art]
         if(len(self.music_art_links) > 0):
             data["music"] = self.music_art_links[self.current_music_art]
+        if(len(self.item_art_links) > 0):
+            data["item"] = self.item_art_links[self.current_item_art]            
 
         __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') )            
@@ -187,7 +202,44 @@ class BackgroundRotationThread(threading.Thread):
             self.current_global_art = next
             WINDOW.setProperty("MB3.Background.Global.FanArt", url)
             self.logMsg("MB3.Background.Global.FanArt=" + url)
-           
+
+    def setItemBackgroundLink(self):
+    
+        # load the background blacklist
+        __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') )         
+        lastDataPath = __addondir__ + "BlackListedBgLinks.json"
+        
+        black_list = []
+        
+        # load blacklist data
+        try:
+            dataFile = open(lastDataPath, 'r')
+            jsonData = dataFile.read()
+            dataFile.close()        
+            black_list = json.loads(jsonData)
+            self.logMsg("Loaded Background Black List : " + str(black_list))
+        except:
+            self.logMsg("No Background Black List found, starting with empty Black List")
+            black_list = []    
+
+        WINDOW = xbmcgui.Window( 10000 )
+        
+        if(len(self.item_art_links) > 0):
+            self.logMsg("setBackgroundLink index item_art_links " + str(self.current_item_art + 1) + " of " + str(len(self.item_art_links)), level=2)
+            try: 
+                artUrl =  self.item_art_links[self.current_item_art]["url"] 
+            except IndexError:
+                self.current_item_art=0
+                artUrl =  self.item_art_links[self.current_item_art]["url"] 
+            WINDOW.setProperty("MB3.Background.Item.FanArt", artUrl)
+            self.logMsg("MB3.Background.Item.FanArt=" + artUrl)
+            self.current_item_art = self.current_item_art + 1
+            if(self.current_item_art == len(self.item_art_links)):
+                self.current_item_art = 0
+                
+                
+                
     def isBlackListed(self, blackList, bgInfo):
         for blocked in blackList:
             if(bgInfo["parent"] == blocked["parent"]):
@@ -242,6 +294,7 @@ class BackgroundRotationThread(threading.Thread):
                 break
         
         self.logMsg("updateArtLinks UserID : " + userid)
+
         
         moviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&IncludeItemTypes=Movie&format=json"
 
@@ -281,6 +334,7 @@ class BackgroundRotationThread(threading.Thread):
         
         random.shuffle(self.movie_art_links)
         self.logMsg("Background Movie Art Links : " + str(len(self.movie_art_links)))
+
         
         tvUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&IncludeItemTypes=Series&format=json"
 
@@ -321,6 +375,7 @@ class BackgroundRotationThread(threading.Thread):
         random.shuffle(self.tv_art_links)
         self.logMsg("Background Tv Art Links : " + str(len(self.tv_art_links)))
 
+        
         musicUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&IncludeItemTypes=MusicArtist&format=json"
         
         try:
@@ -356,10 +411,9 @@ class BackgroundRotationThread(threading.Thread):
               if (info not in self.music_art_links):
                   self.music_art_links.append(info)
               index = index + 1
-
         random.shuffle(self.music_art_links)
         self.logMsg("Background Music Art Links : " + str(len(self.music_art_links)))
-
+       
         self.global_art_links.extend(self.movie_art_links)
         self.global_art_links.extend(self.tv_art_links)
         self.global_art_links.extend(self.music_art_links)
@@ -367,5 +421,81 @@ class BackgroundRotationThread(threading.Thread):
         
         self.logMsg("Background Global Art Links : " + str(len(self.global_art_links)))
         self.linksLoaded = True
+        
+    def updateItemArtLinks(self):
+        self.logMsg("updateItemArtLinks Called")
+        
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        
+        mb3Host = addonSettings.getSetting('ipaddress')
+        mb3Port = addonSettings.getSetting('port')    
+        userName = addonSettings.getSetting('username')     
+        
+        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
+        
+        try:
+            requesthandle = urllib.urlopen(userUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()   
+        except Exception, e:
+            self.logMsg("updateArtItemLinks urlopen : " + str(e) + " (" + userUrl + ")", level=0)
+            return        
+        
+        userid = ""
+        result = json.loads(jsonData)
+        for user in result:
+            if(user.get("Name") == userName):
+                userid = user.get("Id")    
+                break
+        
+        self.logMsg("updateItemArtLinks UserID : " + userid)
+        
+        self.item_art_links = []
+        itemPath=xbmc.getInfoLabel('ListItem.FileNameAndPath')
+        if ",;" in itemPath:
+            id=itemPath.split(",;")[1]
+            id=id.split("&")[0]
+            try:
+                currId=lastId
+            except UnboundLocalError:
+                currId=''
+                
+            if currId != id:
+                itemUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json"
+                try:
+                    requesthandle = urllib2.urlopen(itemUrl, timeout=60)
+                    jsonData = requesthandle.read()
+                    requesthandle.close()   
+                except Exception, e:
+                    self.logMsg("updateItemArtLinks urlopen : " + str(e) + " (" + itemUrl + ")", level=0)
+                    return          
+        
+                item = json.loads(jsonData)
+        
+                #result = result.get("Items")
+                if(item == None):
+                    item = []   
+    
+                #for item in result:
+                images = item.get("BackdropImageTags")
+                id = item.get("Id")
+                name = item.get("Name")
+                if (images == None):
+                    images = []
+                index = 0
+                for backdrop in images:
+                    info = {}
+                    info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
+                    info["index"] = index
+                    info["parent"] = id
+                    info["name"] = name
+                    self.logMsg("BG Item Image Info : " + str(info), level=2)
+            
+                    if (info not in self.item_art_links):
+                        self.item_art_links.append(info)
+                    index = index + 1
+                random.shuffle(self.item_art_links)
+                self.logMsg("Background Item Art Links : " + str(len(self.item_art_links)))
+                lastId=id
         
  
