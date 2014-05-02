@@ -51,7 +51,7 @@ class BackgroundRotationThread(threading.Thread):
             self.loadLastBackground()
         except Exception, e:
             self.logMsg("loadLastBackground Exception : " + str(e), level=0)
-        
+        lastPath=''
         self.updateArtLinks()
         self.updateItemArtLinks()
         self.setBackgroundLink()
@@ -68,6 +68,7 @@ class BackgroundRotationThread(threading.Thread):
             td = datetime.today() - lastRun
             td2 = datetime.today() - itemLastRun
             secTotal = td.seconds
+            secTotal2 = td2.seconds
             
             if(secTotal > backgroundRefresh):
                 if(self.linksLoaded == False):
@@ -79,11 +80,15 @@ class BackgroundRotationThread(threading.Thread):
                 if(backgroundRefresh < 10):
                     backgroundRefresh = 10                
             self.updateItemArtLinks()                  
-            if(secTotal > itemBackgroundRefresh):
+            if(secTotal2 > itemBackgroundRefresh):
                 self.setItemBackgroundLink()
                 itemLastRun = datetime.today()
-
-            xbmc.sleep(3000)
+            if xbmc.getInfoLabel('ListItem.FileNameAndPath') != lastPath:
+                self.setItemBackgroundLink()
+                itemLastRun = datetime.today()
+                lastPath=xbmc.getInfoLabel('ListItem.FileNameAndPath')
+                
+            xbmc.sleep(2000)
         
         try:
             self.saveLastBackground()
