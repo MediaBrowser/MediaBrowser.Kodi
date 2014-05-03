@@ -1920,7 +1920,9 @@ else:
         param_url=param_url.replace("Search/Hints?","Search/Hints?SearchTerm="+searchString + "&UserId=")
         param_url=param_url + "&Fields=" + getDetailsString() + "&format=json"
         getContent(param_url)
-    
+
+WINDOW = xbmcgui.Window( 10000 )
+WINDOW.clearProperty("MB3.Background.Item.FanArt")
 xbmc.log ("===== XBMB3C STOP =====")
 
 #clear done and exit.

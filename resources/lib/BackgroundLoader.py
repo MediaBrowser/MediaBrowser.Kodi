@@ -426,13 +426,6 @@ class BackgroundRotationThread(threading.Thread):
         
         self.logMsg("Background Global Art Links : " + str(len(self.global_art_links)))
         self.linksLoaded = True
-    
-    def transformIfNeeded(itemPath):
-        if "ParentId" in itemPath:
-            parentid = itemPath.Split("ParentId")[1]
-            parentid= itemPath.split("recursive")[0]    
-        
-        return itemPath
         
     def updateItemArtLinks(self):
         self.logMsg("updateItemArtLinks Called")
@@ -472,8 +465,8 @@ class BackgroundRotationThread(threading.Thread):
                id=id.split("&")[0]
             if "ParentId" in itemPath:
                parentIndex = itemPath.find("ParentId") + 11
-               recursiveIndex = itemPath.find("recursive") - 3
-               id = itemPath[parentIndex:recursiveIndex]
+               endIndex = parentIndex + 32
+               id = itemPath[parentIndex:endIndex]
             try:
                 currId=lastId
             except UnboundLocalError:
@@ -499,9 +492,9 @@ class BackgroundRotationThread(threading.Thread):
                 images = item.get("BackdropImageTags")
                 id = item.get("Id")
                 name = item.get("Name")
-                if (images == None):
-                    images = []
+               
                 index = 0
+             
                 for backdrop in images:
                     info = {}
                     info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
@@ -513,6 +506,8 @@ class BackgroundRotationThread(threading.Thread):
                     if (info not in self.item_art_links):
                         self.item_art_links.append(info)
                     index = index + 1
+                
+
                 random.shuffle(self.item_art_links)
                 self.logMsg("Background Item Art Links : " + str(len(self.item_art_links)))
                 lastId=id
