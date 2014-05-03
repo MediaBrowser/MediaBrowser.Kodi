@@ -426,6 +426,13 @@ class BackgroundRotationThread(threading.Thread):
         
         self.logMsg("Background Global Art Links : " + str(len(self.global_art_links)))
         self.linksLoaded = True
+    
+    def transformIfNeeded(itemPath):
+        if "ParentId" in itemPath:
+            parentid = itemPath.Split("ParentId")[1]
+            parentid= itemPath.split("recursive")[0]    
+        
+        return itemPath
         
     def updateItemArtLinks(self):
         self.logMsg("updateItemArtLinks Called")
@@ -457,14 +464,21 @@ class BackgroundRotationThread(threading.Thread):
         
         self.item_art_links = []
         itemPath=xbmc.getInfoLabel('ListItem.FileNameAndPath')
-        if ",;" in itemPath:
-            id=itemPath.split(",;")[1]
-            id=id.split("&")[0]
+        self.logMsg("updateItemArtLinks itemPath : " + itemPath)
+    
+        if ",;" in itemPath or "ParentId" in itemPath:
+            if ",;" in itemPath:
+               id=itemPath.split(",;")[1]
+               id=id.split("&")[0]
+            if "ParentId" in itemPath:
+               parentIndex = itemPath.find("ParentId") + 11
+               recursiveIndex = itemPath.find("recursive") - 3
+               id = itemPath[parentIndex:recursiveIndex]
             try:
                 currId=lastId
             except UnboundLocalError:
                 currId=''
-                
+            self.logMsg("updateItemArtLinks id : " + id)
             if currId != id:
                 itemUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json"
                 try:
