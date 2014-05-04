@@ -8,6 +8,8 @@
 		<setting id="password" type="text" option="hidden" label="30025" />
 		<setting id="autoEnterSingle" type="bool" label="30001" default="true" visible="true" enable="true" />
 		<setting id="useSeriesArt" type="bool" label="30039" default="false" visible="true" enable="true" />
+		<setting id="useThemeMusic" type="bool" label="30139" default="true" visible="true" enable="true" />
+		<setting id="loopThemeMusic" type="bool" label="30140" default="true" visible="true" enable="true" />
 		<setting id="offerDelete" type="bool" label="30127" default="false" visible="true" enable="true" />
 	</category>
 	<category label="30015"> <!-- Network -->

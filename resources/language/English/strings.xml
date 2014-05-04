@@ -113,5 +113,8 @@
     <string id="30136">XBMB3C Service has crashed</string>
     <string id="30137">Please restart XBMC</string>
     <string id="30138">Search</string>
+    
+    <string id="30139">Enable Theme Music</string>
+    <string id="30140">Loop theme music</string>
 
 </strings>
