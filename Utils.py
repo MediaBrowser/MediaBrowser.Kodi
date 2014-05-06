@@ -19,7 +19,7 @@ class PlayUtils():
       if addonSettings.getSetting('playFromStream') == 'false':
         playurl = result.get("Path")
         if ":\\" in playurl:
-            xbmcgui.Dialog().ok(__language__(30130), __language__(30131) + playurl)
+            xbmcgui.Dialog().ok(addonSettings.getLocalizedString(30130), addonSettings.getLocalizedString(30131) + playurl)
             sys.exit()
         USER_AGENT = 'QuickTime/7.7.4'
         
