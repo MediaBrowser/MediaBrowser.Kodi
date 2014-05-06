@@ -66,10 +66,14 @@ class ThemeMusicThread(threading.Thread):
         mb3Port = addonSettings.getSetting('port')    
          
         self.item_art_links = []
-        origid = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
+        newid = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
+        if newid != self.themeId:
+            if self.isPlayingZone() and self.playingTheme == True:
+              if  xbmc.Player().isPlayingAudio():
+                self.stop()
         xbmc.sleep(1500)
         id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
-        if id != origid:
+        if id != newid:
             return
         self.logMsg("updateThemeMusic itemGUID : " + id)
         if self.isPlayingZone() and self.isChangeTheme():
