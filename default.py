@@ -52,6 +52,7 @@ import hashlib
 import StringIO
 import gzip
 from uuid import getnode as get_mac
+from Utils import PlayUtils
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
@@ -818,33 +819,6 @@ def remove_html_tags( data ):
     return p.sub('', data)
 
 
-def getPlayUrl(server, id, result):
-    if __settings__.getSetting('playFromStream') == 'false':
-        playurl = result.get("Path")
-        if ":\\" in playurl:
-            xbmcgui.Dialog().ok(__language__(30130), __language__(30131) + playurl)
-            sys.exit()
-        USER_AGENT = 'QuickTime/7.7.4'
-        
-        if (result.get("VideoType") == "Dvd"):
-            playurl = playurl + "/VIDEO_TS/VIDEO_TS.IFO"
-        if (result.get("VideoType") == "BluRay"):
-            playurl = playurl + "/BDMV/index.bdmv"            
-        if __settings__.getSetting('smbusername') == '':
-            playurl = playurl.replace("\\\\", "smb://")
-        else:
-            playurl = playurl.replace("\\\\", "smb://" + __settings__.getSetting('smbusername') + ':' + __settings__.getSetting('smbpassword') + '@')
-        playurl = playurl.replace("\\", "/")
-        
-        if ("apple.com" in playurl):
-            playurl += '?|User-Agent=%s' % USER_AGENT
-            
-    elif __settings__.getSetting('transcode') == 'true':
-        playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream.ts'
-    else:
-        playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true'
-    return playurl.encode('utf-8')
-
 def PLAY( url, handle ):
     printDebug("== ENTER: PLAY ==")
     url=urllib.unquote(url)
@@ -873,7 +847,7 @@ def PLAY( url, handle ):
         xbmcgui.Dialog().ok(__language__(30128), __language__(30129))
         return
     
-    playurl = getPlayUrl(server, id, result)
+    playurl = PlayUtils.getPlayUrl(server, id, result)
             
     #if (__settings__.getSetting("markWatchedOnPlay")=='true'):
     watchedurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
@@ -1807,6 +1781,7 @@ def checkService():
         printDebug("XBMB3C Service Not Running, time stamp to old, exiting", 0)
         xbmcgui.Dialog().ok(__language__(30135), __language__(30136), __language__(30137))
         sys.exit()
+        
 
 ###########################################################################  
 ##Start of Main

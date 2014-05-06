@@ -14,6 +14,8 @@ import urllib
 import urllib2
 import random
 
+from Utils import PlayUtils
+
 class BackgroundRotationThread(threading.Thread):
 
     movie_art_links = []
@@ -443,27 +445,7 @@ class BackgroundRotationThread(threading.Thread):
         
         mb3Host = addonSettings.getSetting('ipaddress')
         mb3Port = addonSettings.getSetting('port')    
-        userName = addonSettings.getSetting('username')     
-        
-        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
-        
-        try:
-            requesthandle = urllib.urlopen(userUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()   
-        except Exception, e:
-            self.logMsg("updateThemeMusic urlopen : " + str(e) + " (" + userUrl + ")", level=0)
-            return        
-        
-        userid = ""
-        result = json.loads(jsonData)
-        for user in result:
-            if(user.get("Name") == userName):
-                userid = user.get("Id")    
-                break
-        
-        self.logMsg("updateThemeMusic UserID : " + userid)
-        
+         
         self.item_art_links = []
         id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
         self.logMsg("updateThemeMusic itemGUID : " + id)
@@ -486,7 +468,7 @@ class BackgroundRotationThread(threading.Thread):
             
             themeItems = theme.get("Items")
             if themeItems != []:
-                themePlayUrl = themeItems[0].get("Path")
+                themePlayUrl = PlayUtils.getPlayUrl(mb3Host + ":" + mb3Port,themeItems[0].get("Id"),themeItems[0])
                 self.logMsg("updateThemeMusic themeMusicPath : " + str(themePlayUrl))
                 self.playingTheme = True
                 xbmc.Player().play(themePlayUrl)
