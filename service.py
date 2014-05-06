@@ -32,6 +32,7 @@ from InfoUpdater import InfoUpdaterThread
 from NextUpItems import NextUpUpdaterThread
 from RandomItems import RandomInfoUpdaterThread
 from BackgroundLoader import BackgroundRotationThread
+from ThemeMusic import ThemeMusicThread
 from RecentItems import RecentInfoUpdaterThread
 from InProgressItems import InProgressUpdaterThread
 from WebSocketClient import WebSocketThread
@@ -70,6 +71,9 @@ newThread.start()
 
 backgroundUpdaterThread = BackgroundRotationThread()
 backgroundUpdaterThread.start()
+
+newThread = ThemeMusicThread()
+newThread.start()
 
 newThread = RandomInfoUpdaterThread()
 newThread.start()
