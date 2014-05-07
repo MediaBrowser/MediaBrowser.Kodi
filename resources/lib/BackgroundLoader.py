@@ -447,27 +447,27 @@ class BackgroundRotationThread(threading.Thread):
     
         if id != "":
             try:
-                requesthandle = urllib.urlopen(userUrl, proxies={})
-                jsonData = requesthandle.read()
-                requesthandle.close()   
-            except Exception, e:
-                self.logMsg("updateArtItemLinks urlopen : " + str(e) + " (" + userUrl + ")", level=0)
-                return        
-        
-            userid = ""
-            result = json.loads(jsonData)
-            for user in result:
-                if(user.get("Name") == userName):
-                    userid = user.get("Id")    
-                    break
-        
-            self.logMsg("updateItemArtLinks UserID : " + userid)
-            try:
                 currId=lastId
             except UnboundLocalError:
                 currId=''
             self.logMsg("updateItemArtLinks id : " + id)
             if currId != id:
+                try:
+                    requesthandle = urllib.urlopen(userUrl, proxies={})
+                    jsonData = requesthandle.read()
+                    requesthandle.close()   
+                except Exception, e:
+                    self.logMsg("updateArtItemLinks urlopen : " + str(e) + " (" + userUrl + ")", level=0)
+                    return        
+        
+                userid = ""
+                result = json.loads(jsonData)
+                for user in result:
+                    if(user.get("Name") == userName):
+                        userid = user.get("Id")    
+                        break
+        
+                self.logMsg("updateItemArtLinks UserID : " + userid)
                 itemUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json"
                 try:
                     requesthandle = urllib2.urlopen(itemUrl, timeout=60)
