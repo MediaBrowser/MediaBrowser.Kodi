@@ -56,24 +56,13 @@ def getAuthHeader():
     xbmc.log("XBMB3C Authentication Header : " + str(headers))
     return headers 
 
+
 # start some worker threads
 newInProgressThread = InProgressUpdaterThread()
 newInProgressThread.start()
 
-newWebSocketThread = WebSocketThread()
-newWebSocketThread.start()
-
-newMenuThread = LoadMenuOptionsThread()
-newMenuThread.start()
-
 newRecentInfoThread = RecentInfoUpdaterThread()
 newRecentInfoThread.start()
-
-backgroundUpdaterThread = BackgroundRotationThread()
-backgroundUpdaterThread.start()
-
-newThemeMusicThread = ThemeMusicThread()
-newThemeMusicThread.start()
 
 newRandomInfoThread = RandomInfoUpdaterThread()
 newRandomInfoThread.start()
@@ -81,9 +70,36 @@ newRandomInfoThread.start()
 newNextUpThread = NextUpUpdaterThread()
 newNextUpThread.start()
 
-newInfoThread = InfoUpdaterThread()
-newInfoThread.start()
+if __addon__.getSetting('useWebSocketRemote') == "true":
+    newWebSocketThread = WebSocketThread()
+    newWebSocketThread.start()
+else:
+    xbmc.log("XBMB3C Service WebSocketRemote Disabled")
+    
+if __addon__.getSetting('useMenuLoader') == "true":
+    newMenuThread = LoadMenuOptionsThread()
+    newMenuThread.start()
+else:
+    xbmc.log("XBMB3C Service MenuLoader Disabled")
 
+if __addon__.getSetting('useBackgroundLoader') == "true":
+    backgroundUpdaterThread = BackgroundRotationThread()
+    backgroundUpdaterThread.start()
+else:
+    xbmc.log("XBMB3C Service BackgroundLoader Disabled")
+    
+if __addon__.getSetting('useThemeMusic') == "true":
+    newThemeMusicThread = ThemeMusicThread()
+    newThemeMusicThread.start()
+else:
+    xbmc.log("XBMB3C Service ThemeMusic Disabled")
+
+if __addon__.getSetting('useInfoLoader') == "true":
+    newInfoThread = InfoUpdaterThread()
+    newInfoThread.start()
+else:
+    xbmc.log("XBMB3C Service InfoLoader Disabled")
+    
 ###############################################
 # start the image proxy server
 ###############################################

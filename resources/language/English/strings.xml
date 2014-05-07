@@ -21,9 +21,9 @@
     <string id="30026">Use JSON instead of SIMPLEJSON (recommended for Pi)</string>
     
     <string id="30030">Port Number:</string>
-    <string id="30036">Number of recent movies to show:</string>    
+    <string id="30036">Number of recent Movies to show:</string>    
     <string id="30037">Number of recent TV episodes to show:</string>    
-    <string id="30035">Number of recent Music Albums show:</string>    
+    <string id="30035">Number of recent Music Albums to show:</string>    
     <string id="30038">Mark watched at start of playback:</string>    
     <string id="30039">Use Series Art for Episodes</string>
 
@@ -84,7 +84,7 @@
     <string id="30098">Sort Order Descending</string>
     <string id="30099">Sort Order Ascending</string>
     
-    <string id="30110">Media Data</string>
+    <string id="30110">Addon</string>
     <string id="30111">Include Stream Info</string>
     <string id="30112">Include People</string>
     <string id="30113">Include Overview</string>
@@ -114,7 +114,12 @@
     <string id="30137">Please restart XBMC</string>
     <string id="30138">Search</string>
     
-    <string id="30139">Enable Theme Music</string>
-    <string id="30140">Loop theme music</string>
+    <string id="30139">Enable Theme Music (Requires Restart)</string>
+    <string id="30140">Loop Theme Music</string>
+    <string id="30141">Enable Background Image (Requires Restart)</string>
+    <string id="30142">Services</string>
+    <string id="30143">Enable Info Loader (Requires Restart)</string>
+    <string id="30144">Enable Menu Loader (Requires Restart)</string>
+    <string id="30145">Enable WebSocket Remote (Requires Restart)</string>
 
 </strings>
