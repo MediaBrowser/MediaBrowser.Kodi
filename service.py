@@ -66,23 +66,23 @@ newWebSocketThread.start()
 newMenuThread = LoadMenuOptionsThread()
 newMenuThread.start()
 
-newThread = RecentInfoUpdaterThread()
-newThread.start()
+newRecentInfoThread = RecentInfoUpdaterThread()
+newRecentInfoThread.start()
 
 backgroundUpdaterThread = BackgroundRotationThread()
 backgroundUpdaterThread.start()
 
-newThread = ThemeMusicThread()
-newThread.start()
+newThemeMusicThread = ThemeMusicThread()
+newThemeMusicThread.start()
 
-newThread = RandomInfoUpdaterThread()
-newThread.start()
+newRandomInfoThread = RandomInfoUpdaterThread()
+newRandomInfoThread.start()
 
-newThread = NextUpUpdaterThread()
-newThread.start()
+newNextUpThread = NextUpUpdaterThread()
+newNextUpThread.start()
 
-newThread = InfoUpdaterThread()
-newThread.start()
+newInfoThread = InfoUpdaterThread()
+newInfoThread.start()
 
 ###############################################
 # start the image proxy server
