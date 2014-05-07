@@ -407,7 +407,6 @@ class BackgroundRotationThread(threading.Thread):
         
         # add movie BG links
         for bg_item in self.movie_art_links:
-            xbmc.log(bg_item["name"])
             item_id = bg_item["parent"]
             if(self.item_art_links.get(item_id) != None):
                 self.item_art_links[item_id].append(bg_item)

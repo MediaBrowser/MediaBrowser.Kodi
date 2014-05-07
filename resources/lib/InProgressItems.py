@@ -174,6 +174,8 @@ class InProgressUpdaterThread(threading.Thread):
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Year", str(year))
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Runtime", str(runtime))
             
+            WINDOW.setProperty("InProgressMovieMB3.Enabled", "true")
+            
             item_count = item_count + 1
         
         # blank any not available
@@ -300,6 +302,8 @@ class InProgressUpdaterThread(threading.Thread):
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Plot", plot)
+            
+            WINDOW.setProperty("InProgresstEpisodeMB3.Enabled", "true")
             
             item_count = item_count + 1
             

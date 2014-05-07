@@ -91,7 +91,7 @@
     <string id="30114">On Resume Jump Back Seconds</string>
     <string id="30115">Mark Played When Stopping Above %</string>
     <string id="30116">Add Item and Played Counts</string>
-    <string id="30117">Background Art Refresh Rate (seconds)</string>
+    <string id="30117"> - Background Art Refresh Rate (seconds)</string>
     <string id="30118">Add Resume Percent</string>
     <string id="30119">Add Episode Number</string>
     <string id="30120">Show Load Progress</string>
@@ -115,11 +115,15 @@
     <string id="30138">Search</string>
     
     <string id="30139">Enable Theme Music (Requires Restart)</string>
-    <string id="30140">Loop Theme Music</string>
+    <string id="30140"> - Loop Theme Music</string>
     <string id="30141">Enable Background Image (Requires Restart)</string>
     <string id="30142">Services</string>
     <string id="30143">Enable Info Loader (Requires Restart)</string>
     <string id="30144">Enable Menu Loader (Requires Restart)</string>
-    <string id="30145">Enable WebSocket Remote (Requires Restart)</string>
+    <string id="30145">Enable WebSocket Remote (Requires Restart)</string>   
+    <string id="30146">Enable In Progress Loader (Requires Restart)</string>
+    <string id="30147">Enable Recent Info Loader (Requires Restart)</string>
+    <string id="30148">Enable Random Loader (Requires Restart)</string>
+    <string id="30149">Enable Next Up Loader (Requires Restart)</string>
 
 </strings>

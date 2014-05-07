@@ -39,6 +39,10 @@
         <setting id="useInfoLoader" type="bool" label="30143" default="true" visible="true" enable="true" />
         <setting id="useMenuLoader" type="bool" label="30144" default="true" visible="true" enable="true" />
         <setting id="useWebSocketRemote" type="bool" label="30145" default="true" visible="true" enable="true" />
+        <setting id="useInProgressUpdater" type="bool" label="30146" default="true" visible="true" enable="true" />
+        <setting id="useRecentInfoUpdater" type="bool" label="30147" default="true" visible="true" enable="true" />
+        <setting id="useRandomInfo" type="bool" label="30148" default="true" visible="true" enable="true" />
+        <setting id="useNextUp" type="bool" label="30149" default="true" visible="true" enable="true" />
 	</category>    
 	<category label="30022"> <!-- Advanced -->
 		<setting id="logLevel" type="enum" label="30004" values="None(0)|Info(1)|Debug(2)" default="0" />

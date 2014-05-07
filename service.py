@@ -58,17 +58,30 @@ def getAuthHeader():
 
 
 # start some worker threads
-newInProgressThread = InProgressUpdaterThread()
-newInProgressThread.start()
 
-newRecentInfoThread = RecentInfoUpdaterThread()
-newRecentInfoThread.start()
+if __addon__.getSetting('useInProgressUpdater') == "true":
+    newInProgressThread = InProgressUpdaterThread()
+    newInProgressThread.start()
+else:
+    xbmc.log("XBMB3C Service InProgressUpdater Disabled")
+    
+if __addon__.getSetting('useRecentInfoUpdater') == "true":
+    newRecentInfoThread = RecentInfoUpdaterThread()
+    newRecentInfoThread.start()
+else:
+    xbmc.log("XBMB3C Service RecentInfoUpdater Disabled")    
 
-newRandomInfoThread = RandomInfoUpdaterThread()
-newRandomInfoThread.start()
+if __addon__.getSetting('useRandomInfo') == "true":
+    newRandomInfoThread = RandomInfoUpdaterThread()
+    newRandomInfoThread.start()
+else:
+    xbmc.log("XBMB3C Service RandomInfo Disabled")        
 
-newNextUpThread = NextUpUpdaterThread()
-newNextUpThread.start()
+if __addon__.getSetting('useNextUp') == "true":
+    newNextUpThread = NextUpUpdaterThread()
+    newNextUpThread.start()
+else:
+    xbmc.log("XBMB3C Service NextUp Disabled")     
 
 if __addon__.getSetting('useWebSocketRemote') == "true":
     newWebSocketThread = WebSocketThread()

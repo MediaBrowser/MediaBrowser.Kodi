@@ -161,6 +161,8 @@ class RandomInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Year", str(year))
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Runtime", str(runtime))
             
+            WINDOW.setProperty("RandomMovieMB3.Enabled", "true")
+            
             item_count = item_count + 1
         
         self.logMsg("Updating Random TV Show List")
@@ -255,6 +257,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Plot", plot)
             
+            WINDOW.setProperty("RandomEpisodeMB3.Enabled", "true")
             
             item_count = item_count + 1
             
@@ -333,6 +336,8 @@ class RandomInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("RandomAlbumMB3." + str(item_count) + ".Art(banner)", banner)
             WINDOW.setProperty("RandomAlbumMB3." + str(item_count) + ".Art(poster)", thumbnail)
             WINDOW.setProperty("RandomAlbumMB3." + str(item_count) + ".Plot", plot)
+            
+            WINDOW.setProperty("RandomAlbumMB3.Enabled", "true")
             
             item_count = item_count + 1
         

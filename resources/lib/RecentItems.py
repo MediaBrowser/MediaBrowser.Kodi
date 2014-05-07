@@ -171,6 +171,8 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Year", str(year))
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Runtime", str(runtime))
             
+            WINDOW.setProperty("LatestMovieMB3.Enabled", "true")
+            
             item_count = item_count + 1
         
         #Updating Recent TV Show List
@@ -265,6 +267,8 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Plot", plot)
             
+            WINDOW.setProperty("LatestEpisodeMB3.Enabled", "true")
+            
             item_count = item_count + 1
             
         #Updating Recent MusicList
@@ -343,6 +347,8 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestAlbumMB3." + str(item_count) + ".Art(poster)", thumbnail)
             WINDOW.setProperty("LatestAlbumMB3." + str(item_count) + ".Plot", plot)
             
+            WINDOW.setProperty("LatestAlbumMB3.Enabled", "true")
+            
             item_count = item_count + 1
 
         #Updating Recent Photo
@@ -406,6 +412,8 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestPhotoMB3." + str(item_count) + ".Art(banner)", banner)
             WINDOW.setProperty("LatestPhotoMB3." + str(item_count) + ".Art(poster)", thumbnail)
             WINDOW.setProperty("LatestPhotoMB3." + str(item_count) + ".Plot", plot)
+            
+            WINDOW.setProperty("LatestPhotoMB3.Enabled", "true")
             
             item_count = item_count + 1
             

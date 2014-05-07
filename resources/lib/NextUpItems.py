@@ -187,6 +187,8 @@ class NextUpUpdaterThread(threading.Thread):
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Plot", plot)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Resume", resume)
             
+            WINDOW.setProperty("NextUpEpisodeMB3.Enabled", "true")
+            
             item_count = item_count + 1
             
         if(item_count < 10):
