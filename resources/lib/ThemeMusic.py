@@ -21,6 +21,7 @@ class ThemeMusicThread(threading.Thread):
     playingTheme = False
     themeId = ''
     volume = ''
+    themeMap = {}
     
     def __init__(self, *args):
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -65,7 +66,6 @@ class ThemeMusicThread(threading.Thread):
         mb3Host = addonSettings.getSetting('ipaddress')
         mb3Port = addonSettings.getSetting('port')    
          
-        self.item_art_links = []
         newid = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
         if newid != self.themeId:
             if self.isPlayingZone() and self.playingTheme == True:
@@ -80,18 +80,23 @@ class ThemeMusicThread(threading.Thread):
             self.themeId = id 
             themeUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + id + "/ThemeSongs?format=json"
             self.logMsg("updateThemeMusic themeUrl : " + themeUrl)
-            try:
+            if themeUrl not in self.themeMap:
+                try:
                     requesthandle = urllib2.urlopen(themeUrl, timeout=60)
                     jsonData = requesthandle.read()
                     requesthandle.close()   
-            except Exception, e:
+                except Exception, e:
                     self.logMsg("updateThemeMusic urlopen : " + str(e) + " (" + themeUrl + ")", level=0)
                     return
-            theme = json.loads(jsonData)
-        
+                theme = json.loads(jsonData)     
                
-            if(theme == None):
-                theme = []
+                if(theme == None):
+                    theme = []
+                self.logMsg("updateThemeMusic added theme to map : " + themeUrl)    
+                self.themeMap[themeUrl] = theme
+            elif themeUrl in self.themeMap:
+                theme = self.themeMap.get(themeUrl)
+                self.logMsg("updateThemeMusic retrieved theme from map : " + themeUrl)
             
             themeItems = theme.get("Items")
             if themeItems != []:
