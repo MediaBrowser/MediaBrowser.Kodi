@@ -84,14 +84,9 @@ class BackgroundRotationThread(threading.Thread):
                 if(backgroundRefresh < 10):
                     backgroundRefresh = 10                
             
-            if(secTotal2 > itemBackgroundRefresh):
-                self.setItemBackgroundLink()
+            if(secTotal2 > itemBackgroundRefresh) or (xbmc.getInfoLabel('ListItem.FileNameAndPath') != lastPath):
                 self.setItemBackgroundLink()
                 itemLastRun = datetime.today()
-            
-            if xbmc.getInfoLabel('ListItem.FileNameAndPath') != lastPath:
-                 self.setItemBackgroundLink()
-                 itemLastRun = datetime.today()
             
             lastPath=xbmc.getInfoLabel('ListItem.FileNameAndPath')
             xbmc.sleep(2000)
