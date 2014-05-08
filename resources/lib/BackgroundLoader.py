@@ -540,8 +540,20 @@ class BackgroundRotationThread(threading.Thread):
             self.logMsg("BG Item Image Info : " + str(info), level=2)
             newBgLinks.append(info)
             index = index + 1
+        
+        if (images == None or images == []):
+             # no backdrops try and get primary image
+            imageTags = item.get("ImageTags")
+            image = imageTags.get("Primary")
+            info = {}
+            info["url"] = "http://localhost:15001/?id=" + str(origid) + "&type=Primary&tag=" + image
+            info["index"] = index
+            info["parent"] = id
+            info["name"] = name
+            self.logMsg("BG Item Image Info : " + str(info), level=2)
+            newBgLinks.append(info)
 
         if(len(newBgLinks) > 0):
-            self.item_art_links[id] = newBgLinks
+            self.item_art_links[origid] = newBgLinks
            
     
