@@ -447,6 +447,12 @@ class BackgroundRotationThread(threading.Thread):
     
             listOfBackgrounds = self.item_art_links.get(id)
             
+            # if for some reson the item is not in the cache try to load it now
+            if(listOfBackgrounds == None or len(listOfBackgrounds) == 0):
+                self.loadItemBackgroundLinks(id)
+            
+            listOfBackgrounds = self.item_art_links.get(id)
+            
             if(listOfBackgrounds != None and len(listOfBackgrounds) > 0):
                 self.logMsg("setBackgroundLink index " + str(self.current_item_art) + " of " + str(len(listOfBackgrounds)), level=2)
                 try: 
@@ -470,3 +476,72 @@ class BackgroundRotationThread(threading.Thread):
             self.logMsg("setBackgroundLink Resetting MB3.Background.Item.FanArt", 2)
             WINDOW.clearProperty("MB3.Background.Item.FanArt")
             
+    def loadItemBackgroundLinks(self, id):
+    
+        self.logMsg("loadItemBackgroundLinks Called for id" + id)
+        
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        mb3Host = addonSettings.getSetting('ipaddress')
+        mb3Port = addonSettings.getSetting('port')
+        userName = addonSettings.getSetting('username')
+        
+        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"   
+
+        try:
+            requesthandle = urllib.urlopen(userUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()
+        except Exception, e:
+            self.logMsg("loadItemBackgroundLinks urlopen : " + str(e) + " (" + userUrl + ")", level=0)
+            return 
+            
+        userid = ""
+        result = json.loads(jsonData)
+        for user in result:
+            if(user.get("Name") == userName):
+                userid = user.get("Id")
+                break            
+    
+        itemUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json"
+        try:
+            requesthandle = urllib2.urlopen(itemUrl, timeout=60)
+            jsonData = requesthandle.read()
+            requesthandle.close()
+        except Exception, e:
+            self.logMsg("updateItemArtLinks urlopen : " + str(e) + " (" + itemUrl + ")", level=0)
+            return
+
+        item = json.loads(jsonData)    
+        
+        if(item == None):
+            item = []
+
+        #for item in result:
+        images = item.get("BackdropImageTags")
+        id = item.get("Id")
+        origid = id
+        name = item.get("Name")
+        
+        if (images == None or images == []):
+          images = item.get("ParentBackdropImageTags")
+          id = item.get("ParentId")
+          if (images == None):
+            images = []
+            
+        index = 0
+     
+        newBgLinks = []
+        for backdrop in images:
+            info = {}
+            info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
+            info["index"] = index
+            info["parent"] = id
+            info["name"] = name
+            self.logMsg("BG Item Image Info : " + str(info), level=2)
+            newBgLinks.append(info)
+            index = index + 1
+
+        if(len(newBgLinks) > 0):
+            self.item_art_links[id] = newBgLinks
+           
+    
