@@ -630,38 +630,42 @@ def addContextMenu(details, extraData):
     watched = extraData.get('watchedurl')
     if watched != None:
         scriptToRun = PLUGINPATH + "/default.py"
+        
+        pluginCastLink = "XBMC.Container.Update(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + str(extraData.get('id')) + ")"
+        commands.append(( "Show People", pluginCastLink))
+        
         if extraData.get("playcount") == "0":
             argsToPass = 'markWatched,' + extraData.get('watchedurl')
-            commands.append(( __language__(30093), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            commands.append(( __language__(30093), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
         else:
             argsToPass = 'markUnwatched,' + extraData.get('watchedurl')
-            commands.append(( __language__(30094), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            commands.append(( __language__(30094), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
         if extraData.get('favorite') != 'true':
             argsToPass = 'markFavorite,' + extraData.get('favoriteurl')
-            commands.append(( __language__(30095), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            commands.append(( __language__(30095), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
         else:
             argsToPass = 'unmarkFavorite,' + extraData.get('favoriteurl')
-            commands.append(( __language__(30096), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            commands.append(( __language__(30096), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
             
         argsToPass = 'sortby'
-        commands.append(( __language__(30097), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+        commands.append(( __language__(30097), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
         if 'Ascending' in WINDOW.getProperty("currenturl"):
             argsToPass = 'sortorder'
-            commands.append(( __language__(30098), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            commands.append(( __language__(30098), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
         else:
             argsToPass = 'sortorder'
-            commands.append(( __language__(30099), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+            commands.append(( __language__(30099), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
             
         argsToPass = 'genrefilter'
-        commands.append(( __language__(30040), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+        commands.append(( __language__(30040), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
         argsToPass = 'playall,' + extraData.get('id')
-        commands.append(( __language__(30041), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))            
+        commands.append(( __language__(30041), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))            
         argsToPass = 'refresh'
-        commands.append(( __language__(30042), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+        commands.append(( __language__(30042), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
         argsToPass = 'delete,' + extraData.get('deleteurl')
-        commands.append(( __language__(30043), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")", ))
+        commands.append(( __language__(30043), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
         if  extraData.get('itemtype') == 'Trailer':
-            commands.append(( __language__(30046),"XBMC.RunPlugin(%s)" % CP_ADD_URL % details.get('title'),))
+            commands.append(( __language__(30046),"XBMC.RunPlugin(%s)" % CP_ADD_URL % details.get('title')))
     return(commands)
     
 def getDetailsString():
@@ -1736,8 +1740,8 @@ def getCastList(pluginName, handle, params):
         
 def showPersonInfo(pluginName, handle, params):
 
-    item = xbmcgui.ListItem(label="Test")
-    xbmcplugin.setResolvedUrl(handle, True, item)
+    #item = xbmcgui.ListItem(label="Test")
+    #xbmcplugin.setResolvedUrl(handle, True, item)
 
     port = __settings__.getSetting('port')
     host = __settings__.getSetting('ipaddress')
@@ -1789,7 +1793,7 @@ def checkService():
 if(logLevel == 2):
     xbmcgui.Dialog().ok(__language__(30132), __language__(30133), __language__(30134))
 
-printDebug( "XBMB3C -> Script argument is " + str(sys.argv[1]))
+printDebug( "XBMB3C -> Script argument date " + str(sys.argv))
 xbmcVersionNum = getXbmcVersion()
 try:
     params=get_params(sys.argv[2])
