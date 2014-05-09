@@ -51,9 +51,13 @@ class BackgroundRotationThread(threading.Thread):
             self.loadLastBackground()
         except Exception, e:
             self.logMsg("loadLastBackground Exception : " + str(e), level=0)
+            
+        WINDOW = xbmcgui.Window( 10000 )
+        filterOnParent_Last = WINDOW.getProperty("MB3.Background.filterOnParent")
+        
         last_id = ""
         self.updateArtLinks()
-        self.setBackgroundLink()
+        self.setBackgroundLink(filterOnParent_Last)
         lastRun = datetime.today()
         itemLastRun = datetime.today()
         
@@ -64,21 +68,23 @@ class BackgroundRotationThread(threading.Thread):
             backgroundRefresh = 10
             
         itemBackgroundRefresh = 5
-        
+
         while (xbmc.abortRequested == False):
             td = datetime.today() - lastRun
             td2 = datetime.today() - itemLastRun
             secTotal = td.seconds
             secTotal2 = td2.seconds
             
-            if(secTotal > backgroundRefresh):
+            filterOnParent = WINDOW.getProperty("MB3.Background.filterOnParent")
+            if(secTotal > backgroundRefresh or filterOnParent_Last != filterOnParent):
                 if(self.linksLoaded == False):
                     self.updateArtLinks()
                 lastRun = datetime.today()
+                filterOnParent_Last = filterOnParent
                 backgroundRefresh = int(addonSettings.getSetting('backgroundRefresh'))
-                self.setBackgroundLink()
+                self.setBackgroundLink(filterOnParent)
                 if(backgroundRefresh < 10):
-                    backgroundRefresh = 10                
+                    backgroundRefresh = 10
             
             # update item BG every 7 seconds
             if(secTotal2 > itemBackgroundRefresh):
@@ -159,7 +165,7 @@ class BackgroundRotationThread(threading.Thread):
         dataFile.write(stringdata)
         dataFile.close()        
     
-    def setBackgroundLink(self):
+    def setBackgroundLink(self, filterOnParent):
     
         # load the background blacklist
         __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -183,7 +189,7 @@ class BackgroundRotationThread(threading.Thread):
         WINDOW = xbmcgui.Window( 10000 )
         
         if(len(self.movie_art_links) > 0):
-            next, url = self.findNextLink(self.movie_art_links, black_list, self.current_movie_art)
+            next, url = self.findNextLink(self.movie_art_links, black_list, self.current_movie_art, filterOnParent)
             self.current_movie_art = next
             WINDOW.setProperty("MB3.Background.Movie.FanArt", url)
             self.logMsg("MB3.Background.Movie.FanArt=" + url)
@@ -207,7 +213,7 @@ class BackgroundRotationThread(threading.Thread):
                 self.current_music_art = 0
             
         if(len(self.global_art_links) > 0):
-            next, url = self.findNextLink(self.global_art_links, black_list, self.current_global_art)
+            next, url = self.findNextLink(self.global_art_links, black_list, self.current_global_art, filterOnParent)
             self.current_global_art = next
             WINDOW.setProperty("MB3.Background.Global.FanArt", url)
             self.logMsg("MB3.Background.Global.FanArt=" + url)
@@ -221,12 +227,17 @@ class BackgroundRotationThread(threading.Thread):
                     return True
         return False
            
-    def findNextLink(self, linkList, blackList, startIndex):
+    def findNextLink(self, linkList, blackList, startIndex, filterOnParent):
         currentIndex = startIndex
         
         isBlacklisted = self.isBlackListed(blackList, linkList[currentIndex])
+        isParentMatch = True
+        if(filterOnParent != None and filterOnParent != ""):
+            isParentMatch = linkList[currentIndex]["parent"] == filterOnParent
         
-        while(isBlacklisted):
+        xbmc.log("findNextLink : filterOnParent=" + str(filterOnParent) + " isParentMatch=" + str(isParentMatch))
+        
+        while(isBlacklisted or isParentMatch == False):
         
             currentIndex = currentIndex + 1
             
@@ -237,6 +248,9 @@ class BackgroundRotationThread(threading.Thread):
                 return (currentIndex, linkList[currentIndex]["url"]) # we checked everything and nothing was ok so return the first one again                
 
             isBlacklisted = self.isBlackListed(blackList, linkList[currentIndex])
+            isParentMatch = True
+            if(filterOnParent != None and filterOnParent != ""):
+                isParentMatch = linkList[currentIndex]["parent"] == filterOnParent            
              
         nextIndex = currentIndex + 1
         if(nextIndex == len(linkList)):
@@ -440,8 +454,6 @@ class BackgroundRotationThread(threading.Thread):
                 bg_list = []
                 bg_list.append(bg_item)
                 self.item_art_links[item_id] = bg_list
-        
-        xbmc.log(str(self.item_art_links))
         
         self.linksLoaded = True
         
