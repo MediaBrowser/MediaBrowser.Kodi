@@ -230,12 +230,10 @@ class BackgroundRotationThread(threading.Thread):
     def findNextLink(self, linkList, blackList, startIndex, filterOnParent):
         currentIndex = startIndex
         
-        isBlacklisted = self.isBlackListed(blackList, linkList[currentIndex])
-        isParentMatch = True
-        if(filterOnParent != None and filterOnParent != ""):
-            isParentMatch = linkList[currentIndex]["parent"] == filterOnParent
+        isBlacklisted = True
+        isParentMatch = False
         
-        xbmc.log("findNextLink : filterOnParent=" + str(filterOnParent) + " isParentMatch=" + str(isParentMatch))
+        #xbmc.log("findNextLink : filterOnParent=" + str(filterOnParent) + " isParentMatch=" + str(isParentMatch))
         
         while(isBlacklisted or isParentMatch == False):
         
@@ -253,8 +251,10 @@ class BackgroundRotationThread(threading.Thread):
                 isParentMatch = linkList[currentIndex]["parent"] == filterOnParent            
              
         nextIndex = currentIndex + 1
+        
         if(nextIndex == len(linkList)):
-            nextIndex = 0            
+            nextIndex = 0    
+
         return (nextIndex, linkList[currentIndex]["url"])
     
     def updateArtLinks(self):
