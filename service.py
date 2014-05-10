@@ -59,54 +59,63 @@ def getAuthHeader():
 
 # start some worker threads
 
+newInProgressThread = None
 if __addon__.getSetting('useInProgressUpdater') == "true":
     newInProgressThread = InProgressUpdaterThread()
     newInProgressThread.start()
 else:
     xbmc.log("XBMB3C Service InProgressUpdater Disabled")
-    
+  
+newRecentInfoThread = None
 if __addon__.getSetting('useRecentInfoUpdater') == "true":
     newRecentInfoThread = RecentInfoUpdaterThread()
     newRecentInfoThread.start()
 else:
     xbmc.log("XBMB3C Service RecentInfoUpdater Disabled")    
 
+newRandomInfoThread = None    
 if __addon__.getSetting('useRandomInfo') == "true":
     newRandomInfoThread = RandomInfoUpdaterThread()
     newRandomInfoThread.start()
 else:
     xbmc.log("XBMB3C Service RandomInfo Disabled")        
 
+newNextUpThread = None
 if __addon__.getSetting('useNextUp') == "true":
     newNextUpThread = NextUpUpdaterThread()
     newNextUpThread.start()
 else:
     xbmc.log("XBMB3C Service NextUp Disabled")     
 
+newWebSocketThread = None
 if __addon__.getSetting('useWebSocketRemote') == "true":
     newWebSocketThread = WebSocketThread()
     newWebSocketThread.start()
 else:
     xbmc.log("XBMB3C Service WebSocketRemote Disabled")
-    
+
+newMenuThread = None
 if __addon__.getSetting('useMenuLoader') == "true":
     newMenuThread = LoadMenuOptionsThread()
     newMenuThread.start()
 else:
     xbmc.log("XBMB3C Service MenuLoader Disabled")
 
+backgroundUpdaterThread = None    
 if __addon__.getSetting('useBackgroundLoader') == "true":
     backgroundUpdaterThread = BackgroundRotationThread()
     backgroundUpdaterThread.start()
 else:
     xbmc.log("XBMB3C Service BackgroundLoader Disabled")
     
+newThemeMusicThread = None    
 if __addon__.getSetting('useThemeMusic') == "true":
     newThemeMusicThread = ThemeMusicThread()
     newThemeMusicThread.start()
 else:
     xbmc.log("XBMB3C Service ThemeMusic Disabled")
 
+newInfoThread = None    
 if __addon__.getSetting('useInfoLoader') == "true":
     newInfoThread = InfoUpdaterThread()
     newInfoThread.start()
@@ -208,14 +217,18 @@ def stopAll(played_information):
                         
                     if(gotDeleted == 0):
                         setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
-                        newWebSocketThread.playbackStopped(item_id, str(0))
+                        if(newWebSocketThread != None):
+                            newWebSocketThread.playbackStopped(item_id, str(0))
                         markWatched(watchedurl)
                 else:
                     markUnWatched(watchedurl)
-                    newWebSocketThread.playbackStopped(item_id, str(int(currentPossition * 10000000)))
+                    if(newWebSocketThread != None):
+                        newWebSocketThread.playbackStopped(item_id, str(int(currentPossition * 10000000)))
                     setPosition(positionurl + '?PositionTicks=' + str(int(currentPossition * 10000000)), 'DELETE')
                     
-    NextUpUpdaterThread.updateNextUp(NextUpUpdaterThread())
+    if(newNextUpThread != None):
+        newNextUpThread.updateNextUp()
+        
     played_information.clear()
 
 class Service( xbmc.Player ):
@@ -241,7 +254,8 @@ class Service( xbmc.Player ):
         runtime = WINDOW.getProperty("runtimeticks")
         item_id = WINDOW.getProperty("item_id")
         
-        newWebSocketThread.playbackStarted(item_id)
+        if(newWebSocketThread != None):
+            newWebSocketThread.playbackStarted(item_id)
         
         if (watchedurl != "" and positionurl != ""):
         
@@ -287,7 +301,8 @@ while not xbmc.abortRequested:
             if(secDiff > 10):
                 if(monitor.played_information.get(currentFile) != None and monitor.played_information.get(currentFile).get("item_id") != None):
                     item_id =  monitor.played_information.get(currentFile).get("item_id")
-                    newWebSocketThread.sendProgressUpdate(item_id, str(int(playTime * 10000000)))
+                    if(newWebSocketThread != None):
+                        newWebSocketThread.sendProgressUpdate(item_id, str(int(playTime * 10000000)))
                 lastProgressUpdate = datetime.today()
             
         except Exception, e:
@@ -297,7 +312,8 @@ while not xbmc.abortRequested:
     xbmc.sleep(1000)
     xbmcgui.Window(10000).setProperty("XBMB3C_Service_Timestamp", str(int(time.time())))
 # stop the WebSocket client
-newWebSocketThread.stopClient()
+if(newWebSocketThread != None):
+    newWebSocketThread.stopClient()
 
 # stop the image proxy
 keepServing = False
