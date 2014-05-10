@@ -1337,6 +1337,9 @@ def processDirectory(url, results, progress):
         # Process UserData
         userData = item.get("UserData")
         PlaybackPositionTicks = '100'
+        overlay = "0"
+        favorite = "false"
+        seekTime = 0
         if(userData != None):
             if userData.get("Played") != True:
                 overlay = "7"
@@ -1355,7 +1358,7 @@ def processDirectory(url, results, progress):
                 seekTime = reasonableTicks / 10000
         
         playCount = 0
-        if(userData.get("Played") == True):
+        if(userData != None and userData.get("Played") == True):
             playCount = 1
         # Populate the details list
         details={'title'        : tempTitle,
