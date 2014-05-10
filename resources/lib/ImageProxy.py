@@ -78,11 +78,11 @@ class MyHandler(BaseHTTPRequestHandler):
           
         # TODO: add option to return PNG or JPG
         if (name != None):
-            remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Persons/" + name + "/Images/" + imageType  + "?Format=jpg"
+            remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Persons/" + name + "/Images/" + imageType  + "?Format=png"
         elif (index == None):  
-            remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType  + "?Format=jpg"
+            remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType  + "?Format=png"
         else:
-            remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType +  "/" + index  + "?Format=jpg"
+            remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType +  "/" + index  + "?Format=png"
           
         if(maxheight != None):
             remoteUrl = remoteUrl + "&maxheight=" + maxheight[0]
