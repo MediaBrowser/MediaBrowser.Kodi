@@ -1583,12 +1583,15 @@ def getArtwork(data, type):
     if type == "tvshow.poster": # Change the Id to the series to get the overall series poster
         if data.get("Type") == "Season" or data.get("Type")== "Episode":
             id = data.get("SeriesId")
-    #elif type == "poster" and data.get("Type") == "Episode": # Change the Id to the Season to get the season poster
-    #    id = data.get("SeasonId")
+    elif type == "poster" and data.get("Type") == "Episode" and __settings__.getSetting('useSeasonPoster')=='true': # Change the Id to the Season to get the season poster
+        id = data.get("SeasonId")
     if type == "poster" or type == "tvshow.poster": # Now that the Ids are right, change type to MB3 name
         type="Primary"
-    if data.get("Type") == "Episode" or data.get("Type") == "Season":  # If we aren't delling with the poster, use series art
-        if type != "Primary" or __settings__.getSetting('useSeriesArt') == "true":
+    if data.get("Type") == "Season":  # For seasons: primary (poster), thumb and banner get season art, rest series art
+        if type != "Primary" and type != "Thumb" and type != "Banner":
+            id = data.get("SeriesId")
+    if data.get("Type") == "Episode":  # For episodes: primary (episode thumb) gets episode art, rest series art. 
+        if type != "Primary":
             id = data.get("SeriesId")
     imageTag = ""
     if(data.get("ImageTags") != None and data.get("ImageTags").get(type) != None):
@@ -1810,7 +1813,7 @@ def checkService():
     printDebug ("XBMB3C Service Timestamp: " + timeStamp)
     printDebug ("XBMB3C Current Timestamp: " + str(int(time.time())))
     
-    if((int(timeStamp) + 10) < int(time.time())):
+    if((int(timeStamp) + 240) < int(time.time())):
         printDebug("XBMB3C Service Not Running, time stamp to old, exiting", 0)
         xbmcgui.Dialog().ok(__language__(30135), __language__(30136), __language__(30137))
         sys.exit()
