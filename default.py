@@ -1714,7 +1714,7 @@ def getCastList(pluginName, handle, params):
 
     for person in people:
 
-        displayName = person.get("Name") + " (" + person.get("Type") + ")"
+        displayName = person.get("Name") + " (" + person.get("Role") + ")"
         tag = person.get("PrimaryImageTag")
         
         baseName = person.get("Name")
@@ -1735,11 +1735,24 @@ def getCastList(pluginName, handle, params):
         item.setProperty('IsPlayable', 'false')
         item.setProperty('IsFolder', 'false')
         
+        commands = []
+        detailsString = getDetailsString()
+        url = "http://" + host + ":" + port + "/mediabrowser/Users/" + userid + "/Items/?Recursive=True&Person=PERSON_NAME&Fields=" + detailsString + "&format=json"
+        url = urllib.quote(url)
+        url = url.replace("PERSON_NAME", baseName)
+        pluginCastLink = "XBMC.Container.Update(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_GETCONTENT) + "&url=" + url + ")"
+        commands.append(( "Show Other Library Items", pluginCastLink))
+        item.addContextMenuItems( commands, g_contextReplace )
+        
         itemTupple = (actionUrl, item, False)
         listItems.append(itemTupple)
         
+        
+    listItems.sort()
     xbmcplugin.addDirectoryItems(handle, listItems)
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
+    
+    #xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_TITLE)
         
 def showPersonInfo(pluginName, handle, params):
 
@@ -1758,10 +1771,23 @@ def showPersonInfo(pluginName, handle, params):
     id = result.get("Id")
     data["name"] = result.get("Name")
     
+    contentCounts = ""
+    if(result.get("AdultVideoCount") != None and result.get("AdultVideoCount") > 0):
+        contentCounts = contentCounts + "\nAdult Count : " + str(result.get("AdultVideoCount"))
+    if(result.get("MovieCount") != None and result.get("MovieCount") > 0):
+        contentCounts = contentCounts + "\nMovie Count : " + str(result.get("MovieCount"))    
+    if(result.get("SeriesCount") != None and result.get("SeriesCount") > 0):
+        contentCounts = contentCounts + "\nSeries Count : " + str(result.get("SeriesCount"))   
+    if(result.get("EpisodeCount") != None and result.get("EpisodeCount") > 0):
+        contentCounts = contentCounts + "\nEpisode Count : " + str(result.get("EpisodeCount"))      
+    
+    if(len(contentCounts) > 0):
+        contentCounts = "Total Library Counts:" + contentCounts
+    
     overview = result.get("Overview")
     if(overview == None or overview == ""):
         overview = "No details available"
-    data["overview"] = overview
+    data["overview"] = contentCounts + "\n\n" + overview
     
     infoPage = PersonInfo("PersonInfo.xml", __cwd__, "default", "720p")
     infoPage.setInfo(data)
