@@ -1717,7 +1717,10 @@ def getCastList(pluginName, handle, params):
 
     for person in people:
 
-        displayName = person.get("Name") + " (" + person.get("Role") + ")"
+        displayName = person.get("Name")
+        if(person.get("Role") != None):
+            displayName = displayName + " (" + person.get("Role") + ")"
+            
         tag = person.get("PrimaryImageTag")
         
         baseName = person.get("Name")
@@ -1754,17 +1757,17 @@ def getCastList(pluginName, handle, params):
     listItems.sort()
     xbmcplugin.addDirectoryItems(handle, listItems)
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
-    
-    #xbmcplugin.addSortMethod(handle, xbmcplugin.SORT_METHOD_TITLE)
         
 def showPersonInfo(pluginName, handle, params):
 
     #item = xbmcgui.ListItem(label="Test")
     #xbmcplugin.setResolvedUrl(handle, True, item)
+    xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
 
     port = __settings__.getSetting('port')
     host = __settings__.getSetting('ipaddress')
     server = host + ":" + port
+    userid = getUserId()
     
     jsonData = getURL("http://" + server + "/mediabrowser/Persons/" + params["name"] + "?format=json", suppress=False, popup=1 )    
     printDebug("PersonInfo jsonData: " + jsonData, 2)
@@ -1792,9 +1795,20 @@ def showPersonInfo(pluginName, handle, params):
         overview = "No details available"
     data["overview"] = contentCounts + "\n\n" + overview
     
+    detailsString = getDetailsString()
+    url = "http://" + host + ":" + port + "/mediabrowser/Users/" + userid + "/Items/?Recursive=True&Person=PERSON_NAME&Fields=" + detailsString + "&format=json"
+    url = urllib.quote(url)
+    url = url.replace("PERSON_NAME", params["name"])
+    pluginCastLink = "XBMC.Container.Update(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_GETCONTENT) + "&url=" + url + ")"    
+    data["show_movies"] = pluginCastLink
+    
     infoPage = PersonInfo("PersonInfo.xml", __cwd__, "default", "720p")
     infoPage.setInfo(data)
     infoPage.doModal()
+    
+    if(infoPage.showMovies == True):
+        xbmc.executebuiltin(pluginCastLink)
+    
     del infoPage
         
 def checkService():

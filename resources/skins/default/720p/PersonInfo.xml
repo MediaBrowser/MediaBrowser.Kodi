@@ -16,6 +16,7 @@
 			<height>500</height>
 			<texture border="40">DialogBack.png</texture>
 		</control>
+        
 		<control type="image">
 			<description>Dialog Header image</description>
 			<left>40</left>
@@ -24,6 +25,7 @@
 			<height>40</height>
 			<texture>dialogheader.png</texture>
 		</control>
+        
 		<control type="label" id="1">
 			<description>header label</description>
 			<left>40</left>
@@ -37,6 +39,7 @@
 			<textcolor>selected</textcolor>
 			<shadowcolor>black</shadowcolor>
 		</control>
+        
 		<control type="button" id="8">
 			<description>Close Window button</description>
 			<left>620</left>
@@ -48,32 +51,76 @@
 			<onclick>PreviousMenu</onclick>
 			<texturefocus>DialogCloseButton-focus.png</texturefocus>
 			<texturenofocus>DialogCloseButton.png</texturenofocus>
-			<onleft>10</onleft>
-			<onright>10</onright>
-			<onup>10</onup>
-			<ondown>10</ondown>
-			<visible>system.getbool(input.enablemouse)</visible>
+			<onleft>-</onleft>
+			<onright>-</onright>
+			<onup>-</onup>
+			<ondown>3010</ondown>
 		</control>
+        
 		<control type="label" id="3000">
 			<description>person name</description>
 			<left>30</left>
-			<top>60</top>
+			<top>65</top>
 			<width>550</width>
 			<height>100</height>
 			<align>left</align>
 			<label>-</label>
-			<font>font13</font>
-		</control>        
+			<font>font13_title</font>
+            <textcolor>grey2</textcolor>
+		</control>    
+
+        <control type="label">
+            <left>410</left>
+            <top>65</top>
+            <width>150</width>
+            <height>20</height>
+            <font>font13_title</font>
+            <textcolor>grey2</textcolor>
+            <shadowcolor>black</shadowcolor>
+            <align>right</align>
+            <aligny>center</aligny>
+            <label>Page $INFO[Container(3001).CurrentPage] of $INFO[Container(3001).NumPages]</label>
+        </control>        
+        
+        <control type="spincontrol" id="3010">
+            <description>Pageation Button</description>
+            <left>595</left>
+            <top>65</top>
+            <height>20</height>
+            <width>40</width>
+            <subtype>page</subtype>
+            <font>-</font>
+            <onleft>3010</onleft>
+            <onright>3010</onright>
+            <ondown>3002</ondown>
+            <onup>8</onup>
+            <textcolor>-</textcolor>
+            <showonepage>true</showonepage>
+        </control>
+        
 		<control type="textbox" id="3001">
 			<description>text</description>
 			<left>30</left>
 			<top>100</top>
 			<width>630</width>
-			<height>350</height>
+			<height>320</height>
 			<align>left</align>
 			<label>-</label>
 			<font>font13</font>
-			<autoscroll time="1000" delay="2000" repeat="2000">true</autoscroll>
+            <pagecontrol>3010</pagecontrol>
 		</control>
+        
+		<control type="button" id="3002">
+			<description>show movies</description>
+			<left>30</left>
+			<top>430</top>
+			<width>150</width>
+			<height>40</height>
+			<align>center</align>
+			<label>Show Movies</label>
+			<font>font13</font>
+            <onup>3010</onup>
+		</control>       
+        
 	</controls>
 </window>

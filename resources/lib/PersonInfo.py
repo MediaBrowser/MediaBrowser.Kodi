@@ -6,6 +6,7 @@ import xbmc
 class PersonInfo(xbmcgui.WindowXMLDialog):
 
     details = {}
+    showMovies = False
     
     def __init__(self, *args, **kwargs):
         xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
@@ -16,7 +17,7 @@ class PersonInfo(xbmcgui.WindowXMLDialog):
         
         self.getControl(3000).setLabel(self.details["name"])
         self.getControl(3001).setText(self.details["overview"])
-        
+           
     def setInfo(self, data):
         self.details = data
             
@@ -28,4 +29,14 @@ class PersonInfo(xbmcgui.WindowXMLDialog):
 
     def closeDialog(self):
         self.close()        
+        
+    def onClick(self, controlID):
+
+        if(controlID == 3002):
+            self.showMovies = True
+            
+            xbmc.executebuiltin('Dialog.Close(movieinformation)') 
+            self.close()
+
+        pass        
 
