@@ -13,6 +13,7 @@ from datetime import datetime
 import urllib
 import urllib2
 import random
+import time
 
 class BackgroundRotationThread(threading.Thread):
 
@@ -53,7 +54,7 @@ class BackgroundRotationThread(threading.Thread):
             self.logMsg("loadLastBackground Exception : " + str(e), level=0)
             
         WINDOW = xbmcgui.Window( 10000 )
-        filterOnParent_Last = WINDOW.getProperty("MB3.Background.filterOnParent")
+        filterOnParent_Last = WINDOW.getProperty("MB3.Background.Collection")
         
         last_id = ""
         self.updateArtLinks()
@@ -75,14 +76,14 @@ class BackgroundRotationThread(threading.Thread):
             secTotal = td.seconds
             secTotal2 = td2.seconds
             
-            filterOnParent = WINDOW.getProperty("MB3.Background.filterOnParent")
-            if(secTotal > backgroundRefresh or filterOnParent_Last != filterOnParent):
+            Collection = WINDOW.getProperty("MB3.Background.Collection")
+            if(secTotal > backgroundRefresh or filterOnParent_Last != Collection):
                 if(self.linksLoaded == False):
                     self.updateArtLinks()
                 lastRun = datetime.today()
-                filterOnParent_Last = filterOnParent
+                filterOnParent_Last = Collection
                 backgroundRefresh = int(addonSettings.getSetting('backgroundRefresh'))
-                self.setBackgroundLink(filterOnParent)
+                self.setBackgroundLink(Collection)
                 if(backgroundRefresh < 10):
                     backgroundRefresh = 10
             
@@ -103,7 +104,7 @@ class BackgroundRotationThread(threading.Thread):
         try:
             self.saveLastBackground()
         except Exception, e:
-            self.logMsg(str(e), level=0)  
+            self.logMsg("saveLastBackground Exception : " + str(e), level=0)  
             
         self.logMsg("Exited")
 
@@ -137,10 +138,6 @@ class BackgroundRotationThread(threading.Thread):
             self.logMsg("Setting Music Last : " + str(result.get("music")), level=2)
             WINDOW.setProperty("MB3.Background.Music.FanArt", result.get("music")["url"])   
 
-        if(result.get("item") != None):
-            self.logMsg("Setting Item Last : " + str(result.get("item")), level=2)
-            WINDOW.setProperty("MB3.Background.Item.FanArt", result.get("item")["url"])   
-
     def saveLastBackground(self):
     
         data = {}
@@ -152,8 +149,6 @@ class BackgroundRotationThread(threading.Thread):
             data["tv"] = self.tv_art_links[self.current_tv_art]
         if(len(self.music_art_links) > 0):
             data["music"] = self.music_art_links[self.current_music_art]
-        if(len(self.item_art_links) > 0):
-            data["item"] = self.item_art_links[self.current_item_art]            
 
         __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') )            
@@ -166,7 +161,7 @@ class BackgroundRotationThread(threading.Thread):
         dataFile.close()        
     
     def setBackgroundLink(self, filterOnParent):
-    
+        
         # load the background blacklist
         __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') )         
@@ -189,10 +184,13 @@ class BackgroundRotationThread(threading.Thread):
         WINDOW = xbmcgui.Window( 10000 )
         
         if(len(self.movie_art_links) > 0):
-            next, url = self.findNextLink(self.movie_art_links, black_list, self.current_movie_art, filterOnParent)
-            self.current_movie_art = next
-            WINDOW.setProperty("MB3.Background.Movie.FanArt", url)
-            self.logMsg("MB3.Background.Movie.FanArt=" + url)
+            self.logMsg("setBackgroundLink index movie_art_links " + str(self.current_movie_art + 1) + " of " + str(len(self.movie_art_links)), level=2)
+            artUrl =  self.movie_art_links[self.current_movie_art]["url"]
+            WINDOW.setProperty("MB3.Background.Movie.FanArt", artUrl)
+            self.logMsg("MB3.Background.Movie.FanArt=" + artUrl)
+            self.current_movie_art = self.current_movie_art + 1
+            if(self.current_movie_art == len(self.movie_art_links)):
+                self.current_movie_art = 0         
         
         if(len(self.tv_art_links) > 0):
             self.logMsg("setBackgroundLink index tv_art_links " + str(self.current_tv_art + 1) + " of " + str(len(self.tv_art_links)), level=2)
@@ -248,7 +246,7 @@ class BackgroundRotationThread(threading.Thread):
             isBlacklisted = self.isBlackListed(blackList, linkList[currentIndex])
             isParentMatch = True
             if(filterOnParent != None and filterOnParent != ""):
-                isParentMatch = linkList[currentIndex]["parent"] == filterOnParent            
+                isParentMatch = filterOnParent in linkList[currentIndex]["collections"]
              
         nextIndex = currentIndex + 1
         
@@ -258,8 +256,16 @@ class BackgroundRotationThread(threading.Thread):
         return (nextIndex, linkList[currentIndex]["url"])
     
     def updateArtLinks(self):
+        #t1 = time.time()
         self.updateCollectionArtLinks()
+        #t2 = time.time()
         self.updateTypeArtLinks()
+        #t3 = time.time()
+        #diff = t2 - t1
+        #xbmc.log("TIMEDIFF01 : " + str(diff))
+        #diff = t3 - t2
+        #xbmc.log("TIMEDIFF02 : " + str(diff))
+        
         self.linksLoaded = True
     
     def updateCollectionArtLinks(self):
@@ -300,11 +306,11 @@ class BackgroundRotationThread(threading.Thread):
             self.logMsg("updateCollectionArtLinks urlopen : " + str(e) + " (" + userUrl + ")", level=0)
             return
             
-        self.logMsg("updateCollectionArtLinks UserData : " + str(jsonData), 0)
+        self.logMsg("updateCollectionArtLinks UserData : " + str(jsonData), 2)
         result = json.loads(jsonData)
         
         parentid = result.get("Id")
-        self.logMsg("updateCollectionArtLinks ParentID : " + str(parentid), 0)
+        self.logMsg("updateCollectionArtLinks ParentID : " + str(parentid), 2)
             
         userRootPath = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentid + "&format=json"
         try:
@@ -315,7 +321,7 @@ class BackgroundRotationThread(threading.Thread):
             self.logMsg("updateCollectionArtLinks urlopen : " + str(e) + " (" + userRootPath + ")", level=0)
             return
             
-        self.logMsg("updateCollectionArtLinks userRootPath : " + str(jsonData), 0)            
+        self.logMsg("updateCollectionArtLinks userRootPath : " + str(jsonData), 2)            
         result = json.loads(jsonData)
         result = result.get("Items")
     
@@ -323,8 +329,6 @@ class BackgroundRotationThread(threading.Thread):
         
         # process collections
         for item in result:
-            self.logMsg("updateCollectionArtLinks Processing Collection : " + item.get("Name"), level=0)
-        
             collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&Fields=ParentId&Recursive=true&CollapseBoxSetItems=false&format=json"
         
             try:
@@ -343,7 +347,6 @@ class BackgroundRotationThread(threading.Thread):
         
             # process collection items
             for col_item in collectionResult:
-                self.logMsg("updateCollectionArtLinks processing collection " + item.get("Name") + " : " + col_item.get("Name"), level=0)
                 
                 id = col_item.get("Id")
                 images = col_item.get("BackdropImageTags")
@@ -373,17 +376,31 @@ class BackgroundRotationThread(threading.Thread):
                             info["id"] = id
                             info["parent"] = parentID
                             info["name"] = name
-                            self.logMsg("   -   " + "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop, level=0)
                             links.append(info)
                             index = index + 1   
 
                         stored_item["links"] = links
                         artLinks[id] = stored_item
                     else:
-                        self.logMsg("updateCollectionArtLinks adding new collection name to : " + col_item.get("Name"), level=0)
                         stored_item["collections"].append(item.get("Name"))
-                    
-        xbmc.log("COLLECTION_DATA " + str(artLinks))
+        
+        # build global link list
+        final_global_art = []
+        
+        for id in artLinks:
+            item = artLinks.get(id)
+            collections = item.get("collections")
+            links = item.get("links")
+            
+            for link_item in links:
+                link_item["collections"] = collections
+                final_global_art.append(link_item)
+                #xbmc.log("COLLECTION_DATA GROUPS " + str(link_item))
+        
+        self.global_art_links = final_global_art
+        random.shuffle(self.global_art_links)
+        self.logMsg("Background Global Art Links : " + str(len(self.global_art_links)))        
+        
         
     def updateTypeArtLinks(self):
         self.logMsg("updateTypeArtLinks Called")
@@ -539,13 +556,6 @@ class BackgroundRotationThread(threading.Thread):
               
         random.shuffle(self.music_art_links)
         self.logMsg("Background Music Art Links : " + str(len(self.music_art_links)))
-       
-        self.global_art_links.extend(self.movie_art_links)
-        self.global_art_links.extend(self.tv_art_links)
-        self.global_art_links.extend(self.music_art_links)
-        random.shuffle(self.global_art_links)
-        
-        self.logMsg("Background Global Art Links : " + str(len(self.global_art_links)))
         
         #
         # build a map indexed by id that contains a list of BG art for each item

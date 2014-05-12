@@ -89,15 +89,13 @@ class LoadMenuOptionsThread(threading.Thread):
                 action_url = action[index:]
                 endIndex = action_url.find("\"")
                 action_url = action_url[:endIndex]
-                
-                parent_filter = self.extractParent(action_url)
-                
+                               
                 WINDOW.setProperty("xbmb3c_menuitem_name_" + str(menuItem), name)
                 WINDOW.setProperty("xbmb3c_menuitem_action_" + str(menuItem), action_url)
-                WINDOW.setProperty("xbmb3c_menuitem_parentfilter_" + str(menuItem), "")
+                WINDOW.setProperty("xbmb3c_menuitem_collection_" + str(menuItem), name)
                 self.logMsg("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name)
                 self.logMsg("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url)
-                self.logMsg("xbmb3c_menuitem_parentfilter_" + str(menuItem) + " : ")
+                self.logMsg("xbmb3c_menuitem_parentfilter_" + str(menuItem) + " : " + name)
                 
                 menuItem = menuItem + 1
 
@@ -106,20 +104,9 @@ class LoadMenuOptionsThread(threading.Thread):
                 WINDOW.setProperty("xbmb3c_menuitem_action_" + str(x), "")
                 self.logMsg("xbmb3c_menuitem_name_" + str(x) + " : ")
                 self.logMsg("xbmb3c_menuitem_action_" + str(x) + " : ")
-                self.logMsg("xbmb3c_menuitem_parentfilter_" + str(x) + " : ")
+                self.logMsg("xbmb3c_menuitem_collection_" + str(x) + " : ")
                 
-    def extractParent(self, url):
-        
-        xbmc.log(url)
-        index = url.find("ParentId%3d")
-        if(index > -1):
-            trimedUrl = url[index + 11:]
-            index2 = trimedUrl.find("%")
-            trimedUrl = trimedUrl[:index2]
-            xbmc.log(trimedUrl)
-            return trimedUrl            
-        else:
-            return ""
+
             
 
     
