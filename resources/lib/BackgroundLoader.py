@@ -258,7 +258,135 @@ class BackgroundRotationThread(threading.Thread):
         return (nextIndex, linkList[currentIndex]["url"])
     
     def updateArtLinks(self):
-        self.logMsg("updateArtLinks Called")
+        self.updateCollectionArtLinks()
+        self.updateTypeArtLinks()
+        self.linksLoaded = True
+    
+    def updateCollectionArtLinks(self):
+        self.logMsg("updateCollectionArtLinks Called")
+        
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        
+        mb3Host = addonSettings.getSetting('ipaddress')
+        mb3Port = addonSettings.getSetting('port')    
+        userName = addonSettings.getSetting('username')    
+        
+        # get the user ID
+        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
+        
+        try:
+            requesthandle = urllib.urlopen(userUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()   
+        except Exception, e:
+            self.logMsg("updateCollectionArtLinks urlopen : " + str(e) + " (" + userUrl + ")", level=0)
+            return        
+        
+        userid = ""
+        result = json.loads(jsonData)
+        for user in result:
+            if(user.get("Name") == userName):
+                userid = user.get("Id")    
+                break        
+        
+        self.logMsg("updateCollectionArtLinks UserID : " + userid)
+        
+        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/Root?format=json"
+        try:
+            requesthandle = urllib.urlopen(userUrl, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()   
+        except Exception, e:
+            self.logMsg("updateCollectionArtLinks urlopen : " + str(e) + " (" + userUrl + ")", level=0)
+            return
+            
+        self.logMsg("updateCollectionArtLinks UserData : " + str(jsonData), 0)
+        result = json.loads(jsonData)
+        
+        parentid = result.get("Id")
+        self.logMsg("updateCollectionArtLinks ParentID : " + str(parentid), 0)
+            
+        userRootPath = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentid + "&format=json"
+        try:
+            requesthandle = urllib.urlopen(userRootPath, proxies={})
+            jsonData = requesthandle.read()
+            requesthandle.close()   
+        except Exception, e:
+            self.logMsg("updateCollectionArtLinks urlopen : " + str(e) + " (" + userRootPath + ")", level=0)
+            return
+            
+        self.logMsg("updateCollectionArtLinks userRootPath : " + str(jsonData), 0)            
+        result = json.loads(jsonData)
+        result = result.get("Items")
+    
+        artLinks = {}
+        
+        # process collections
+        for item in result:
+            self.logMsg("updateCollectionArtLinks Processing Collection : " + item.get("Name"), level=0)
+        
+            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&Fields=ParentId&Recursive=true&CollapseBoxSetItems=false&format=json"
+        
+            try:
+                requesthandle = urllib2.urlopen(collectionUrl, timeout=60)
+                jsonData = requesthandle.read()
+                requesthandle.close()   
+            except Exception, e:
+                self.logMsg("updateCollectionArtLinks urlopen : " + str(e) + " (" + collectionUrl + ")", level=0)
+                return       
+
+            collectionResult = json.loads(jsonData)
+
+            collectionResult = collectionResult.get("Items")
+            if(collectionResult == None):
+                collectionResult = []   
+        
+            # process collection items
+            for col_item in collectionResult:
+                self.logMsg("updateCollectionArtLinks processing collection " + item.get("Name") + " : " + col_item.get("Name"), level=0)
+                
+                id = col_item.get("Id")
+                images = col_item.get("BackdropImageTags")
+                
+                if(images != None and len(images) > 0):
+                    stored_item = artLinks.get(id)
+                    
+                    if(stored_item == None):
+                    
+                        stored_item = {}
+                        collections = []
+                        collections.append(item.get("Name"))
+                        stored_item["collections"] = collections
+                        links = []
+                        images = col_item.get("BackdropImageTags")
+                        parentID = col_item.get("ParentId")
+                        name = col_item.get("Name")
+                        if (images == None):
+                            images = []
+                        index = 0
+                        
+                        for backdrop in images:
+                          
+                            info = {}
+                            info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
+                            info["index"] = index
+                            info["id"] = id
+                            info["parent"] = parentID
+                            info["name"] = name
+                            self.logMsg("   -   " + "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop, level=0)
+                            links.append(info)
+                            index = index + 1   
+
+                        stored_item["links"] = links
+                        artLinks[id] = stored_item
+                    else:
+                        self.logMsg("updateCollectionArtLinks adding new collection name to : " + col_item.get("Name"), level=0)
+                        stored_item["collections"].append(item.get("Name"))
+                    
+        xbmc.log("COLLECTION_DATA " + str(artLinks))
+        
+    def updateTypeArtLinks(self):
+        self.logMsg("updateTypeArtLinks Called")
         
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         
@@ -274,7 +402,7 @@ class BackgroundRotationThread(threading.Thread):
             jsonData = requesthandle.read()
             requesthandle.close()   
         except Exception, e:
-            self.logMsg("updateArtLinks urlopen : " + str(e) + " (" + userUrl + ")", level=0)
+            self.logMsg("updateTypeArtLinks urlopen : " + str(e) + " (" + userUrl + ")", level=0)
             return        
         
         userid = ""
@@ -284,7 +412,7 @@ class BackgroundRotationThread(threading.Thread):
                 userid = user.get("Id")    
                 break
         
-        self.logMsg("updateArtLinks UserID : " + userid)
+        self.logMsg("updateTypeArtLinks UserID : " + userid)
 
         # load Movie BG
         moviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=ParentId&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=Movie&format=json"
@@ -294,7 +422,7 @@ class BackgroundRotationThread(threading.Thread):
             jsonData = requesthandle.read()
             requesthandle.close()   
         except Exception, e:
-            self.logMsg("updateArtLinks urlopen : " + str(e) + " (" + moviesUrl + ")", level=0)
+            self.logMsg("updateTypeArtLinks urlopen : " + str(e) + " (" + moviesUrl + ")", level=0)
             return          
 
         result = json.loads(jsonData)
@@ -336,7 +464,7 @@ class BackgroundRotationThread(threading.Thread):
             jsonData = requesthandle.read()
             requesthandle.close()   
         except Exception, e:
-            self.logMsg("updateArtLinks urlopen : " + str(e) + " (" + tvUrl + ")", level=2)
+            self.logMsg("updateTypeArtLinks urlopen : " + str(e) + " (" + tvUrl + ")", level=2)
             return          
         
         result = json.loads(jsonData)        
@@ -378,7 +506,7 @@ class BackgroundRotationThread(threading.Thread):
             jsonData = requesthandle.read()
             requesthandle.close()   
         except Exception, e:
-            self.logMsg("updateArtLinks urlopen : " + str(e) + " (" + musicUrl + ")", level=0)
+            self.logMsg("updateTypeArtLinks urlopen : " + str(e) + " (" + musicUrl + ")", level=0)
             return           
         
         result = json.loads(jsonData)        
@@ -454,8 +582,6 @@ class BackgroundRotationThread(threading.Thread):
                 bg_list = []
                 bg_list.append(bg_item)
                 self.item_art_links[item_id] = bg_list
-        
-        self.linksLoaded = True
         
     def setItemBackgroundLink(self):
     
