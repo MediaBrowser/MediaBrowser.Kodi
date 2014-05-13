@@ -312,7 +312,7 @@ class BackgroundRotationThread(threading.Thread):
         parentid = result.get("Id")
         self.logMsg("updateCollectionArtLinks ParentID : " + str(parentid), 2)
             
-        userRootPath = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentid + "&format=json"
+        userRootPath = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentid + "&Fields=CollectionType&format=json"
         try:
             requesthandle = urllib.urlopen(userRootPath, proxies={})
             jsonData = requesthandle.read()
@@ -329,8 +329,24 @@ class BackgroundRotationThread(threading.Thread):
         
         # process collections
         for item in result:
-            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&Fields=ParentId&Recursive=true&CollapseBoxSetItems=false&format=json"
         
+            collectionType = item.get("CollectionType")
+            name = item.get("Name")
+            
+            self.logMsg("updateCollectionArtLinks Processing Collection : " + name + " of type : " + collectionType, level=0)
+        
+            includeItemTypes = ""
+            if(collectionType == "movies"):
+                includeItemTypes = "Movie"
+            elif(collectionType == "tvshows"):
+                includeItemTypes = "Series"         
+            elif(collectionType == "music"):
+                includeItemTypes = "MusicArtist"  
+            else:
+                continue
+            
+            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=" + includeItemTypes + "&Fields=ParentId&Recursive=true&CollapseBoxSetItems=false&format=json"
+
             try:
                 requesthandle = urllib2.urlopen(collectionUrl, timeout=60)
                 jsonData = requesthandle.read()
