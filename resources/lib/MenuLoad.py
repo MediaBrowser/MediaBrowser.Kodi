@@ -75,7 +75,7 @@ class LoadMenuOptionsThread(threading.Thread):
             for x in range(0, 10):
                 WINDOW.setProperty("xbmb3c_menuitem_name_" + str(x), "")
                 WINDOW.setProperty("xbmb3c_menuitem_action_" + str(x), "")
-                WINDOW.setProperty("xbmb3c_menuitem_parentfilter_" + str(x), "")
+                WINDOW.setProperty("xbmb3c_menuitem_collection_" + str(x), "")
             return
         
         for child in rootElement.findall('favourite'):
@@ -95,7 +95,7 @@ class LoadMenuOptionsThread(threading.Thread):
                 WINDOW.setProperty("xbmb3c_menuitem_collection_" + str(menuItem), name)
                 self.logMsg("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name)
                 self.logMsg("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url)
-                self.logMsg("xbmb3c_menuitem_parentfilter_" + str(menuItem) + " : " + name)
+                self.logMsg("xbmb3c_menuitem_collection_" + str(menuItem) + " : " + name)
                 
                 menuItem = menuItem + 1
 
