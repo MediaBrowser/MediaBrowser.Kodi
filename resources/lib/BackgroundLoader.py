@@ -331,20 +331,10 @@ class BackgroundRotationThread(threading.Thread):
         # process collections
         for item in result:
         
-            collectionType = item.get("CollectionType")
+            collectionType = item.get("CollectionType", "")
             name = item.get("Name")
             
             self.logMsg("updateCollectionArtLinks Processing Collection : " + name + " of type : " + collectionType, level=2)
-        
-            includeItemTypes = ""
-            if(collectionType == "movies"):
-                includeItemTypes = "Movie"
-            elif(collectionType == "tvshows"):
-                includeItemTypes = "Series"         
-            elif(collectionType == "music"):
-                includeItemTypes = "MusicArtist"  
-            else:
-                continue
             
             WINDOW = xbmcgui.Window( 10000 )
             
@@ -352,16 +342,16 @@ class BackgroundRotationThread(threading.Thread):
             # Process collection item menu item
             contentUrl = "plugin://plugin.video.xbmb3c?mode=16&ParentId=" + item.get("Id") + "&CollectionType=" + collectionType
             actionUrl = "ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=21&ParentId=" + item.get("Id") + ",return)"
-
+            xbmc.log("COLLECTION_NAME : " + name)
             WINDOW.setProperty("xbmb3c_collection_menuitem_name_" + str(collection_count), name)
             WINDOW.setProperty("xbmb3c_collection_menuitem_action_" + str(collection_count), actionUrl)
             WINDOW.setProperty("xbmb3c_collection_menuitem_collection_" + str(collection_count), name)
             WINDOW.setProperty("xbmb3c_collection_menuitem_content_" + str(collection_count), contentUrl)
             #####################################################################################################
-            
+
             #####################################################################################################
             # Process collection item backgrounds
-            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=" + includeItemTypes + "&Fields=ParentId&Recursive=true&CollapseBoxSetItems=false&format=json"
+            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=Movie,Series,MusicArtist&Fields=ParentId&Recursive=true&CollapseBoxSetItems=false&format=json"
 
             try:
                 requesthandle = urllib2.urlopen(collectionUrl, timeout=60)

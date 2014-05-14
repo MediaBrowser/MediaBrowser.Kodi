@@ -1830,9 +1830,9 @@ def getWigetContent(pluginName, handle, params):
     userid = getUserId()
     
     if(type == "recent"):
-        itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DateCreated&Fields=Path&SortOrder=Descending&Filters=IsNotFolder&IncludeItemTypes=Movie,Episode&Recursive=true&CollapseBoxSetItems=false&format=json"
+        itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DateCreated&Fields=Path&SortOrder=Descending&Filters=IsNotFolder&IncludeItemTypes=Movie,Episode&CollapseBoxSetItems=false&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json" #CollapseBoxSetItems=false&
     elif(type == "active"):
-        itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DatePlayed&Fields=Path&SortOrder=Descending&Filters=IsResumable,IsNotFolder&IncludeItemTypes=Movie,Episode&Recursive=true&CollapseBoxSetItems=false&format=json"
+        itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DatePlayed&Fields=Path&SortOrder=Descending&Filters=IsResumable,IsNotFolder&IncludeItemTypes=Movie,Episode&CollapseBoxSetItems=false&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json"
         
     # get the recent items
     jsonData = getURL(itemsUrl, suppress=False, popup=1 )
@@ -1879,6 +1879,7 @@ def getWigetContent(pluginName, handle, params):
         
         url =  server + ',;' + item_id
         playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+        #playUrl = "PlayMedia(" + playUrl + ")"
         
         itemTupple = (playUrl, item, False)
         listItems.append(itemTupple)
