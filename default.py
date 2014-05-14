@@ -85,6 +85,7 @@ _MODE_BASICPLAY=12
 _MODE_BG_EDIT=13
 _MODE_CAST_LIST=14
 _MODE_PERSON_DETAILS=15
+_MODE_WIDGET_CONTENT=16
 
 #Check debug first...
 levelString = __settings__.getSetting('logLevel')
@@ -1811,6 +1812,80 @@ def showPersonInfo(pluginName, handle, params):
     
     del infoPage
         
+def getWigetContent(pluginName, handle, params):
+    xbmc.log("getWigetContent Called" + str(params))
+    
+    port = __settings__.getSetting('port')
+    host = __settings__.getSetting('ipaddress')
+    server = host + ":" + port    
+    
+    collectionType = params.get("CollectionType")
+    type = params.get("type")
+    parentId = params.get("ParentId")
+    
+    if(type == None):
+        xbmc.log("getWigetContent No Type")
+        return
+    
+    userid = getUserId()
+    
+    if(type == "recent"):
+        itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DateCreated&Fields=Path&SortOrder=Descending&Filters=IsNotFolder&IncludeItemTypes=Movie,Episode&Recursive=true&CollapseBoxSetItems=false&format=json"
+    elif(type == "active"):
+        itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DatePlayed&Fields=Path&SortOrder=Descending&Filters=IsResumable,IsNotFolder&IncludeItemTypes=Movie,Episode&Recursive=true&CollapseBoxSetItems=false&format=json"
+        
+    # get the recent items
+    jsonData = getURL(itemsUrl, suppress=False, popup=1 )
+    xbmc.log("Recent(Items) jsonData: " + jsonData)
+    result = json.loads(jsonData)
+    
+    result = result.get("Items")
+    if(result == None):
+        result = []   
+
+    listItems = []
+    for item in result:
+        item_id = item.get("Id")
+
+        imageTag = "none"
+        if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
+            imageTag = item.get("ImageTags").get("Primary")
+        image = "http://localhost:15001/?id=" + str(item_id) + "&type=" + "Primary" + "&tag=" + imageTag
+        
+        name = item.get("Name")
+        label2 = ""
+        
+        if(item.get("SeriesName") != None):
+            seriesName = item.get("SeriesName").encode('utf-8')   
+
+            eppNumber = "X"
+            tempEpisodeNumber = "00"
+            if(item.get("IndexNumber") != None):
+                eppNumber = item.get("IndexNumber")
+                if eppNumber < 10:
+                  tempEpisodeNumber = "0" + str(eppNumber)
+                else:
+                  tempEpisodeNumber = str(eppNumber)     
+
+            seasonNumber = item.get("ParentIndexNumber")
+            if seasonNumber < 10:
+              tempSeasonNumber = "0" + str(seasonNumber)
+            else:
+              tempSeasonNumber = str(seasonNumber)                  
+                  
+            label2 = seriesName + "-" + tempSeasonNumber + "x" + tempEpisodeNumber
+        
+        item = xbmcgui.ListItem(label=name, label2=label2, iconImage=image, thumbnailImage=image)
+        
+        url =  server + ',;' + item_id
+        playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+        
+        itemTupple = (playUrl, item, False)
+        listItems.append(itemTupple)
+    
+    xbmcplugin.addDirectoryItems(handle, listItems)
+    xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
+    
 def checkService():
 
     timeStamp = xbmcgui.Window(10000).getProperty("XBMB3C_Service_Timestamp")
@@ -1910,7 +1985,9 @@ elif mode == _MODE_BG_EDIT:
 elif mode == _MODE_CAST_LIST:
     getCastList(sys.argv[0], int(sys.argv[1]), params)
 elif mode == _MODE_PERSON_DETAILS:    
-    showPersonInfo(sys.argv[0], int(sys.argv[1]), params)
+    showPersonInfo(sys.argv[0], int(sys.argv[1]), params)    
+elif mode == _MODE_WIDGET_CONTENT:
+    getWigetContent(sys.argv[0], int(sys.argv[1]), params)    
 else:
     
     # check the service is running

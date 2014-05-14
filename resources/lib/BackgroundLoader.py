@@ -326,6 +326,7 @@ class BackgroundRotationThread(threading.Thread):
         result = result.get("Items")
     
         artLinks = {}
+        collection_count = 0
         
         # process collections
         for item in result:
@@ -333,7 +334,7 @@ class BackgroundRotationThread(threading.Thread):
             collectionType = item.get("CollectionType")
             name = item.get("Name")
             
-            self.logMsg("updateCollectionArtLinks Processing Collection : " + name + " of type : " + collectionType, level=0)
+            self.logMsg("updateCollectionArtLinks Processing Collection : " + name + " of type : " + collectionType, level=2)
         
             includeItemTypes = ""
             if(collectionType == "movies"):
@@ -345,6 +346,21 @@ class BackgroundRotationThread(threading.Thread):
             else:
                 continue
             
+            WINDOW = xbmcgui.Window( 10000 )
+            
+            #####################################################################################################
+            # Process collection item menu item
+            contentUrl = "plugin://plugin.video.xbmb3c?mode=16&ParentId=" + item.get("Id") + "&CollectionType=" + collectionType
+            actionUrl = "ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=21&ParentId=" + item.get("Id") + ",return)"
+
+            WINDOW.setProperty("xbmb3c_collection_menuitem_name_" + str(collection_count), name)
+            WINDOW.setProperty("xbmb3c_collection_menuitem_action_" + str(collection_count), actionUrl)
+            WINDOW.setProperty("xbmb3c_collection_menuitem_collection_" + str(collection_count), name)
+            WINDOW.setProperty("xbmb3c_collection_menuitem_content_" + str(collection_count), contentUrl)
+            #####################################################################################################
+            
+            #####################################################################################################
+            # Process collection item backgrounds
             collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=" + includeItemTypes + "&Fields=ParentId&Recursive=true&CollapseBoxSetItems=false&format=json"
 
             try:
@@ -361,7 +377,6 @@ class BackgroundRotationThread(threading.Thread):
             if(collectionResult == None):
                 collectionResult = []   
         
-            # process collection items
             for col_item in collectionResult:
                 
                 id = col_item.get("Id")
@@ -399,7 +414,10 @@ class BackgroundRotationThread(threading.Thread):
                         artLinks[id] = stored_item
                     else:
                         stored_item["collections"].append(item.get("Name"))
-        
+            #####################################################################################################
+            
+            collection_count = collection_count +1
+            
         # build global link list
         final_global_art = []
         
@@ -416,6 +434,7 @@ class BackgroundRotationThread(threading.Thread):
         self.global_art_links = final_global_art
         random.shuffle(self.global_art_links)
         self.logMsg("Background Global Art Links : " + str(len(self.global_art_links)))        
+        
         
         
     def updateTypeArtLinks(self):
