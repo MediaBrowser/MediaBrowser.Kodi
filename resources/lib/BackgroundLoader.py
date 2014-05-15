@@ -256,15 +256,15 @@ class BackgroundRotationThread(threading.Thread):
         return (nextIndex, linkList[currentIndex]["url"])
     
     def updateArtLinks(self):
-        #t1 = time.time()
+        t1 = time.time()
         self.updateCollectionArtLinks()
-        #t2 = time.time()
+        t2 = time.time()
         self.updateTypeArtLinks()
-        #t3 = time.time()
-        #diff = t2 - t1
-        #xbmc.log("TIMEDIFF01 : " + str(diff))
-        #diff = t3 - t2
-        #xbmc.log("TIMEDIFF02 : " + str(diff))
+        t3 = time.time()
+        diff = t2 - t1
+        xbmc.log("TIMEDIFF01 : " + str(diff))
+        diff = t3 - t2
+        xbmc.log("TIMEDIFF02 : " + str(diff))
         
         self.linksLoaded = True
     
@@ -341,8 +341,8 @@ class BackgroundRotationThread(threading.Thread):
             #####################################################################################################
             # Process collection item menu item
             contentUrl = "plugin://plugin.video.xbmb3c?mode=16&ParentId=" + item.get("Id") + "&CollectionType=" + collectionType
-            actionUrl = "ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=21&ParentId=" + item.get("Id") + ",return)"
-            xbmc.log("COLLECTION_NAME : " + name)
+            actionUrl = "ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=21&ParentId=" + item.get("Id") + "&Name=" + name + ",return)"
+            xbmc.log("COLLECTION actionUrl: " + actionUrl)
             WINDOW.setProperty("xbmb3c_collection_menuitem_name_" + str(collection_count), name)
             WINDOW.setProperty("xbmb3c_collection_menuitem_action_" + str(collection_count), actionUrl)
             WINDOW.setProperty("xbmb3c_collection_menuitem_collection_" + str(collection_count), name)

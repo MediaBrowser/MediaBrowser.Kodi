@@ -86,6 +86,7 @@ _MODE_BG_EDIT=13
 _MODE_CAST_LIST=14
 _MODE_PERSON_DETAILS=15
 _MODE_WIDGET_CONTENT=16
+_MODE_SHOW_PARENT_CONTENT=21
 
 #Check debug first...
 levelString = __settings__.getSetting('logLevel')
@@ -619,12 +620,9 @@ def addGUIItem( url, details, extraData, folder=True ):
     pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + str(extraData.get('id'))
     list.setProperty('CastPluginLink', pluginCastLink)
     list.setProperty('ItemGUID', extraData.get('guiid'))
-    
-    xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE  )
-    
+        
     return (u, list, folder)
 
-        
 def addContextMenu(details, extraData):
     printDebug("Building Context Menus", level=2)
     commands = []
@@ -1098,6 +1096,8 @@ def getContent( url ):
     jsonData = ""
     cacheDataPath = __addondir__ + urlHash + validator
     
+    xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)
+   
     result = None
     
     WINDOW = xbmcgui.Window( 10000 )
@@ -1813,7 +1813,7 @@ def showPersonInfo(pluginName, handle, params):
     del infoPage
         
 def getWigetContent(pluginName, handle, params):
-    xbmc.log("getWigetContent Called" + str(params))
+    printDebug("getWigetContent Called" + str(params))
     
     port = __settings__.getSetting('port')
     host = __settings__.getSetting('ipaddress')
@@ -1824,19 +1824,19 @@ def getWigetContent(pluginName, handle, params):
     parentId = params.get("ParentId")
     
     if(type == None):
-        xbmc.log("getWigetContent No Type")
+        printDebug("getWigetContent No Type")
         return
     
     userid = getUserId()
     
     if(type == "recent"):
-        itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DateCreated&Fields=Path&SortOrder=Descending&Filters=IsNotFolder&IncludeItemTypes=Movie,Episode&CollapseBoxSetItems=false&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json" #CollapseBoxSetItems=false&
+        itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DateCreated&Fields=Path&SortOrder=Descending&Filters=IsNotFolder&IncludeItemTypes=Movie,Episode&CollapseBoxSetItems=false&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json"
     elif(type == "active"):
         itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DatePlayed&Fields=Path&SortOrder=Descending&Filters=IsResumable,IsNotFolder&IncludeItemTypes=Movie,Episode&CollapseBoxSetItems=false&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json"
         
     # get the recent items
     jsonData = getURL(itemsUrl, suppress=False, popup=1 )
-    xbmc.log("Recent(Items) jsonData: " + jsonData)
+    printDebug("Recent(Items) jsonData: " + jsonData, 2)
     result = json.loads(jsonData)
     
     result = result.get("Items")
@@ -1879,13 +1879,38 @@ def getWigetContent(pluginName, handle, params):
         
         url =  server + ',;' + item_id
         playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-        #playUrl = "PlayMedia(" + playUrl + ")"
         
         itemTupple = (playUrl, item, False)
         listItems.append(itemTupple)
     
     xbmcplugin.addDirectoryItems(handle, listItems)
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
+    
+def showParentContent(pluginName, handle, params):
+    printDebug("showParentContent Called" + str(params), 2)
+    
+    port = __settings__.getSetting('port')
+    host = __settings__.getSetting('ipaddress')
+    server = host + ":" + port  
+    
+    parentId = params.get("ParentId")
+    name = params.get("Name")
+    detailsString = getDetailsString()
+    userid = getUserId()
+    
+    contentUrl = (
+        "http://" + server +
+        "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId +
+        "&IsVirtualUnaired=false" +
+        "&IsMissing=False" +
+        "&Fields=" + detailsString +
+        "&SortOrder=" + __settings__.getSetting('sortorderfor' + urllib.quote(name)) +
+        "&SortBy=" + __settings__.getSetting('sortbyfor' + urllib.quote(name)) +
+        "&Genres=&format=json")
+    
+    printDebug("showParentContent Content Url : " + str(contentUrl), 2)
+    
+    getContent(contentUrl)
     
 def checkService():
 
@@ -1988,7 +2013,10 @@ elif mode == _MODE_CAST_LIST:
 elif mode == _MODE_PERSON_DETAILS:    
     showPersonInfo(sys.argv[0], int(sys.argv[1]), params)    
 elif mode == _MODE_WIDGET_CONTENT:
-    getWigetContent(sys.argv[0], int(sys.argv[1]), params)    
+    getWigetContent(sys.argv[0], int(sys.argv[1]), params)
+elif mode == _MODE_SHOW_PARENT_CONTENT:
+    pluginhandle = int(sys.argv[1])
+    showParentContent(sys.argv[0], int(sys.argv[1]), params)
 else:
     
     # check the service is running
