@@ -1847,10 +1847,15 @@ def getWigetContent(pluginName, handle, params):
     for item in result:
         item_id = item.get("Id")
 
-        imageTag = "none"
+        image_id = item_id
+        if item.get("Type") == "Episode":
+            image_id = item.get("SeriesId")
+
+        imageTag = ""
         if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
             imageTag = item.get("ImageTags").get("Primary")
-        image = "http://localhost:15001/?id=" + str(item_id) + "&type=" + "Primary" + "&tag=" + imageTag
+            
+        image = "http://localhost:15001/?id=" + str(image_id) + "&type=" + "Primary" + "&tag=" + imageTag
         
         name = item.get("Name")
         label2 = ""
