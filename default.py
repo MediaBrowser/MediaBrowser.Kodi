@@ -608,7 +608,12 @@ def addGUIItem( url, details, extraData, folder=True ):
     #list.setInfo('video', {'castandrole' : extraData.get('cast')}) --- Broken in Frodo
     #list.setInfo('video', {'plotoutline' : extraData.get('cast')}) # Hack to get cast data into skin
     list.setInfo('video', {'episode': details.get('episode')})
-    list.setInfo('video', {'season': details.get('season')})        
+    list.setInfo('video', {'season': details.get('season')})
+    list.setProperty('TotalSeasons',extraData.get('TotalSeasons'))
+    list.setProperty('TotalEpisodes',extraData.get('TotalEpisodes'))
+    list.setProperty('WatchedEpisodes',extraData.get('WatchedEpisodes'))
+    list.setProperty('UnWatchedEpisodes',extraData.get('UnWatchedEpisodes'))
+    list.setProperty('NumEpisodes',extraData.get('NumEpisodes'))
     list.setInfo('video', {'mpaa': extraData.get('mpaa')})
     list.setInfo('video', {'rating': extraData.get('rating')})
     watched = extraData.get('watchedurl')
@@ -1383,7 +1388,11 @@ def processDirectory(url, results, progress):
             except TypeError:
                 tempDuration = "0"
                 RunTimeTicks = "0"
-
+        TotalSeasons     = 0 if item.get("SeasonCount")==None else item.get("SeasonCount")
+        TotalEpisodes    = 0 if item.get("EpisodeCount")==None else item.get("EpisodeCount")
+        WatchedEpisodes  = 0 if item.get("RecursiveUnplayedItemCount")==None else TotalEpisodes-item.get("RecursiveUnplayedItemCount")
+        UnwatchedEpisodes = 0 if item.get("RecursiveUnplayedItemCount")==None else item.get("RecursiveUnplayedItemCount")
+        NumEpisodes      = TotalEpisodes
         # Populate the extraData list
         extraData={'thumb'        : getArtwork(item, "Primary") ,
                    'fanart_image' : getArtwork(item, "Backdrop") ,
@@ -1424,7 +1433,14 @@ def processDirectory(url, results, progress):
                    'duration'     : tempDuration,
                    'RecursiveItemCount' : item.get("RecursiveItemCount"),
                    'RecursiveUnplayedItemCount' : item.get("RecursiveUnplayedItemCount"),
+                   'TotalSeasons' : str(TotalSeasons),
+                   'TotalEpisodes': str(TotalEpisodes),
+                   'WatchedEpisodes': str(WatchedEpisodes),
+                   'UnwatchedEpisodes': str(UnwatchedEpisodes),
+                   'NumEpisodes'  : str(NumEpisodes),
                    'itemtype'     : item_type}
+                   
+                   
                    
         if extraData['thumb'] == '':
             extraData['thumb'] = extraData['fanart_image']
