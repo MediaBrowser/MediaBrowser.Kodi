@@ -673,7 +673,7 @@ def addContextMenu(details, extraData):
     return(commands)
     
 def getDetailsString():
-    detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
+    detailsString = "EpisodeCount,SeasonCount,Path,Genres,Studios,CumulativeRunTimeTicks"
     if(__settings__.getSetting('includeStreamInfo') == "true"):
         detailsString += ",MediaStreams"
     if(__settings__.getSetting('includePeople') == "true"):
