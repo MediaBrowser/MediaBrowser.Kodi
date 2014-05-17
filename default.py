@@ -1858,7 +1858,6 @@ def getWigetContent(pluginName, handle, params):
         image = "http://localhost:15001/?id=" + str(image_id) + "&type=" + "Primary" + "&tag=" + imageTag
         
         name = item.get("Name")
-        label2 = ""
         
         if(item.get("SeriesName") != None):
             seriesName = item.get("SeriesName").encode('utf-8')   
@@ -1878,14 +1877,37 @@ def getWigetContent(pluginName, handle, params):
             else:
               tempSeasonNumber = str(seasonNumber)                  
                   
-            label2 = seriesName + "-" + tempSeasonNumber + "x" + tempEpisodeNumber
+            name =  tempSeasonNumber + "x" + tempEpisodeNumber + "-" + name
         
-        item = xbmcgui.ListItem(label=name, label2=label2, iconImage=image, thumbnailImage=image)
+        list_item = xbmcgui.ListItem(label=name, iconImage=image, thumbnailImage=image)
+
+        # add progress percent
         
+        userData = item.get("UserData")
+        PlaybackPositionTicks = '100'
+        overlay = "0"
+        favorite = "false"
+        seekTime = 0
+        if(userData != None):
+            playBackTicks = float(userData.get("PlaybackPositionTicks"))
+            if(playBackTicks != None and playBackTicks > 0):
+                xbmc.log("ITEM_PLAYBACK_PERCENT playBackTicks : " + str(playBackTicks))
+                runTimeTicks = float(item.get("RunTimeTicks"))
+                xbmc.log("ITEM_PLAYBACK_PERCENT runTimeTicks : " + str(runTimeTicks))
+                percentage = int((playBackTicks / runTimeTicks) * 100.0)
+                xbmc.log("ITEM_PLAYBACK_PERCENT : " + str(percentage))
+                cappedPercentage = percentage - (percentage % 10)
+                if(cappedPercentage == 0):
+                    cappedPercentage = 10
+                if(cappedPercentage == 100):
+                    cappedPercentage = 90
+                xbmc.log("ITEM_PLAYBACK_PERCENT cappedPercentage : " + str(cappedPercentage))
+                list_item.setProperty("complete_percentage", str(cappedPercentage))
+                
         url =  server + ',;' + item_id
         playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
         
-        itemTupple = (playUrl, item, False)
+        itemTupple = (playUrl, list_item, False)
         listItems.append(itemTupple)
     
     xbmcplugin.addDirectoryItems(handle, listItems)
