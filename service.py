@@ -229,6 +229,9 @@ def stopAll(played_information):
     if(newNextUpThread != None):
         newNextUpThread.updateNextUp()
         
+    if(backgroundUpdaterThread != None):
+        backgroundUpdaterThread.updateActionUrls()
+        
     played_information.clear()
 
 class Service( xbmc.Player ):

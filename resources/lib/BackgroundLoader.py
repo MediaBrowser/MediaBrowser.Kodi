@@ -267,6 +267,22 @@ class BackgroundRotationThread(threading.Thread):
         xbmc.log("TIMEDIFF02 : " + str(diff))
         
         self.linksLoaded = True
+        
+    def updateActionUrls(self):
+        xbmc.log("BackgroundRotationThread updateActionUrls Called")
+        WINDOW = xbmcgui.Window( 10000 )
+        
+        for x in range(0, 10):
+            contentUrl = WINDOW.getProperty("xbmb3c_collection_menuitem_content_" + str(x))
+            if(contentUrl != None):
+                index = contentUrl.find("SessionId=(")
+                if(index > -1):
+                    index = index + 11
+                    index2 = contentUrl.find(")", index+1)
+                    timeNow = time.time()
+                    newContentUrl = contentUrl[:index] + str(timeNow) + contentUrl[index2:]
+                    xbmc.log("xbmb3c_collection_menuitem_content_" + str(x) + "=" + newContentUrl)
+                    WINDOW.setProperty("xbmb3c_collection_menuitem_content_" + str(x), newContentUrl)
     
     def updateCollectionArtLinks(self):
         self.logMsg("updateCollectionArtLinks Called")
@@ -340,7 +356,8 @@ class BackgroundRotationThread(threading.Thread):
             
             #####################################################################################################
             # Process collection item menu item
-            contentUrl = "plugin://plugin.video.xbmb3c?mode=16&ParentId=" + item.get("Id") + "&CollectionType=" + collectionType
+            timeNow = time.time()
+            contentUrl = "plugin://plugin.video.xbmb3c?mode=16&ParentId=" + item.get("Id") + "&CollectionType=" + collectionType + "&SessionId=(" + str(timeNow) + ")"
             actionUrl = "ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=21&ParentId=" + item.get("Id") + "&Name=" + name + ",return)"
             xbmc.log("COLLECTION actionUrl: " + actionUrl)
             WINDOW.setProperty("xbmb3c_collection_menuitem_name_" + str(collection_count), name)

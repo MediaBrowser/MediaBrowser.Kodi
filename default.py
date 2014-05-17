@@ -1891,17 +1891,13 @@ def getWigetContent(pluginName, handle, params):
         if(userData != None):
             playBackTicks = float(userData.get("PlaybackPositionTicks"))
             if(playBackTicks != None and playBackTicks > 0):
-                xbmc.log("ITEM_PLAYBACK_PERCENT playBackTicks : " + str(playBackTicks))
                 runTimeTicks = float(item.get("RunTimeTicks"))
-                xbmc.log("ITEM_PLAYBACK_PERCENT runTimeTicks : " + str(runTimeTicks))
                 percentage = int((playBackTicks / runTimeTicks) * 100.0)
-                xbmc.log("ITEM_PLAYBACK_PERCENT : " + str(percentage))
                 cappedPercentage = percentage - (percentage % 10)
                 if(cappedPercentage == 0):
                     cappedPercentage = 10
                 if(cappedPercentage == 100):
                     cappedPercentage = 90
-                xbmc.log("ITEM_PLAYBACK_PERCENT cappedPercentage : " + str(cappedPercentage))
                 list_item.setProperty("complete_percentage", str(cappedPercentage))
                 
         url =  server + ',;' + item_id
