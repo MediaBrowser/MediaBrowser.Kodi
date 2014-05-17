@@ -1388,8 +1388,8 @@ def processDirectory(url, results, progress):
             except TypeError:
                 tempDuration = "0"
                 RunTimeTicks = "0"
-        TotalSeasons     = 0 if item.get("SeasonCount")==None else item.get("SeasonCount")
-        TotalEpisodes    = 0 if item.get("EpisodeCount")==None else item.get("EpisodeCount")
+        TotalSeasons     = 0 if item.get("ChildCount")==None else item.get("ChildCount")
+        TotalEpisodes    = 0 if item.get("RecursiveItemCount")==None else item.get("RecursiveItemCount")
         WatchedEpisodes  = 0 if item.get("RecursiveUnplayedItemCount")==None else TotalEpisodes-item.get("RecursiveUnplayedItemCount")
         UnwatchedEpisodes = 0 if item.get("RecursiveUnplayedItemCount")==None else item.get("RecursiveUnplayedItemCount")
         NumEpisodes      = TotalEpisodes
