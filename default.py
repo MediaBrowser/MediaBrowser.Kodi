@@ -348,7 +348,7 @@ def unmarkFavorite (url):
     xbmc.executebuiltin("Container.Refresh")
 
 def sortby ():
-    sortOptions=["", "SortName","ProductionYear","PremiereDate","DateCreated","CriticRating","CommunityRating","PlayCount","Budget"]
+    sortOptions=["", "SortName","ProductionYear,SortName","PremiereDate,SortName","DateCreated,SortName","CriticRating,SortName","CommunityRating,SortName","PlayCount,SortName","Budget,SortName"]
     sortOptionsText=sortbyList
     return_value=xbmcgui.Dialog().select(__language__(30068),sortOptionsText)
     WINDOW = xbmcgui.Window( 10000 )
