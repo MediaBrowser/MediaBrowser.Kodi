@@ -1803,6 +1803,13 @@ def showPersonInfo(pluginName, handle, params):
     pluginCastLink = "XBMC.Container.Update(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_GETCONTENT) + "&url=" + url + ")"    
     data["show_movies"] = pluginCastLink
     
+    imageTag = ""
+    if(result.get("ImageTags") != None and result.get("ImageTags").get("Primary") != None):
+            imageTag = result.get("ImageTags").get("Primary")
+            
+    image = "http://localhost:15001/?id=" + id + "&type=" + "Primary" + "&tag=" + imageTag   
+    data["image"] = image
+    
     infoPage = PersonInfo("PersonInfo.xml", __cwd__, "default", "720p")
     infoPage.setInfo(data)
     infoPage.doModal()
