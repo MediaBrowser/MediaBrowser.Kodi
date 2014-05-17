@@ -162,7 +162,7 @@ global g_sessionID
 g_sessionID=None
 
 genreList=[__language__(30069),__language__(30070),__language__(30071),__language__(30072),__language__(30073),__language__(30074),__language__(30075),__language__(30076),__language__(30077),__language__(30078),__language__(30079),__language__(30080),__language__(30081),__language__(30082),__language__(30083),__language__(30084),__language__(30085),__language__(30086),__language__(30087),__language__(30088),__language__(30089)]
-sortbyList=[__language__(30060),__language__(30061),__language__(30062),__language__(30063),__language__(30064),__language__(30065),__language__(30066),__language__(30067)]
+sortbyList=[__language__(30059),__language__(30060),__language__(30061),__language__(30062),__language__(30063),__language__(30064),__language__(30065),__language__(30066),__language__(30067)]
 
 def getServerDetails():
 
@@ -348,7 +348,7 @@ def unmarkFavorite (url):
     xbmc.executebuiltin("Container.Refresh")
 
 def sortby ():
-    sortOptions=["SortName","ProductionYear","PremiereDate","DateCreated","CriticRating","CommunityRating","PlayCount","Budget"]
+    sortOptions=["", "SortName","ProductionYear","PremiereDate","DateCreated","CriticRating","CommunityRating","PlayCount","Budget"]
     sortOptionsText=sortbyList
     return_value=xbmcgui.Dialog().select(__language__(30068),sortOptionsText)
     WINDOW = xbmcgui.Window( 10000 )
@@ -1433,7 +1433,7 @@ def processDirectory(url, results, progress):
         
         if isFolder == True:
             SortByTemp = __settings__.getSetting('sortby')
-            if SortByTemp == '':
+            if SortByTemp == '' and not (item_type == 'Series' or item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist'):
                 SortByTemp = 'SortName'
                 
             if  item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist':
