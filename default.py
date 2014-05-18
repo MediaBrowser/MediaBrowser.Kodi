@@ -1462,8 +1462,7 @@ def processDirectory(url, results, progress):
                         jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + id + "&format=json", suppress=False, popup=1 )
                         result = json.loads(jsonData)
                         seasons=result.get("Items")
-                        for season in seasons:
-                            u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' + season.get("Id") +'&Fields=' + detailsString + '&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
+                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' + seasons[0].get("Id") +'&Fields=' + detailsString + '&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
                     else:
                         u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
                 else:
