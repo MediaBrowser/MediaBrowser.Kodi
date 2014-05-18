@@ -1459,7 +1459,11 @@ def processDirectory(url, results, progress):
             else:
                 if __settings__.getSetting('autoEnterSingle') == "true":
                     if item.get("ChildCount") == 1:
-                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&recursive=true&IncludeItemTypes=Episode&Fields=' + detailsString + '&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
+                        jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + id + "&format=json", suppress=False, popup=1 )
+                        result = json.loads(jsonData)
+                        seasons=result.get("Items")
+                        for season in seasons:
+                            u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' + season.get("Id") +'&Fields=' + detailsString + '&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
                     else:
                         u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
                 else:
