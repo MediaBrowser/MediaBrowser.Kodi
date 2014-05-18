@@ -15,6 +15,8 @@ import urllib2
 import random
 import time
 
+_MODE_BASICPLAY=12
+
 class BackgroundRotationThread(threading.Thread):
 
     movie_art_links = []
@@ -211,10 +213,17 @@ class BackgroundRotationThread(threading.Thread):
                 self.current_music_art = 0
             
         if(len(self.global_art_links) > 0):
-            next, url = self.findNextLink(self.global_art_links, black_list, self.current_global_art, filterOnParent)
+            next, nextItem = self.findNextLink(self.global_art_links, black_list, self.current_global_art, filterOnParent)
+            backGroundUrl = nextItem["url"]
+            posterUrl = nextItem["poster"]
+            actionUrl = nextItem["action"]
             self.current_global_art = next
-            WINDOW.setProperty("MB3.Background.Global.FanArt", url)
-            self.logMsg("MB3.Background.Global.FanArt=" + url)
+            WINDOW.setProperty("MB3.Background.Global.FanArt", backGroundUrl)
+            self.logMsg("MB3.Background.Global.FanArt=" + backGroundUrl)
+            WINDOW.setProperty("MB3.Background.Global.FanArt.Poster", posterUrl)
+            self.logMsg("MB3.Background.Global.FanArt.Poster=" + posterUrl)    
+            WINDOW.setProperty("MB3.Background.Global.FanArt.Action", actionUrl)
+            self.logMsg("MB3.Background.Global.FanArt.Action=" + actionUrl)    
                 
     def isBlackListed(self, blackList, bgInfo):
         for blocked in blackList:
@@ -241,7 +250,7 @@ class BackgroundRotationThread(threading.Thread):
                 currentIndex = 0
                 
             if(currentIndex == startIndex):
-                return (currentIndex, linkList[currentIndex]["url"]) # we checked everything and nothing was ok so return the first one again                
+                return (currentIndex, linkList[currentIndex]) # we checked everything and nothing was ok so return the first one again                
 
             isBlacklisted = self.isBlackListed(blackList, linkList[currentIndex])
             isParentMatch = True
@@ -253,7 +262,7 @@ class BackgroundRotationThread(threading.Thread):
         if(nextIndex == len(linkList)):
             nextIndex = 0    
 
-        return (nextIndex, linkList[currentIndex]["url"])
+        return (nextIndex, linkList[currentIndex])
     
     def updateArtLinks(self):
         t1 = time.time()
@@ -387,6 +396,7 @@ class BackgroundRotationThread(threading.Thread):
             for col_item in collectionResult:
                 
                 id = col_item.get("Id")
+                name = col_item.get("Name")
                 images = col_item.get("BackdropImageTags")
                 
                 if(images != None and len(images) > 0):
@@ -406,10 +416,30 @@ class BackgroundRotationThread(threading.Thread):
                             images = []
                         index = 0
                         
+                        # build poster image link
+                        posterImage = ""
+                        actionUrl = ""
+                        if(col_item.get("Type") == "Movie"):
+                            imageTag = col_item.get("ImageTags").get("Primary")
+                            posterImage = "http://localhost:15001/?id=" + str(id) + "&type=Primary" + "&tag=" + imageTag
+                            url =  mb3Host + ":" + mb3Port + ',;' + id
+                            url = urllib.quote(url)
+                            #actionUrl = "ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + url + " ,return)"
+                            actionUrl = "RunPlugin(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + url + ")"
+
+                        elif(col_item.get("Type") == "Series"):
+                            imageTag = col_item.get("ImageTags").get("Primary")
+                            posterImage = "http://localhost:15001/?id=" + str(id) + "&type=Primary" + "&tag=" + imageTag
+                            actionUrl = "ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=21&ParentId=" + id + "&Name=" + name + ",return)"
+                        
+                        xbmc.log("ACTION_URL " + actionUrl)
+                        
                         for backdrop in images:
                           
                             info = {}
                             info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
+                            info["poster"] = posterImage
+                            info["action"] = actionUrl
                             info["index"] = index
                             info["id"] = id
                             info["parent"] = parentID
