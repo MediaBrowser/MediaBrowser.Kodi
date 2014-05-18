@@ -1391,7 +1391,7 @@ def processDirectory(url, results, progress):
         TotalSeasons     = 0 if item.get("ChildCount")==None else item.get("ChildCount")
         TotalEpisodes    = 0 if item.get("RecursiveItemCount")==None else item.get("RecursiveItemCount")
         WatchedEpisodes  = 0 if item.get("RecursiveUnplayedItemCount")==None else TotalEpisodes-item.get("RecursiveUnplayedItemCount")
-        UnwatchedEpisodes = 0 if item.get("RecursiveUnplayedItemCount")==None else item.get("RecursiveUnplayedItemCount")
+        UnWatchedEpisodes = 0 if item.get("RecursiveUnplayedItemCount")==None else item.get("RecursiveUnplayedItemCount")
         NumEpisodes      = TotalEpisodes
         # Populate the extraData list
         extraData={'thumb'        : getArtwork(item, "Primary") ,
@@ -1436,7 +1436,7 @@ def processDirectory(url, results, progress):
                    'TotalSeasons' : str(TotalSeasons),
                    'TotalEpisodes': str(TotalEpisodes),
                    'WatchedEpisodes': str(WatchedEpisodes),
-                   'UnwatchedEpisodes': str(UnwatchedEpisodes),
+                   'UnWatchedEpisodes': str(UnWatchedEpisodes),
                    'NumEpisodes'  : str(NumEpisodes),
                    'itemtype'     : item_type}
                    
