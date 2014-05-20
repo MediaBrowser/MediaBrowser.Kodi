@@ -1774,7 +1774,7 @@ def getCastList(pluginName, handle, params):
         listItems.append(itemTupple)
         
         
-    listItems.sort()
+    #listItems.sort()
     xbmcplugin.addDirectoryItems(handle, listItems)
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
         
