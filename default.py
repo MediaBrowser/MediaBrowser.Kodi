@@ -871,15 +871,36 @@ def PLAY( url, handle ):
         seasonNum = result.get("ParentIndexNumber")
         eppNum = result.get("IndexNumber")
         
-    # get image tag
+    # get image tags
     imageTag = ""
+    clearArtTag=""
+    discArtTag=""
     if(result.get("ImageTags") != None and result.get("ImageTags").get("Primary") != None):
         imageTag = result.get("ImageTags").get("Primary")
+    if(result.get("ImageTags") != None and result.get("ImageTags").get("Logo") != None):
+        clearArtTag = result.get("ImageTags").get("Primary")
+    if(result.get("ImageTags") != None and result.get("ImageTags").get("Disc") != None):
+        discArtTag = result.get("ImageTags").get("Disc")
+        
     thumbPath = "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag
-    
+
     item = xbmcgui.ListItem(path=playurl, iconImage=thumbPath, thumbnailImage=thumbPath)
+    setArt(item,'poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag)
+    setArt(item,'tvshow.poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag)
+    setArt(item,'clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearArtTag)
+    setArt(item,'tvshow.clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearArtTag)    
+    setArt(item,'discart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Disc&tag=" + discArtTag)  
     item.setProperty('IsPlayable', 'true')
     item.setProperty('IsFolder', 'false')
+    
+    studio = ""
+    studios = result.get("Studios")
+    if(studios != None):
+        for studio_string in studios:
+            if studio=="": #Just take the first one
+                temp=studio_string.get("Name")
+                studio=temp.encode('utf-8')    
+    item.setInfo('video', {'studio' : studio})
     #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
     #tree=etree.fromstring(html).getiterator(sDto + "BaseItemDto")
     
@@ -896,7 +917,7 @@ def PLAY( url, handle ):
         details["season"] = str(seasonNum)        
     
     item.setInfo( "Video", infoLabels=details )
-    
+
     # Process People
     director=''
     writer=''
