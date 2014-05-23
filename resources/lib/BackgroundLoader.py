@@ -337,7 +337,7 @@ class BackgroundRotationThread(threading.Thread):
         parentid = result.get("Id")
         self.logMsg("updateCollectionArtLinks ParentID : " + str(parentid), 2)
             
-        userRootPath = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentid + "&Fields=CollectionType&format=json"
+        userRootPath = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentid + "&SortBy=SortName&Fields=CollectionType&format=json"
         try:
             requesthandle = urllib.urlopen(userRootPath, proxies={})
             jsonData = requesthandle.read()
