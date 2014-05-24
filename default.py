@@ -849,104 +849,23 @@ def PLAY( url, handle ):
     jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
     printDebug("Play jsonData: " + jsonData)
     result = json.loads(jsonData)
+    
+    playurl = PlayUtils.getPlayUrl(server, id, result)    
+    thumbID = id if(result.get("Type") != "Episode") else result.get("SeriesId")
+    imageTag = "" if(result.get("ImageTags") == None or result.get("ImageTags").get("Primary") == None) else result.get("ImageTags").get("Primary")
+    thumbPath = "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag
+    listItem = xbmcgui.ListItem(path=playurl, iconImage=thumbPath, thumbnailImage=thumbPath)
+    setListItemProps(server, id, listItem, result)
 
     # Can not play virtual items
     if (result.get("LocationType") == "Virtual") or (result.get("IsPlaceholder")=="true"):
         xbmcgui.Dialog().ok(__language__(30128), __language__(30129))
         return
-    
-    playurl = PlayUtils.getPlayUrl(server, id, result)
-            
-    #if (__settings__.getSetting("markWatchedOnPlay")=='true'):
+
     watchedurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
     positionurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
     deleteurl = 'http://' + server + '/mediabrowser/Items/' + id
-    
-    # set up item and item info
-    thumbID = id
-    eppNum = -1
-    seasonNum = -1
-    if(result.get("Type") == "Episode"):
-        thumbID = result.get("SeriesId")
-        seasonNum = result.get("ParentIndexNumber")
-        eppNum = result.get("IndexNumber")
-        
-    # get image tags
-    imageTag = ""
-    clearArtTag=""
-    discArtTag=""
-    if(result.get("ImageTags") != None and result.get("ImageTags").get("Primary") != None):
-        imageTag = result.get("ImageTags").get("Primary")
-    if(result.get("ImageTags") != None and result.get("ImageTags").get("Logo") != None):
-        clearArtTag = result.get("ImageTags").get("Primary")
-    if(result.get("ImageTags") != None and result.get("ImageTags").get("Disc") != None):
-        discArtTag = result.get("ImageTags").get("Disc")
-        
-    thumbPath = "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag
 
-    item = xbmcgui.ListItem(path=playurl, iconImage=thumbPath, thumbnailImage=thumbPath)
-    setArt(item,'poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag)
-    setArt(item,'tvshow.poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag)
-    setArt(item,'clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearArtTag)
-    setArt(item,'tvshow.clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearArtTag)    
-    setArt(item,'discart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Disc&tag=" + discArtTag)  
-    item.setProperty('IsPlayable', 'true')
-    item.setProperty('IsFolder', 'false')
-    
-    studio = ""
-    studios = result.get("Studios")
-    if(studios != None):
-        for studio_string in studios:
-            if studio=="": #Just take the first one
-                temp=studio_string.get("Name")
-                studio=temp.encode('utf-8')    
-    item.setInfo('video', {'studio' : studio})
-    #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
-    #tree=etree.fromstring(html).getiterator(sDto + "BaseItemDto")
-    
-    # add some info about the item being played
-    details = {
-             'title'        : result.get("Name", "Missing Name").encode('utf-8'),
-             'plot'         : result.get("Overview")
-             }
-             
-    if(eppNum > -1):
-        details["episode"] = str(eppNum)
-        
-    if(seasonNum > -1):
-        details["season"] = str(seasonNum)        
-    
-    item.setInfo( "Video", infoLabels=details )
-
-    # Process People
-    director=''
-    writer=''
-    people = result.get("People")
-    if(people != None):
-        for person in people:
-            if(person.get("Type") == "Director"):
-                director = director + person.get("Name") + ' ' 
-            if(person.get("Type") == "Writing"):
-                writer = person.get("Name")
-            if(person.get("Type") == "Writer"):
-                writer = person.get("Name")                
-            
-    
-     # Process Genres
-    genre = ""
-    genres = result.get("Genres")
-    if(genres != None):
-        for genre_string in genres:
-            if genre == "": #Just take the first genre
-                genre = genre_string
-            else:
-                genre = genre + " / " + genre_string
-    
-    item.setInfo('video', {'director' : director})
-    item.setInfo('video', {'writer' : writer})
-    item.setInfo('video', {'mpaa': result.get("OfficialRating")})
-    item.setInfo('video', {'genre': genre})
-    
     if(autoResume != 0):
         if(autoResume == -1):
             resume_result = 1
@@ -977,9 +896,8 @@ def PLAY( url, handle ):
     WINDOW.setProperty("runtimeticks", str(result.get("RunTimeTicks")))
     WINDOW.setProperty("item_id", id)
     
-    xbmc.Player().play(playurl, item)
+    xbmc.Player().play(playurl, listItem)
     printDebug( "Sent the following url to the xbmc player: "+str(playurl))
-    #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
 
     #Set a loop to wait for positive confirmation of playback
     count = 0
@@ -1002,6 +920,92 @@ def PLAY( url, handle ):
             xbmc.Player().play()
     return
 
+def setListItemProps(server, id, listItem,result):
+    # set up item and item info
+    userid = getUserId()
+    thumbID = id
+    eppNum = -1
+    seasonNum = -1
+    if(result.get("Type") == "Episode"):
+        thumbID = result.get("SeriesId")
+        seasonNum = result.get("ParentIndexNumber")
+        eppNum = result.get("IndexNumber")
+        seriesJsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + thumbID + "?format=json", suppress=False, popup=1 )     
+        seriesResult = json.loads(seriesJsonData)
+        resultForType=seriesResult
+    else:
+        resultForType=result
+        
+    # get image tags
+
+    if result.get("ImageTags") != None:
+        posterTag   = "" if result.get("ImageTags").get("Primary")  == None else result.get("ImageTags").get("Primary")
+        clearArtTag = "" if result.get("ImageTags").get("Logo")     == None else result.get("ImageTags").get("Logo")
+        discArtTag  = "" if result.get("ImageTags").get("Disc")     == None else result.get("ImageTags").get("Disc")        
+        fanArtTag   = "" if result.get("ImageTags").get("Backdrop") == None else result.get("ImageTags").get("Backdrop")
+
+    setArt(listItem,'poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + posterTag)
+    setArt(listItem,'tvshow.poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + posterTag)
+    setArt(listItem,'clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearArtTag)
+    setArt(listItem,'tvshow.clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearArtTag)    
+    setArt(listItem,'discart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Disc&tag=" + discArtTag)  
+    setArt(listItem,'fanart_image', "http://localhost:15001/?id=" + str(thumbID) + "&type=Backdrop&tag=" + fanArtTag)
+    
+    listItem.setProperty('IsPlayable', 'true')
+    listItem.setProperty('IsFolder', 'false')
+
+    studio = ""
+    studios = resultForType.get("Studios")
+    if(studios != None):
+        for studio_string in studios:
+            if studio=="": #Just take the first one
+                temp=studio_string.get("Name")
+                studio=temp.encode('utf-8')    
+    listItem.setInfo('video', {'studio' : studio})    
+
+    details = {
+             'title'        : result.get("Name", "Missing Name").encode('utf-8'),
+             'plot'         : result.get("Overview")
+             }
+             
+    if(eppNum > -1):
+        details["episode"] = str(eppNum)
+        
+    if(seasonNum > -1):
+        details["season"] = str(seasonNum)        
+    
+    listItem.setInfo( "Video", infoLabels=details )
+
+    # Process People
+    director=''
+    writer=''
+    people = result.get("People")
+    if(people != None):
+        for person in people:
+            if(person.get("Type") == "Director"):
+                director = director + person.get("Name") + ' ' 
+            if(person.get("Type") == "Writing"):
+                writer = person.get("Name")
+            if(person.get("Type") == "Writer"):
+                writer = person.get("Name")                
+
+     # Process Genres
+    genre = ""
+    genres = result.get("Genres")
+    if(genres != None):
+        for genre_string in genres:
+            if genre == "": #Just take the first genre
+                genre = genre_string
+            else:
+                genre = genre + " / " + genre_string
+
+    listItem.setInfo('video', {'director' : director})
+    listItem.setInfo('video', {'writer' : writer})
+    listItem.setInfo('video', {'mpaa': resultForType.get("OfficialRating")})
+    listItem.setInfo('video', {'genre': genre})
+
+    return
+    
 def get_params( paramstring ):
     printDebug("Parameter string: " + paramstring, level=2)
     param={}
