@@ -2024,6 +2024,7 @@ def showViewList(url, pluginhandle):
             xbmcgui.Dialog().ok(__language__(30135), __language__(30150))            
             sys.exit()
         root = tree.getroot()
+        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c?url=_SETVIEW_'+ url.split('_')[2] + '_' + '' + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Clear Settings', 'test'))
         for view in root.iter('view'):
             if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_'+ url.split('_')[2]) == view.attrib['value']:
                 name=view.attrib['id'] + " (Active)"
