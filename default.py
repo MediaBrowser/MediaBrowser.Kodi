@@ -2019,7 +2019,11 @@ def showViewList(url, pluginhandle):
     else:
         
         skin_view_file = os.path.join(xbmc.translatePath('special://skin'), "views.xml")
-        tree = etree.parse(skin_view_file)
+        try:
+            tree = etree.parse(skin_view_file)
+        except:
+            xbmcgui.Dialog().ok(__language__(30135), __language__(30150))            
+            sys.exit()
         root = tree.getroot()
         for view in root.iter('view'):
             if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_'+ url.split('_')[2]) == view.attrib['value']:
