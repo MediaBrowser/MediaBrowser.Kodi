@@ -2011,17 +2011,22 @@ def showViewList(url, pluginhandle):
         xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_SERIES&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Series View', 'SeriesView'), isFolder=True)
         xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_SEASONS&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Season View', 'SeasonView'), isFolder=True)
         xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_EPISODES&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Episode View', 'EpisodeView'), isFolder=True)
-        if "_SETVIEW_" in url:
-            category=url.split('_')[2]
-            viewNum=url.split('_')[3]
-            __settings__.setSetting(xbmc.getSkinDir()+ '_VIEW_' +category,viewNum)
+    elif "_SETVIEW_" in url:
+        category=url.split('_')[2]
+        viewNum=url.split('_')[3]
+        __settings__.setSetting(xbmc.getSkinDir()+ '_VIEW_' +category,viewNum)
+        xbmc.executebuiltin("Container.Refresh")    
     else:
         
         skin_view_file = os.path.join(xbmc.translatePath('special://skin'), "views.xml")
         tree = etree.parse(skin_view_file)
         root = tree.getroot()
         for view in root.iter('view'):
-            xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c?url=SETVIEWS_SETVIEW_'+ url.split('_')[2] + '_' + view.attrib['value'] + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem(view.attrib['id'], 'test'),isFolder=True)
+            if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_'+ url.split('_')[2]) == view.attrib['value']:
+                name=view.attrib['id'] + " (Active)"
+            else:
+                name=view.attrib['id']
+            xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c?url=_SETVIEW_'+ url.split('_')[2] + '_' + view.attrib['value'] + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem(name, 'test'))
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
     
 def checkService():
