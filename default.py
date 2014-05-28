@@ -171,17 +171,20 @@ def getServerDetails():
     printDebug("Getting Server Details from Network")
 
     MESSAGE = "who is MediaBrowserServer?"
-    MULTI_GROUP = ("224.3.29.71", 7359)
+    #MULTI_GROUP = ("224.3.29.71", 7359)
     #MULTI_GROUP = ("127.0.0.1", 7359)
+    MULTI_GROUP = ("<broadcast>", 7359)
     
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(2.0)
+    sock.settimeout(6.0)
     
-    ttl = struct.pack('b', 20)
-    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
+    #ttl = struct.pack('b', 20)
+    #sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 20)
     
-    #sock.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_LOOP, 1)
-    #sock.setsockopt(socket.IPPROTO_IP, socket.SO_REUSEADDR, 1)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    sock.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_LOOP, 1)
+    sock.setsockopt(socket.IPPROTO_IP, socket.SO_REUSEADDR, 1)
     
     xbmc.log("MutliGroup       : " + str(MULTI_GROUP));
     xbmc.log("Sending UDP Data : " + MESSAGE);
@@ -197,7 +200,7 @@ def getServerDetails():
         xbmc.log("No UDP Response")
         pass
     
-    return ""
+    return None
 
 def getUserId():
 
@@ -207,7 +210,13 @@ def getUserId():
     
     printDebug("Looking for user name: " + userName)
 
-    jsonData = getURL(host + ":" + port + "/mediabrowser/Users?format=json")
+    jsonData = None
+    try:
+        jsonData = getURL(host + ":" + port + "/mediabrowser/Users?format=json")
+    except Exception, msg:
+        error = "Get User unable to connect to " + host + ":" + port + " : " + str(msg)
+        xbmc.log (error)
+        return ""
     
     if(jsonData == False):
         return ""
@@ -239,7 +248,17 @@ def getUserId():
 def getCollections(detailsString):
     printDebug("== ENTER: getCollections ==")
     userid = str(getUserId())
-    jsonData = getURL(__settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port')+"/mediabrowser/Users/"+userid+"/Items/Root?format=json")
+    
+    if(userid == None or len(userid) == 0):
+        return {}
+    
+    try:
+        jsonData = getURL(__settings__.getSetting('ipaddress') + ":" + __settings__.getSetting('port') + "/mediabrowser/Users/" + userid + "/Items/Root?format=json")
+    except Exception, msg:
+        error = "Get connect : " + str(msg)
+        xbmc.log (error)
+        return {}        
+    
     printDebug("jsonData : " + jsonData, level=2)
     result = json.loads(jsonData)
     
@@ -696,7 +715,7 @@ def displaySections( filter=None ):
                   'type'         : "Video" ,
                   'thumb'        : '' }
     
-# Add collections
+    # Add collections
     detailsString=getDetailsString()
     collections = getCollections(detailsString)
     for collection in collections:
@@ -1983,7 +2002,7 @@ def showParentContent(pluginName, handle, params):
     
     port = __settings__.getSetting('port')
     host = __settings__.getSetting('ipaddress')
-    server = host + ":" + port  
+    server = host + ":" + port
     
     parentId = params.get("ParentId")
     name = params.get("Name")
@@ -2003,6 +2022,7 @@ def showParentContent(pluginName, handle, params):
     printDebug("showParentContent Content Url : " + str(contentUrl), 2)
     
     getContent(contentUrl)
+    
 def showViewList(url, pluginhandle):
     print "URL: " + url
     if "SETVIEWS" in url:
@@ -2054,6 +2074,63 @@ def checkService():
         xbmcgui.Dialog().ok(__language__(30135), __language__(30136), __language__(30137))
         sys.exit()
         
+def checkServer():
+    printDebug ("XBMB3C checkServer Called")
+    
+    port = __settings__.getSetting('port')
+    host = __settings__.getSetting('ipaddress')
+    
+    if(len(host) != 0 and host != "<none>"):
+        printDebug ("XBMB3C server already set")
+        return
+    
+    serverInfo = getServerDetails()
+    
+    if(serverInfo == None):
+        printDebug ("XBMB3C getServerDetails failed")
+        return
+        
+    index = serverInfo.find(":")
+    
+    if(index <= 0):
+        printDebug ("XBMB3C getServerDetails data not correct : " + serverInfo)
+        return
+    
+    server_address = serverInfo[:index]
+    server_port = serverInfo[index+1:]
+    printDebug ("XBMB3C detected server info " + server_address + " : " + server_port)
+    
+    # we have a server now so set it
+    __settings__.setSetting("port", server_port)
+    __settings__.setSetting("ipaddress", server_address)
+
+    # get a list of users
+    printDebug ("Getting user list")
+    jsonData = None
+    try:
+        jsonData = getURL(server_address + ":" + server_port + "/mediabrowser/Users?format=json")
+    except Exception, msg:
+        error = "Get User unable to connect to " + server_address + ":" + server_port + " : " + str(msg)
+        xbmc.log (error)
+        return ""
+    
+    if(jsonData == False):
+        return
+
+    printDebug("jsonData : " + str(jsonData), level=2)
+    result = json.loads(jsonData)
+    
+    names = []
+    for user in result:
+        names.append(user.get("Name"))
+
+    printDebug ("User List : " + str(names))
+    return_value = xbmcgui.Dialog().select("Select User", names)
+    
+    if(return_value > -1):
+        selected_user = names[return_value]
+        printDebug("Setting Selected User : " + selected_user)
+        __settings__.setSetting("username", selected_user)
 
 ###########################################################################  
 ##Start of Main
@@ -2135,12 +2212,14 @@ elif mode == _MODE_PERSON_DETAILS:
 elif mode == _MODE_WIDGET_CONTENT:
     getWigetContent(sys.argv[0], int(sys.argv[1]), params)
 elif mode == _MODE_SHOW_PARENT_CONTENT:
+    checkService()
+    checkServer()
     pluginhandle = int(sys.argv[1])
     showParentContent(sys.argv[0], int(sys.argv[1]), params)
 else:
     
-    # check the service is running
     checkService()
+    checkServer()
     
     pluginhandle = int(sys.argv[1])
 

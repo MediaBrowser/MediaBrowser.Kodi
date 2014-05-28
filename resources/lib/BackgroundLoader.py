@@ -432,8 +432,6 @@ class BackgroundRotationThread(threading.Thread):
                             posterImage = "http://localhost:15001/?id=" + str(id) + "&type=Primary" + "&tag=" + imageTag
                             actionUrl = "ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=21&ParentId=" + id + "&Name=" + name + ",return)"
                         
-                        xbmc.log("ACTION_URL " + actionUrl)
-                        
                         for backdrop in images:
                           
                             info = {}
