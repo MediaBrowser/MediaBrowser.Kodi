@@ -71,6 +71,7 @@ class BackgroundRotationThread(threading.Thread):
             backgroundRefresh = 10
             
         itemBackgroundRefresh = 5
+        lastUserName = ""
 
         while (xbmc.abortRequested == False):
             td = datetime.today() - lastRun
@@ -78,8 +79,13 @@ class BackgroundRotationThread(threading.Thread):
             secTotal = td.seconds
             secTotal2 = td2.seconds
             
+            addonSettings2 = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+            userName = addonSettings2.getSetting('username')  
+            xbmc.log("Server details string : (" + userName + ") (" + lastUserName + ")")
+            
             Collection = WINDOW.getProperty("MB3.Background.Collection")
-            if(secTotal > backgroundRefresh or filterOnParent_Last != Collection):
+            if(secTotal > backgroundRefresh or filterOnParent_Last != Collection or userName != lastUserName):
+                lastUserName = userName
                 if(self.linksLoaded == False):
                     self.updateArtLinks()
                 lastRun = datetime.today()
@@ -266,16 +272,22 @@ class BackgroundRotationThread(threading.Thread):
     
     def updateArtLinks(self):
         t1 = time.time()
-        self.updateCollectionArtLinks()
+        result01 = self.updateCollectionArtLinks()
         t2 = time.time()
-        self.updateTypeArtLinks()
+        result02 = self.updateTypeArtLinks()
         t3 = time.time()
         diff = t2 - t1
         xbmc.log("TIMEDIFF01 : " + str(diff))
         diff = t3 - t2
         xbmc.log("TIMEDIFF02 : " + str(diff))
         
-        self.linksLoaded = True
+        if(result01 and result02):
+            xbmc.log("BackgroundRotationThread Update Links Worked")
+            self.linksLoaded = True
+        else:
+            xbmc.log("BackgroundRotationThread Update Links Failed")
+            self.linksLoaded = False
+            
         
     def updateActionUrls(self):
         xbmc.log("BackgroundRotationThread updateActionUrls Called")
@@ -310,11 +322,18 @@ class BackgroundRotationThread(threading.Thread):
             jsonData = requesthandle.read()
             requesthandle.close()   
         except Exception, e:
-            self.logMsg("updateCollectionArtLinks urlopen : " + str(e) + " (" + userUrl + ")", level=0)
-            return        
+            self.logMsg("urlopen : " + str(e) + " (" + userUrl + ")", level=0)
+            return False  
+        
+        result = []
+        
+        try:
+            result = json.loads(jsonData)
+        except Exception, e:
+            self.logMsg("jsonload : " + str(e) + " (" + jsonData + ")", level=2)
+            return False
         
         userid = ""
-        result = json.loads(jsonData)
         for user in result:
             if(user.get("Name") == userName):
                 userid = user.get("Id")    
@@ -329,7 +348,7 @@ class BackgroundRotationThread(threading.Thread):
             requesthandle.close()   
         except Exception, e:
             self.logMsg("updateCollectionArtLinks urlopen : " + str(e) + " (" + userUrl + ")", level=0)
-            return
+            return False
             
         self.logMsg("updateCollectionArtLinks UserData : " + str(jsonData), 2)
         result = json.loads(jsonData)
@@ -344,7 +363,7 @@ class BackgroundRotationThread(threading.Thread):
             requesthandle.close()   
         except Exception, e:
             self.logMsg("updateCollectionArtLinks urlopen : " + str(e) + " (" + userRootPath + ")", level=0)
-            return
+            return False
             
         self.logMsg("updateCollectionArtLinks userRootPath : " + str(jsonData), 2)            
         result = json.loads(jsonData)
@@ -385,7 +404,7 @@ class BackgroundRotationThread(threading.Thread):
                 requesthandle.close()   
             except Exception, e:
                 self.logMsg("updateCollectionArtLinks urlopen : " + str(e) + " (" + collectionUrl + ")", level=0)
-                return       
+                return False    
 
             collectionResult = json.loads(jsonData)
 
@@ -470,7 +489,7 @@ class BackgroundRotationThread(threading.Thread):
         random.shuffle(self.global_art_links)
         self.logMsg("Background Global Art Links : " + str(len(self.global_art_links)))        
         
-        
+        return True
         
     def updateTypeArtLinks(self):
         self.logMsg("updateTypeArtLinks Called")
@@ -490,10 +509,17 @@ class BackgroundRotationThread(threading.Thread):
             requesthandle.close()   
         except Exception, e:
             self.logMsg("updateTypeArtLinks urlopen : " + str(e) + " (" + userUrl + ")", level=0)
-            return        
+            return False
+        
+        result = []
+        
+        try:
+            result = json.loads(jsonData)
+        except Exception, e:
+            self.logMsg("jsonload : " + str(e) + " (" + jsonData + ")", level=2)
+            return False
         
         userid = ""
-        result = json.loads(jsonData)
         for user in result:
             if(user.get("Name") == userName):
                 userid = user.get("Id")    
@@ -510,7 +536,7 @@ class BackgroundRotationThread(threading.Thread):
             requesthandle.close()   
         except Exception, e:
             self.logMsg("updateTypeArtLinks urlopen : " + str(e) + " (" + moviesUrl + ")", level=0)
-            return          
+            return False
 
         result = json.loads(jsonData)
 
@@ -552,7 +578,7 @@ class BackgroundRotationThread(threading.Thread):
             requesthandle.close()   
         except Exception, e:
             self.logMsg("updateTypeArtLinks urlopen : " + str(e) + " (" + tvUrl + ")", level=2)
-            return          
+            return False
         
         result = json.loads(jsonData)        
         
@@ -594,7 +620,7 @@ class BackgroundRotationThread(threading.Thread):
             requesthandle.close()   
         except Exception, e:
             self.logMsg("updateTypeArtLinks urlopen : " + str(e) + " (" + musicUrl + ")", level=0)
-            return           
+            return False
         
         result = json.loads(jsonData)        
         
@@ -663,10 +689,13 @@ class BackgroundRotationThread(threading.Thread):
                 bg_list.append(bg_item)
                 self.item_art_links[item_id] = bg_list
         
+        
+        return True
+        
     def setItemBackgroundLink(self):
     
         id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
-        self.logMsg("setBackgroundLink ItemGUID : " + id, 2)
+        self.logMsg("setItemBackgroundLink ItemGUID : " + id, 2)
     
         WINDOW = xbmcgui.Window( 10000 )
         if id != None and id != "":    
@@ -680,7 +709,7 @@ class BackgroundRotationThread(threading.Thread):
             listOfBackgrounds = self.item_art_links.get(id)
             
             if(listOfBackgrounds != None and len(listOfBackgrounds) > 0):
-                self.logMsg("setBackgroundLink index " + str(self.current_item_art) + " of " + str(len(listOfBackgrounds)), level=2)
+                self.logMsg("setItemBackgroundLink index " + str(self.current_item_art) + " of " + str(len(listOfBackgrounds)), level=2)
                 try: 
                     artUrl = listOfBackgrounds[self.current_item_art]["url"] 
                 except IndexError:
@@ -688,18 +717,18 @@ class BackgroundRotationThread(threading.Thread):
                     artUrl = listOfBackgrounds[self.current_item_art]["url"] 
                     
                 WINDOW.setProperty("MB3.Background.Item.FanArt", artUrl)
-                self.logMsg("setBackgroundLink MB3.Background.Item.FanArt=" + artUrl, 2)
+                self.logMsg("setItemBackgroundLink MB3.Background.Item.FanArt=" + artUrl, 2)
                 
                 self.current_item_art = self.current_item_art + 1
                 if(self.current_item_art == len(listOfBackgrounds)):
                     self.current_item_art = 0
                     
             else:
-                self.logMsg("setBackgroundLink Resetting MB3.Background.Item.FanArt", 2)
+                self.logMsg("setItemBackgroundLink Resetting MB3.Background.Item.FanArt", 2)
                 WINDOW.clearProperty("MB3.Background.Item.FanArt")            
                     
         else:
-            self.logMsg("setBackgroundLink Resetting MB3.Background.Item.FanArt", 2)
+            self.logMsg("setItemBackgroundLink Resetting MB3.Background.Item.FanArt", 2)
             WINDOW.clearProperty("MB3.Background.Item.FanArt")
             
     def loadItemBackgroundLinks(self, id):
@@ -721,23 +750,31 @@ class BackgroundRotationThread(threading.Thread):
             self.logMsg("loadItemBackgroundLinks urlopen : " + str(e) + " (" + userUrl + ")", level=0)
             return 
             
+        result = []
+        
+        try:
+            result = json.loads(jsonData)
+        except Exception, e:
+            self.logMsg("loadItemBackgroundLinks jsonload : " + str(e) + " (" + jsonData + ")", level=2)
+            return              
+        
         userid = ""
-        result = json.loads(jsonData)
         for user in result:
             if(user.get("Name") == userName):
                 userid = user.get("Id")
                 break            
     
         itemUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "?Fields=ParentId&format=json"
+        
         try:
             requesthandle = urllib2.urlopen(itemUrl, timeout=60)
             jsonData = requesthandle.read()
             requesthandle.close()
         except Exception, e:
-            self.logMsg("updateItemArtLinks urlopen : " + str(e) + " (" + itemUrl + ")", level=0)
+            self.logMsg("loadItemBackgroundLinks urlopen : " + str(e) + " (" + itemUrl + ")", level=0)
             return
 
-        item = json.loads(jsonData)    
+        item = json.loads(jsonData)
         
         if(item == None):
             item = []

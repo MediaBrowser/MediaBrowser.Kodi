@@ -65,17 +65,27 @@ class RandomInfoUpdaterThread(threading.Thread):
         userName = addonSettings.getSetting('username')     
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
+        self.logMsg("userUrl : " + userUrl, level=2)
         
         try:
             requesthandle = urllib.urlopen(userUrl, proxies={})
             jsonData = requesthandle.read()
             requesthandle.close()      
         except Exception, e:
-            self.logMsg("updateRandom urlopen : " + str(e) + " (" + userUrl + ")", level=0)
+            self.logMsg("urlopen : " + str(e) + " (" + userUrl + ")", level=1)
             return           
         
+        self.logMsg("jsonData : " + jsonData, level=2)
+        
+        result = []
+        
+        try:
+            result = json.loads(jsonData)
+        except Exception, e:
+            self.logMsg("jsonload : " + str(e) + " (" + jsonData + ")", level=2)
+            return              
+        
         userid = ""
-        result = json.loads(jsonData)
         for user in result:
             if(user.get("Name") == userName):
                 userid = user.get("Id")    

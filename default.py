@@ -221,11 +221,15 @@ def getUserId():
     if(jsonData == False):
         return ""
         
-    userid=""
-
-    printDebug("jsonData : " + str(jsonData), level=2)
-    result = json.loads(jsonData)
+    result = []
     
+    try:
+        result = json.loads(jsonData)
+    except Exception, e:
+        printDebug("jsonload : " + str(e) + " (" + jsonData + ")", level=2)
+        return ""           
+    
+    userid = ""
     for user in result:
         if(user.get("Name") == userName):
             userid = user.get("Id")
@@ -730,10 +734,11 @@ def displaySections( filter=None ):
         printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
         dirItems.append(addGUIItem(s_url, details, extraData))
     
-    # add addon action items
-    list = xbmcgui.ListItem("Edit Background Image List")
-    url = sys.argv[0] + '?mode=' + str(_MODE_BG_EDIT)
-    dirItems.append((url, list, True))
+    # add background edit if we have at least one menu item
+    if(len(collections) > 0):
+        list = xbmcgui.ListItem("Edit Background Image List")
+        url = sys.argv[0] + '?mode=' + str(_MODE_BG_EDIT)
+        dirItems.append((url, list, True))
         
     #All XML entries have been parsed and we are ready to allow the user to browse around.  So end the screen listing.
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
@@ -2103,6 +2108,8 @@ def checkServer():
     # we have a server now so set it
     __settings__.setSetting("port", server_port)
     __settings__.setSetting("ipaddress", server_address)
+    
+    xbmcgui.Dialog().ok("Server Detection Succeeded", "Found server", "Address : " + server_address, "Port : " + server_port)
 
     # get a list of users
     printDebug ("Getting user list")
@@ -2166,6 +2173,8 @@ WINDOW.setProperty("addshowname","false")
 
 if str(sys.argv[1]) == "skin":
      skin()
+elif sys.argv[1] == "check_server":
+     checkServer()
 elif sys.argv[1] == "update":
     url=sys.argv[2]
     libraryRefresh(url)
