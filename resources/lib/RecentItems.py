@@ -83,8 +83,15 @@ class RecentInfoUpdaterThread(threading.Thread):
             self.logMsg("updateRecent urlopen : " + str(e) + " (" + userUrl + ")", level=0)
             return
 
+        result = []
+        
+        try:
+            result = json.loads(jsonData)
+        except Exception, e:
+            self.logMsg("jsonload : " + str(e) + " (" + jsonData + ")", level=2)
+            return              
+        
         userid = ""
-        result = json.loads(jsonData)
         for user in result:
             if(user.get("Name") == userName):
                 userid = user.get("Id")    

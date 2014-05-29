@@ -126,5 +126,7 @@
     <string id="30147">Enable Recent Info Loader (Requires Restart)</string>
     <string id="30148">Enable Random Loader (Requires Restart)</string>
     <string id="30149">Enable Next Up Loader (Requires Restart)</string>
+    
+    <string id="30150">Skin does not support setting views</string>
 
 </strings>

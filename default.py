@@ -53,6 +53,7 @@ import StringIO
 import gzip
 from uuid import getnode as get_mac
 from Utils import PlayUtils
+import xml.etree.ElementTree as etree
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __cwd__ = __settings__.getAddonInfo('path')
@@ -81,6 +82,7 @@ CP_ADD_URL = 'XBMC.RunPlugin(plugin://plugin.video.couchpotato_manager/movies/ad
 _MODE_GETCONTENT=0
 _MODE_MOVIES=0
 _MODE_SEARCH=2
+_MODE_SETVIEWS=3
 _MODE_BASICPLAY=12
 _MODE_BG_EDIT=13
 _MODE_CAST_LIST=14
@@ -169,17 +171,20 @@ def getServerDetails():
     printDebug("Getting Server Details from Network")
 
     MESSAGE = "who is MediaBrowserServer?"
-    MULTI_GROUP = ("224.3.29.71", 7359)
+    #MULTI_GROUP = ("224.3.29.71", 7359)
     #MULTI_GROUP = ("127.0.0.1", 7359)
+    MULTI_GROUP = ("<broadcast>", 7359)
     
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(2.0)
+    sock.settimeout(6.0)
     
-    ttl = struct.pack('b', 20)
-    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
+    #ttl = struct.pack('b', 20)
+    #sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
+    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 20)
     
-    #sock.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_LOOP, 1)
-    #sock.setsockopt(socket.IPPROTO_IP, socket.SO_REUSEADDR, 1)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    sock.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_LOOP, 1)
+    sock.setsockopt(socket.IPPROTO_IP, socket.SO_REUSEADDR, 1)
     
     xbmc.log("MutliGroup       : " + str(MULTI_GROUP));
     xbmc.log("Sending UDP Data : " + MESSAGE);
@@ -195,7 +200,7 @@ def getServerDetails():
         xbmc.log("No UDP Response")
         pass
     
-    return ""
+    return None
 
 def getUserId():
 
@@ -205,16 +210,26 @@ def getUserId():
     
     printDebug("Looking for user name: " + userName)
 
-    jsonData = getURL(host + ":" + port + "/mediabrowser/Users?format=json")
+    jsonData = None
+    try:
+        jsonData = getURL(host + ":" + port + "/mediabrowser/Users?format=json")
+    except Exception, msg:
+        error = "Get User unable to connect to " + host + ":" + port + " : " + str(msg)
+        xbmc.log (error)
+        return ""
     
     if(jsonData == False):
         return ""
         
-    userid=""
-
-    printDebug("jsonData : " + str(jsonData), level=2)
-    result = json.loads(jsonData)
+    result = []
     
+    try:
+        result = json.loads(jsonData)
+    except Exception, e:
+        printDebug("jsonload : " + str(e) + " (" + jsonData + ")", level=2)
+        return ""           
+    
+    userid = ""
     for user in result:
         if(user.get("Name") == userName):
             userid = user.get("Id")
@@ -237,7 +252,17 @@ def getUserId():
 def getCollections(detailsString):
     printDebug("== ENTER: getCollections ==")
     userid = str(getUserId())
-    jsonData = getURL(__settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port')+"/mediabrowser/Users/"+userid+"/Items/Root?format=json")
+    
+    if(userid == None or len(userid) == 0):
+        return {}
+    
+    try:
+        jsonData = getURL(__settings__.getSetting('ipaddress') + ":" + __settings__.getSetting('port') + "/mediabrowser/Users/" + userid + "/Items/Root?format=json")
+    except Exception, msg:
+        error = "Get connect : " + str(msg)
+        xbmc.log (error)
+        return {}        
+    
     printDebug("jsonData : " + jsonData, level=2)
     result = json.loads(jsonData)
     
@@ -299,7 +324,7 @@ def getCollections(detailsString):
     collections.append({'title':'Photos'                 , 'sectype' : 'std.photo', 'section' : 'photos'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=Photo&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     if xbmcVersionNum >= 13:    
         collections.append({'title':'Search'                 , 'sectype' : 'std.search', 'section' : 'search'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Search/Hints?' + userid,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
-
+    collections.append({'title':'Set Views'                 , 'sectype' : 'std.setviews', 'section' : 'setviews'  , 'address' : 'SETVIEWS', 'path': 'SETVIEWS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
             
     return collections
 
@@ -523,6 +548,8 @@ def addGUIItem( url, details, extraData, folder=True ):
         u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
     elif 'mediabrowser/Search' in url:
         u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_SEARCH)
+    elif 'SETVIEWS' in url:
+        u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_SETVIEWS)        
     elif url.startswith('http') or url.startswith('file'):
         u=sys.argv[0]+"?url="+urllib.quote(url)+mode
     else:
@@ -692,7 +719,7 @@ def displaySections( filter=None ):
                   'type'         : "Video" ,
                   'thumb'        : '' }
     
-# Add collections
+    # Add collections
     detailsString=getDetailsString()
     collections = getCollections(detailsString)
     for collection in collections:
@@ -707,10 +734,11 @@ def displaySections( filter=None ):
         printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
         dirItems.append(addGUIItem(s_url, details, extraData))
     
-    # add addon action items
-    list = xbmcgui.ListItem("Edit Background Image List")
-    url = sys.argv[0] + '?mode=' + str(_MODE_BG_EDIT)
-    dirItems.append((url, list, True))
+    # add background edit if we have at least one menu item
+    if(len(collections) > 0):
+        list = xbmcgui.ListItem("Edit Background Image List")
+        url = sys.argv[0] + '?mode=' + str(_MODE_BG_EDIT)
+        dirItems.append((url, list, True))
         
     #All XML entries have been parsed and we are ready to allow the user to browse around.  So end the screen listing.
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
@@ -849,83 +877,23 @@ def PLAY( url, handle ):
     jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
     printDebug("Play jsonData: " + jsonData)
     result = json.loads(jsonData)
+    
+    playurl = PlayUtils.getPlayUrl(server, id, result)    
+    thumbID = id if(result.get("Type") != "Episode") else result.get("SeriesId")
+    imageTag = "" if(result.get("ImageTags") == None or result.get("ImageTags").get("Primary") == None) else result.get("ImageTags").get("Primary")
+    thumbPath = "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag
+    listItem = xbmcgui.ListItem(path=playurl, iconImage=thumbPath, thumbnailImage=thumbPath)
+    setListItemProps(server, id, listItem, result)
 
     # Can not play virtual items
     if (result.get("LocationType") == "Virtual") or (result.get("IsPlaceholder")=="true"):
         xbmcgui.Dialog().ok(__language__(30128), __language__(30129))
         return
-    
-    playurl = PlayUtils.getPlayUrl(server, id, result)
-            
-    #if (__settings__.getSetting("markWatchedOnPlay")=='true'):
+
     watchedurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
     positionurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
     deleteurl = 'http://' + server + '/mediabrowser/Items/' + id
-    
-    # set up item and item info
-    thumbID = id
-    eppNum = -1
-    seasonNum = -1
-    if(result.get("Type") == "Episode"):
-        thumbID = result.get("SeriesId")
-        seasonNum = result.get("ParentIndexNumber")
-        eppNum = result.get("IndexNumber")
-        
-    # get image tag
-    imageTag = ""
-    if(result.get("ImageTags") != None and result.get("ImageTags").get("Primary") != None):
-        imageTag = result.get("ImageTags").get("Primary")
-    thumbPath = "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag
-    
-    item = xbmcgui.ListItem(path=playurl, iconImage=thumbPath, thumbnailImage=thumbPath)
-    item.setProperty('IsPlayable', 'true')
-    item.setProperty('IsFolder', 'false')
-    #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
-    #tree=etree.fromstring(html).getiterator(sDto + "BaseItemDto")
-    
-    # add some info about the item being played
-    details = {
-             'title'        : result.get("Name", "Missing Name").encode('utf-8'),
-             'plot'         : result.get("Overview")
-             }
-             
-    if(eppNum > -1):
-        details["episode"] = str(eppNum)
-        
-    if(seasonNum > -1):
-        details["season"] = str(seasonNum)        
-    
-    item.setInfo( "Video", infoLabels=details )
-    
-    # Process People
-    director=''
-    writer=''
-    people = result.get("People")
-    if(people != None):
-        for person in people:
-            if(person.get("Type") == "Director"):
-                director = director + person.get("Name") + ' ' 
-            if(person.get("Type") == "Writing"):
-                writer = person.get("Name")
-            if(person.get("Type") == "Writer"):
-                writer = person.get("Name")                
-            
-    
-     # Process Genres
-    genre = ""
-    genres = result.get("Genres")
-    if(genres != None):
-        for genre_string in genres:
-            if genre == "": #Just take the first genre
-                genre = genre_string
-            else:
-                genre = genre + " / " + genre_string
-    
-    item.setInfo('video', {'director' : director})
-    item.setInfo('video', {'writer' : writer})
-    item.setInfo('video', {'mpaa': result.get("OfficialRating")})
-    item.setInfo('video', {'genre': genre})
-    
+
     if(autoResume != 0):
         if(autoResume == -1):
             resume_result = 1
@@ -956,9 +924,8 @@ def PLAY( url, handle ):
     WINDOW.setProperty("runtimeticks", str(result.get("RunTimeTicks")))
     WINDOW.setProperty("item_id", id)
     
-    xbmc.Player().play(playurl, item)
+    xbmc.Player().play(playurl, listItem)
     printDebug( "Sent the following url to the xbmc player: "+str(playurl))
-    #xbmcplugin.setResolvedUrl(pluginhandle, True, item)
 
     #Set a loop to wait for positive confirmation of playback
     count = 0
@@ -981,6 +948,92 @@ def PLAY( url, handle ):
             xbmc.Player().play()
     return
 
+def setListItemProps(server, id, listItem,result):
+    # set up item and item info
+    userid = getUserId()
+    thumbID = id
+    eppNum = -1
+    seasonNum = -1
+    if(result.get("Type") == "Episode"):
+        thumbID = result.get("SeriesId")
+        seasonNum = result.get("ParentIndexNumber")
+        eppNum = result.get("IndexNumber")
+        seriesJsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + thumbID + "?format=json", suppress=False, popup=1 )     
+        seriesResult = json.loads(seriesJsonData)
+        resultForType=seriesResult
+    else:
+        resultForType=result
+        
+    # get image tags
+
+    if result.get("ImageTags") != None:
+        posterTag   = "" if result.get("ImageTags").get("Primary")  == None else result.get("ImageTags").get("Primary")
+        clearArtTag = "" if result.get("ImageTags").get("Logo")     == None else result.get("ImageTags").get("Logo")
+        discArtTag  = "" if result.get("ImageTags").get("Disc")     == None else result.get("ImageTags").get("Disc")        
+        fanArtTag   = "" if result.get("ImageTags").get("Backdrop") == None else result.get("ImageTags").get("Backdrop")
+
+    setArt(listItem,'poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + posterTag)
+    setArt(listItem,'tvshow.poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + posterTag)
+    setArt(listItem,'clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearArtTag)
+    setArt(listItem,'tvshow.clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearArtTag)    
+    setArt(listItem,'discart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Disc&tag=" + discArtTag)  
+    setArt(listItem,'fanart_image', "http://localhost:15001/?id=" + str(thumbID) + "&type=Backdrop&tag=" + fanArtTag)
+    
+    listItem.setProperty('IsPlayable', 'true')
+    listItem.setProperty('IsFolder', 'false')
+
+    studio = ""
+    studios = resultForType.get("Studios")
+    if(studios != None):
+        for studio_string in studios:
+            if studio=="": #Just take the first one
+                temp=studio_string.get("Name")
+                studio=temp.encode('utf-8')    
+    listItem.setInfo('video', {'studio' : studio})    
+
+    details = {
+             'title'        : result.get("Name", "Missing Name").encode('utf-8'),
+             'plot'         : result.get("Overview")
+             }
+             
+    if(eppNum > -1):
+        details["episode"] = str(eppNum)
+        
+    if(seasonNum > -1):
+        details["season"] = str(seasonNum)        
+    
+    listItem.setInfo( "Video", infoLabels=details )
+
+    # Process People
+    director=''
+    writer=''
+    people = result.get("People")
+    if(people != None):
+        for person in people:
+            if(person.get("Type") == "Director"):
+                director = director + person.get("Name") + ' ' 
+            if(person.get("Type") == "Writing"):
+                writer = person.get("Name")
+            if(person.get("Type") == "Writer"):
+                writer = person.get("Name")                
+
+     # Process Genres
+    genre = ""
+    genres = result.get("Genres")
+    if(genres != None):
+        for genre_string in genres:
+            if genre == "": #Just take the first genre
+                genre = genre_string
+            else:
+                genre = genre + " / " + genre_string
+
+    listItem.setInfo('video', {'director' : director})
+    listItem.setInfo('video', {'writer' : writer})
+    listItem.setInfo('video', {'mpaa': resultForType.get("OfficialRating")})
+    listItem.setInfo('video', {'genre': genre})
+
+    return
+    
 def get_params( paramstring ):
     printDebug("Parameter string: " + paramstring, level=2)
     param={}
@@ -1082,6 +1135,7 @@ def getContent( url ):
         @input: URL of XML page
         @return: nothing, redirects to another function
     '''
+    global viewType
     printDebug("== ENTER: getContent ==")
     server=getServerFromURL(url)
     lastbit=url.split('/')[-1]
@@ -1174,8 +1228,19 @@ def getContent( url ):
         dirItems = processSearch(url, result, progress)
     else:
         dirItems = processDirectory(url, result, progress)
-    
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
+    if viewType=="_MOVIES_":
+        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_MOVIES') != "":
+            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_MOVIES')))
+    elif viewType=="_EPISODES_":
+        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_EPISODES') != "":
+            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_EPISODES')))
+    elif viewType=="_SERIES_":
+        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_SERIES') != "":
+            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_SERIES')))
+    elif viewType=="_SEASONS_":
+        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_SEASONS') != "":
+            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_SEASONS')))
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
     
     if(progress != None):
@@ -1188,6 +1253,7 @@ def loadJasonData(jsonData):
     return json.loads(jsonData)
     
 def processDirectory(url, results, progress):
+    global viewType
     cast=['None']
     printDebug("== ENTER: processDirectory ==")
     parsed = urlparse(url)
@@ -1244,19 +1310,27 @@ def processDirectory(url, results, progress):
         if (str(item.get("ParentIndexNumber")) != None):
             tempSeason = str(item.get("ParentIndexNumber"))
       
+        viewType=""
         if item.get("Type") == "Episode":
             guiid = item.get("SeriesId")
             if __settings__.getSetting('addEpisodeNumber') == 'true':
                 tempTitle = str(tempEpisode) + ' - ' + tempTitle
             xbmcplugin.setContent(pluginhandle, 'episodes')
-        if item.get("Type") == "Season":
+            viewType="_EPISODES_"
+            print "episodes"
+        elif item.get("Type") == "Season":
             guiid = item.get("SeriesId")
             xbmcplugin.setContent(pluginhandle, 'tvshows')
+            viewType="_SEASONS_"
+        elif item.get("Type") == "Movie":
+            xbmcplugin.setContent(pluginhandle, 'movies')
+            viewType="_MOVIES_"
         if item.get("Type") == "Audio":
             guiid = item.get("AlbumId")
             xbmcplugin.setContent(pluginhandle, 'songs')            
         if item.get("Type") == "Series":
             xbmcplugin.setContent(pluginhandle, 'tvshows')
+            viewType="_SERIES_"
         
         if(item.get("PremiereDate") != None):
             premieredatelist = (item.get("PremiereDate")).split("T")
@@ -1462,8 +1536,7 @@ def processDirectory(url, results, progress):
                         jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + id + "&format=json", suppress=False, popup=1 )
                         result = json.loads(jsonData)
                         seasons=result.get("Items")
-                        for season in seasons:
-                            u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' + season.get("Id") +'&Fields=' + detailsString + '&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
+                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' + seasons[0].get("Id") +'&Fields=' + detailsString + '&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
                     else:
                         u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
                 else:
@@ -1475,7 +1548,7 @@ def processDirectory(url, results, progress):
         else:
             u = server+',;'+id
             dirItems.append(addGUIItem(u, details, extraData, folder=False))
-    
+
     return dirItems
 
 def processSearch(url, results, progress):
@@ -1775,10 +1848,10 @@ def getCastList(pluginName, handle, params):
         listItems.append(itemTupple)
         
         
-    listItems.sort()
+    #listItems.sort()
     xbmcplugin.addDirectoryItems(handle, listItems)
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
-        
+
 def showPersonInfo(pluginName, handle, params):
 
     #item = xbmcgui.ListItem(label="Test")
@@ -1941,7 +2014,7 @@ def showParentContent(pluginName, handle, params):
     
     port = __settings__.getSetting('port')
     host = __settings__.getSetting('ipaddress')
-    server = host + ":" + port  
+    server = host + ":" + port
     
     parentId = params.get("ParentId")
     name = params.get("Name")
@@ -1961,6 +2034,36 @@ def showParentContent(pluginName, handle, params):
     printDebug("showParentContent Content Url : " + str(contentUrl), 2)
     
     getContent(contentUrl)
+    
+def showViewList(url, pluginhandle):
+    print "URL: " + url
+    if "SETVIEWS" in url:
+        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_MOVIES&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Movie View', 'MovieView'), isFolder=True)
+        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_SERIES&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Series View', 'SeriesView'), isFolder=True)
+        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_SEASONS&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Season View', 'SeasonView'), isFolder=True)
+        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_EPISODES&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Episode View', 'EpisodeView'), isFolder=True)
+    elif "_SETVIEW_" in url:
+        category=url.split('_')[2]
+        viewNum=url.split('_')[3]
+        __settings__.setSetting(xbmc.getSkinDir()+ '_VIEW_' +category,viewNum)
+        xbmc.executebuiltin("Container.Refresh")    
+    else:
+        
+        skin_view_file = os.path.join(xbmc.translatePath('special://skin'), "views.xml")
+        try:
+            tree = etree.parse(skin_view_file)
+        except:
+            xbmcgui.Dialog().ok(__language__(30135), __language__(30150))            
+            sys.exit()
+        root = tree.getroot()
+        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c?url=_SETVIEW_'+ url.split('_')[2] + '_' + '' + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Clear Settings', 'test'))
+        for view in root.iter('view'):
+            if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_'+ url.split('_')[2]) == view.attrib['value']:
+                name=view.attrib['id'] + " (Active)"
+            else:
+                name=view.attrib['id']
+            xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c?url=_SETVIEW_'+ url.split('_')[2] + '_' + view.attrib['value'] + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem(name, 'test'))
+    xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
     
 def checkService():
 
@@ -1983,6 +2086,65 @@ def checkService():
         xbmcgui.Dialog().ok(__language__(30135), __language__(30136), __language__(30137))
         sys.exit()
         
+def checkServer():
+    printDebug ("XBMB3C checkServer Called")
+    
+    port = __settings__.getSetting('port')
+    host = __settings__.getSetting('ipaddress')
+    
+    if(len(host) != 0 and host != "<none>"):
+        printDebug ("XBMB3C server already set")
+        return
+    
+    serverInfo = getServerDetails()
+    
+    if(serverInfo == None):
+        printDebug ("XBMB3C getServerDetails failed")
+        return
+        
+    index = serverInfo.find(":")
+    
+    if(index <= 0):
+        printDebug ("XBMB3C getServerDetails data not correct : " + serverInfo)
+        return
+    
+    server_address = serverInfo[:index]
+    server_port = serverInfo[index+1:]
+    printDebug ("XBMB3C detected server info " + server_address + " : " + server_port)
+    
+    # we have a server now so set it
+    __settings__.setSetting("port", server_port)
+    __settings__.setSetting("ipaddress", server_address)
+    
+    xbmcgui.Dialog().ok("Server Detection Succeeded", "Found server", "Address : " + server_address, "Port : " + server_port)
+
+    # get a list of users
+    printDebug ("Getting user list")
+    jsonData = None
+    try:
+        jsonData = getURL(server_address + ":" + server_port + "/mediabrowser/Users?format=json")
+    except Exception, msg:
+        error = "Get User unable to connect to " + server_address + ":" + server_port + " : " + str(msg)
+        xbmc.log (error)
+        return ""
+    
+    if(jsonData == False):
+        return
+
+    printDebug("jsonData : " + str(jsonData), level=2)
+    result = json.loads(jsonData)
+    
+    names = []
+    for user in result:
+        names.append(user.get("Name"))
+
+    printDebug ("User List : " + str(names))
+    return_value = xbmcgui.Dialog().select("Select User", names)
+    
+    if(return_value > -1):
+        selected_user = names[return_value]
+        printDebug("Setting Selected User : " + selected_user)
+        __settings__.setSetting("username", selected_user)
 
 ###########################################################################  
 ##Start of Main
@@ -2007,7 +2169,6 @@ param_url=params.get('url',None)
 if param_url and ( param_url.startswith('http') or param_url.startswith('file') ):
     param_url = urllib.unquote(param_url)
 
-
 param_name = urllib.unquote_plus(params.get('name',""))
 mode = int(params.get('mode',-1))
 param_transcodeOverride = int(params.get('transcode',0))
@@ -2019,6 +2180,8 @@ WINDOW.setProperty("addshowname","false")
 
 if str(sys.argv[1]) == "skin":
      skin()
+elif sys.argv[1] == "check_server":
+     checkServer()
 elif sys.argv[1] == "update":
     url=sys.argv[2]
     libraryRefresh(url)
@@ -2065,12 +2228,14 @@ elif mode == _MODE_PERSON_DETAILS:
 elif mode == _MODE_WIDGET_CONTENT:
     getWigetContent(sys.argv[0], int(sys.argv[1]), params)
 elif mode == _MODE_SHOW_PARENT_CONTENT:
+    checkService()
+    checkServer()
     pluginhandle = int(sys.argv[1])
     showParentContent(sys.argv[0], int(sys.argv[1]), params)
 else:
     
-    # check the service is running
     checkService()
+    checkServer()
     
     pluginhandle = int(sys.argv[1])
 
@@ -2109,6 +2274,9 @@ else:
         param_url=param_url.replace("Search/Hints?","Search/Hints?SearchTerm="+searchString + "&UserId=")
         param_url=param_url + "&Fields=" + getDetailsString() + "&format=json"
         getContent(param_url)
+    elif mode == _MODE_SETVIEWS:
+        showViewList(param_url, pluginhandle)
+
 
 WINDOW = xbmcgui.Window( 10000 )
 WINDOW.clearProperty("MB3.Background.Item.FanArt")
