@@ -1234,18 +1234,8 @@ def getContent( url ):
     else:
         dirItems = processDirectory(url, result, progress)
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
-    if viewType=="_MOVIES_":
-        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_MOVIES') != "":
-            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_MOVIES')))
-    elif viewType=="_EPISODES_":
-        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_EPISODES') != "":
-            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_EPISODES')))
-    elif viewType=="_SERIES_":
-        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_SERIES') != "":
-            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_SERIES')))
-    elif viewType=="_SEASONS_":
-        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_SEASONS') != "":
-            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_SEASONS')))
+    if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType) != "":
+        xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType)))
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
     
     if(progress != None):
@@ -1316,26 +1306,35 @@ def processDirectory(url, results, progress):
             tempSeason = str(item.get("ParentIndexNumber"))
       
         viewType=""
-        if item.get("Type") == "Episode":
-            guiid = item.get("SeriesId")
+        if item.get("Type") == "Movie":
+            xbmcplugin.setContent(pluginhandle, 'movies')
+            viewType="_MOVIES"
+        elif item.get("Type") == "BoxSet":
+            xbmcplugin.setContent(pluginhandle, 'movies')
+            viewType="_BOXSETS"
+        elif item.get("Type") == "Trailer":
+            xbmcplugin.setContent(pluginhandle, 'movies')
+            viewType="_TRAILERS"            
+        elif item.get("Type") == "Series":
+            xbmcplugin.setContent(pluginhandle, 'tvshows')
+            viewType="_SERIES"
+        elif item.get("Type") == "Season":
+            xbmcplugin.setContent(pluginhandle, 'tvshows')
+            viewType="_SEASONS"
+        elif item.get("Type") == "Episode":
             if __settings__.getSetting('addEpisodeNumber') == 'true':
                 tempTitle = str(tempEpisode) + ' - ' + tempTitle
             xbmcplugin.setContent(pluginhandle, 'episodes')
-            viewType="_EPISODES_"
-            print "episodes"
-        elif item.get("Type") == "Season":
-            guiid = item.get("SeriesId")
-            xbmcplugin.setContent(pluginhandle, 'tvshows')
-            viewType="_SEASONS_"
-        elif item.get("Type") == "Movie":
-            xbmcplugin.setContent(pluginhandle, 'movies')
-            viewType="_MOVIES_"
-        if item.get("Type") == "Audio":
-            guiid = item.get("AlbumId")
-            xbmcplugin.setContent(pluginhandle, 'songs')            
-        if item.get("Type") == "Series":
-            xbmcplugin.setContent(pluginhandle, 'tvshows')
-            viewType="_SERIES_"
+            viewType="_EPISODES"
+        elif item.get("Type") == "MusicArtist":
+            xbmcplugin.setContent(pluginhandle, 'songs')
+            viewType='_MUSICARTISTS'
+        elif item.get("Type") == "MusicAlbum":
+            xbmcplugin.setContent(pluginhandle, 'songs')
+            viewType='_MUSICTALBUMS'
+        elif item.get("Type") == "Audio":
+            xbmcplugin.setContent(pluginhandle, 'songs')
+            viewType='_MUSICTRACKS'
         
         if(item.get("PremiereDate") != None):
             premieredatelist = (item.get("PremiereDate")).split("T")
@@ -2034,12 +2033,11 @@ def showParentContent(pluginName, handle, params):
     getContent(contentUrl)
     
 def showViewList(url, pluginhandle):
-    print "URL: " + url
+    viewCats=['Movies', 'BoxSets', 'Trailers', 'Series', 'Seasons', 'Episodes', 'Music Artists', 'Music Albums', 'Music Videos', 'Music Tracks']
+    viewTypes=['_MOVIES', '_BOXSETS', '_TRAILERS', '_SERIES', '_SEASONS', '_EPISODES', '_MUSICARTISTS', '_MUSICALBUMS', '_MUSICVIDEOS', '_MUSICTRACKS']
     if "SETVIEWS" in url:
-        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_MOVIES&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Movie View', 'MovieView'), isFolder=True)
-        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_SERIES&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Series View', 'SeriesView'), isFolder=True)
-        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_SEASONS&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Season View', 'SeasonView'), isFolder=True)
-        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_EPISODES&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Episode View', 'EpisodeView'), isFolder=True)
+        for viewCat in viewCats:
+            xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS' + viewTypes[viewCats.index(viewCat)] + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem(viewCat, ''), isFolder=True)
     elif "_SETVIEW_" in url:
         category=url.split('_')[2]
         viewNum=url.split('_')[3]
