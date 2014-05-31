@@ -2105,10 +2105,6 @@ def checkServer():
     server_port = serverInfo[index+1:]
     printDebug ("XBMB3C detected server info " + server_address + " : " + server_port)
     
-    # we have a server now so set it
-    __settings__.setSetting("port", server_port)
-    __settings__.setSetting("ipaddress", server_address)
-    
     xbmcgui.Dialog().ok("Server Detection Succeeded", "Found server", "Address : " + server_address, "Port : " + server_port)
 
     # get a list of users
@@ -2129,7 +2125,10 @@ def checkServer():
     
     names = []
     for user in result:
-        names.append(user.get("Name"))
+        config = user.get("Configuration")
+        if(config != None):
+            if(config.get("IsHidden") == False):
+                names.append(user.get("Name"))
 
     printDebug ("User List : " + str(names))
     return_value = xbmcgui.Dialog().select("Select User", names)
@@ -2137,6 +2136,8 @@ def checkServer():
     if(return_value > -1):
         selected_user = names[return_value]
         printDebug("Setting Selected User : " + selected_user)
+        __settings__.setSetting("port", server_port)
+        __settings__.setSetting("ipaddress", server_address)        
         __settings__.setSetting("username", selected_user)
 
 ###########################################################################  
