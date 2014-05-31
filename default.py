@@ -230,15 +230,20 @@ def getUserId():
         return ""           
     
     userid = ""
+    secure = False
     for user in result:
         if(user.get("Name") == userName):
             userid = user.get("Id")
-            printDebug('Username Found:' + user.get("Name"))
-
-    if __settings__.getSetting('password') != "":
+            printDebug("Username Found:" + user.get("Name"))
+            if(user.get("HasPassword") == True):
+                secure = True
+                printDebug("Username Is Secure (HasPassword=True)")
+            break
+            
+    if(secure):
         authenticate('http://' + host + ":" + port + "/mediabrowser/Users/AuthenticateByName")
         
-    if userid=='':
+    if userid == "":
         return_value = xbmcgui.Dialog().ok(__language__(30045),__language__(30045))
         sys.exit()
         
@@ -2124,17 +2129,23 @@ def checkServer():
     result = json.loads(jsonData)
     
     names = []
+    userList = []
     for user in result:
         config = user.get("Configuration")
         if(config != None):
             if(config.get("IsHidden") == False):
-                names.append(user.get("Name"))
+                name = user.get("Name")
+                userList.append(name)
+                if(user.get("HasPassword") == True):
+                    name = name + " (Secure)"
+                names.append(name)
 
     printDebug ("User List : " + str(names))
+    printDebug ("User List : " + str(userList))
     return_value = xbmcgui.Dialog().select("Select User", names)
     
     if(return_value > -1):
-        selected_user = names[return_value]
+        selected_user = userList[return_value]
         printDebug("Setting Selected User : " + selected_user)
         __settings__.setSetting("port", server_port)
         __settings__.setSetting("ipaddress", server_address)        
