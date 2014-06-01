@@ -91,10 +91,11 @@ _MODE_WIDGET_CONTENT=16
 _MODE_SHOW_PARENT_CONTENT=21
 
 #Check debug first...
-levelString = __settings__.getSetting('logLevel')
 logLevel = 0
-if(levelString != None and levelString != "None"):
-    logLevel = int(levelString)   
+try:
+    logLevel = int(__settings__.getSetting('logLevel'))   
+except:
+    pass
 
 if (__settings__.getSetting('useJson')=='true'):
     import json as json
