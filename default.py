@@ -91,10 +91,11 @@ _MODE_WIDGET_CONTENT=16
 _MODE_SHOW_PARENT_CONTENT=21
 
 #Check debug first...
-levelString = __settings__.getSetting('logLevel')
 logLevel = 0
-if(levelString != None and levelString != "None"):
-    logLevel = int(levelString)   
+try:
+    logLevel = int(__settings__.getSetting('logLevel'))   
+except:
+    pass
 
 if (__settings__.getSetting('useJson')=='true'):
     import json as json
@@ -112,7 +113,7 @@ def getMachineId():
     return "%012X"%get_mac()
     
 def getVersion():
-    return "0.9.0"
+    return "0.9.5"
 
 def getAuthHeader():
     txt_mac = getMachineId()
@@ -230,15 +231,20 @@ def getUserId():
         return ""           
     
     userid = ""
+    secure = False
     for user in result:
         if(user.get("Name") == userName):
             userid = user.get("Id")
-            printDebug('Username Found:' + user.get("Name"))
-
-    if __settings__.getSetting('password') != "":
+            printDebug("Username Found:" + user.get("Name"))
+            if(user.get("HasPassword") == True):
+                secure = True
+                printDebug("Username Is Secure (HasPassword=True)")
+            break
+            
+    if(secure):
         authenticate('http://' + host + ":" + port + "/mediabrowser/Users/AuthenticateByName")
         
-    if userid=='':
+    if userid == "":
         return_value = xbmcgui.Dialog().ok(__language__(30045),__language__(30045))
         sys.exit()
         
@@ -1229,18 +1235,8 @@ def getContent( url ):
     else:
         dirItems = processDirectory(url, result, progress)
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
-    if viewType=="_MOVIES_":
-        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_MOVIES') != "":
-            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_MOVIES')))
-    elif viewType=="_EPISODES_":
-        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_EPISODES') != "":
-            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_EPISODES')))
-    elif viewType=="_SERIES_":
-        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_SERIES') != "":
-            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_SERIES')))
-    elif viewType=="_SEASONS_":
-        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_SEASONS') != "":
-            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_SEASONS')))
+    if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType) != "":
+        xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType)))
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
     
     if(progress != None):
@@ -1311,26 +1307,35 @@ def processDirectory(url, results, progress):
             tempSeason = str(item.get("ParentIndexNumber"))
       
         viewType=""
-        if item.get("Type") == "Episode":
-            guiid = item.get("SeriesId")
+        if item.get("Type") == "Movie":
+            xbmcplugin.setContent(pluginhandle, 'movies')
+            viewType="_MOVIES"
+        elif item.get("Type") == "BoxSet":
+            xbmcplugin.setContent(pluginhandle, 'movies')
+            viewType="_BOXSETS"
+        elif item.get("Type") == "Trailer":
+            xbmcplugin.setContent(pluginhandle, 'movies')
+            viewType="_TRAILERS"            
+        elif item.get("Type") == "Series":
+            xbmcplugin.setContent(pluginhandle, 'tvshows')
+            viewType="_SERIES"
+        elif item.get("Type") == "Season":
+            xbmcplugin.setContent(pluginhandle, 'tvshows')
+            viewType="_SEASONS"
+        elif item.get("Type") == "Episode":
             if __settings__.getSetting('addEpisodeNumber') == 'true':
                 tempTitle = str(tempEpisode) + ' - ' + tempTitle
             xbmcplugin.setContent(pluginhandle, 'episodes')
-            viewType="_EPISODES_"
-            print "episodes"
-        elif item.get("Type") == "Season":
-            guiid = item.get("SeriesId")
-            xbmcplugin.setContent(pluginhandle, 'tvshows')
-            viewType="_SEASONS_"
-        elif item.get("Type") == "Movie":
-            xbmcplugin.setContent(pluginhandle, 'movies')
-            viewType="_MOVIES_"
-        if item.get("Type") == "Audio":
-            guiid = item.get("AlbumId")
-            xbmcplugin.setContent(pluginhandle, 'songs')            
-        if item.get("Type") == "Series":
-            xbmcplugin.setContent(pluginhandle, 'tvshows')
-            viewType="_SERIES_"
+            viewType="_EPISODES"
+        elif item.get("Type") == "MusicArtist":
+            xbmcplugin.setContent(pluginhandle, 'songs')
+            viewType='_MUSICARTISTS'
+        elif item.get("Type") == "MusicAlbum":
+            xbmcplugin.setContent(pluginhandle, 'songs')
+            viewType='_MUSICTALBUMS'
+        elif item.get("Type") == "Audio":
+            xbmcplugin.setContent(pluginhandle, 'songs')
+            viewType='_MUSICTRACKS'
         
         if(item.get("PremiereDate") != None):
             premieredatelist = (item.get("PremiereDate")).split("T")
@@ -2036,12 +2041,11 @@ def showParentContent(pluginName, handle, params):
     getContent(contentUrl)
     
 def showViewList(url, pluginhandle):
-    print "URL: " + url
+    viewCats=['Movies', 'BoxSets', 'Trailers', 'Series', 'Seasons', 'Episodes', 'Music Artists', 'Music Albums', 'Music Videos', 'Music Tracks']
+    viewTypes=['_MOVIES', '_BOXSETS', '_TRAILERS', '_SERIES', '_SEASONS', '_EPISODES', '_MUSICARTISTS', '_MUSICALBUMS', '_MUSICVIDEOS', '_MUSICTRACKS']
     if "SETVIEWS" in url:
-        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_MOVIES&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Movie View', 'MovieView'), isFolder=True)
-        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_SERIES&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Series View', 'SeriesView'), isFolder=True)
-        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_SEASONS&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Season View', 'SeasonView'), isFolder=True)
-        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS_EPISODES&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Episode View', 'EpisodeView'), isFolder=True)
+        for viewCat in viewCats:
+            xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS' + viewTypes[viewCats.index(viewCat)] + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem(viewCat, ''), isFolder=True)
     elif "_SETVIEW_" in url:
         category=url.split('_')[2]
         viewNum=url.split('_')[3]
@@ -2112,10 +2116,6 @@ def checkServer():
     server_port = serverInfo[index+1:]
     printDebug ("XBMB3C detected server info " + server_address + " : " + server_port)
     
-    # we have a server now so set it
-    __settings__.setSetting("port", server_port)
-    __settings__.setSetting("ipaddress", server_address)
-    
     xbmcgui.Dialog().ok("Server Detection Succeeded", "Found server", "Address : " + server_address, "Port : " + server_port)
 
     # get a list of users
@@ -2135,15 +2135,26 @@ def checkServer():
     result = json.loads(jsonData)
     
     names = []
+    userList = []
     for user in result:
-        names.append(user.get("Name"))
+        config = user.get("Configuration")
+        if(config != None):
+            if(config.get("IsHidden") == False):
+                name = user.get("Name")
+                userList.append(name)
+                if(user.get("HasPassword") == True):
+                    name = name + " (Secure)"
+                names.append(name)
 
     printDebug ("User List : " + str(names))
+    printDebug ("User List : " + str(userList))
     return_value = xbmcgui.Dialog().select("Select User", names)
     
     if(return_value > -1):
-        selected_user = names[return_value]
+        selected_user = userList[return_value]
         printDebug("Setting Selected User : " + selected_user)
+        __settings__.setSetting("port", server_port)
+        __settings__.setSetting("ipaddress", server_address)        
         __settings__.setSetting("username", selected_user)
 
 ###########################################################################  
