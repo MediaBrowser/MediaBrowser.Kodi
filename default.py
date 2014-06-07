@@ -313,6 +313,7 @@ def getCollections(detailsString):
     collections.append({'title':'All Movies'             , 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Movie&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':'All TV'                 , 'sectype' : 'std.tvshows', 'section' : 'tvshows' , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Series&format=json','thumb':'', 'poster':'', 'fanart_image':'' , 'guiid':''})
     collections.append({'title':'All Music'              , 'sectype' : 'std.music', 'section' : 'music' , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=MusicArtist&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })   
+    collections.append({'title':'Channels'               , 'sectype' : 'std.channels', 'section' : 'channels' , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Channels?' + userid +'&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })   
     collections.append({'title':'Recently Added Movies'  , 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':'Recently Added Episodes', 'sectype' : 'std.tvshows', 'section' : 'tvshows' , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentTV") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':'Recently Added Albums'  , 'sectype' : 'std.music', 'section' : 'music' , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMusic") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed&IncludeItemTypes=MusicAlbum&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
@@ -762,6 +763,7 @@ def skin( filter=None, shared=False ):
     stdTVshowsCount=0
     stdMusicCount=0
     stdPhotoCount=0
+    stdChannelsCount=0
     stdSearchCount=0
     dirItems = []
     
@@ -846,6 +848,13 @@ def skin( filter=None, shared=False ):
             printDebug("xbmb3c.std.photo.%d.title"  % (stdPhotoCount) + "title is:" + section.get('title', 'Unknown'))
             printDebug("xbmb3c.std.photo.%d.type"  % (stdPhotoCount) + "section is:" + section.get('section'))    
             stdPhotoCount +=1
+        elif section.get('sectype')=='std.channels':
+            WINDOW.setProperty("xbmb3c.std.channels.%d.title"        % (stdChannelsCount) , section.get('title', 'Unknown'))
+            WINDOW.setProperty("xbmb3c.std.channels.%d.path"         % (stdChannelsCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+            WINDOW.setProperty("xbmb3c.std.channels.%d.type"         % (stdChannelsCount) , section.get('section'))
+            printDebug("xbmb3c.std.channels.%d.title"  % (stdChannelsCount) + "title is:" + section.get('title', 'Unknown'))
+            printDebug("xbmb3c.std.channels.%d.type"  % (stdChannelsCount) + "section is:" + section.get('section'))    
+            stdChannelsCount +=1
         elif section.get('sectype')=='std.search':
             WINDOW.setProperty("xbmb3c.std.search.%d.title"        % (stdSearchCount) , section.get('title', 'Unknown'))
             WINDOW.setProperty("xbmb3c.std.search.%d.path"         % (stdSearchCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + searchurl+",return)")
@@ -1232,6 +1241,8 @@ def getContent( url ):
     printDebug("JSON DATA: " + str(result), level=2)
     if "Search" in url:
         dirItems = processSearch(url, result, progress)
+    elif "Channel" in url:
+        dirItems = processChannels(url, result, progress)
     else:
         dirItems = processDirectory(url, result, progress)
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
@@ -1292,8 +1303,9 @@ def processDirectory(url, results, progress):
         id = str(item.get("Id")).encode('utf-8')
         guiid = id
         isFolder = item.get("IsFolder")
+       
         item_type = str(item.get("Type")).encode('utf-8')
-        
+              
         tempEpisode = ""
         if (item.get("IndexNumber") != None):
             episodeNum = item.get("IndexNumber")
@@ -1672,6 +1684,110 @@ def processSearch(url, results, progress):
             u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&format=json'
             dirItems.append(addGUIItem(u, details, extraData))
         elif tempDuration != '0':
+            u = server+',;'+id
+            dirItems.append(addGUIItem(u, details, extraData, folder=False))
+    return dirItems
+
+def processChannels(url, results, progress):
+    global viewType
+    printDebug("== ENTER: processChannels ==")
+    parsed = urlparse(url)
+    parsedserver,parsedport=parsed.netloc.split(':')
+    userid = getUserId()
+    xbmcplugin.setContent(pluginhandle, 'movies')
+    detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
+    if(__settings__.getSetting('includeStreamInfo') == "true"):
+        detailsString += ",MediaStreams"
+    if(__settings__.getSetting('includePeople') == "true"):
+        detailsString += ",People"
+    if(__settings__.getSetting('includeOverview') == "true"):
+        detailsString += ",Overview"            
+    server = getServerFromURL(url)
+    dirItems = []
+    result = results.get("Items")
+    if(result == None):
+        result = []
+
+    item_count = len(result)
+    current_item = 1;
+        
+    for item in result:
+        id=str(item.get("Id")).encode('utf-8')
+        type=item.get("Type").encode('utf-8')
+        
+        if(progress != None):
+            percentDone = (float(current_item) / float(item_count)) * 100
+            progress.update(int(percentDone), __language__(30126) + str(current_item))
+            current_item = current_item + 1
+        
+        if(item.get("Name") != None):
+            tempTitle = item.get("Name")
+            tempTitle=tempTitle.encode('utf-8')
+        else:
+            tempTitle = "Missing Title"
+            
+        if type=="ChannelFolderItem":
+            isFolder = True
+        else:
+            isFolder = False
+        item_type = str(type).encode('utf-8')
+        
+        if(item.get("ChannelId") != None):
+           channelId = str(item.get("ChannelId")).encode('utf-8')
+        # Populate the details list
+        details={'title'        : tempTitle}
+        
+        viewType=""
+        if item.get("Type") == "ChannelVideoItem":
+            xbmcplugin.setContent(pluginhandle, 'movies')
+            viewType="_MOVIES"
+        elif item.get("Type") == "ChannelAudioItem":
+            xbmcplugin.setContent(pluginhandle, 'songs')
+            viewType='_MUSICTRACKS'
+                 
+        try:
+            tempDuration = str(int(item.get("RunTimeTicks"))/(10000000*60))
+            RunTimeTicks = str(item.get("RunTimeTicks"))
+        except TypeError:
+            try:
+                tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
+                RunTimeTicks = str(item.get("CumulativeRunTimeTicks"))
+            except TypeError:
+                tempDuration = "0"
+                RunTimeTicks = "0"
+
+        # Populate the extraData list
+        extraData={'thumb'        : "http://localhost:15001/?id=" + str(id) + "&type=Primary" ,
+                   'fanart_image' : getArtwork(item, "Backdrop") ,
+                   'poster'       : getArtwork(item, "poster") , 
+                   'tvshow.poster': getArtwork(item, "tvshow.poster") ,
+                   'banner'       : getArtwork(item, "Banner") ,
+                   'clearlogo'    : getArtwork(item, "Logo") ,
+                   'discart'      : getArtwork(item, "Disc") ,
+                   'clearart'     : getArtwork(item, "Art") ,
+                   'landscape'    : getArtwork(item, "landscape") ,
+                   'id'           : id ,
+                   'year'         : item.get("ProductionYear"),
+                   'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
+                   'favoriteurl'  : 'http://' + server + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id,
+                   'deleteurl'    : 'http://' + server + '/mediabrowser/Items/' + id,                   
+                   'parenturl'    : url,
+                   'totaltime'    : tempDuration,
+                   'duration'     : tempDuration,
+                   'itemtype'     : item_type}
+                   
+        if extraData['thumb'] == '':
+            extraData['thumb'] = extraData['fanart_image']
+
+        extraData['mode'] = _MODE_GETCONTENT
+        if type=="Channel":
+            u = 'http://' + server + '/mediabrowser/Channels/'+ id + '/Items?userid=' +userid + '&format=json'
+            dirItems.append(addGUIItem(u, details, extraData))
+        
+        elif isFolder == True:
+            u = 'http://' + server + '/mediabrowser/Channels/'+ channelId + '/Items?userid=' +userid + '&folderid=' + id + '&format=json'
+            dirItems.append(addGUIItem(u, details, extraData))
+        else: 
             u = server+',;'+id
             dirItems.append(addGUIItem(u, details, extraData, folder=False))
     return dirItems

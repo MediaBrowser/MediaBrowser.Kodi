@@ -18,7 +18,7 @@ class PersonInfo(xbmcgui.WindowXMLDialog):
         self.getControl(3000).setLabel(self.details["name"])
         self.getControl(3001).setText(self.details["overview"])
         self.getControl(3009).setImage(self.details["image"])
-           
+        
     def setInfo(self, data):
         self.details = data
             

@@ -18,23 +18,32 @@ class PlayUtils():
       addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')  
       if addonSettings.getSetting('playFromStream') == 'false':
         playurl = result.get("Path")
-        if ":\\" in playurl:
+        if playurl != None:
+          #We have a path to play so play it
+          if ":\\" in playurl:
             xbmcgui.Dialog().ok(addonSettings.getLocalizedString(30130), addonSettings.getLocalizedString(30131) + playurl)
             sys.exit()
-        USER_AGENT = 'QuickTime/7.7.4'
+          USER_AGENT = 'QuickTime/7.7.4'
         
-        if (result.get("VideoType") == "Dvd"):
+          if (result.get("VideoType") == "Dvd"):
             playurl = playurl + "/VIDEO_TS/VIDEO_TS.IFO"
-        if (result.get("VideoType") == "BluRay"):
+          if (result.get("VideoType") == "BluRay"):
             playurl = playurl + "/BDMV/index.bdmv"            
-        if addonSettings.getSetting('smbusername') == '':
+          if addonSettings.getSetting('smbusername') == '':
             playurl = playurl.replace("\\\\", "smb://")
-        else:
+          else:
             playurl = playurl.replace("\\\\", "smb://" + addonSettings.getSetting('smbusername') + ':' + addonSettings.getSetting('smbpassword') + '@')
-        playurl = playurl.replace("\\", "/")
+          playurl = playurl.replace("\\", "/")
         
-        if ("apple.com" in playurl):
+          if ("apple.com" in playurl):
             playurl += '?|User-Agent=%s' % USER_AGENT
+        else:
+          #No path so probably a channel stream it
+          if result.get("Type") == "Audio":
+            playurl = 'http://' + server + '/mediabrowser/Audio/' + id + '/stream?static=true'
+          else:
+            playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true' 
+        
             
       elif addonSettings.getSetting('transcode') == 'true':
           if result.get("Type") == "Audio":
