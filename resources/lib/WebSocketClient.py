@@ -9,6 +9,7 @@ import xbmcaddon
 import json
 import threading
 import urllib
+import socket
 import websocket
 from ClientInformation import ClientInformation
 
@@ -85,14 +86,10 @@ class WebSocketThread(threading.Thread):
         # client to receive the message and then exit
         if(self.client != None):
             try:
-                self.logMsg("Stopping Client")
                 self.keepRunning = False
                 self.client.keep_running = False
-                messageData = {}
-                messageData["MessageType"] = "SessionsStart"
-                messageData["Data"] = "300,0"
-                messageString = json.dumps(messageData)
-                self.client.send(messageString)
+                self.logMsg("Stopping Client")
+                self.client.sock.sock.shutdown(socket.SHUT_RDWR)
             except Exception, e:
                 self.logMsg("Exception : " + str(e), level=0)              
         else:
