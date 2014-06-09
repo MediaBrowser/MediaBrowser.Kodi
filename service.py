@@ -221,7 +221,7 @@ def stopAll(played_information):
                             newWebSocketThread.playbackStopped(item_id, str(0))
                         markWatched(watchedurl)
                 else:
-                    markUnWatched(watchedurl)
+                    #markUnWatched(watchedurl) # this resets the LastPlayedDate and that causes issues with sortby PlayedDate so I removed it for now
                     if(newWebSocketThread != None):
                         newWebSocketThread.playbackStopped(item_id, str(int(currentPossition * 10000000)))
                     setPosition(positionurl + '?PositionTicks=' + str(int(currentPossition * 10000000)), 'DELETE')

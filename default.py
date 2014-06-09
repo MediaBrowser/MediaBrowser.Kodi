@@ -1246,8 +1246,11 @@ def getContent( url ):
     else:
         dirItems = processDirectory(url, result, progress)
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
-    if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType) != "":
-        xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType)))
+    
+    if("viewType" in globals()):
+        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType) != "":
+            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType)))
+            
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
     
     if(progress != None):
@@ -2055,6 +2058,8 @@ def getWigetContent(pluginName, handle, params):
     elif(type == "active"):
         itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DatePlayed&Fields=Path&SortOrder=Descending&Filters=IsResumable,IsNotFolder&IncludeItemTypes=Movie,Episode&CollapseBoxSetItems=false&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json"
         
+    printDebug("WIDGET_DATE_URL: " + itemsUrl, 2)
+    
     # get the recent items
     jsonData = getURL(itemsUrl, suppress=False, popup=1 )
     printDebug("Recent(Items) jsonData: " + jsonData, 2)
@@ -2079,6 +2084,7 @@ def getWigetContent(pluginName, handle, params):
         image = "http://localhost:15001/?id=" + str(image_id) + "&type=" + "Primary" + "&tag=" + imageTag
         
         name = item.get("Name")
+        printDebug("WIDGET_DATE_NAME: " + name, 2)
         
         if(item.get("SeriesName") != None):
             seriesName = item.get("SeriesName").encode('utf-8')   
@@ -2110,6 +2116,9 @@ def getWigetContent(pluginName, handle, params):
         favorite = "false"
         seekTime = 0
         if(userData != None):
+            lastPlayedDate = userData.get("LastPlayedDate")
+            printDebug("WIDGET_DATE_LASTPLAYED: " + str(lastPlayedDate), 2)
+        
             playBackTicks = float(userData.get("PlaybackPositionTicks"))
             if(playBackTicks != None and playBackTicks > 0):
                 runTimeTicks = float(item.get("RunTimeTicks"))

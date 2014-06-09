@@ -81,7 +81,7 @@ class BackgroundRotationThread(threading.Thread):
             
             addonSettings2 = xbmcaddon.Addon(id='plugin.video.xbmb3c')
             userName = addonSettings2.getSetting('username')  
-            xbmc.log("Server details string : (" + userName + ") (" + lastUserName + ")")
+            self.logMsg("Server details string : (" + userName + ") (" + lastUserName + ")", level=2)
             
             Collection = WINDOW.getProperty("MB3.Background.Collection")
             if(secTotal > backgroundRefresh or filterOnParent_Last != Collection or userName != lastUserName):
@@ -356,7 +356,7 @@ class BackgroundRotationThread(threading.Thread):
         parentid = result.get("Id")
         self.logMsg("updateCollectionArtLinks ParentID : " + str(parentid), 2)
             
-        userRootPath = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentid + "&SortBy=SortName&Fields=CollectionType&format=json"
+        userRootPath = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentid + "&SortBy=SortName&Fields=CollectionType,RecursiveItemCount&format=json"
         try:
             requesthandle = urllib.urlopen(userRootPath, proxies={})
             jsonData = requesthandle.read()
@@ -371,17 +371,21 @@ class BackgroundRotationThread(threading.Thread):
     
         artLinks = {}
         collection_count = 0
+        WINDOW = xbmcgui.Window( 10000 )
         
         # process collections
         for item in result:
         
             collectionType = item.get("CollectionType", "")
             name = item.get("Name")
+            childCount = item.get("RecursiveItemCount")
+            self.logMsg("updateCollectionArtLinks Name : " + str(name), level=1)
+            self.logMsg("updateCollectionArtLinks RecursiveItemCount : " + str(childCount), level=1)
+            if(childCount == None or childCount == 0):
+                continue
             
             self.logMsg("updateCollectionArtLinks Processing Collection : " + name + " of type : " + collectionType, level=2)
-            
-            WINDOW = xbmcgui.Window( 10000 )
-            
+
             #####################################################################################################
             # Process collection item menu item
             timeNow = time.time()
@@ -470,7 +474,7 @@ class BackgroundRotationThread(threading.Thread):
                         stored_item["collections"].append(item.get("Name"))
             #####################################################################################################
             
-            collection_count = collection_count +1
+            collection_count = collection_count + 1
             
         # build global link list
         final_global_art = []
