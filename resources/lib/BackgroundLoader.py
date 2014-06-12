@@ -400,7 +400,7 @@ class BackgroundRotationThread(threading.Thread):
 
             #####################################################################################################
             # Process collection item backgrounds
-            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=Movie,Series,MusicArtist&Fields=ParentId&Recursive=true&CollapseBoxSetItems=false&format=json"
+            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=Movie,Series,MusicArtist,Trailer&Fields=ParentId&Recursive=true&CollapseBoxSetItems=false&format=json"
 
             try:
                 requesthandle = urllib2.urlopen(collectionUrl, timeout=60)
@@ -442,7 +442,7 @@ class BackgroundRotationThread(threading.Thread):
                         # build poster image link
                         posterImage = ""
                         actionUrl = ""
-                        if(col_item.get("Type") == "Movie"):
+                        if(col_item.get("Type") == "Movie" or col_item.get("Type") == "Trailer"):
                             imageTag = col_item.get("ImageTags").get("Primary")
                             posterImage = "http://localhost:15001/?id=" + str(id) + "&type=Primary" + "&tag=" + imageTag
                             url =  mb3Host + ":" + mb3Port + ',;' + id
