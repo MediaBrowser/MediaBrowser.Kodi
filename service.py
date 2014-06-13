@@ -6,6 +6,7 @@ import httplib
 import os
 import time
 import requests
+import socket
 
 import threading
 import json
@@ -288,6 +289,11 @@ class Service( xbmc.Player ):
 
 monitor = Service()
 lastProgressUpdate = datetime.today()
+
+addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+if socket.gethostname() != None and socket.gethostname() != '' and addonSettings.getSetting("deviceName") == 'XBMB3C':
+    addonSettings.setSetting("deviceName", socket.gethostname())
+
 while not xbmc.abortRequested:
     if xbmc.Player().isPlaying():
         try:
