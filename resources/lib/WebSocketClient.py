@@ -89,7 +89,11 @@ class WebSocketThread(threading.Thread):
                 self.keepRunning = False
                 self.client.keep_running = False
                 self.logMsg("Stopping Client")
+                self.logMsg("Calling Socket Shutdown()")
                 self.client.sock.sock.shutdown(socket.SHUT_RDWR)
+                self.logMsg("Calling Socket Close()")
+                self.client.sock.sock.close()
+                self.logMsg("Stopping Client Done")
             except Exception, e:
                 self.logMsg("Exception : " + str(e), level=0)              
         else:
