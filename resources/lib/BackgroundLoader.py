@@ -452,6 +452,8 @@ class BackgroundRotationThread(threading.Thread):
 
                         elif(col_item.get("Type") == "Series"):
                             imageTag = col_item.get("ImageTags").get("Primary")
+                            if imageTag==None:
+                                imageTag=""
                             posterImage = "http://localhost:15001/?id=" + str(id) + "&type=Primary" + "&tag=" + imageTag
                             actionUrl = "ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=21&ParentId=" + id + "&Name=" + name + ",return)"
                         
