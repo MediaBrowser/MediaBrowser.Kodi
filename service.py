@@ -258,6 +258,17 @@ class Service( xbmc.Player ):
         runtime = WINDOW.getProperty("runtimeticks")
         item_id = WINDOW.getProperty("item_id")
         
+        # reset all these so they dont get used is xbmc plays a none 
+        # xbmb3c MB item
+        WINDOW.setProperty("watchedurl", "")
+        WINDOW.setProperty("deleteurl", "")
+        WINDOW.setProperty("positionurl", "")
+        WINDOW.setProperty("runtimeticks", "")
+        WINDOW.setProperty("item_id", "")
+        
+        if(item_id == None or len(item_id) == 0):
+            return
+        
         if(newWebSocketThread != None):
             newWebSocketThread.playbackStarted(item_id)
         
