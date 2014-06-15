@@ -30,7 +30,7 @@ class WebSocketThread(threading.Thread):
     
         xbmc.log("XBMB3C WebSocketThread -> Log Level:" +  str(self.logLevel))
         
-        threading.Thread.__init__(self, *args)    
+        threading.Thread.__init__(self, *args)
     
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
@@ -85,17 +85,29 @@ class WebSocketThread(threading.Thread):
         # more message by requesting one SessionsStart message, this causes the 
         # client to receive the message and then exit
         if(self.client != None):
+            self.logMsg("Stopping Client")
+            self.keepRunning = False
+            self.client.keep_running = False            
+            self.logMsg("Stopping Client : KeepRunning set to False")
+            '''
             try:
                 self.keepRunning = False
                 self.client.keep_running = False
                 self.logMsg("Stopping Client")
+                self.logMsg("Calling Ping")
+                self.client.sock.ping()
+                
                 self.logMsg("Calling Socket Shutdown()")
                 self.client.sock.sock.shutdown(socket.SHUT_RDWR)
                 self.logMsg("Calling Socket Close()")
                 self.client.sock.sock.close()
                 self.logMsg("Stopping Client Done")
+                self.logMsg("Calling Ping")
+                self.client.sock.ping()     
+                               
             except Exception, e:
-                self.logMsg("Exception : " + str(e), level=0)              
+                self.logMsg("Exception : " + str(e), level=0)      
+            '''
         else:
             self.logMsg("Stopping Client NO Object ERROR")
             
