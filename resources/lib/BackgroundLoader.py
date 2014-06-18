@@ -701,7 +701,7 @@ class BackgroundRotationThread(threading.Thread):
     def setItemBackgroundLink(self):
     
         id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
-        self.logMsg("setItemBackgroundLink ItemGUID : " + id, 2)
+        self.logMsg("setItemBackgroundLink ItemGUID : " + id, 1)
     
         WINDOW = xbmcgui.Window( 10000 )
         if id != None and id != "":    
@@ -715,7 +715,7 @@ class BackgroundRotationThread(threading.Thread):
             listOfBackgrounds = self.item_art_links.get(id)
             
             if(listOfBackgrounds != None and len(listOfBackgrounds) > 0):
-                self.logMsg("setItemBackgroundLink index " + str(self.current_item_art) + " of " + str(len(listOfBackgrounds)), level=2)
+                self.logMsg("setItemBackgroundLink Image " + str(self.current_item_art + 1) + " of " + str(len(listOfBackgrounds)), 1)
                 try: 
                     artUrl = listOfBackgrounds[self.current_item_art]["url"] 
                 except IndexError:
@@ -723,23 +723,23 @@ class BackgroundRotationThread(threading.Thread):
                     artUrl = listOfBackgrounds[self.current_item_art]["url"] 
                     
                 WINDOW.setProperty("MB3.Background.Item.FanArt", artUrl)
-                self.logMsg("setItemBackgroundLink MB3.Background.Item.FanArt=" + artUrl, 2)
+                self.logMsg("setItemBackgroundLink MB3.Background.Item.FanArt=" + artUrl, 1)
                 
                 self.current_item_art = self.current_item_art + 1
                 if(self.current_item_art == len(listOfBackgrounds)):
                     self.current_item_art = 0
                     
             else:
-                self.logMsg("setItemBackgroundLink Resetting MB3.Background.Item.FanArt", 2)
+                self.logMsg("setItemBackgroundLink Resetting MB3.Background.Item.FanArt", 1)
                 WINDOW.clearProperty("MB3.Background.Item.FanArt")            
                     
         else:
-            self.logMsg("setItemBackgroundLink Resetting MB3.Background.Item.FanArt", 2)
+            self.logMsg("setItemBackgroundLink Resetting MB3.Background.Item.FanArt", 1)
             WINDOW.clearProperty("MB3.Background.Item.FanArt")
             
     def loadItemBackgroundLinks(self, id):
     
-        self.logMsg("loadItemBackgroundLinks Called for id" + id)
+        self.logMsg("loadItemBackgroundLinks Called for id : " + id)
         
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         mb3Host = addonSettings.getSetting('ipaddress')
@@ -781,6 +781,8 @@ class BackgroundRotationThread(threading.Thread):
             return
 
         item = json.loads(jsonData)
+        
+        self.logMsg("loadItemBackgroundLinks found item : " + str(item), 2);
         
         if(item == None):
             item = []
