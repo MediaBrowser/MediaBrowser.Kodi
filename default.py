@@ -52,7 +52,6 @@ import hashlib
 import StringIO
 import gzip
 from uuid import getnode as get_mac
-from Utils import PlayUtils
 import xml.etree.ElementTree as etree
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -65,6 +64,7 @@ BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'li
 sys.path.append(BASE_RESOURCE_PATH)
 PLUGINPATH = xbmc.translatePath( os.path.join( __cwd__) )
 
+from Utils import PlayUtils
 from BackgroundEdit import BackgroundEdit
 from ClientInformation import ClientInformation
 from PersonInfo import PersonInfo
