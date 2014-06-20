@@ -64,6 +64,7 @@ BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'li
 sys.path.append(BASE_RESOURCE_PATH)
 PLUGINPATH = xbmc.translatePath( os.path.join( __cwd__) )
 
+from SkinManagement import SkinManagement
 from Utils import PlayUtils
 from BackgroundEdit import BackgroundEdit
 from ClientInformation import ClientInformation
@@ -83,6 +84,7 @@ _MODE_GETCONTENT=0
 _MODE_MOVIES=0
 _MODE_SEARCH=2
 _MODE_SETVIEWS=3
+_MODE_MANAGESKINS=4
 _MODE_BASICPLAY=12
 _MODE_BG_EDIT=13
 _MODE_CAST_LIST=14
@@ -332,6 +334,7 @@ def getCollections(detailsString):
     if xbmcVersionNum >= 13:    
         collections.append({'title':'Search'                 , 'sectype' : 'std.search', 'section' : 'search'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Search/Hints?' + userid,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':'Set Views'                 , 'sectype' : 'std.setviews', 'section' : 'setviews'  , 'address' : 'SETVIEWS', 'path': 'SETVIEWS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    collections.append({'title':'Manage Skins'                 , 'sectype' : 'std.manageskins', 'section' : 'manageskins'  , 'address' : 'MANAGESKINS', 'path': 'MANAGESKINS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
             
     return collections
 
@@ -556,7 +559,9 @@ def addGUIItem( url, details, extraData, folder=True ):
     elif 'mediabrowser/Search' in url:
         u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_SEARCH)
     elif 'SETVIEWS' in url:
-        u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_SETVIEWS)        
+        u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_SETVIEWS)     
+    elif 'MANAGESKINS' in url:
+        u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_MANAGESKINS) + "&action=show"
     elif url.startswith('http') or url.startswith('file'):
         u=sys.argv[0]+"?url="+urllib.quote(url)+mode
     else:
@@ -2357,6 +2362,8 @@ elif sys.argv[1] == "playall":
     playall(startId)
 elif mode == _MODE_BG_EDIT:
     BackgroundEdit().showBackgrounds(sys.argv[0], int(sys.argv[1]), params)
+elif mode == _MODE_MANAGESKINS:
+    SkinManagement().ProcessAction(sys.argv[0], int(sys.argv[1]), params)
 elif mode == _MODE_CAST_LIST:
     getCastList(sys.argv[0], int(sys.argv[1]), params)
 elif mode == _MODE_PERSON_DETAILS:    
@@ -2412,7 +2419,6 @@ else:
         getContent(param_url)
     elif mode == _MODE_SETVIEWS:
         showViewList(param_url, pluginhandle)
-
 
 WINDOW = xbmcgui.Window( 10000 )
 WINDOW.clearProperty("MB3.Background.Item.FanArt")
