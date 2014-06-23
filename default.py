@@ -617,6 +617,16 @@ def addGUIItem( url, details, extraData, folder=True ):
             list.setProperty('TotalTime', str(extraData.get('duration')))
             list.setProperty('ResumeTime', str(extraData.get('resumetime')))
         
+            resumeTimeFloat = float(extraData.get('resumetime')) / 60
+            durationFloat = float(extraData.get('duration'))
+            if(resumeTimeFloat > 0):
+                percentage = int((resumeTimeFloat / durationFloat) * 100.0)
+                cappedPercentage = percentage - (percentage % 10)
+                if(cappedPercentage == 0):
+                    cappedPercentage = 10
+                if(cappedPercentage == 100):
+                    cappedPercentage = 90
+                list.setProperty("complete_percentage", str(cappedPercentage))   
     
     artTypes=['poster', 'tvshow.poster', 'fanart_image', 'clearlogo', 'discart', 'banner', 'clearart', 'landscape']
     
