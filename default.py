@@ -113,13 +113,10 @@ def printDebug( msg, level = 1):
 
 def getMachineId():
     return "%012X"%get_mac()
-    
-def getVersion():
-    return "0.9.5"
 
 def getAuthHeader():
     txt_mac = getMachineId()
-    version = getVersion()  
+    version = ClientInformation().getVersion()
     userid = xbmcgui.Window( 10000 ).getProperty("userid")
     deviceName = __settings__.getSetting('deviceName')
     deviceName = deviceName.replace("\"", "_")
@@ -340,7 +337,7 @@ def getCollections(detailsString):
 
 def authenticate (url):
     txt_mac = getMachineId()
-    version = getVersion()
+    version = ClientInformation().getVersion()
     
     deviceName = __settings__.getSetting('deviceName')
     deviceName = deviceName.replace("\"", "_")
