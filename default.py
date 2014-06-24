@@ -597,13 +597,23 @@ def addGUIItem( url, details, extraData, folder=True ):
         list = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
     printDebug("Setting thumbnail as " + thumbPath, level=2)
     
-    # add resume percentage text to titles
-    addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
-    if (addResumePercent and details.get('title') != None and extraData.get('resumetime') != None and int(extraData.get('resumetime')) > 0):
+    # calculate percentage
+    perasint = None
+    if (extraData.get('resumetime') != None and int(extraData.get('resumetime')) > 0):
         duration = float(extraData.get('duration'))
         resume = float(extraData.get('resumetime')) / 60.0
         percentage = (resume / duration) * 100.0
         perasint = int(percentage)
+        cappedPercentage = perasint - (perasint % 10)
+        if(cappedPercentage == 0):
+            cappedPercentage = 10
+        if(cappedPercentage == 100):
+            cappedPercentage = 90
+        list.setProperty("complete_percentage", str(cappedPercentage))          
+        
+    # add resume percentage text to titles
+    addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
+    if (addResumePercent and details.get('title') != None and perasint != None):
         details['title'] = details.get('title') + " (" + str(perasint) + "%)"
     
     #Set the properties of the item, such as summary, name, season, etc
@@ -612,21 +622,9 @@ def addGUIItem( url, details, extraData, folder=True ):
     #For all end items    
     if ( not folder):
         #list.setProperty('IsPlayable', 'true')
-
         if extraData.get('type','video').lower() == "video":
             list.setProperty('TotalTime', str(extraData.get('duration')))
             list.setProperty('ResumeTime', str(extraData.get('resumetime')))
-        
-            resumeTimeFloat = float(extraData.get('resumetime')) / 60
-            durationFloat = float(extraData.get('duration'))
-            if(resumeTimeFloat > 0):
-                percentage = int((resumeTimeFloat / durationFloat) * 100.0)
-                cappedPercentage = percentage - (percentage % 10)
-                if(cappedPercentage == 0):
-                    cappedPercentage = 10
-                if(cappedPercentage == 100):
-                    cappedPercentage = 90
-                list.setProperty("complete_percentage", str(cappedPercentage))   
     
     artTypes=['poster', 'tvshow.poster', 'fanart_image', 'clearlogo', 'discart', 'banner', 'clearart', 'landscape']
     
