@@ -548,12 +548,12 @@ def addGUIItem( url, details, extraData, folder=True ):
         mode="&mode=%s" % extraData['mode']
     
     # play or show info
-    showItemInfo = False#__settings__.getSetting('ShowItemInfo') == 'true'
+    selectAction = __settings__.getSetting('selectAction')
 
     #Create the URL to pass to the item
     if 'mediabrowser/Videos' in url:
-        if(showItemInfo):
-            u = sys.argv[0] + "?id=" + extraData.get('guiid') + "&mode=" + str(_MODE_ITEM_DETAILS)
+        if(selectAction == "1"):
+            u = sys.argv[0] + "?id=" + extraData.get('id') + "&mode=" + str(_MODE_ITEM_DETAILS)
         else:
             u = sys.argv[0] + "?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
     elif 'mediabrowser/Search' in url:
@@ -563,8 +563,8 @@ def addGUIItem( url, details, extraData, folder=True ):
     elif url.startswith('http') or url.startswith('file'):
         u = sys.argv[0]+"?url="+urllib.quote(url)+mode
     else:
-        if(showItemInfo):
-            u = sys.argv[0] + "?id=" + extraData.get('guiid') + "&mode=" + str(_MODE_ITEM_DETAILS)
+        if(selectAction == "1"):
+            u = sys.argv[0] + "?id=" + extraData.get('id') + "&mode=" + str(_MODE_ITEM_DETAILS)
         else:
             u = sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
 
@@ -2175,8 +2175,8 @@ def getWigetContent(pluginName, handle, params):
                     cappedPercentage = 90
                 list_item.setProperty("complete_percentage", str(cappedPercentage))
                 
-        showItemInfo = False#__settings__.getSetting('ShowItemInfo') == 'true'
-        if(showItemInfo):
+        selectAction = __settings__.getSetting('selectAction')
+        if(selectAction == "1"):
             playUrl = "plugin://plugin.video.xbmb3c/?id=" + item_id + '&mode=' + str(_MODE_ITEM_DETAILS)
         else:
             url =  server + ',;' + item_id
@@ -2454,7 +2454,8 @@ else:
         PLAY(param_url, pluginhandle)
     elif mode == _MODE_SEARCH:
         searchString=urllib.quote(xbmcgui.Dialog().input(__language__(30138)))
-        if searchString=="":
+        printDebug("Search String : " + searchString)
+        if searchString == "":
             sys.exit()
         param_url=param_url.replace("Search/Hints?","Search/Hints?SearchTerm="+searchString + "&UserId=")
         param_url=param_url + "&Fields=" + getDetailsString() + "&format=json"

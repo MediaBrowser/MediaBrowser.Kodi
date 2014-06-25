@@ -202,13 +202,17 @@ class BackgroundRotationThread(threading.Thread):
         if(len(self.global_art_links) > 0):
             self.logMsg("setBackgroundLink index global_art_links " + str(self.current_global_art + 1) + " of " + str(len(self.global_art_links)), level=2)
             
-            nextItem = self.global_art_links[self.current_global_art]
+            next, nextItem = self.findNextLink(self.global_art_links, self.current_global_art, filterOnParent)
+            #nextItem = self.global_art_links[self.current_global_art]
+            self.current_global_art = next
+            
             backGroundUrl = nextItem["url"]
             posterUrl = nextItem["poster"]
             actionUrl = nextItem["action"]
             
-            showItemInfo = False#__settings__.getSetting('ShowItemInfo') == 'true'
-            if(showItemInfo):
+            addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')               
+            selectAction = addonSettings.getSetting('selectAction')
+            if(selectAction == "1"):
                 actionUrl = "RunPlugin(plugin://plugin.video.xbmb3c/?id=" + nextItem["id"] + "&mode=17)"     
             else:
                 actionUrl = nextItem["action"]
@@ -220,10 +224,35 @@ class BackgroundRotationThread(threading.Thread):
             WINDOW.setProperty("MB3.Background.Global.FanArt.Action", actionUrl)
             self.logMsg("MB3.Background.Global.FanArt.Action=" + actionUrl) 
 
-            self.current_global_art = self.current_global_art + 1
-            if(self.current_global_art == len(self.global_art_links)):
-                self.current_global_art = 0    
+            
+    def findNextLink(self, linkList, startIndex, filterOnParent):
+        currentIndex = startIndex
+        
+        isParentMatch = False
+        
+        #xbmc.log("findNextLink : filterOnParent=" + str(filterOnParent) + " isParentMatch=" + str(isParentMatch))
+        
+        while(isParentMatch == False):
+        
+            currentIndex = currentIndex + 1
+            
+            if(currentIndex == len(linkList)):
+                currentIndex = 0
+                
+            if(currentIndex == startIndex):
+                return (currentIndex, linkList[currentIndex]) # we checked everything and nothing was ok so return the first one again
 
+            isParentMatch = True
+            if(filterOnParent != None and filterOnParent != ""):
+                isParentMatch = filterOnParent in linkList[currentIndex]["collections"]
+             
+        nextIndex = currentIndex + 1
+        
+        if(nextIndex == len(linkList)):
+            nextIndex = 0
+
+        return (nextIndex, linkList[currentIndex])                
+                
     def updateArtLinks(self):
         t1 = time.time()
         result01 = self.updateCollectionArtLinks()

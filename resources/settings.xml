@@ -19,6 +19,7 @@
 		<setting id="includeOverview" type="bool" label="30113" default="true" visible="true" enable="true" />        
 	</category>
 	<category label="30110"> <!-- Addon -->
+        <setting id="selectAction" type="enum" label="30151" values="Play|Info" default="0" />
 		<setting id="numRecentMovies" type="number" label="30036" default="20" visible="true" enable="true" />
 		<setting id="numRecentTV" type="number" label="30037" default="20" visible="true" enable="true" />
 		<setting id="numRecentMusic" type="number" label="30035" default="20" visible="true" enable="true" />
