@@ -15,6 +15,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         self.action_exitkeys_id = [10, 13]
         
         self.getControl(3000).setLabel(self.details["name"])
+        self.getControl(3001).setImage(self.details["background"])
         self.getControl(3009).setImage(self.details["image"])
         
     def setInfo(self, data):

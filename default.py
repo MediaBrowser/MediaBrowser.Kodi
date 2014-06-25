@@ -2006,8 +2006,11 @@ def showItemInfo(pluginName, handle, params):
     
     data["name"] = result.get("Name")
     
-    image = "http://localhost:15001/?id=" + params.get("id") + "&type=Primary"# + "&tag=None"   
+    image = getArtwork(result, "Primary")
     data["image"] = image
+    
+    fanArt = getArtwork(result, "Backdrop")
+    data["background"] = fanArt
     
     url =  server + ',;' + params.get("id")
     url = urllib.quote(url)
