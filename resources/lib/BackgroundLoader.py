@@ -169,25 +169,6 @@ class BackgroundRotationThread(threading.Thread):
         dataFile.close()        
     
     def setBackgroundLink(self, filterOnParent):
-        
-        # load the background blacklist
-        __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') )         
-        lastDataPath = __addondir__ + "BlackListedBgLinks.json"
-        
-        black_list = []
-        
-        # load blacklist data
-        try:
-            dataFile = open(lastDataPath, 'r')
-            jsonData = dataFile.read()
-            dataFile.close()        
-            black_list = json.loads(jsonData)
-            self.logMsg("Loaded Background Black List : " + str(black_list))
-        except:
-            self.logMsg("No Background Black List found, starting with empty Black List")
-            black_list = []    
-
 
         WINDOW = xbmcgui.Window( 10000 )
         
@@ -219,57 +200,24 @@ class BackgroundRotationThread(threading.Thread):
                 self.current_music_art = 0
             
         if(len(self.global_art_links) > 0):
-            next, nextItem = self.findNextLink(self.global_art_links, black_list, self.current_global_art, filterOnParent)
+            self.logMsg("setBackgroundLink index global_art_links " + str(self.current_global_art + 1) + " of " + str(len(self.global_art_links)), level=2)
+            
+            nextItem = self.global_art_links[self.current_global_art]
             backGroundUrl = nextItem["url"]
             posterUrl = nextItem["poster"]
             actionUrl = nextItem["action"]
-            self.current_global_art = next
+          
             WINDOW.setProperty("MB3.Background.Global.FanArt", backGroundUrl)
             self.logMsg("MB3.Background.Global.FanArt=" + backGroundUrl)
             WINDOW.setProperty("MB3.Background.Global.FanArt.Poster", posterUrl)
             self.logMsg("MB3.Background.Global.FanArt.Poster=" + posterUrl)    
             WINDOW.setProperty("MB3.Background.Global.FanArt.Action", actionUrl)
-            self.logMsg("MB3.Background.Global.FanArt.Action=" + actionUrl)    
-                
-    def isBlackListed(self, blackList, bgInfo):
-        for blocked in blackList:
-            if(bgInfo["id"] == blocked["id"]):
-                self.logMsg("Block List Parents Match On : " + str(bgInfo) + " : " + str(blocked), level=1)
-                if(blocked["index"] == -1 or bgInfo["index"] == blocked["index"]):
-                    self.logMsg("Item Blocked", level=1)
-                    return True
-        return False
-           
-    def findNextLink(self, linkList, blackList, startIndex, filterOnParent):
-        currentIndex = startIndex
-        
-        isBlacklisted = True
-        isParentMatch = False
-        
-        #xbmc.log("findNextLink : filterOnParent=" + str(filterOnParent) + " isParentMatch=" + str(isParentMatch))
-        
-        while(isBlacklisted or isParentMatch == False):
-        
-            currentIndex = currentIndex + 1
-            
-            if(currentIndex == len(linkList)):
-                currentIndex = 0
-                
-            if(currentIndex == startIndex):
-                return (currentIndex, linkList[currentIndex]) # we checked everything and nothing was ok so return the first one again                
+            self.logMsg("MB3.Background.Global.FanArt.Action=" + actionUrl) 
 
-            isBlacklisted = self.isBlackListed(blackList, linkList[currentIndex])
-            isParentMatch = True
-            if(filterOnParent != None and filterOnParent != ""):
-                isParentMatch = filterOnParent in linkList[currentIndex]["collections"]
-             
-        nextIndex = currentIndex + 1
-        
-        if(nextIndex == len(linkList)):
-            nextIndex = 0    
+            self.current_global_art = self.current_global_art + 1
+            if(self.current_global_art == len(self.global_art_links)):
+                self.current_global_art = 0    
 
-        return (nextIndex, linkList[currentIndex])
-    
     def updateArtLinks(self):
         t1 = time.time()
         result01 = self.updateCollectionArtLinks()

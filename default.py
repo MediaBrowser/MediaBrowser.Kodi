@@ -64,9 +64,7 @@ BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'li
 sys.path.append(BASE_RESOURCE_PATH)
 PLUGINPATH = xbmc.translatePath( os.path.join( __cwd__) )
 
-from SkinManagement import SkinManagement
 from Utils import PlayUtils
-from BackgroundEdit import BackgroundEdit
 from ClientInformation import ClientInformation
 from PersonInfo import PersonInfo
 
@@ -84,9 +82,7 @@ _MODE_GETCONTENT=0
 _MODE_MOVIES=0
 _MODE_SEARCH=2
 _MODE_SETVIEWS=3
-_MODE_MANAGESKINS=4
 _MODE_BASICPLAY=12
-_MODE_BG_EDIT=13
 _MODE_CAST_LIST=14
 _MODE_PERSON_DETAILS=15
 _MODE_WIDGET_CONTENT=16
@@ -331,8 +327,7 @@ def getCollections(detailsString):
     if xbmcVersionNum >= 13:    
         collections.append({'title':'Search'                 , 'sectype' : 'std.search', 'section' : 'search'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Search/Hints?' + userid,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':'Set Views'                 , 'sectype' : 'std.setviews', 'section' : 'setviews'  , 'address' : 'SETVIEWS', 'path': 'SETVIEWS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
-    collections.append({'title':'Manage Skins'                 , 'sectype' : 'std.manageskins', 'section' : 'manageskins'  , 'address' : 'MANAGESKINS', 'path': 'MANAGESKINS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
-            
+        
     return collections
 
 def authenticate (url):
@@ -557,8 +552,6 @@ def addGUIItem( url, details, extraData, folder=True ):
         u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_SEARCH)
     elif 'SETVIEWS' in url:
         u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_SETVIEWS)     
-    elif 'MANAGESKINS' in url:
-        u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_MANAGESKINS) + "&action=show"
     elif url.startswith('http') or url.startswith('file'):
         u=sys.argv[0]+"?url="+urllib.quote(url)+mode
     else:
@@ -750,12 +743,6 @@ def displaySections( filter=None ):
         s_url = 'http://%s%s' % ( collection['address'], path)
         printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
         dirItems.append(addGUIItem(s_url, details, extraData))
-    
-    # add background edit if we have at least one menu item
-    if(len(collections) > 0):
-        list = xbmcgui.ListItem("Edit Background Image List")
-        url = sys.argv[0] + '?mode=' + str(_MODE_BG_EDIT)
-        dirItems.append((url, list, True))
         
     #All XML entries have been parsed and we are ready to allow the user to browse around.  So end the screen listing.
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
@@ -2365,10 +2352,6 @@ elif sys.argv[1] == "genrefilter":
 elif sys.argv[1] == "playall":
     startId=sys.argv[2]
     playall(startId)
-elif mode == _MODE_BG_EDIT:
-    BackgroundEdit().showBackgrounds(sys.argv[0], int(sys.argv[1]), params)
-elif mode == _MODE_MANAGESKINS:
-    SkinManagement().ProcessAction(sys.argv[0], int(sys.argv[1]), params)
 elif mode == _MODE_CAST_LIST:
     getCastList(sys.argv[0], int(sys.argv[1]), params)
 elif mode == _MODE_PERSON_DETAILS:    
