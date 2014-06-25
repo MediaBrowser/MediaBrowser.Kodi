@@ -750,6 +750,9 @@ def displaySections( filter=None ):
         
 def skin( filter=None, shared=False ):
     printDebug("== ENTER: skin() ==")
+    
+    checkServer()
+    
     #Get the global host variable set in settings
     WINDOW = xbmcgui.Window( 10000 )
     sectionCount=0
