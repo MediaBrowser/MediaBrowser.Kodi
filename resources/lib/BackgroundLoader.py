@@ -206,7 +206,13 @@ class BackgroundRotationThread(threading.Thread):
             backGroundUrl = nextItem["url"]
             posterUrl = nextItem["poster"]
             actionUrl = nextItem["action"]
-          
+            
+            showItemInfo = False#__settings__.getSetting('ShowItemInfo') == 'true'
+            if(showItemInfo):
+                actionUrl = "RunPlugin(plugin://plugin.video.xbmb3c/?id=" + nextItem["id"] + "&mode=17)"     
+            else:
+                actionUrl = nextItem["action"]
+                
             WINDOW.setProperty("MB3.Background.Global.FanArt", backGroundUrl)
             self.logMsg("MB3.Background.Global.FanArt=" + backGroundUrl)
             WINDOW.setProperty("MB3.Background.Global.FanArt.Poster", posterUrl)

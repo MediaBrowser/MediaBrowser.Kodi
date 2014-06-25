@@ -64,6 +64,7 @@ BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'li
 sys.path.append(BASE_RESOURCE_PATH)
 PLUGINPATH = xbmc.translatePath( os.path.join( __cwd__) )
 
+from ItemInfo import ItemInfo
 from Utils import PlayUtils
 from ClientInformation import ClientInformation
 from PersonInfo import PersonInfo
@@ -86,6 +87,7 @@ _MODE_BASICPLAY=12
 _MODE_CAST_LIST=14
 _MODE_PERSON_DETAILS=15
 _MODE_WIDGET_CONTENT=16
+_MODE_ITEM_DETAILS=17
 _MODE_SHOW_PARENT_CONTENT=21
 
 #Check debug first...
@@ -544,21 +546,29 @@ def addGUIItem( url, details, extraData, folder=True ):
         mode="&mode=0"
     else:
         mode="&mode=%s" % extraData['mode']
+    
+    # play or show info
+    showItemInfo = False#__settings__.getSetting('ShowItemInfo') == 'true'
 
     #Create the URL to pass to the item
     if 'mediabrowser/Videos' in url:
-        u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+        if(showItemInfo):
+            u = sys.argv[0] + "?id=" + extraData.get('guiid') + "&mode=" + str(_MODE_ITEM_DETAILS)
+        else:
+            u = sys.argv[0] + "?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
     elif 'mediabrowser/Search' in url:
-        u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_SEARCH)
+        u = sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_SEARCH)
     elif 'SETVIEWS' in url:
-        u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_SETVIEWS)     
+        u = sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_SETVIEWS)     
     elif url.startswith('http') or url.startswith('file'):
-        u=sys.argv[0]+"?url="+urllib.quote(url)+mode
+        u = sys.argv[0]+"?url="+urllib.quote(url)+mode
     else:
-        u=sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-        u=u.replace("\\\\","smb://")
-        u=u.replace("\\","/")
-    
+        if(showItemInfo):
+            u = sys.argv[0] + "?id=" + extraData.get('guiid') + "&mode=" + str(_MODE_ITEM_DETAILS)
+        else:
+            u = sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+
+        
     #Create the ListItem that will be displayed
     thumbPath=str(extraData.get('thumb',''))
     
@@ -1976,6 +1986,41 @@ def getCastList(pluginName, handle, params):
     xbmcplugin.addDirectoryItems(handle, listItems)
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
 
+def showItemInfo(pluginName, handle, params):    
+    printDebug("showItemInfo Called" + str(params))
+    
+    port = __settings__.getSetting('port')
+    host = __settings__.getSetting('ipaddress')
+    server = host + ":" + port 
+    
+    xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
+    
+    userid = getUserId()
+    seekTime = 0
+    resume = 0
+
+    jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + params.get("id") + "?format=json", suppress=False, popup=1 )     
+    result = json.loads(jsonData)
+    
+    data = {}
+    
+    data["name"] = result.get("Name")
+    
+    image = "http://localhost:15001/?id=" + params.get("id") + "&type=Primary"# + "&tag=None"   
+    data["image"] = image
+    
+    url =  server + ',;' + params.get("id")
+    url = urllib.quote(url)
+    playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+    data["playUrl"] = playUrl
+    
+    infoPage = ItemInfo("ItemInfo.xml", __cwd__, "default", "720p")
+    
+    infoPage.setInfo(data)
+    infoPage.doModal()
+    
+    del infoPage
+    
 def showPersonInfo(pluginName, handle, params):
 
     #item = xbmcgui.ListItem(label="Test")
@@ -2022,7 +2067,7 @@ def showPersonInfo(pluginName, handle, params):
     
     imageTag = ""
     if(result.get("ImageTags") != None and result.get("ImageTags").get("Primary") != None):
-            imageTag = result.get("ImageTags").get("Primary")
+        imageTag = result.get("ImageTags").get("Primary")
             
     image = "http://localhost:15001/?id=" + id + "&type=" + "Primary" + "&tag=" + imageTag   
     data["image"] = image
@@ -2130,8 +2175,12 @@ def getWigetContent(pluginName, handle, params):
                     cappedPercentage = 90
                 list_item.setProperty("complete_percentage", str(cappedPercentage))
                 
-        url =  server + ',;' + item_id
-        playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+        showItemInfo = False#__settings__.getSetting('ShowItemInfo') == 'true'
+        if(showItemInfo):
+            playUrl = "plugin://plugin.video.xbmb3c/?id=" + item_id + '&mode=' + str(_MODE_ITEM_DETAILS)
+        else:
+            url =  server + ',;' + item_id
+            playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
         
         itemTupple = (playUrl, list_item, False)
         listItems.append(itemTupple)
@@ -2361,6 +2410,8 @@ elif mode == _MODE_PERSON_DETAILS:
     showPersonInfo(sys.argv[0], int(sys.argv[1]), params)    
 elif mode == _MODE_WIDGET_CONTENT:
     getWigetContent(sys.argv[0], int(sys.argv[1]), params)
+elif mode == _MODE_ITEM_DETAILS:
+    showItemInfo(sys.argv[0], int(sys.argv[1]), params)    
 elif mode == _MODE_SHOW_PARENT_CONTENT:
     checkService()
     checkServer()
