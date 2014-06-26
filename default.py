@@ -51,7 +51,6 @@ import threading
 import hashlib
 import StringIO
 import gzip
-from uuid import getnode as get_mac
 import xml.etree.ElementTree as etree
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -64,6 +63,7 @@ BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'li
 sys.path.append(BASE_RESOURCE_PATH)
 PLUGINPATH = xbmc.translatePath( os.path.join( __cwd__) )
 
+from DownloadUtils import DownloadUtils
 from ItemInfo import ItemInfo
 from Utils import PlayUtils
 from ClientInformation import ClientInformation
@@ -102,6 +102,9 @@ if (__settings__.getSetting('useJson')=='true'):
 else:
     import simplejson as json
     
+#define our global download utils
+downloadUtils = DownloadUtils()
+
 def printDebug( msg, level = 1):
     if(logLevel >= level):
         if(logLevel == 2):
@@ -109,11 +112,9 @@ def printDebug( msg, level = 1):
         else:
             xbmc.log("XBMB3C " + str(level) + " -> " + str(msg))
 
-def getMachineId():
-    return "%012X"%get_mac()
 
 def getAuthHeader():
-    txt_mac = getMachineId()
+    txt_mac = downloadUtils.getMachineId()
     version = ClientInformation().getVersion()
     userid = xbmcgui.Window( 10000 ).getProperty("userid")
     deviceName = __settings__.getSetting('deviceName')
@@ -199,68 +200,17 @@ def getServerDetails():
         pass
     
     return None
-
-def getUserId():
-
-    port = __settings__.getSetting('port')
-    host = __settings__.getSetting('ipaddress')
-    userName = __settings__.getSetting('username')
-    
-    printDebug("Looking for user name: " + userName)
-
-    jsonData = None
-    try:
-        jsonData = getURL(host + ":" + port + "/mediabrowser/Users?format=json")
-    except Exception, msg:
-        error = "Get User unable to connect to " + host + ":" + port + " : " + str(msg)
-        xbmc.log (error)
-        return ""
-    
-    if(jsonData == False):
-        return ""
-        
-    result = []
-    
-    try:
-        result = json.loads(jsonData)
-    except Exception, e:
-        printDebug("jsonload : " + str(e) + " (" + jsonData + ")", level=2)
-        return ""           
-    
-    userid = ""
-    secure = False
-    for user in result:
-        if(user.get("Name") == userName):
-            userid = user.get("Id")
-            printDebug("Username Found:" + user.get("Name"))
-            if(user.get("HasPassword") == True):
-                secure = True
-                printDebug("Username Is Secure (HasPassword=True)")
-            break
-            
-    if(secure):
-        authenticate('http://' + host + ":" + port + "/mediabrowser/Users/AuthenticateByName")
-        
-    if userid == "":
-        return_value = xbmcgui.Dialog().ok(__language__(30045),__language__(30045))
-        sys.exit()
-        
-    printDebug("userid : " + userid)
-    
-    WINDOW = xbmcgui.Window( 10000 )
-    WINDOW.setProperty("userid", userid)
-    
-    return userid
-    
+   
 def getCollections(detailsString):
     printDebug("== ENTER: getCollections ==")
-    userid = str(getUserId())
+    
+    userid = downloadUtils.getUserId()
     
     if(userid == None or len(userid) == 0):
         return {}
     
     try:
-        jsonData = getURL(__settings__.getSetting('ipaddress') + ":" + __settings__.getSetting('port') + "/mediabrowser/Users/" + userid + "/Items/Root?format=json")
+        jsonData = downloadUtils.downloadUrl(__settings__.getSetting('ipaddress') + ":" + __settings__.getSetting('port') + "/mediabrowser/Users/" + userid + "/Items/Root?format=json")
     except Exception, msg:
         error = "Get connect : " + str(msg)
         xbmc.log (error)
@@ -273,7 +223,7 @@ def getCollections(detailsString):
     printDebug("parentid : " + parentid)
        
     htmlpath = ("http://%s:%s/mediabrowser/Users/" % ( __settings__.getSetting('ipaddress'), __settings__.getSetting('port')))
-    jsonData = getURL(htmlpath + userid + "/items?ParentId=" + parentid + "&format=json")
+    jsonData = downloadUtils.downloadUrl(htmlpath + userid + "/items?ParentId=" + parentid + "&format=json")
     printDebug("jsonData : " + jsonData, level=2)
     collections=[]
 
@@ -296,9 +246,9 @@ def getCollections(detailsString):
               section = "movies"
             collections.append( {'title'      : Name,
                     'address'      : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') ,
-                    'thumb'        : getArtwork(item,"Primary") ,
-                    'fanart_image' : getArtwork(item, "Backdrop") ,
-                    'poster'       : getArtwork(item,"Primary") ,
+                    'thumb'        : downloadUtils.getArtwork(item,"Primary") ,
+                    'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
+                    'poster'       : downloadUtils.getArtwork(item,"Primary") ,
                     'sectype'      : section,
                     'section'      : section,
                     'guiid'        : item.get("Id"),
@@ -331,25 +281,6 @@ def getCollections(detailsString):
     collections.append({'title':'Set Views'                 , 'sectype' : 'std.setviews', 'section' : 'setviews'  , 'address' : 'SETVIEWS', 'path': 'SETVIEWS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
         
     return collections
-
-def authenticate (url):
-    txt_mac = getMachineId()
-    version = ClientInformation().getVersion()
-    
-    deviceName = __settings__.getSetting('deviceName')
-    deviceName = deviceName.replace("\"", "_")
-        
-    authString = "Mediabrowser Client=\"XBMC\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
-    headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}    
-    sha1 = hashlib.sha1(__settings__.getSetting('password'))
-    resp = requests.post(url, data={'password':sha1.hexdigest(),'Username':__settings__.getSetting('username')}, headers=headers)
-    code=str(resp).split('[')[1]
-    code=code.split(']')[0]
-    if int(code) >= 200 and int(code)<300:
-        printDebug ("User Authenticated")
-    else:
-        return_value = xbmcgui.Dialog().ok(__language__(30044),__language__(30044))
-        sys.exit()
 
 def markWatched (url):
     resp = requests.delete(url, data='', headers=getAuthHeader()) # mark unwatched first to reset any play position
@@ -399,7 +330,7 @@ def genrefilter ():
 def playall (startId):
     temp_list = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     temp_list.clear()
-    jsonData = getURL(WINDOW.getProperty("currenturl"))
+    jsonData = downloadUtils.downloadUrl(WINDOW.getProperty("currenturl"))
     result = json.loads(jsonData)
     result = result.get("Items")
     found=0
@@ -454,85 +385,6 @@ def delete (url):
         progress.close()
         xbmc.executebuiltin("Container.Refresh")
                 
-def getURL( url, suppress=False, type="GET", popup=0 ):
-    printDebug("== ENTER: getURL ==")
-    try:
-        if url[0:4] == "http":
-            serversplit=2
-            urlsplit=3
-        else:
-            serversplit=0
-            urlsplit=1
-
-        server=url.split('/')[serversplit]
-        urlPath="/"+"/".join(url.split('/')[urlsplit:])
-
-        printDebug("url = " + url)
-        printDebug("server = "+str(server), level=2)
-        printDebug("urlPath = "+str(urlPath), level=2)
-        conn = httplib.HTTPConnection(server, timeout=20)
-        #head = {"Accept-Encoding" : "gzip,deflate", "Accept-Charset" : "UTF-8,*"} 
-        head = {"Accept-Encoding" : "gzip", "Accept-Charset" : "UTF-8,*"} 
-        #head = getAuthHeader()
-        conn.request(method=type, url=urlPath, headers=head)
-        #conn.request(method=type, url=urlPath)
-        data = conn.getresponse()
-        printDebug("GET URL HEADERS : " + str(data.getheaders()), level=2)
-        link = ""
-        contentType = "none"
-        if int(data.status) == 200:
-            retData = data.read()
-            contentType = data.getheader('content-encoding')
-            printDebug("Data Len Before : " + str(len(retData)))
-            if(contentType == "gzip"):
-                retData = StringIO.StringIO(retData)
-                gzipper = gzip.GzipFile(fileobj=retData)
-                link = gzipper.read()
-            else:
-                link = retData
-                
-            printDebug("Data Len After : " + str(len(link)))
-            printDebug("====== 200 returned =======")
-            printDebug("Content-Type : " + str(contentType))
-            printDebug(link)
-            printDebug("====== 200 finished ======")
-
-        elif ( int(data.status) == 301 ) or ( int(data.status) == 302 ):
-            try: conn.close()
-            except: pass
-            return data.getheader('Location')
-
-        elif int(data.status) >= 400:
-            error = "HTTP response error: " + str(data.status) + " " + str(data.reason)
-            xbmc.log (error)
-            if suppress is False:
-                if popup == 0:
-                    xbmc.executebuiltin("XBMC.Notification(URL error: "+ str(data.reason) +",)")
-                else:
-                    xbmcgui.Dialog().ok("Error",server)
-            xbmc.log (error)
-            try: conn.close()
-            except: pass
-            return ""
-        else:
-            link = ""
-    except Exception, msg:
-        error = "Unable to connect to " + str(server) + " : " + str(msg)
-        xbmc.log (error)
-        xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to connect to server,)")
-        xbmcgui.Dialog().ok("","Unable to connect to host")
-        #if suppress is False:
-        #    if popup == 0:
-        #        xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to connect to server,)")
-        #    else:
-        #        xbmcgui.Dialog().ok("","Unable to connect to host")
-        raise
-    else:
-        try: conn.close()
-        except: pass
-
-    return link
-
 def addGUIItem( url, details, extraData, folder=True ):
 
     printDebug("Adding GuiItem for [%s]" % details.get('title','Unknown'), level=2)
@@ -734,7 +586,7 @@ def displaySections( filter=None ):
     xbmcplugin.setContent(pluginhandle, 'files')
 
     dirItems = []
-    userid = str(getUserId())    
+    userid = downloadUtils.getUserId()  
     extraData = { 'fanart_image' : '' ,
                   'type'         : "Video" ,
                   'thumb'        : '' }
@@ -895,11 +747,11 @@ def PLAY( url, handle ):
         xbmc.log("PLAY ACTION URL AUTO RESUME : " + str(autoResume))
     
     ip,port = server.split(':')
-    userid = getUserId()
+    userid = downloadUtils.getUserId()
     seekTime = 0
     resume = 0
 
-    jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
+    jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
     printDebug("Play jsonData: " + jsonData)
     result = json.loads(jsonData)
     
@@ -975,7 +827,7 @@ def PLAY( url, handle ):
 
 def setListItemProps(server, id, listItem,result):
     # set up item and item info
-    userid = getUserId()
+    userid = downloadUtils.getUserId()
     thumbID = id
     eppNum = -1
     seasonNum = -1
@@ -983,7 +835,7 @@ def setListItemProps(server, id, listItem,result):
         thumbID = result.get("SeriesId")
         seasonNum = result.get("ParentIndexNumber")
         eppNum = result.get("IndexNumber")
-        seriesJsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + thumbID + "?format=json", suppress=False, popup=1 )     
+        seriesJsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + thumbID + "?format=json", suppress=False, popup=1 )     
         seriesResult = json.loads(seriesJsonData)
         resultForType=seriesResult
     else:
@@ -1086,10 +938,10 @@ def get_params( paramstring ):
 
 def getCacheValidator (server,url):
     parsedserver,parsedport = server.split(':')
-    userid = getUserId()
+    userid = downloadUtils.getUserId()
     idAndOptions = url.split("ParentId=")
     id = idAndOptions[1].split("&")
-    jsonData = getURL("http://"+server+"/mediabrowser/Users/" + userid + "/Items/" +id[0]+"?format=json", suppress=False, popup=1 )
+    jsonData = downloadUtils.downloadUrl("http://"+server+"/mediabrowser/Users/" + userid + "/Items/" +id[0]+"?format=json", suppress=False, popup=1 )
     result = json.loads(jsonData)
     
     printDebug ("RecursiveItemCount: " + str(result.get("RecursiveItemCount")))
@@ -1221,7 +1073,7 @@ def getContent( url ):
         printDebug("No Cache Data, download data now")
         if(progress != None):
             progress.update(0, __language__(30124))
-        jsonData = getURL(url, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 )
         if(progress != None):
             progress.update(0, __language__(30123))  
         try:
@@ -1278,7 +1130,7 @@ def processDirectory(url, results, progress):
     printDebug("== ENTER: processDirectory ==")
     parsed = urlparse(url)
     parsedserver,parsedport=parsed.netloc.split(':')
-    userid = getUserId()
+    userid = downloadUtils.getUserId()
     printDebug("Processing secondary menus")
     xbmcplugin.setContent(pluginhandle, 'movies')
 
@@ -1498,15 +1350,15 @@ def processDirectory(url, results, progress):
         UnWatchedEpisodes = 0 if item.get("RecursiveUnplayedItemCount")==None else item.get("RecursiveUnplayedItemCount")
         NumEpisodes      = TotalEpisodes
         # Populate the extraData list
-        extraData={'thumb'        : getArtwork(item, "Primary") ,
-                   'fanart_image' : getArtwork(item, "Backdrop") ,
-                   'poster'       : getArtwork(item, "poster") , 
-                   'tvshow.poster': getArtwork(item, "tvshow.poster") ,
-                   'banner'       : getArtwork(item, "Banner") ,
-                   'clearlogo'    : getArtwork(item, "Logo") ,
-                   'discart'         : getArtwork(item, "Disc") ,
-                   'clearart'     : getArtwork(item, "Art") ,
-                   'landscape'    : getArtwork(item, "Thumb") ,                   
+        extraData={'thumb'        : downloadUtils.getArtwork(item, "Primary") ,
+                   'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
+                   'poster'       : downloadUtils.getArtwork(item, "poster") , 
+                   'tvshow.poster': downloadUtils.getArtwork(item, "tvshow.poster") ,
+                   'banner'       : downloadUtils.getArtwork(item, "Banner") ,
+                   'clearlogo'    : downloadUtils.getArtwork(item, "Logo") ,
+                   'discart'      : downloadUtils.getArtwork(item, "Disc") ,
+                   'clearart'     : downloadUtils.getArtwork(item, "Art") ,
+                   'landscape'    : downloadUtils.getArtwork(item, "Thumb") ,                   
                    'id'           : id ,
                    'guiid'        : guiid ,
                    'mpaa'         : item.get("OfficialRating"),
@@ -1563,7 +1415,7 @@ def processDirectory(url, results, progress):
             else:
                 if __settings__.getSetting('autoEnterSingle') == "true":
                     if item.get("ChildCount") == 1:
-                        jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + id + "&format=json", suppress=False, popup=1 )
+                        jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + id + "&format=json", suppress=False, popup=1 )
                         result = json.loads(jsonData)
                         seasons=result.get("Items")
                         u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' + seasons[0].get("Id") +'&Fields=' + detailsString + '&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
@@ -1586,7 +1438,7 @@ def processSearch(url, results, progress):
     printDebug("== ENTER: processSearch ==")
     parsed = urlparse(url)
     parsedserver,parsedport=parsed.netloc.split(':')
-    userid = getUserId()
+    userid = downloadUtils.getUserId()
     xbmcplugin.setContent(pluginhandle, 'movies')
     detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
     if(__settings__.getSetting('includeStreamInfo') == "true"):
@@ -1671,14 +1523,14 @@ def processSearch(url, results, progress):
 
         # Populate the extraData list
         extraData={'thumb'        : "http://localhost:15001/?id=" + str(id) + "&type=Primary" ,
-                   'fanart_image' : getArtwork(item, "Backdrop") ,
-                   'poster'       : getArtwork(item, "poster") , 
-                   'tvshow.poster': getArtwork(item, "tvshow.poster") ,
-                   'banner'       : getArtwork(item, "Banner") ,
-                   'clearlogo'    : getArtwork(item, "Logo") ,
-                   'discart'      : getArtwork(item, "Disc") ,
-                   'clearart'     : getArtwork(item, "Art") ,
-                   'landscape'    : getArtwork(item, "landscape") ,
+                   'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
+                   'poster'       : downloadUtils.getArtwork(item, "poster") , 
+                   'tvshow.poster': downloadUtils.getArtwork(item, "tvshow.poster") ,
+                   'banner'       : downloadUtils.getArtwork(item, "Banner") ,
+                   'clearlogo'    : downloadUtils.getArtwork(item, "Logo") ,
+                   'discart'      : downloadUtils.getArtwork(item, "Disc") ,
+                   'clearart'     : downloadUtils.getArtwork(item, "Art") ,
+                   'landscape'    : downloadUtils.getArtwork(item, "landscape") ,
                    'id'           : id ,
                    'year'         : item.get("ProductionYear"),
                    'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
@@ -1706,7 +1558,7 @@ def processChannels(url, results, progress):
     printDebug("== ENTER: processChannels ==")
     parsed = urlparse(url)
     parsedserver,parsedport=parsed.netloc.split(':')
-    userid = getUserId()
+    userid = downloadUtils.getUserId()
     xbmcplugin.setContent(pluginhandle, 'movies')
     detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
     if(__settings__.getSetting('includeStreamInfo') == "true"):
@@ -1771,14 +1623,14 @@ def processChannels(url, results, progress):
 
         # Populate the extraData list
         extraData={'thumb'        : "http://localhost:15001/?id=" + str(id) + "&type=Primary" ,
-                   'fanart_image' : getArtwork(item, "Backdrop") ,
-                   'poster'       : getArtwork(item, "poster") , 
-                   'tvshow.poster': getArtwork(item, "tvshow.poster") ,
-                   'banner'       : getArtwork(item, "Banner") ,
-                   'clearlogo'    : getArtwork(item, "Logo") ,
-                   'discart'      : getArtwork(item, "Disc") ,
-                   'clearart'     : getArtwork(item, "Art") ,
-                   'landscape'    : getArtwork(item, "landscape") ,
+                   'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
+                   'poster'       : downloadUtils.getArtwork(item, "poster") , 
+                   'tvshow.poster': downloadUtils.getArtwork(item, "tvshow.poster") ,
+                   'banner'       : downloadUtils.getArtwork(item, "Banner") ,
+                   'clearlogo'    : downloadUtils.getArtwork(item, "Logo") ,
+                   'discart'      : downloadUtils.getArtwork(item, "Disc") ,
+                   'clearart'     : downloadUtils.getArtwork(item, "Art") ,
+                   'landscape'    : downloadUtils.getArtwork(item, "landscape") ,
                    'id'           : id ,
                    'year'         : item.get("ProductionYear"),
                    'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
@@ -1805,33 +1657,6 @@ def processChannels(url, results, progress):
             dirItems.append(addGUIItem(u, details, extraData, folder=False))
     return dirItems
     
-def getArtwork(data, type):
-    
-    id = data.get("Id")
-    if type == "tvshow.poster": # Change the Id to the series to get the overall series poster
-        if data.get("Type") == "Season" or data.get("Type")== "Episode":
-            id = data.get("SeriesId")
-    elif type == "poster" and data.get("Type") == "Episode" and __settings__.getSetting('useSeasonPoster')=='true': # Change the Id to the Season to get the season poster
-        id = data.get("SeasonId")
-    if type == "poster" or type == "tvshow.poster": # Now that the Ids are right, change type to MB3 name
-        type="Primary"
-    if data.get("Type") == "Season":  # For seasons: primary (poster), thumb and banner get season art, rest series art
-        if type != "Primary" and type != "Thumb" and type != "Banner":
-            id = data.get("SeriesId")
-    if data.get("Type") == "Episode":  # For episodes: primary (episode thumb) gets episode art, rest series art. 
-        if type != "Primary":
-            id = data.get("SeriesId")
-    imageTag = ""
-    if(data.get("ImageTags") != None and data.get("ImageTags").get(type) != None):
-        imageTag = data.get("ImageTags").get(type)   
-            
-    # use the local image proxy server that is made available by this addons service
-    artwork = "http://localhost:15001/?id=" + str(id) + "&type=" + type + "&tag=" + imageTag
-    printDebug("getArtwork : " + artwork, level=2)
-    if type=="Primary" and imageTag=="":
-        artwork=''
-    return artwork
-
 def getServerFromURL( url ):
     '''
     Simply split the URL up and get the server portion, sans port
@@ -1912,7 +1737,7 @@ def setWindowHeading(url) :
         dirUrl = url.replace('items?ParentId=','Items/')
         splitUrl = dirUrl.split('&')
         dirUrl = splitUrl[0] + '?format=json'
-        jsonData = getURL(dirUrl)
+        jsonData = downloadUtils.downloadUrl(dirUrl)
         result = json.loads(jsonData)
         for name in result:
             title = name
@@ -1927,12 +1752,12 @@ def getCastList(pluginName, handle, params):
     port = __settings__.getSetting('port')
     host = __settings__.getSetting('ipaddress')
     server = host + ":" + port
-    userid = getUserId()
+    userid = downloadUtils.getUserId()
     seekTime = 0
     resume = 0
     
     # get the cast list for an item
-    jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + params.get("id") + "?format=json", suppress=False, popup=1 )    
+    jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + params.get("id") + "?format=json", suppress=False, popup=1 )    
     printDebug("CastList(Items) jsonData: " + jsonData, 2)
     result = json.loads(jsonData)
 
@@ -1989,37 +1814,11 @@ def getCastList(pluginName, handle, params):
 def showItemInfo(pluginName, handle, params):    
     printDebug("showItemInfo Called" + str(params))
     
-    port = __settings__.getSetting('port')
-    host = __settings__.getSetting('ipaddress')
-    server = host + ":" + port 
-    
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
-    
-    userid = getUserId()
-    seekTime = 0
-    resume = 0
-
-    jsonData = getURL("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + params.get("id") + "?format=json", suppress=False, popup=1 )     
-    result = json.loads(jsonData)
-    
-    data = {}
-    
-    data["name"] = result.get("Name")
-    
-    image = getArtwork(result, "Primary")
-    data["image"] = image
-    
-    fanArt = getArtwork(result, "Backdrop")
-    data["background"] = fanArt
-    
-    url =  server + ',;' + params.get("id")
-    url = urllib.quote(url)
-    playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-    data["playUrl"] = playUrl
     
     infoPage = ItemInfo("ItemInfo.xml", __cwd__, "default", "720p")
     
-    infoPage.setInfo(data)
+    infoPage.setId(params.get("id"))
     infoPage.doModal()
     
     del infoPage
@@ -2033,9 +1832,10 @@ def showPersonInfo(pluginName, handle, params):
     port = __settings__.getSetting('port')
     host = __settings__.getSetting('ipaddress')
     server = host + ":" + port
-    userid = getUserId()
+
+    userid = downloadUtils.getUserId()
     
-    jsonData = getURL("http://" + server + "/mediabrowser/Persons/" + params["name"] + "?format=json", suppress=False, popup=1 )    
+    jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Persons/" + params["name"] + "?format=json", suppress=False, popup=1 )    
     printDebug("PersonInfo jsonData: " + jsonData, 2)
     result = json.loads(jsonData)
     
@@ -2099,7 +1899,7 @@ def getWigetContent(pluginName, handle, params):
         printDebug("getWigetContent No Type")
         return
     
-    userid = getUserId()
+    userid = downloadUtils.getUserId()
     
     if(type == "recent"):
         itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DateCreated&Fields=Path&SortOrder=Descending&Filters=IsNotFolder&IncludeItemTypes=Movie,Episode,Trailer&CollapseBoxSetItems=false&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json"
@@ -2109,7 +1909,7 @@ def getWigetContent(pluginName, handle, params):
     printDebug("WIDGET_DATE_URL: " + itemsUrl, 2)
     
     # get the recent items
-    jsonData = getURL(itemsUrl, suppress=False, popup=1 )
+    jsonData = downloadUtils.downloadUrl(itemsUrl, suppress=False, popup=1 )
     printDebug("Recent(Items) jsonData: " + jsonData, 2)
     result = json.loads(jsonData)
     
@@ -2201,7 +2001,7 @@ def showParentContent(pluginName, handle, params):
     parentId = params.get("ParentId")
     name = params.get("Name")
     detailsString = getDetailsString()
-    userid = getUserId()
+    userid = downloadUtils.getUserId()
     
     contentUrl = (
         "http://" + server +
@@ -2299,7 +2099,7 @@ def checkServer():
     printDebug ("Getting user list")
     jsonData = None
     try:
-        jsonData = getURL(server_address + ":" + server_port + "/mediabrowser/Users?format=json")
+        jsonData = downloadUtils.downloadUrl(server_address + ":" + server_port + "/mediabrowser/Users?format=json")
     except Exception, msg:
         error = "Get User unable to connect to " + server_address + ":" + server_port + " : " + str(msg)
         xbmc.log (error)
