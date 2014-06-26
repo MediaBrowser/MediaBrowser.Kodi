@@ -24,39 +24,102 @@
 			<width>1000</width>
 			<height>560</height>
             <colordiffuse>FF444444</colordiffuse>
-		</control>        
+		</control>
         
 		<control type="label" id="3000">
 			<description>name</description>
 			<left>30</left>
-			<top>65</top>
-			<width>550</width>
+			<top>25</top>
+			<width>950</width>
 			<height>20</height>
 			<align>left</align>
 			<label>-</label>
 			<font>font24_title</font>
-            <textcolor>grey2</textcolor>
-		</control>            
+            <textcolor>FFFFFFFFFF</textcolor>
+		</control>
+        
+		<control type="label" id="3003">
+			<description>name</description>
+			<left>30</left>
+			<top>55</top>
+			<width>300</width>
+			<height>20</height>
+			<align>left</align>
+			<label>-</label>
+			<font>font18_title</font>
+            <textcolor>FFFFFFFFFF</textcolor>
+		</control>        
         
         <control type="image" id="3009">
-            <left>40</left>
+            <left>30</left>
             <top>100</top>
-            <width>180</width>
+            <width>250</width>
             <height>250</height>
             <aspectratio>keep</aspectratio>
-            <visible>True</visible>
         </control>
-       
+        
+		<control type="label" id="3201">
+			<description>video info label</description>
+			<left>30</left>
+			<top>380</top>
+			<width>80</width>
+			<height>20</height>
+			<align>right</align>
+            <aligny>center</aligny>
+			<label>Video:</label>
+			<font>font14_title</font>
+            <textcolor>blue</textcolor>
+		</control>        
+
+        <control type="label" id="3202">
+			<description>video info</description>
+			<left>115</left>
+			<top>380</top>
+			<width>300</width>
+			<height>20</height>
+			<align>left</align>
+            <aligny>center</aligny>
+			<label>-</label>
+			<font>font12_title</font>
+            <textcolor>white</textcolor>
+		</control> 
+
+        <control type="label" id="3203">
+			<description>audio info label</description>
+			<left>30</left>
+			<top>410</top>
+			<width>80</width>
+			<height>20</height>
+			<align>right</align>
+            <aligny>center</aligny>
+			<label>Audio:</label>
+			<font>font14_title</font>
+            <textcolor>blue</textcolor>
+		</control>   
+        
+        <control type="label" id="3204">
+			<description>audio info</description>
+			<left>115</left>
+			<top>410</top>
+			<width>300</width>
+			<height>20</height>
+			<align>left</align>
+            <aligny>center</aligny>
+			<label>-</label>
+			<font>font12_title</font>
+            <textcolor>white</textcolor>
+		</control>          
+        
 		<control type="button" id="3002">
 			<left>30</left>
-			<top>430</top>
+			<top>520</top>
 			<width>150</width>
 			<height>40</height>
 			<align>center</align>
 			<label>Play</label>
 			<font>font13</font>
             <onup>8</onup>
-		</control>       
+		</control>
         
 	</controls>
 </window>
