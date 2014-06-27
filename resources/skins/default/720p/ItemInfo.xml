@@ -58,57 +58,108 @@
             <aspectratio>keep</aspectratio>
         </control>
         
-		<control type="label" id="3201">
-			<description>video info label</description>
-			<left>30</left>
-			<top>380</top>
-			<width>80</width>
-			<height>20</height>
-			<align>right</align>
-            <aligny>center</aligny>
-			<label>Video:</label>
-			<font>font14_title</font>
-            <textcolor>blue</textcolor>
-		</control>        
-
-        <control type="label" id="3202">
-			<description>video info</description>
-			<left>115</left>
-			<top>380</top>
-			<width>300</width>
-			<height>20</height>
-			<align>left</align>
-            <aligny>center</aligny>
-			<label>-</label>
-			<font>font12_title</font>
-            <textcolor>white</textcolor>
-		</control> 
-
-        <control type="label" id="3203">
-			<description>audio info label</description>
-			<left>30</left>
-			<top>410</top>
-			<width>80</width>
-			<height>20</height>
-			<align>right</align>
-            <aligny>center</aligny>
-			<label>Audio:</label>
-			<font>font14_title</font>
-            <textcolor>blue</textcolor>
-		</control>   
+        <control type="list" id="3220">
+            <left>30</left>
+            <top>380</top>
+            <width>350</width>
+            <height>120</height>
+            <onleft>-</onleft>
+            <onright>3221</onright>
+            <onup>-</onup>
+            <ondown>3002</ondown>
+            <pagecontrol>3221</pagecontrol>
+            <scrolltime>200</scrolltime>
+            <border>5</border>
+            <bordertexture border="5">button-nofocus.png</bordertexture>
+            <itemlayout height="30">
+                <control type="label">
+                    <left>60</left>
+                    <top>0</top>
+                    <width>60</width>
+                    <height>30</height>
+                    <font>font12</font>
+                    <align>right</align>
+                    <aligny>center</aligny>
+                    <textcolor>blue</textcolor>
+                    <selectedcolor>selected</selectedcolor>
+                    <info>ListItem.Label</info>
+                </control>
+                <control type="label">
+                    <left>65</left>
+                    <top>0</top>
+                    <width>285</width>
+                    <height>30</height>
+                    <font>font12</font>
+                    <align>left</align>
+                    <aligny>center</aligny>
+                    <textcolor>white</textcolor>
+                    <selectedcolor>white</selectedcolor>
+                    <info>ListItem.Label2</info>
+                </control>
+            </itemlayout>
+            <focusedlayout height="30">
+                <control type="image">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>350</width>
+                    <height>30</height>
+                    <visible>Control.HasFocus(3220)</visible>
+                    <texture>MenuItemFO.png</texture>
+                    <include>VisibleFadeEffect</include>
+                </control>
+                <control type="label">
+                    <left>60</left>
+                    <top>0</top>
+                    <width>60</width>
+                    <height>30</height>
+                    <font>font12</font>
+                    <align>right</align>
+                    <aligny>center</aligny>
+                    <textcolor>blue</textcolor>
+                    <selectedcolor>selected</selectedcolor>
+                    <info>ListItem.Label</info>
+                </control>
+                <control type="label">
+                    <left>65</left>
+                    <top>0</top>
+                    <width>285</width>
+                    <height>30</height>
+                    <font>font12</font>
+                    <align>left</align>
+                    <aligny>center</aligny>
+                    <textcolor>white</textcolor>
+                    <selectedcolor>white</selectedcolor>
+                    <info>ListItem.Label2</info>
+                </control>
+            </focusedlayout>
+        </control>    
+        <control type="scrollbar" id="3221">
+            <left>385</left>
+            <top>380</top>
+            <width>20</width>
+            <height>120</height>
+            <texturesliderbackground border="0,14,0,14">ScrollBarV.png</texturesliderbackground>
+            <texturesliderbar border="2,16,2,16">ScrollBarV_bar.png</texturesliderbar>
+            <texturesliderbarfocus border="2,16,2,16">ScrollBarV_bar_focus.png</texturesliderbarfocus>
+            <textureslidernib>ScrollBarNib.png</textureslidernib>
+            <textureslidernibfocus>ScrollBarNib.png</textureslidernibfocus>
+            <onleft>3220</onleft>
+            <onright>-</onright>
+            <showonepage>false</showonepage>
+            <orientation>vertical</orientation>
+        </control>
         
-        <control type="label" id="3204">
-			<description>audio info</description>
-			<left>115</left>
-			<top>410</top>
-			<width>300</width>
-			<height>20</height>
-			<align>left</align>
-            <aligny>center</aligny>
-			<label>-</label>
-			<font>font12_title</font>
+        <control type="textbox" id="3223">
+            <left>320</left>
+            <top>100</top>
+            <width>400</width>
+            <height>300</height>
+            <font>font12</font>
+            <align>justify</align>
             <textcolor>white</textcolor>
-		</control>          
+            <pagecontrol>-</pagecontrol>
+            <visible>true</visible>
+        </control>        
         
 		<control type="button" id="3002">
 			<left>30</left>
@@ -118,8 +169,8 @@
 			<align>center</align>
 			<label>Play</label>
 			<font>font13</font>
-            <onup>8</onup>
-		</control>
+            <onup>3220</onup>
+		</control>        
         
 	</controls>
 </window>

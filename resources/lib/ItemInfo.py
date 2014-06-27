@@ -50,25 +50,37 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         url = urllib.quote(url)
         self.playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
         
-        videoInfo = ""
-        audioInfo = ""
+        # all all the media stream info
+        mediaList = self.getControl(3220)
         
         mediaStreams = item.get("MediaStreams")
         if(mediaStreams != None):
             for mediaStream in mediaStreams:
-                if(mediaStream.get("Type") == "Video" and len(videoInfo) == 0):
+                if(mediaStream.get("Type") == "Video"):
                     videocodec = mediaStream.get("Codec")
                     height = str(mediaStream.get("Height"))
                     width = str(mediaStream.get("Width"))
                     aspectratio = mediaStream.get("AspectRatio")
-                    videoInfo = width + "x" + height + " (" + aspectratio + ") " + videocodec
-                if(mediaStream.get("Type") == "Audio" and len(audioInfo) == 0):
+                    fr = mediaStream.get("RealFrameRate")
+                    videoInfo = width + "x" + height + " (" + aspectratio + ") " + videocodec + " " + str(round(fr, 2)) + " fps"
+                    listItem = xbmcgui.ListItem("Video:", videoInfo)
+                    mediaList.addItem(listItem)
+                if(mediaStream.get("Type") == "Audio"):
                     audiocodec = mediaStream.get("Codec")
                     channels = mediaStream.get("Channels")
+                    lang = mediaStream.get("Language")
                     audioInfo = audiocodec + " " + str(channels)
+                    if(lang != None and len(lang) > 0 and lang != "und"):
+                        audioInfo = audioInfo + " " + lang
+                    listItem = xbmcgui.ListItem("Audio:", audioInfo)
+                    mediaList.addItem(listItem)
         
-        self.getControl(3202).setLabel(videoInfo)
-        self.getControl(3204).setLabel(audioInfo)
+        #for x in range(0, 10):
+        #    listItem = xbmcgui.ListItem("Test:", "Test 02 " + str(x))
+        #    mediaList.addItem(listItem)
+        
+        overview = item.get("Overview")
+        self.getControl(3223).setText(overview)
         
         self.getControl(3000).setLabel(name)
         self.getControl(3003).setLabel(episodeInfo)
