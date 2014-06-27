@@ -780,7 +780,7 @@ class BackgroundRotationThread(threading.Thread):
         
         if (images == None or images == []):
           images = item.get("ParentBackdropImageTags")
-          urlid = item.get("ParentArtItemId")
+          urlid = item.get("ParentBackdropItemId")
           if (images == None):
             images = []
             
