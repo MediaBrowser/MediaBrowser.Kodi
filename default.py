@@ -963,6 +963,34 @@ def getCacheValidator (server,url):
         printDebug ("getCacheValidator : " + validatorString)
     return validatorString
     
+def getAllMoviesCacheValidator (server,url):
+    parsedserver,parsedport = server.split(':')
+    userid = downloadUtils.getUserId()
+    jsonData = downloadUtils.downloadUrl("http://"+server+"/mediabrowser/Users/" + userid + "/Views?format=json", suppress=False, popup=1 )
+    alldata = json.loads(jsonData)
+    result=alldata.get("Items")
+    for item in result:
+        if item.get("Name")=="Movies":
+            result=item
+    printDebug ("RecursiveItemCount: " + str(result.get("RecursiveItemCount")))
+    printDebug ("RecursiveUnplayedCount: " + str(result.get("RecursiveUnplayedItemCount")))
+    printDebug ("RecursiveUnplayedCount: " + str(result.get("PlayedPercentage")))
+    
+    playedPercentage = 0.0
+    if(result.get("PlayedPercentage") != None):
+        playedPercentage = result.get("PlayedPercentage")
+    
+    playedTime = "{0:09.6f}".format(playedPercentage)
+    playedTime = playedTime.replace(".","-")
+    validatorString=""
+    if result.get("RecursiveItemCount") != None:
+        if int(result.get("RecursiveItemCount"))<=25:
+            validatorString='nocache'
+        else:
+            validatorString = "allmovies_" + str(result.get("RecursiveItemCount")) + "_" + str(result.get("RecursiveUnplayedItemCount")) + "_" + playedTime
+        printDebug ("getAllMoviesCacheValidator : " + validatorString)
+    return validatorString    
+    
 def getCacheValidatorFromData(result):
     result = result.get("Items")
     if(result == None):
@@ -1022,6 +1050,8 @@ def getContent( url ):
     validator='nocache' #Don't cache special queries (recently added etc)
     if "Parent" in url:
         validator = "_" + getCacheValidator(server,url)
+    elif "&SortOrder=Ascending&IncludeItemTypes=Movie" in url:
+        validator = "_" + getAllMoviesCacheValidator(server,url)
         
     # ADD VALIDATOR TO FILENAME TO DETERMINE IF CACHE IS FRESH
     
@@ -1094,7 +1124,13 @@ def getContent( url ):
                 cachedfie = open(cacheDataPath, 'w')
                 cachedfie.write(jsonData)
                 cachedfie.close()
-
+            elif("allmovies" in validator):
+                printDebug("All Movies Cache")
+                cacheDataPath = __addondir__ + urlHash + validator
+                printDebug("Saving data to cache : " + cacheDataPath)
+                cachedfie = open(cacheDataPath, 'w')
+                cachedfie.write(jsonData)
+                cachedfie.close()
     if jsonData == "":
         if(progress != None):
             progress.close()
