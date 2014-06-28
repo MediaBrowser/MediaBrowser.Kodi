@@ -773,14 +773,13 @@ class BackgroundRotationThread(threading.Thread):
         #for item in result:
         images = item.get("BackdropImageTags")
         id = item.get("Id")
-        urlid = id
         parentID = item.get("ParentId")
         origid = id
         name = item.get("Name")
         
         if (images == None or images == []):
           images = item.get("ParentBackdropImageTags")
-          urlid = item.get("ParentBackdropItemId")
+          id = item.get("ParentId")
           if (images == None):
             images = []
             
@@ -789,7 +788,7 @@ class BackgroundRotationThread(threading.Thread):
         newBgLinks = []
         for backdrop in images:
             info = {}
-            info["url"] = "http://localhost:15001/?id=" + str(urlid) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
+            info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
             info["index"] = index
             info["id"] = id
             info["parent"] = parentID

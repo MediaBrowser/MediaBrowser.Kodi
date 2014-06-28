@@ -1204,6 +1204,7 @@ def processDirectory(url, results, progress):
                 tempTitle = str(tempEpisode) + ' - ' + tempTitle
             xbmcplugin.setContent(pluginhandle, 'episodes')
             viewType="_EPISODES"
+            guiid = item.get("SeriesId")
         elif item.get("Type") == "MusicArtist":
             xbmcplugin.setContent(pluginhandle, 'songs')
             viewType='_MUSICARTISTS'
