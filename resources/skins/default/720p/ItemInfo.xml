@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<window>
+<window id="3300" type="dialog">
 	<defaultcontrol always="true">3002</defaultcontrol>
     <zorder>2</zorder>
 	<coordinates>
@@ -156,7 +156,7 @@
             <onright>3235</onright>
             <onup>3235</onup>
             <ondown>3002</ondown>
-            <pagecontrol>3221</pagecontrol>
+            <pagecontrol>-</pagecontrol>
             <scrolltime>200</scrolltime>
             <itemlayout height="20">
                 <control type="label">
@@ -382,7 +382,8 @@
             <onleft>-</onleft>
             <onright>3220</onright>
             <onup>3220</onup>
-		</control>        
+		</control>      
+
         
 	</controls>
 </window>

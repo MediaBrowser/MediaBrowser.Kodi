@@ -1813,7 +1813,6 @@ def getCastList(pluginName, handle, params):
 
 def showItemInfo(pluginName, handle, params):    
     printDebug("showItemInfo Called" + str(params))
-    
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
     
     infoPage = ItemInfo("ItemInfo.xml", __cwd__, "default", "720p")
@@ -1824,63 +1823,13 @@ def showItemInfo(pluginName, handle, params):
     del infoPage
     
 def showPersonInfo(pluginName, handle, params):
-
-    #item = xbmcgui.ListItem(label="Test")
-    #xbmcplugin.setResolvedUrl(handle, True, item)
+    printDebug("showPersonInfo Called" + str(params))
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
 
-    port = __settings__.getSetting('port')
-    host = __settings__.getSetting('ipaddress')
-    server = host + ":" + port
-
-    userid = downloadUtils.getUserId()
-    
-    jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Persons/" + params["name"] + "?format=json", suppress=False, popup=1 )    
-    printDebug("PersonInfo jsonData: " + jsonData, 2)
-    result = json.loads(jsonData)
-    
-    data = {}
-    id = result.get("Id")
-    data["name"] = result.get("Name")
-    
-    contentCounts = ""
-    if(result.get("AdultVideoCount") != None and result.get("AdultVideoCount") > 0):
-        contentCounts = contentCounts + "\nAdult Count : " + str(result.get("AdultVideoCount"))
-    if(result.get("MovieCount") != None and result.get("MovieCount") > 0):
-        contentCounts = contentCounts + "\nMovie Count : " + str(result.get("MovieCount"))    
-    if(result.get("SeriesCount") != None and result.get("SeriesCount") > 0):
-        contentCounts = contentCounts + "\nSeries Count : " + str(result.get("SeriesCount"))   
-    if(result.get("EpisodeCount") != None and result.get("EpisodeCount") > 0):
-        contentCounts = contentCounts + "\nEpisode Count : " + str(result.get("EpisodeCount"))      
-    
-    if(len(contentCounts) > 0):
-        contentCounts = "Total Library Counts:" + contentCounts
-    
-    overview = result.get("Overview")
-    if(overview == None or overview == ""):
-        overview = "No details available"
-    data["overview"] = contentCounts + "\n\n" + overview
-    
-    detailsString = getDetailsString()
-    url = "http://" + host + ":" + port + "/mediabrowser/Users/" + userid + "/Items/?Recursive=True&Person=PERSON_NAME&Fields=" + detailsString + "&format=json"
-    url = urllib.quote(url)
-    url = url.replace("PERSON_NAME", params["name"])
-    pluginCastLink = "XBMC.Container.Update(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_GETCONTENT) + "&url=" + url + ")"    
-    data["show_movies"] = pluginCastLink
-    
-    imageTag = ""
-    if(result.get("ImageTags") != None and result.get("ImageTags").get("Primary") != None):
-        imageTag = result.get("ImageTags").get("Primary")
-            
-    image = "http://localhost:15001/?id=" + id + "&type=" + "Primary" + "&tag=" + imageTag   
-    data["image"] = image
-    
     infoPage = PersonInfo("PersonInfo.xml", __cwd__, "default", "720p")
-    infoPage.setInfo(data)
-    infoPage.doModal()
     
-    if(infoPage.showMovies == True):
-        xbmc.executebuiltin(pluginCastLink)
+    infoPage.setPersonName(params.get("name"))
+    infoPage.doModal()
     
     del infoPage
         

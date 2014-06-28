@@ -8,6 +8,8 @@ import urllib
 from DownloadUtils import DownloadUtils
 
 _MODE_BASICPLAY=12
+_MODE_CAST_LIST=14
+_MODE_PERSON_DETAILS=15
 
 class ItemInfo(xbmcgui.WindowXMLDialog):
 
@@ -49,6 +51,9 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         url =  server + ',;' + id
         url = urllib.quote(url)
         self.playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+        
+        self.peopleUrl = "XBMC.Container.Update(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id + ")"
+        #self.peopleUrl = "XBMC.RunPlugin(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id + ")"
         
         # all all the media stream info
         mediaList = self.getControl(3220)
@@ -107,14 +112,17 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
             baseName = baseName.replace("&", "_")
             baseName = baseName.replace("?", "_")
             baseName = baseName.replace("=", "_")
-                
+            
+            actionUrl = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_PERSON_DETAILS) +"&name=" + baseName
+            
             tag = person.get("PrimaryImageTag")
             if(tag != None):
                 thumbPath = "http://localhost:15001/?name=" + baseName + "&type=Primary&maxheight=500&tag=" + tag
                 listItem = xbmcgui.ListItem(label=displayName, label2=role, iconImage=thumbPath, thumbnailImage=thumbPath)
             else:
                 listItem = xbmcgui.ListItem(label=displayName, label2=role)
-            
+                
+            listItem.setProperty("ActionUrl", actionUrl)
             peopleList.addItem(listItem)
         
         # add general info
@@ -125,7 +133,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         infoList.addItem(listItem)        
         listItem = xbmcgui.ListItem("MPAA:", str(item.get("OfficialRating")))
         infoList.addItem(listItem)   
-        duration = str(int(item.get("RunTimeTicks"))/(10000000*60))
+        duration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
         listItem = xbmcgui.ListItem("RunTime:", str(duration) + " Minutes")
         infoList.addItem(listItem) 
         
@@ -143,8 +151,8 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         
         path = item.get('Path')
         listItem = xbmcgui.ListItem("Path:", path)
-        infoList.addItem(listItem)         
-        
+        infoList.addItem(listItem)     
+
         self.getControl(3000).setLabel(name)
         self.getControl(3003).setLabel(episodeInfo)
         self.getControl(3001).setImage(fanArt)
@@ -163,12 +171,20 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         self.close()
         
     def onClick(self, controlID):
-
+        
         if(controlID == 3002):
            
             xbmc.executebuiltin("RunPlugin(" + self.playUrl + ")")
-
             self.close()
-
+            
+        elif(controlID == 3230):
+        
+            peopleList = self.getControl(3230)
+            item = peopleList.getSelectedItem()
+            action = item.getProperty("ActionUrl")
+            
+            xbmc.log(action)
+            xbmc.executebuiltin("RunPlugin(" + action + ")")
+        
         pass
         
