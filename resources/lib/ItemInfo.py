@@ -58,11 +58,13 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
             for mediaStream in mediaStreams:
                 if(mediaStream.get("Type") == "Video"):
                     videocodec = mediaStream.get("Codec")
+                    if(videocodec == "mpeg2video"):
+                        videocodec = "mpeg2"
                     height = str(mediaStream.get("Height"))
                     width = str(mediaStream.get("Width"))
                     aspectratio = mediaStream.get("AspectRatio")
                     fr = mediaStream.get("RealFrameRate")
-                    videoInfo = width + "x" + height + " (" + aspectratio + ") " + videocodec + " " + str(round(fr, 2)) + " fps"
+                    videoInfo = width + "x" + height + " " + videocodec + " " + str(round(fr, 2))
                     listItem = xbmcgui.ListItem("Video:", videoInfo)
                     mediaList.addItem(listItem)
                 if(mediaStream.get("Type") == "Audio"):
@@ -74,13 +76,74 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
                         audioInfo = audioInfo + " " + lang
                     listItem = xbmcgui.ListItem("Audio:", audioInfo)
                     mediaList.addItem(listItem)
+                if(mediaStream.get("Type") == "Subtitle"):
+                    lang = mediaStream.get("Language")
+                    codec = mediaStream.get("Codec")
+                    subInfo = codec
+                    if(lang != None and len(lang) > 0 and lang != "und"):
+                        subInfo = subInfo + " " + lang
+                    listItem = xbmcgui.ListItem("Sub:", subInfo)
+                    mediaList.addItem(listItem)
+
         
         #for x in range(0, 10):
         #    listItem = xbmcgui.ListItem("Test:", "Test 02 " + str(x))
         #    mediaList.addItem(listItem)
         
+        # add overview
         overview = item.get("Overview")
         self.getControl(3223).setText(overview)
+        
+        # add people
+        peopleList = self.getControl(3230)
+        people = item.get("People")
+
+        for person in people:
+            displayName = person.get("Name")
+            role = person.get("Role")
+            
+            baseName = person.get("Name")
+            baseName = baseName.replace(" ", "+")
+            baseName = baseName.replace("&", "_")
+            baseName = baseName.replace("?", "_")
+            baseName = baseName.replace("=", "_")
+                
+            tag = person.get("PrimaryImageTag")
+            if(tag != None):
+                thumbPath = "http://localhost:15001/?name=" + baseName + "&type=Primary&maxheight=500&tag=" + tag
+                listItem = xbmcgui.ListItem(label=displayName, label2=role, iconImage=thumbPath, thumbnailImage=thumbPath)
+            else:
+                listItem = xbmcgui.ListItem(label=displayName, label2=role)
+            
+            peopleList.addItem(listItem)
+        
+        # add general info
+        infoList = self.getControl(3226)
+        listItem = xbmcgui.ListItem("Year:", str(item.get("ProductionYear")))
+        infoList.addItem(listItem)
+        listItem = xbmcgui.ListItem("Rating:", str(item.get("CommunityRating")))
+        infoList.addItem(listItem)        
+        listItem = xbmcgui.ListItem("MPAA:", str(item.get("OfficialRating")))
+        infoList.addItem(listItem)   
+        duration = str(int(item.get("RunTimeTicks"))/(10000000*60))
+        listItem = xbmcgui.ListItem("RunTime:", str(duration) + " Minutes")
+        infoList.addItem(listItem) 
+        
+        genre = ""
+        genres = item.get("Genres")
+        if(genres != None):
+            for genre_string in genres:
+                if genre == "": #Just take the first genre
+                    genre = genre_string
+                else:
+                    genre = genre + " / " + genre_string      
+
+        listItem = xbmcgui.ListItem("Genre:", genre)
+        infoList.addItem(listItem) 
+        
+        path = item.get('Path')
+        listItem = xbmcgui.ListItem("Path:", path)
+        infoList.addItem(listItem)         
         
         self.getControl(3000).setLabel(name)
         self.getControl(3003).setLabel(episodeInfo)
