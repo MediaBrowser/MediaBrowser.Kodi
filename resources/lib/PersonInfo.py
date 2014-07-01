@@ -73,47 +73,56 @@ class PersonInfo(xbmcgui.WindowXMLDialog):
         jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 )
         otherMovieResult = json.loads(jsonData)
 
-        otherItemsList = self.getControl(3010)
+        otherItemsList = None
         
-        items = otherMovieResult.get("Items")
-        if(items == None):
-            items = []
+        try:
+            otherItemsList = self.getControl(3010)
+            
+            items = otherMovieResult.get("Items")
+            if(items == None):
+                items = []
+            
+            for item in items:
+                item_id = item.get("Id")
+                item_name = item.get("Name")
+                
+                type_info = ""
+                image_id = item_id
+                item_type = item.get("Type")
+                
+                if(item_type == "Season"):
+                    image_id = item.get("SeriesId")
+                    season = item.get("IndexNumber")
+                    type_info = "Season " + str(season).zfill(2)
+                elif(item_type == "Series"):
+                    image_id = item.get("Id")
+                    type_info = "Series"                  
+                elif(item_type == "Movie"):
+                    image_id = item.get("Id")
+                    type_info = "Movie"    
+                elif(item_type == "Episode"):
+                    image_id = item.get("SeriesId")
+                    season = item.get("ParentIndexNumber")
+                    eppNum = item.get("IndexNumber")
+                    type_info = "S" + str(season).zfill(2) + "E" + str(eppNum).zfill(2)
+                
+                imageTag = ""
+                if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
+                    imageTag = item.get("ImageTags").get("Primary")             
+                thumbPath = "http://localhost:15001/?id=" + str(image_id) + "&type=Primary&tag=" + imageTag
+                
+                listItem = xbmcgui.ListItem(label=item_name, label2=type_info, iconImage=thumbPath, thumbnailImage=thumbPath)
+                
+                actionUrl = "plugin://plugin.video.xbmb3c?id=" + item_id + "&mode=" + str(_MODE_ITEM_DETAILS)
+                listItem.setProperty("ActionUrl", actionUrl)
+                
+                otherItemsList.addItem(listItem)
+                
+        except Exception, e:
+            xbmc.log("Exception : " + str(e))
+            pass
         
-        for item in items:
-            item_id = item.get("Id")
-            item_name = item.get("Name")
-            
-            type_info = ""
-            image_id = item_id
-            item_type = item.get("Type")
-            
-            if(item_type == "Season"):
-                image_id = item.get("SeriesId")
-                season = item.get("IndexNumber")
-                type_info = "Season " + str(season).zfill(2)
-            elif(item_type == "Series"):
-                image_id = item.get("Id")
-                type_info = "Series"                  
-            elif(item_type == "Movie"):
-                image_id = item.get("Id")
-                type_info = "Movie"    
-            elif(item_type == "Episode"):
-                image_id = item.get("SeriesId")
-                season = item.get("ParentIndexNumber")
-                eppNum = item.get("IndexNumber")
-                type_info = "S" + str(season).zfill(2) + "E" + str(eppNum).zfill(2)
-            
-            imageTag = ""
-            if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
-                imageTag = item.get("ImageTags").get("Primary")             
-            thumbPath = "http://localhost:15001/?id=" + str(image_id) + "&type=Primary&tag=" + imageTag
-            
-            listItem = xbmcgui.ListItem(label=item_name, label2=type_info, iconImage=thumbPath, thumbnailImage=thumbPath)
-            
-            actionUrl = "plugin://plugin.video.xbmb3c?id=" + item_id + "&mode=" + str(_MODE_ITEM_DETAILS)
-            listItem.setProperty("ActionUrl", actionUrl)
-            
-            otherItemsList.addItem(listItem)
+        
         
         # set the dialog data
         self.getControl(3000).setLabel(name)
