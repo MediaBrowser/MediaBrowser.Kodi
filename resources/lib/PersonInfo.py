@@ -7,10 +7,13 @@ import json as json
 import urllib
 from DownloadUtils import DownloadUtils
 
+_MODE_GETCONTENT=0
 _MODE_ITEM_DETAILS=17
 
 class PersonInfo(xbmcgui.WindowXMLDialog):
 
+    pluginCastLink = ""
+    showMovies = False
     personName = ""
     
     def __init__(self, *args, **kwargs):
@@ -73,8 +76,19 @@ class PersonInfo(xbmcgui.WindowXMLDialog):
         jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 )
         otherMovieResult = json.loads(jsonData)
 
-        otherItemsList = None
+        baseName = name.replace(" ", "+")
+        baseName = baseName.replace("&", "_")
+        baseName = baseName.replace("?", "_")
+        baseName = baseName.replace("=", "_")        
         
+        #detailsString = getDetailsString()
+        #search_url = "http://" + host + ":" + port + "/mediabrowser/Users/" + userid + "/Items/?Recursive=True&Person=PERSON_NAME&Fields=" + detailsString + "&format=json"
+        search_url = "http://" + host + ":" + port + "/mediabrowser/Users/" + userid + "/Items/?Recursive=True&Person=PERSON_NAME&format=json"
+        search_url = urllib.quote(search_url)
+        search_url = search_url.replace("PERSON_NAME", baseName)
+        self.pluginCastLink = "XBMC.Container.Update(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_GETCONTENT) + "&url=" + search_url + ")"         
+        
+        otherItemsList = None
         try:
             otherItemsList = self.getControl(3010)
             
@@ -146,7 +160,13 @@ class PersonInfo(xbmcgui.WindowXMLDialog):
         
     def onClick(self, controlID):
 
-        if(controlID == 3010):
+        if(controlID == 3002):
+            self.showMovies = True
+            
+            xbmc.executebuiltin('Dialog.Close(movieinformation)') 
+            self.close()
+        
+        elif(controlID == 3010):
         
             xbmc.executebuiltin("Dialog.Close(all,true)")
             

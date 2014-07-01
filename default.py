@@ -1868,6 +1868,10 @@ def showPersonInfo(pluginName, handle, params):
     infoPage.setPersonName(params.get("name"))
     infoPage.doModal()
     
+    if(infoPage.showMovies == True):
+        xbmc.log("RUNNING_PLUGIN: " + infoPage.pluginCastLink)
+        xbmc.executebuiltin(infoPage.pluginCastLink)    
+    
     del infoPage
         
 def getWigetContent(pluginName, handle, params):
