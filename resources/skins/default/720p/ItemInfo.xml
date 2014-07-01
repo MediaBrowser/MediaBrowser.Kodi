@@ -148,9 +148,9 @@
         </control>
         
         <control type="list" id="3226">
-            <left>320</left>
+            <left>310</left>
             <top>380</top>
-            <width>400</width>
+            <width>415</width>
             <height>120</height>
             <onleft>3221</onleft>
             <onright>3235</onright>
@@ -160,9 +160,9 @@
             <scrolltime>200</scrolltime>
             <itemlayout height="20">
                 <control type="label">
-                    <left>60</left>
+                    <left>70</left>
                     <top>0</top>
-                    <width>60</width>
+                    <width>70</width>
                     <height>20</height>
                     <font>font10</font>
                     <align>right</align>
@@ -172,7 +172,7 @@
                     <info>ListItem.Label</info>
                 </control>
                 <control type="label">
-                    <left>65</left>
+                    <left>75</left>
                     <top>0</top>
                     <width>340</width>
                     <height>20</height>
@@ -195,9 +195,9 @@
                     <include>VisibleFadeEffect</include>
                 </control>
                 <control type="label">
-                    <left>60</left>
+                    <left>70</left>
                     <top>0</top>
-                    <width>60</width>
+                    <width>70</width>
                     <height>20</height>
                     <font>font10</font>
                     <align>right</align>
@@ -207,7 +207,7 @@
                     <info>ListItem.Label</info>
                 </control>
                 <control type="label">
-                    <left>65</left>
+                    <left>75</left>
                     <top>0</top>
                     <width>340</width>
                     <height>20</height>
