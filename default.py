@@ -68,6 +68,7 @@ from ItemInfo import ItemInfo
 from Utils import PlayUtils
 from ClientInformation import ClientInformation
 from PersonInfo import PersonInfo
+from SearchDialog import SearchDialog
 
 XBMB3C_VERSION = ClientInformation().getVersion()
 
@@ -88,6 +89,7 @@ _MODE_CAST_LIST=14
 _MODE_PERSON_DETAILS=15
 _MODE_WIDGET_CONTENT=16
 _MODE_ITEM_DETAILS=17
+_MODE_SHOW_SEARCH=18
 _MODE_SHOW_PARENT_CONTENT=21
 
 #Check debug first...
@@ -1859,6 +1861,16 @@ def showItemInfo(pluginName, handle, params):
     
     del infoPage
     
+def showSearch(pluginName, handle, params):    
+    printDebug("showSearch Called" + str(params))
+    xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
+    
+    searchDialog = SearchDialog("SearchDialog.xml", __cwd__, "default", "720p")
+
+    searchDialog.doModal()
+    
+    del searchDialog
+    
 def showPersonInfo(pluginName, handle, params):
     printDebug("showPersonInfo Called" + str(params))
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
@@ -2205,6 +2217,8 @@ elif mode == _MODE_WIDGET_CONTENT:
     getWigetContent(sys.argv[0], int(sys.argv[1]), params)
 elif mode == _MODE_ITEM_DETAILS:
     showItemInfo(sys.argv[0], int(sys.argv[1]), params)    
+elif mode == _MODE_SHOW_SEARCH:
+    showSearch(sys.argv[0], int(sys.argv[1]), params)        
 elif mode == _MODE_SHOW_PARENT_CONTENT:
     checkService()
     checkServer()

@@ -122,6 +122,7 @@ class NextUpUpdaterThread(threading.Thread):
                 seriesName = item.get("SeriesName").encode('utf-8')   
 
             eppNumber = "X"
+            tempEpisodeNumber = "XX"
             if(item.get("IndexNumber") != None):
                 eppNumber = item.get("IndexNumber")
                 if eppNumber < 10:
@@ -130,6 +131,7 @@ class NextUpUpdaterThread(threading.Thread):
                   tempEpisodeNumber = str(eppNumber)
             
             seasonNumber = item.get("ParentIndexNumber")
+            tempSeasonNumber = "XX"
             if seasonNumber < 10:
               tempSeasonNumber = "0" + str(seasonNumber)
             else:
