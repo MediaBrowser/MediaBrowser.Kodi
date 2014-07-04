@@ -9,15 +9,17 @@ import threading
 
 class SearchDialog(xbmcgui.WindowXMLDialog):
 
+    searchThread = None
+    
     def __init__(self, *args, **kwargs):
         xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
         
     def onInit(self):
         self.action_exitkeys_id = [10, 13]
         
-        newThread = BackgroundSearchThread()
-        newThread.setDialog(self)
-        newThread.start()
+        self.searchThread = BackgroundSearchThread()
+        self.searchThread.setDialog(self)
+        self.searchThread.start()
         
 
     def onFocus(self, controlId):
@@ -108,28 +110,34 @@ class SearchDialog(xbmcgui.WindowXMLDialog):
             searchTerm = self.getControl(3010).getLabel()
             searchTerm = searchTerm[:-1]
             self.getControl(3010).setLabel(searchTerm)
+            self.searchThread.setSearch(searchTerm)
         elif(controlID == 3057):
-            self.addCharacter(" ") 
+            self.addCharacter(" ")
         elif(controlID == 3058):
             self.getControl(3010).setLabel("")
+            self.searchThread.setSearch("")
             
-
         pass
 
     def addCharacter(self, char):
         searchTerm = self.getControl(3010).getLabel()
         searchTerm = searchTerm + char
         self.getControl(3010).setLabel(searchTerm)
+        self.searchThread.setSearch(searchTerm)
         
 class BackgroundSearchThread(threading.Thread):
  
     active = True
     searchDialog = None
+    searchString = ""
 
     def __init__(self, *args):
         xbmc.log("BackgroundSearchThread Init")
         threading.Thread.__init__(self, *args)
 
+    def setSearch(self, searchFor):
+        self.searchString = searchFor
+        
     def stopRunning(self):
         self.active = False
         
@@ -138,18 +146,77 @@ class BackgroundSearchThread(threading.Thread):
         
     def run(self):
         xbmc.log("BackgroundSearchThread Started")     
-
+        
+        lastSearchString = ""
+        
         while(xbmc.abortRequested == False and self.active == True):
             xbmc.log("BackgroundSearchThread Doing Stuff")   
             
-            movieResultsList = self.searchDialog.getControl(3110)
-            
-            poster = "http://localhost:15001/?id=9e03dfe16b3dcbbd6ae13428cd5a70f2&type=Primary&tag=9cb2b20a2eedd4d5eec4e94c9d15a520"
-            listItem = xbmcgui.ListItem(label="Test 01", label2="Test 02", iconImage=poster, thumbnailImage=poster)
-            movieResultsList.addItem(listItem)
+            if(self.searchString != lastSearchString):
+                self.doSearch()
+                lastSearchString = self.searchString
 
             xbmc.sleep(2000)
 
         xbmc.log("BackgroundSearchThread Exited")
+        
+    def doSearch(self):
+    
+        movieResultsList = self.searchDialog.getControl(3110)
+        #while(movieResultsList.size() > 0):
+        #    movieResultsList.removeItem(0)
+        movieResultsList.reset()
+        
+        if(len(self.searchString) == 0):
+            return
+        
+        __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        port = __settings__.getSetting('port')
+        host = __settings__.getSetting('ipaddress')
+        server = host + ":" + port
+        
+        downloadUtils = DownloadUtils()
+        
+        search = urllib.quote(self.searchString)
+        url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&Limit=20&IncludeItemTypes=Movie,Series,Episode&format=json"
+        jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 ) 
+        result = json.loads(jsonData)
+            
+        items = result.get("SearchHints")
+        
+        if(items == None or len(items) == 0):
+            return
+            
+        for item in items:
+            xbmc.log(str(item))
+        
+            item_id = item.get("ItemId")
+            item_name = item.get("Name")
+            item_type = item.get("Type")
+            
+            typeLabel = ""
+            image_id = ""
+            
+            if(item_type == "Series"):
+                image_id = item.get("ItemId")
+                typeLabel = "Series"                  
+            elif(item_type == "Movie"):
+                image_id = item.get("ItemId")
+                typeLabel = "Movie"    
+            elif(item_type == "Episode"):
+                image_id = item.get("ThumbImageItemId")
+                season = item.get("ParentIndexNumber")
+                eppNum = item.get("IndexNumber")
+                typeLabel = "S" + str(season).zfill(2) + "E" + str(eppNum).zfill(2)
+                    
+            imageTag = ""
+            if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
+                imageTag = item.get("ImageTags").get("Primary")
+            
+            thumbPath = "http://localhost:15001/?id=" + str(image_id) + "&type=Primary&tag=" + imageTag
+            xbmc.log(thumbPath)
+            
+            listItem = xbmcgui.ListItem(label=item_name, label2=typeLabel, iconImage=thumbPath, thumbnailImage=thumbPath)
+            movieResultsList.addItem(listItem)    
         
         

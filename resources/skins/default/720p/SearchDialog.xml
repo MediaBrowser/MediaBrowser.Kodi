@@ -135,7 +135,7 @@
                 <height>30</height>
                 <label>F</label>
                 <onleft>3024</onleft>
-                <onright>-</onright>
+                <onright>3110</onright>
                 <onup>8</onup>
                 <ondown>3031</ondown>
                 <align>center</align>
@@ -646,11 +646,12 @@
     
         </control>
     
+        <!-- Movie Results -->
         <control type="list" id="3110">
-            <left>300</left>
-            <top>100</top>
-            <width>600</width>
-            <height>170</height>
+            <left>260</left>
+            <top>80</top>
+            <width>700</width>
+            <height>190</height>
             <onleft>-</onleft>
             <onright>-</onright>
             <onup>3005</onup>
@@ -676,8 +677,18 @@
                     <align>left</align>
                     <font>font10</font>
                     <textcolor>FFFFFFFFFF</textcolor>
+                    <label>$INFO[Listitem.Label]</label>
+                </control>        
+                <control type="label">
+                    <left>0</left>
+                    <top>170</top>
+                    <width>100</width>
+                    <height>20</height>
+                    <align>left</align>
+                    <font>font10</font>
+                    <textcolor>FFFFFFFFFF</textcolor>
                     <label>$INFO[Listitem.Label2]</label>
-                </control>                  
+                </control>                 
             </itemlayout>
             <focusedlayout width="120">
                 <control type="image">
@@ -697,7 +708,7 @@
                     <texture>$INFO[Listitem.Icon]</texture>
                     <bordertexture border="5">button-focus.png</bordertexture>
                     <bordersize>5</bordersize>
-                    <visible>Control.HasFocus(3010)</visible>
+                    <visible>Control.HasFocus(3110)</visible>
                 </control>      
                 <control type="label">
                     <left>0</left>
@@ -707,8 +718,18 @@
                     <align>left</align>
                     <font>font10</font>
                     <textcolor>FFFFFFFFFF</textcolor>
-                    <label>$INFO[Listitem.Label2]</label>
+                    <label>$INFO[Listitem.Label]</label>
                 </control>  
+                <control type="label">
+                    <left>0</left>
+                    <top>170</top>
+                    <width>100</width>
+                    <height>20</height>
+                    <align>left</align>
+                    <font>font10</font>
+                    <textcolor>FFFFFFFFFF</textcolor>
+                    <label>$INFO[Listitem.Label2]</label>
+                </control>                   
             </focusedlayout>
         </control>  
   
