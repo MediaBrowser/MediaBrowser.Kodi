@@ -84,6 +84,7 @@ _MODE_GETCONTENT=0
 _MODE_MOVIES=0
 _MODE_SEARCH=2
 _MODE_SETVIEWS=3
+_MODE_SHOW_SECTIONS=4
 _MODE_BASICPLAY=12
 _MODE_CAST_LIST=14
 _MODE_PERSON_DETAILS=15
@@ -2241,7 +2242,7 @@ else:
     printDebug("XBMB3C -> identifier: " + str(param_identifier))
 
     #Run a function based on the mode variable that was passed in the URL
-    if ( mode == None ) or ( param_url == None ) or ( len(param_url)<1 ):
+    if ( mode == None or mode == _MODE_SHOW_SECTIONS or param_url == None or len(param_url) < 1 ):
         displaySections()
 
     elif mode == _MODE_GETCONTENT:
