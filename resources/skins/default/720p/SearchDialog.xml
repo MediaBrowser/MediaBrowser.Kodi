@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
-	<defaultcontrol always="true">8</defaultcontrol>
+	<defaultcontrol always="true">3020</defaultcontrol>
     <zorder>2</zorder>
 	<coordinates>
 		<system>1</system>
@@ -18,6 +18,7 @@
 			<texture border="40">DialogBack.png</texture>
 		</control>    
     
+    <!--
 		<control type="button" id="8">
 			<description>Close Window button</description>
 			<left>960</left>
@@ -34,12 +35,20 @@
 			<onup>-</onup>
 			<ondown>3020</ondown>
 		</control>
+    -->
     
-    
+        <control type="image">
+            <left>25</left>
+            <top>98</top>
+            <width>190</width>
+            <height>30</height>
+            <aspectratio>stretch</aspectratio>
+            <texture border="20">KeyboardEditArea.png</texture>
+        </control>    
 		<control type="label" id="3010">
 			<left>30</left>
 			<top>100</top>
-			<width>200</width>
+			<width>180</width>
 			<height>40</height>
 			<font>font13</font>
 			<onleft>-</onleft>
@@ -61,7 +70,7 @@
                 <label>A</label>
                 <onleft>-</onleft>
                 <onright>3021</onright>
-                <onup>8</onup>
+                <onup>-</onup>
                 <ondown>3026</ondown>
                 <align>center</align>
                 <aligny>center</aligny>
@@ -76,7 +85,7 @@
                 <label>B</label>
                 <onleft>3020</onleft>
                 <onright>3022</onright>
-                <onup>8</onup>
+                <onup>-</onup>
                 <ondown>3027</ondown>
                 <align>center</align>
                 <aligny>center</aligny>
@@ -91,7 +100,7 @@
                 <label>C</label>
                 <onleft>3021</onleft>
                 <onright>3023</onright>
-                <onup>8</onup>
+                <onup>-</onup>
                 <ondown>3028</ondown>
                 <align>center</align>
                 <aligny>center</aligny>
@@ -106,7 +115,7 @@
                 <label>D</label>
                 <onleft>3022</onleft>
                 <onright>3024</onright>
-                <onup>8</onup>
+                <onup>-</onup>
                 <ondown>3029</ondown>
                 <align>center</align>
                 <aligny>center</aligny>
@@ -121,7 +130,7 @@
                 <label>E</label>
                 <onleft>3023</onleft>
                 <onright>3025</onright>
-                <onup>8</onup>
+                <onup>-</onup>
                 <ondown>3030</ondown>
                 <align>center</align>
                 <aligny>center</aligny>
@@ -136,7 +145,7 @@
                 <label>F</label>
                 <onleft>3024</onleft>
                 <onright>3110</onright>
-                <onup>8</onup>
+                <onup>-</onup>
                 <ondown>3031</ondown>
                 <align>center</align>
                 <aligny>center</aligny>
@@ -226,7 +235,7 @@
                 <height>30</height>
                 <label>L</label>
                 <onleft>3030</onleft>
-                <onright>-</onright>
+                <onright>3110</onright>
                 <onup>3025</onup>
                 <ondown>3037</ondown>
                 <align>center</align>
@@ -317,7 +326,7 @@
                 <height>30</height>
                 <label>R</label>
                 <onleft>3036</onleft>
-                <onright>-</onright>
+                <onright>3110</onright>
                 <onup>3031</onup>
                 <ondown>3043</ondown>
                 <align>center</align>
@@ -408,7 +417,7 @@
                 <height>30</height>
                 <label>X</label>
                 <onleft>3042</onleft>
-                <onright>-</onright>
+                <onright>3110</onright>
                 <onup>3037</onup>
                 <ondown>3049</ondown>
                 <align>center</align>
@@ -499,7 +508,7 @@
                 <height>30</height>
                 <label>$NUMBER[3]</label>
                 <onleft>3048</onleft>
-                <onright>-</onright>
+                <onright>3110</onright>
                 <onup>3043</onup>
                 <ondown>3055</ondown>
                 <align>center</align>
@@ -590,7 +599,7 @@
                 <height>30</height>
                 <label>$NUMBER[9]</label>
                 <onleft>3054</onleft>
-                <onright>-</onright>
+                <onright>3110</onright>
                 <onup>3049</onup>
                 <ondown>3058</ondown>
                 <align>center</align>
@@ -636,7 +645,7 @@
                 <height>30</height>
                 <label>CLR</label>
                 <onleft>3057</onleft>
-                <onright>-</onright>
+                <onright>3110</onright>
                 <onup>3054</onup>
                 <ondown>-</ondown>
                 <align>center</align>
@@ -646,16 +655,187 @@
     
         </control>
     
+    
         <!-- Movie Results -->
+        
+        <control type="label">
+            <left>265</left>
+            <top>40</top>
+            <height>20</height>
+            <width>190</width>
+            <label>Movies</label>
+            <font>font14</font>
+            <textcolor>white</textcolor>
+            <angle>-90</angle>
+        </control>   
+        
         <control type="list" id="3110">
-            <left>260</left>
-            <top>80</top>
+            <left>280</left>
+            <top>20</top>
+            <width>700</width>
+            <height>170</height>
+            <onleft>3025</onleft>
+            <onright>-</onright>
+            <onup>-</onup>
+            <ondown>3111</ondown>
+            <pagecontrol>-</pagecontrol>
+            <scrolltime>200</scrolltime>
+            <orientation>horizontal</orientation>
+            <itemlayout width="120">
+                <control type="image">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>100</width>
+                    <height>150</height>
+                    <texture>$INFO[Listitem.Icon]</texture>
+                    <bordertexture border="5">button-nofocus.png</bordertexture>
+                    <bordersize>5</bordersize>
+                </control>
+                <control type="label">
+                    <left>0</left>
+                    <top>150</top>
+                    <width>100</width>
+                    <height>20</height>
+                    <align>left</align>
+                    <font>font10</font>
+                    <textcolor>FFFFFFFFFF</textcolor>
+                    <label>$INFO[Listitem.Label]</label>
+                </control>              
+            </itemlayout>
+            <focusedlayout width="120">
+                <control type="image">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>100</width>
+                    <height>150</height>
+                    <texture>$INFO[Listitem.Icon]</texture>
+                    <bordertexture border="5">button-nofocus.png</bordertexture>
+                    <bordersize>5</bordersize>
+                </control>
+                <control type="image">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>100</width>
+                    <height>150</height>
+                    <texture>$INFO[Listitem.Icon]</texture>
+                    <bordertexture border="5">button-focus.png</bordertexture>
+                    <bordersize>5</bordersize>
+                    <visible>Control.HasFocus(3110)</visible>
+                </control>      
+                <control type="label">
+                    <left>0</left>
+                    <top>150</top>
+                    <width>100</width>
+                    <height>20</height>
+                    <align>left</align>
+                    <font>font10</font>
+                    <textcolor>FFFFFFFFFF</textcolor>
+                    <label>$INFO[Listitem.Label]</label>
+                </control>                 
+            </focusedlayout>
+        </control>  
+        
+        <!-- Series -->
+        
+        <control type="label">
+            <left>265</left>
+            <top>240</top>
+            <height>20</height>
+            <width>190</width>
+            <label>Series</label>
+            <font>font14</font>
+            <textcolor>white</textcolor>
+            <angle>-90</angle>
+        </control>   
+        
+        <control type="list" id="3111">
+            <left>280</left>
+            <top>200</top>
+            <width>700</width>
+            <height>170</height>
+            <onleft>3025</onleft>
+            <onright>-</onright>
+            <onup>3110</onup>
+            <ondown>3112</ondown>
+            <pagecontrol>-</pagecontrol>
+            <scrolltime>200</scrolltime>
+            <orientation>horizontal</orientation>
+            <itemlayout width="120">
+                <control type="image">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>100</width>
+                    <height>150</height>
+                    <texture>$INFO[Listitem.Icon]</texture>
+                    <bordertexture border="5">button-nofocus.png</bordertexture>
+                    <bordersize>5</bordersize>
+                </control>
+                <control type="label">
+                    <left>0</left>
+                    <top>150</top>
+                    <width>100</width>
+                    <height>20</height>
+                    <align>left</align>
+                    <font>font10</font>
+                    <textcolor>FFFFFFFFFF</textcolor>
+                    <label>$INFO[Listitem.Label]</label>
+                </control>              
+            </itemlayout>
+            <focusedlayout width="120">
+                <control type="image">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>100</width>
+                    <height>150</height>
+                    <texture>$INFO[Listitem.Icon]</texture>
+                    <bordertexture border="5">button-nofocus.png</bordertexture>
+                    <bordersize>5</bordersize>
+                </control>
+                <control type="image">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>100</width>
+                    <height>150</height>
+                    <texture>$INFO[Listitem.Icon]</texture>
+                    <bordertexture border="5">button-focus.png</bordertexture>
+                    <bordersize>5</bordersize>
+                    <visible>Control.HasFocus(3111)</visible>
+                </control>      
+                <control type="label">
+                    <left>0</left>
+                    <top>150</top>
+                    <width>100</width>
+                    <height>20</height>
+                    <align>left</align>
+                    <font>font10</font>
+                    <textcolor>FFFFFFFFFF</textcolor>
+                    <label>$INFO[Listitem.Label]</label>
+                </control>               
+            </focusedlayout>
+        </control>          
+  
+        <!-- Episods -->
+        
+        <control type="label">
+            <left>265</left>
+            <top>420</top>
+            <height>20</height>
+            <width>190</width>
+            <label>Episodes</label>
+            <font>font14</font>
+            <textcolor>white</textcolor>
+            <angle>-90</angle>
+        </control> 
+        
+        <control type="list" id="3112">
+            <left>280</left>
+            <top>380</top>
             <width>700</width>
             <height>190</height>
-            <onleft>-</onleft>
+            <onleft>3025</onleft>
             <onright>-</onright>
-            <onup>3005</onup>
-            <ondown>3011</ondown>
+            <onup>3111</onup>
+            <ondown>-</ondown>
             <pagecontrol>-</pagecontrol>
             <scrolltime>200</scrolltime>
             <orientation>horizontal</orientation>
@@ -708,7 +888,7 @@
                     <texture>$INFO[Listitem.Icon]</texture>
                     <bordertexture border="5">button-focus.png</bordertexture>
                     <bordersize>5</bordersize>
-                    <visible>Control.HasFocus(3110)</visible>
+                    <visible>Control.HasFocus(3112)</visible>
                 </control>      
                 <control type="label">
                     <left>0</left>
@@ -731,9 +911,7 @@
                     <label>$INFO[Listitem.Label2]</label>
                 </control>                   
             </focusedlayout>
-        </control>  
-  
-    
+        </control>         
     
     
 	</controls>

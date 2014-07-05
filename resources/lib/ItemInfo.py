@@ -174,6 +174,9 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         
         if(controlID == 3002):
            
+            # close all dialogs when playing an item
+            xbmc.executebuiltin("Dialog.Close(all,true)")
+            
             xbmc.executebuiltin("RunPlugin(" + self.playUrl + ")")
             self.close()
             

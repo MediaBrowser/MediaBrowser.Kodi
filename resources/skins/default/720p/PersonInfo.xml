@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
-	<defaultcontrol always="true">8</defaultcontrol>
+	<defaultcontrol always="true">3010</defaultcontrol>
     <zorder>2</zorder>
 	<coordinates>
 		<system>1</system>
@@ -40,6 +40,7 @@
 			<shadowcolor>black</shadowcolor>
 		</control>
         
+        <!--
 		<control type="button" id="8">
 			<description>Close Window button</description>
 			<left>960</left>
@@ -56,6 +57,7 @@
 			<onup>-</onup>
 			<ondown>3005</ondown>
 		</control>
+        -->
         
 		<control type="label" id="3000">
 			<description>person name</description>

@@ -7,6 +7,8 @@ import urllib
 from DownloadUtils import DownloadUtils
 import threading
 
+_MODE_ITEM_DETAILS=17
+
 class SearchDialog(xbmcgui.WindowXMLDialog):
 
     searchThread = None
@@ -117,6 +119,28 @@ class SearchDialog(xbmcgui.WindowXMLDialog):
             self.getControl(3010).setLabel("")
             self.searchThread.setSearch("")
             
+        elif(controlID == 3110):
+        
+            #xbmc.executebuiltin("Dialog.Close(all,true)")
+            itemList = self.getControl(3110)
+            item = itemList.getSelectedItem()
+            action = item.getProperty("ActionUrl")
+            xbmc.executebuiltin("RunPlugin(" + action + ")")
+        elif(controlID == 3111):
+        
+            #xbmc.executebuiltin("Dialog.Close(all,true)")
+            itemList = self.getControl(3111)
+            item = itemList.getSelectedItem()
+            action = item.getProperty("ActionUrl")
+            xbmc.executebuiltin("RunPlugin(" + action + ")")            
+        elif(controlID == 3112):
+        
+            #xbmc.executebuiltin("Dialog.Close(all,true)")
+            itemList = self.getControl(3112)
+            item = itemList.getSelectedItem()
+            action = item.getProperty("ActionUrl")
+            xbmc.executebuiltin("RunPlugin(" + action + ")")            
+            
         pass
 
     def addCharacter(self, char):
@@ -151,7 +175,8 @@ class BackgroundSearchThread(threading.Thread):
         
         while(xbmc.abortRequested == False and self.active == True):
             xbmc.log("BackgroundSearchThread Doing Stuff")   
-            
+            xbmc.log("Current:" + self.searchString)
+            xbmc.log("Last   :" + lastSearchString)
             if(self.searchString != lastSearchString):
                 self.doSearch()
                 lastSearchString = self.searchString
@@ -161,12 +186,23 @@ class BackgroundSearchThread(threading.Thread):
         xbmc.log("BackgroundSearchThread Exited")
         
     def doSearch(self):
-    
+
         movieResultsList = self.searchDialog.getControl(3110)
-        #while(movieResultsList.size() > 0):
-        #    movieResultsList.removeItem(0)
-        movieResultsList.reset()
-        
+        while(movieResultsList.size() > 0):
+            movieResultsList.removeItem(0)
+        #movieResultsList.reset()
+    
+    
+        seriesResultsList = self.searchDialog.getControl(3111)
+        while(seriesResultsList.size() > 0):
+            seriesResultsList.removeItem(0)
+        #seriesResultsList.reset()
+
+        episodeResultsList = self.searchDialog.getControl(3112)
+        while(episodeResultsList.size() > 0):
+            episodeResultsList.removeItem(0)
+        #episodeResultsList.reset()
+       
         if(len(self.searchString) == 0):
             return
         
@@ -177,15 +213,54 @@ class BackgroundSearchThread(threading.Thread):
         
         downloadUtils = DownloadUtils()
         
+        #
+        # Process movies
+        #
         search = urllib.quote(self.searchString)
-        url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&Limit=20&IncludeItemTypes=Movie,Series,Episode&format=json"
+        url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&Limit=10&IncludeItemTypes=Movie&format=json"
         jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 ) 
         result = json.loads(jsonData)
             
         items = result.get("SearchHints")
         
         if(items == None or len(items) == 0):
-            return
+            item = []
+            
+        for item in items:
+            xbmc.log(str(item))
+        
+            item_id = item.get("ItemId")
+            item_name = item.get("Name")
+            item_type = item.get("Type")
+            
+            typeLabel = "Movie"
+                    
+            imageTag = ""
+            if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
+                imageTag = item.get("ImageTags").get("Primary")
+            
+            thumbPath = "http://localhost:15001/?id=" + str(item_id) + "&type=Primary&tag=" + imageTag
+            xbmc.log(thumbPath)
+            
+            listItem = xbmcgui.ListItem(label=item_name, label2=typeLabel, iconImage=thumbPath, thumbnailImage=thumbPath)
+            
+            actionUrl = "plugin://plugin.video.xbmb3c?id=" + item_id + "&mode=" + str(_MODE_ITEM_DETAILS)
+            listItem.setProperty("ActionUrl", actionUrl)
+            
+            movieResultsList.addItem(listItem)    
+            
+        #
+        # Process series
+        #
+        search = urllib.quote(self.searchString)
+        url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&Limit=10&IncludeItemTypes=Series&format=json"
+        jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 ) 
+        result = json.loads(jsonData)
+            
+        items = result.get("SearchHints")
+        
+        if(items == None or len(items) == 0):
+            item = []
             
         for item in items:
             xbmc.log(str(item))
@@ -197,17 +272,8 @@ class BackgroundSearchThread(threading.Thread):
             typeLabel = ""
             image_id = ""
             
-            if(item_type == "Series"):
-                image_id = item.get("ItemId")
-                typeLabel = "Series"                  
-            elif(item_type == "Movie"):
-                image_id = item.get("ItemId")
-                typeLabel = "Movie"    
-            elif(item_type == "Episode"):
-                image_id = item.get("ThumbImageItemId")
-                season = item.get("ParentIndexNumber")
-                eppNum = item.get("IndexNumber")
-                typeLabel = "S" + str(season).zfill(2) + "E" + str(eppNum).zfill(2)
+            image_id = item.get("ItemId")
+            typeLabel = "Series"                  
                     
             imageTag = ""
             if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
@@ -217,6 +283,49 @@ class BackgroundSearchThread(threading.Thread):
             xbmc.log(thumbPath)
             
             listItem = xbmcgui.ListItem(label=item_name, label2=typeLabel, iconImage=thumbPath, thumbnailImage=thumbPath)
-            movieResultsList.addItem(listItem)    
+            
+            actionUrl = "plugin://plugin.video.xbmb3c?id=" + item_id + "&mode=" + str(_MODE_ITEM_DETAILS)
+            listItem.setProperty("ActionUrl", actionUrl)
+            
+            seriesResultsList.addItem(listItem) 
+
+        #
+        # Process episodes
+        #
+        search = urllib.quote(self.searchString)
+        url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&Limit=10&IncludeItemTypes=Episode&format=json"
+        jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 ) 
+        result = json.loads(jsonData)
+            
+        items = result.get("SearchHints")
+        
+        if(items == None or len(items) == 0):
+            item = []
+            
+        for item in items:
+            xbmc.log(str(item))
+        
+            item_id = item.get("ItemId")
+            item_name = item.get("Name")
+            item_type = item.get("Type")
+            
+            image_id = item.get("ThumbImageItemId")
+            season = item.get("ParentIndexNumber")
+            eppNum = item.get("IndexNumber")
+            typeLabel = "S" + str(season).zfill(2) + "E" + str(eppNum).zfill(2)
+                    
+            imageTag = ""
+            if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
+                imageTag = item.get("ImageTags").get("Primary")
+            
+            thumbPath = "http://localhost:15001/?id=" + str(image_id) + "&type=Primary&tag=" + imageTag
+            xbmc.log(thumbPath)
+            
+            listItem = xbmcgui.ListItem(label=item_name, label2=typeLabel, iconImage=thumbPath, thumbnailImage=thumbPath)
+            
+            actionUrl = "plugin://plugin.video.xbmb3c?id=" + item_id + "&mode=" + str(_MODE_ITEM_DETAILS)
+            listItem.setProperty("ActionUrl", actionUrl)
+            
+            episodeResultsList.addItem(listItem)                            
         
         

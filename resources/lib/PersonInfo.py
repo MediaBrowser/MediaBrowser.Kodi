@@ -168,7 +168,7 @@ class PersonInfo(xbmcgui.WindowXMLDialog):
         
         elif(controlID == 3010):
         
-            xbmc.executebuiltin("Dialog.Close(all,true)")
+            #xbmc.executebuiltin("Dialog.Close(all,true)")
             
             itemList = self.getControl(3010)
             item = itemList.getSelectedItem()
