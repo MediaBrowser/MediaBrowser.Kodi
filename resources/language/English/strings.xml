@@ -129,5 +129,7 @@
     
     <string id="30150">Skin does not support setting views</string>
     <string id="30151">Select item action (Requires Restart)</string>
+    
+    <string id="30152">Show Indicators</string>
 
 </strings>

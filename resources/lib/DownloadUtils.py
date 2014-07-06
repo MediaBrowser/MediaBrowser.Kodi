@@ -128,8 +128,44 @@ class DownloadUtils():
         if(data.get("ImageTags") != None and data.get("ImageTags").get(type) != None):
             imageTag = data.get("ImageTags").get(type)   
                 
+        query = "&type=" + type + "&tag=" + imageTag
+        
+        
+        if self.addonSettings.getSetting('showIndicators')=='true': # add watched, unplayedcount and percentage played indicators to posters
+        
+            if type =="Primary" and data.get("Type") != "Episode":
+                UnWatched = 0 if data.get("RecursiveUnplayedItemCount")==None else data.get("RecursiveUnplayedItemCount")        
+        
+                if UnWatched <> 0:
+                    query = query + "&UnplayedCount=" + str(UnWatched)
+                
+                userData = data.get("UserData")  
+                if(userData != None and userData.get("Played") == True):
+                    query = query + "&AddPlayedIndicator=true"
+                
+                PlayedPercentage = 0 if data.get("PlayedPercentage")==None else data.get("PlayedPercentage")
+                if PlayedPercentage != 100 or PlayedPercentage != 0:
+                    query = query + "&PercentPlayed=" + str(PlayedPercentage)     
+                    
+                query = query + "&height=685&width=480"
+            elif type =="Primary" and data.get("Type") == "Episode":
+                UnWatched = 0 if data.get("RecursiveUnplayedItemCount")==None else data.get("RecursiveUnplayedItemCount")        
+        
+                if UnWatched <> 0:
+                    query = query + "&UnplayedCount=" + str(UnWatched)
+                
+                userData = data.get("UserData")  
+                if(userData != None and userData.get("Played") == True):
+                    query = query + "&AddPlayedIndicator=true"
+                
+                PlayedPercentage = 0 if data.get("PlayedPercentage")==None else data.get("PlayedPercentage")
+                if PlayedPercentage != 100 or PlayedPercentage != 0:
+                    query = query + "&PercentPlayed=" + str(PlayedPercentage)
+                    
+                query = query + "&height=225&width=400"
+                
         # use the local image proxy server that is made available by this addons service
-        artwork = "http://localhost:15001/?id=" + str(id) + "&type=" + type + "&tag=" + imageTag
+        artwork = "http://localhost:15001/?id=" + str(id) + query
         self.logMsg("getArtwork : " + artwork, level=2)
         if type=="Primary" and imageTag=="":
             artwork=''

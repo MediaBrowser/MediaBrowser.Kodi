@@ -61,6 +61,24 @@ class MyHandler(BaseHTTPRequestHandler):
         else:
             itemId = None
             
+        if(params.get("UnplayedCount") != None):
+            UnPlayedCount = params.get("UnplayedCount")[0]
+            unPlayed = "&UnplayedCount="+UnPlayedCount
+        else:
+            unPlayed = ""
+            
+        if(params.get("AddPlayedIndicator") != None):
+            AddPlayedIndicator = params.get("AddPlayedIndicator")[0]
+            addPlayed = "&AddPlayedIndicator=true"
+        else:
+            addPlayed = ""
+            
+        if(params.get("PercentPlayed") != None):
+            PercentPlayed = params.get("PercentPlayed")[0]
+            addPercentPlayed = "&PercentPlayed=" + PercentPlayed
+        else:
+            addPercentPlayed = ""     
+    
         imageType = params.get("type")[0]
         indexParam = params.get("index")
         maxheight = params.get("maxheight")
@@ -80,12 +98,15 @@ class MyHandler(BaseHTTPRequestHandler):
         if (name != None):
             remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Persons/" + name + "/Images/" + imageType  + "?Format=original"
         elif (index == None):  
-            remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType  + "?Format=original"
+            remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType  + "?Format=original" + unPlayed + addPlayed + addPercentPlayed
         else:
             remoteUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + itemId + "/Images/" + imageType +  "/" + index  + "?Format=original"
           
         if(maxheight != None):
             remoteUrl = remoteUrl + "&maxheight=" + maxheight[0]
+            
+        if(params.get("height") != None) and (params.get("width") != None):
+           remoteUrl = remoteUrl +  "&height=" + params.get("height")[0] + "&width=" + params.get("width")[0]
                   
         self.logMsg("MB3 Host : " + mb3Host, level=2)
         self.logMsg("MB3 Port : " + mb3Port, level=2)

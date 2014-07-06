@@ -30,6 +30,7 @@
 		<setting id="addResumePercent" type="bool" label="30118" default="true" visible="true" enable="true" />
 		<setting id="autoEnterSingle" type="bool" label="30001" default="true" visible="true" enable="true" />
 		<setting id="useSeasonPoster" type="bool" label="30039" default="false" visible="true" enable="true" />
+		<setting id="showIndicators" type="bool" label="30152" default="true" visible="true" enable="true" />
 		<setting id="offerDelete" type="bool" label="30127" default="false" visible="true" enable="true" />        
 	</category>
 	<category label="30142"> <!-- Services -->
