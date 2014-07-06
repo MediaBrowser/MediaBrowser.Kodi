@@ -174,18 +174,16 @@ class BackgroundSearchThread(threading.Thread):
         lastSearchString = ""
         
         while(xbmc.abortRequested == False and self.active == True):
-            xbmc.log("BackgroundSearchThread Doing Stuff")   
-            xbmc.log("Current:" + self.searchString)
-            xbmc.log("Last   :" + lastSearchString)
-            if(self.searchString != lastSearchString):
-                self.doSearch()
-                lastSearchString = self.searchString
+            currentSearch = self.searchString  
+            if(currentSearch != lastSearchString):
+                lastSearchString = currentSearch
+                self.doSearch(currentSearch)
 
             xbmc.sleep(2000)
 
         xbmc.log("BackgroundSearchThread Exited")
         
-    def doSearch(self):
+    def doSearch(self, searchTerm):
 
         movieResultsList = self.searchDialog.getControl(3110)
         while(movieResultsList.size() > 0):
@@ -203,7 +201,7 @@ class BackgroundSearchThread(threading.Thread):
             episodeResultsList.removeItem(0)
         #episodeResultsList.reset()
        
-        if(len(self.searchString) == 0):
+        if(len(searchTerm) == 0):
             return
         
         __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -216,7 +214,7 @@ class BackgroundSearchThread(threading.Thread):
         #
         # Process movies
         #
-        search = urllib.quote(self.searchString)
+        search = urllib.quote(searchTerm)
         url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&Limit=10&IncludeItemTypes=Movie&format=json"
         jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 ) 
         result = json.loads(jsonData)
@@ -252,7 +250,7 @@ class BackgroundSearchThread(threading.Thread):
         #
         # Process series
         #
-        search = urllib.quote(self.searchString)
+        search = urllib.quote(searchTerm)
         url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&Limit=10&IncludeItemTypes=Series&format=json"
         jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 ) 
         result = json.loads(jsonData)
@@ -292,7 +290,7 @@ class BackgroundSearchThread(threading.Thread):
         #
         # Process episodes
         #
-        search = urllib.quote(self.searchString)
+        search = urllib.quote(searchTerm)
         url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&Limit=10&IncludeItemTypes=Episode&format=json"
         jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 ) 
         result = json.loads(jsonData)
