@@ -1065,8 +1065,10 @@ def getContent( url ):
     jsonData = ""
     cacheDataPath = __addondir__ + urlHash + validator
     
-    xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)
-   
+    if "NextUp" in url and __settings__.getSetting('sortNextUp') == "true":
+        xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_TITLE)
+    else:
+        xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)
     result = None
     
     WINDOW = xbmcgui.Window( 10000 )
