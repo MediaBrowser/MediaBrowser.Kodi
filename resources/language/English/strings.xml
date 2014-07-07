@@ -131,5 +131,8 @@
     <string id="30151">Select item action (Requires Restart)</string>
     
     <string id="30152">Show Indicators</string>
+    <string id="30153">  - Show Watched Indicator</string>
+    <string id="30154">  - Show Unplayed Count Indicator</string>
+    <string id="30155">  - Show Played Percentage Indicator</string>
 
 </strings>

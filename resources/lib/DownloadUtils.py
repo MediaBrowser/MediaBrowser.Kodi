@@ -136,30 +136,30 @@ class DownloadUtils():
             if type =="Primary" and data.get("Type") != "Episode":
                 UnWatched = 0 if data.get("RecursiveUnplayedItemCount")==None else data.get("RecursiveUnplayedItemCount")        
         
-                if UnWatched <> 0:
+                if UnWatched <> 0 and self.addonSettings.getSetting('showUnplayedIndicators')=='true':
                     query = query + "&UnplayedCount=" + str(UnWatched)
                 
                 userData = data.get("UserData")  
-                if(userData != None and userData.get("Played") == True):
+                if(userData != None and userData.get("Played") == True and self.addonSettings.getSetting('showWatchedIndicators')=='true'):
                     query = query + "&AddPlayedIndicator=true"
                 
                 PlayedPercentage = 0 if data.get("PlayedPercentage")==None else data.get("PlayedPercentage")
-                if PlayedPercentage != 100 or PlayedPercentage != 0:
+                if (PlayedPercentage != 100 or PlayedPercentage != 0) and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                     query = query + "&PercentPlayed=" + str(PlayedPercentage)     
                     
                 query = query + "&height=685&width=480"
             elif type =="Primary" and data.get("Type") == "Episode":
                 UnWatched = 0 if data.get("RecursiveUnplayedItemCount")==None else data.get("RecursiveUnplayedItemCount")        
         
-                if UnWatched <> 0:
+                if UnWatched <> 0 and self.addonSettings.getSetting('showUnplayedIndicators')=='true':
                     query = query + "&UnplayedCount=" + str(UnWatched)
                 
                 userData = data.get("UserData")  
-                if(userData != None and userData.get("Played") == True):
+                if(userData != None and userData.get("Played") == True and self.addonSettings.getSetting('showWatchedIndicators')=='true'):
                     query = query + "&AddPlayedIndicator=true"
                 
                 PlayedPercentage = 0 if data.get("PlayedPercentage")==None else data.get("PlayedPercentage")
-                if PlayedPercentage != 100 or PlayedPercentage != 0:
+                if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                     query = query + "&PercentPlayed=" + str(PlayedPercentage)
                     
                 query = query + "&height=225&width=400"
