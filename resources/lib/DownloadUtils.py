@@ -144,6 +144,8 @@ class DownloadUtils():
                     query = query + "&AddPlayedIndicator=true"
                 
                 PlayedPercentage = 0 if data.get("PlayedPercentage")==None else data.get("PlayedPercentage")
+                if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
+                    PlayedPercentage = userData.get("PlayedPercentage")
                 if (PlayedPercentage != 100 or PlayedPercentage != 0) and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                     query = query + "&PercentPlayed=" + str(PlayedPercentage)     
                     
@@ -159,6 +161,8 @@ class DownloadUtils():
                     query = query + "&AddPlayedIndicator=true"
                 
                 PlayedPercentage = 0 if data.get("PlayedPercentage")==None else data.get("PlayedPercentage")
+                if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
+                    PlayedPercentage = userData.get("PlayedPercentage")
                 if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                     query = query + "&PercentPlayed=" + str(PlayedPercentage)
                     
