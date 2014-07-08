@@ -511,11 +511,16 @@ def addGUIItem( url, details, extraData, folder=True ):
     #list.setInfo('video', {'plotoutline' : extraData.get('cast')}) # Hack to get cast data into skin
     list.setInfo('video', {'episode': details.get('episode')})
     list.setInfo('video', {'season': details.get('season')})
-    list.setProperty('TotalSeasons',extraData.get('TotalSeasons'))
-    list.setProperty('TotalEpisodes',extraData.get('TotalEpisodes'))
-    list.setProperty('WatchedEpisodes',extraData.get('WatchedEpisodes'))
-    list.setProperty('UnWatchedEpisodes',extraData.get('UnWatchedEpisodes'))
-    list.setProperty('NumEpisodes',extraData.get('NumEpisodes'))
+    if extraData.get('TotalSeasons')!=None:
+      list.setProperty('TotalSeasons',extraData.get('TotalSeasons'))
+    if extraData.get('TotalEpisodes')!=None:  
+      list.setProperty('TotalEpisodes',extraData.get('TotalEpisodes'))
+    if extraData.get('WatchedEpisodes')!=None:
+      list.setProperty('WatchedEpisodes',extraData.get('WatchedEpisodes'))
+    if extraData.get('UnWatchedEpisodes')!=None:
+      list.setProperty('UnWatchedEpisodes',extraData.get('UnWatchedEpisodes'))
+    if extraData.get('NumEpisodes')!=None:
+      list.setProperty('NumEpisodes',extraData.get('NumEpisodes'))
     list.setInfo('video', {'mpaa': extraData.get('mpaa')})
     list.setInfo('video', {'rating': extraData.get('rating')})
     watched = extraData.get('watchedurl')
