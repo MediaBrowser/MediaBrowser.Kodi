@@ -60,7 +60,7 @@ class BackgroundRotationThread(threading.Thread):
         
         last_id = ""
         self.updateArtLinks()
-        self.setBackgroundLink(filterOnParent_Last)
+        #self.setBackgroundLink(filterOnParent_Last)
         lastRun = datetime.today()
         itemLastRun = datetime.today()
         
@@ -71,7 +71,7 @@ class BackgroundRotationThread(threading.Thread):
             backgroundRefresh = 10
             
         itemBackgroundRefresh = 5
-        lastUserName = ""
+        lastUserName = addonSettings.getSetting('username')
 
         while (xbmc.abortRequested == False):
             td = datetime.today() - lastRun
@@ -79,8 +79,7 @@ class BackgroundRotationThread(threading.Thread):
             secTotal = td.seconds
             secTotal2 = td2.seconds
             
-            addonSettings2 = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-            userName = addonSettings2.getSetting('username')  
+            userName = addonSettings.getSetting('username')  
             self.logMsg("Server details string : (" + userName + ") (" + lastUserName + ")", level=2)
             
             Collection = WINDOW.getProperty("MB3.Background.Collection")
@@ -131,8 +130,12 @@ class BackgroundRotationThread(threading.Thread):
         
         WINDOW = xbmcgui.Window( 10000 )
         if(result.get("global") != None):
-            self.logMsg("Setting Global Last : " + str(result.get("global")), level=2)
-            WINDOW.setProperty("MB3.Background.Global.FanArt", result.get("global")["url"])       
+            WINDOW.setProperty("MB3.Background.Global.FanArt", result.get("global")["url"])
+            self.logMsg("MB3.Background.Global.FanArt=" + result.get("global")["url"], level=2)
+            WINDOW.setProperty("MB3.Background.Global.FanArt.Poster", result.get("global")["poster"])
+            self.logMsg("MB3.Background.Global.FanArt.Poster=" + result.get("global")["poster"], level=2)    
+            WINDOW.setProperty("MB3.Background.Global.FanArt.Action", result.get("global")["action"])
+            self.logMsg("MB3.Background.Global.FanArt.Action=" + result.get("global")["action"], level=2)             
 
         if(result.get("movie") != None):
             self.logMsg("Setting Movie Last : " + str(result.get("movie")), level=2)

@@ -161,7 +161,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
     def setId(self, id):
         self.id = id
         
-    def onFocus(self, controlId):
+    def onFocus(self, controlId):      
         pass
         
     def doAction(self):

@@ -1938,7 +1938,7 @@ def getWigetContent(pluginName, handle, params):
         imageTag = ""
         if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
             imageTag = item.get("ImageTags").get("Primary")
-            
+        
         image = "http://localhost:15001/?id=" + str(image_id) + "&type=" + "Primary" + "&tag=" + imageTag
         
         name = item.get("Name")

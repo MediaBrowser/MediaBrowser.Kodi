@@ -27,7 +27,6 @@
 		</control>
         
 		<control type="label" id="3000">
-			<description>name</description>
 			<left>30</left>
 			<top>25</top>
 			<width>950</width>
@@ -39,7 +38,6 @@
 		</control>
         
 		<control type="label" id="3003">
-			<description>name</description>
 			<left>30</left>
 			<top>55</top>
 			<width>300</width>
