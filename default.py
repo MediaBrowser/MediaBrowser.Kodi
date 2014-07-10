@@ -488,7 +488,7 @@ def addGUIItem( url, details, extraData, folder=True ):
         list=setArt(list,artType, imagePath)
         printDebug( "Setting " + artType + " as " + imagePath, level=2)
 
-    menuItems = addContextMenu(details, extraData)
+    menuItems = addContextMenu(details, extraData, folder)
     if(len(menuItems) > 0):
         list.addContextMenuItems( menuItems, g_contextReplace )
     
@@ -535,7 +535,7 @@ def addGUIItem( url, details, extraData, folder=True ):
         
     return (u, list, folder)
 
-def addContextMenu(details, extraData):
+def addContextMenu(details, extraData, folder):
     printDebug("Building Context Menus", level=2)
     commands = []
     watched = extraData.get('watchedurl')
@@ -569,6 +569,7 @@ def addContextMenu(details, extraData):
             
         argsToPass = 'genrefilter'
         commands.append(( __language__(30040), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
+        if not folder:
         argsToPass = 'playall,' + extraData.get('id')
         commands.append(( __language__(30041), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))            
         argsToPass = 'refresh'
