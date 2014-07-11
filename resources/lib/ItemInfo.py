@@ -40,6 +40,20 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         image = downloadUtils.getArtwork(item, "Primary")
         fanArt = downloadUtils.getArtwork(item, "Backdrop")
         
+        # calculate the percentage complete
+        userData = item.get("UserData")
+        cappedPercentage = None
+        if(userData != None):
+            playBackTicks = float(userData.get("PlaybackPositionTicks"))
+            if(playBackTicks != None and playBackTicks > 0):
+                runTimeTicks = float(item.get("RunTimeTicks"))
+                percentage = int((playBackTicks / runTimeTicks) * 100.0)
+                cappedPercentage = percentage - (percentage % 10)
+                if(cappedPercentage == 0):
+                    cappedPercentage = 10
+                if(cappedPercentage == 100):
+                    cappedPercentage = 90        
+        
         episodeInfo = ""
         type = item.get("Type")
         if(type == "Episode" or type == "Season"):
@@ -144,19 +158,32 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
                 if genre == "": #Just take the first genre
                     genre = genre_string
                 else:
-                    genre = genre + " / " + genre_string      
+                    genre = genre + " / " + genre_string
 
         listItem = xbmcgui.ListItem("Genre:", genre)
         infoList.addItem(listItem) 
         
         path = item.get('Path')
         listItem = xbmcgui.ListItem("Path:", path)
-        infoList.addItem(listItem)     
+        infoList.addItem(listItem)
+        
+        # add resume percentage text to name
+        addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
+        if (addResumePercent and cappedPercentage != None):
+            name = name + " (" + str(cappedPercentage) + "%)"        
 
         self.getControl(3000).setLabel(name)
         self.getControl(3003).setLabel(episodeInfo)
         self.getControl(3001).setImage(fanArt)
-        self.getControl(3009).setImage(image)
+        
+        if(type == "Episode"):
+            self.getControl(3009).setImage(image)
+            if(cappedPercentage != None):
+                self.getControl(3010).setImage("Progress\progress_" + str(cappedPercentage) + ".png")
+        else:
+            self.getControl(3011).setImage(image)
+            if(cappedPercentage != None):
+                self.getControl(3012).setImage("Progress\progress_" + str(cappedPercentage) + ".png")
         
     def setId(self, id):
         self.id = id

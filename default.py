@@ -453,13 +453,12 @@ def addGUIItem( url, details, extraData, folder=True ):
     printDebug("Setting thumbnail as " + thumbPath, level=2)
     
     # calculate percentage
-    perasint = None
+    cappedPercentage = None
     if (extraData.get('resumetime') != None and int(extraData.get('resumetime')) > 0):
         duration = float(extraData.get('duration'))
         resume = float(extraData.get('resumetime')) / 60.0
-        percentage = (resume / duration) * 100.0
-        perasint = int(percentage)
-        cappedPercentage = perasint - (perasint % 10)
+        percentage = int((resume / duration) * 100.0)
+        cappedPercentage = percentage - (percentage % 10)
         if(cappedPercentage == 0):
             cappedPercentage = 10
         if(cappedPercentage == 100):
@@ -468,8 +467,8 @@ def addGUIItem( url, details, extraData, folder=True ):
         
     # add resume percentage text to titles
     addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
-    if (addResumePercent and details.get('title') != None and perasint != None):
-        details['title'] = details.get('title') + " (" + str(perasint) + "%)"
+    if (addResumePercent and details.get('title') != None and cappedPercentage != None):
+        details['title'] = details.get('title') + " (" + str(cappedPercentage) + "%)"
     
     #Set the properties of the item, such as summary, name, season, etc
     list.setInfo( type=extraData.get('type','Video'), infoLabels=details )
@@ -560,6 +559,7 @@ def addContextMenu(details, extraData, folder):
             
         argsToPass = 'sortby'
         commands.append(( __language__(30097), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
+        
         if 'Ascending' in WINDOW.getProperty("currenturl"):
             argsToPass = 'sortorder'
             commands.append(( __language__(30098), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
@@ -569,15 +569,20 @@ def addContextMenu(details, extraData, folder):
             
         argsToPass = 'genrefilter'
         commands.append(( __language__(30040), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
+        
         if not folder:
-        argsToPass = 'playall,' + extraData.get('id')
-        commands.append(( __language__(30041), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))            
+            argsToPass = 'playall,' + extraData.get('id')
+            commands.append(( __language__(30041), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))  
+            
         argsToPass = 'refresh'
         commands.append(( __language__(30042), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
+        
         argsToPass = 'delete,' + extraData.get('deleteurl')
         commands.append(( __language__(30043), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
+        
         if  extraData.get('itemtype') == 'Trailer':
             commands.append(( __language__(30046),"XBMC.RunPlugin(%s)" % CP_ADD_URL % details.get('title')))
+            
     return(commands)
     
 def getDetailsString():
@@ -1975,9 +1980,6 @@ def getWigetContent(pluginName, handle, params):
         favorite = "false"
         seekTime = 0
         if(userData != None):
-            lastPlayedDate = userData.get("LastPlayedDate")
-            printDebug("WIDGET_DATE_LASTPLAYED: " + str(lastPlayedDate), 2)
-        
             playBackTicks = float(userData.get("PlaybackPositionTicks"))
             if(playBackTicks != None and playBackTicks > 0):
                 runTimeTicks = float(item.get("RunTimeTicks"))

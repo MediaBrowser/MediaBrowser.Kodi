@@ -48,12 +48,40 @@
             <textcolor>FFFFFFFFFF</textcolor>
 		</control>        
         
+        <!-- episode image 16x9 -->
         <control type="image" id="3009">
             <left>40</left>
-            <top>100</top>
+            <top>130</top>
             <width>250</width>
+            <height>140</height>
+            <aspectratio>stretch</aspectratio>
+        </control>
+        <control type="image" id="3010">
+            <left>40</left>
+            <top>265</top>
+            <width>250</width>
+            <height>5</height>
+            <texture background="true">-</texture>
+            <colordiffuse>AAFFFFFF</colordiffuse>
+            <aspectratio>stretch</aspectratio>
+        </control>            
+        
+        <!-- poster image -->
+        <control type="image" id="3011">
+            <left>60</left>
+            <top>100</top>
+            <width>175</width>
             <height>250</height>
-            <aspectratio>keep</aspectratio>
+            <aspectratio>stretch</aspectratio>
+        </control>
+        <control type="image" id="3012">
+            <left>60</left>
+            <top>345</top>
+            <width>175</width>
+            <height>5</height>
+            <texture background="true">-</texture>
+            <colordiffuse>AAFFFFFF</colordiffuse>
+            <aspectratio>stretch</aspectratio>
         </control>
         
         <control type="list" id="3220">
