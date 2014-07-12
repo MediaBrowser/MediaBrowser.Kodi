@@ -107,7 +107,10 @@ class MyHandler(BaseHTTPRequestHandler):
             
         if(params.get("height") != None) and (params.get("width") != None):
            remoteUrl = remoteUrl +  "&height=" + params.get("height")[0] + "&width=" + params.get("width")[0]
-                  
+        
+        if addonSettings.getSetting('disableCoverArt')=='true':
+            remoteUrl = remoteUrl + "&EnableImageEnhancers=false"
+           
         self.logMsg("MB3 Host : " + mb3Host, level=2)
         self.logMsg("MB3 Port : " + mb3Port, level=2)
         self.logMsg("Item ID : " + str(itemId), level=2)
