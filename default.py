@@ -100,7 +100,7 @@ try:
 except:
     pass
 
-if (__settings__.getSetting('useJson')=='true'):
+if (__settings__.getSetting('useJson')=='false'):
     import json as json
 else:
     import simplejson as json

@@ -18,7 +18,7 @@
     <string id="30022">Advanced</string>
     <string id="30024">Username:</string>
     <string id="30025">Password:</string>
-    <string id="30026">Use JSON instead of SIMPLEJSON (recommended for Pi)</string>
+    <string id="30026">Use SIMPLEJSON instead of JSON</string>
     
     <string id="30030">Port Number:</string>
     <string id="30036">Number of recent Movies to show:</string>    
