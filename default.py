@@ -387,7 +387,7 @@ def delete (url):
             progress.update(deleteSleep*10,__language__(30053))
         progress.close()
         xbmc.executebuiltin("Container.Refresh")
-                
+               
 def addGUIItem( url, details, extraData, folder=True ):
 
     printDebug("Adding GuiItem for [%s]" % details.get('title','Unknown'), level=2)
@@ -423,7 +423,6 @@ def addGUIItem( url, details, extraData, folder=True ):
         else:
             u = sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
 
-        
     #Create the ListItem that will be displayed
     thumbPath=str(extraData.get('thumb',''))
     
@@ -435,7 +434,7 @@ def addGUIItem( url, details, extraData, folder=True ):
             listItemName = extraData.get('premieredate').decode("utf-8") + u" - " + details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + details.get('season').decode("utf-8") + u"E" + details.get('title','Unknown').decode("utf-8")
             if(addCounts and extraData.get("RecursiveItemCount") != None and extraData.get("RecursiveItemCount") != None):
                 listItemName = listItemName + " (" + str(extraData.get("RecursiveItemCount") - extraData.get("RecursiveUnplayedItemCount")) + "/" + str(extraData.get("RecursiveItemCount")) + ")"
-            list=xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
+            list = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
             if details.get('season') == None:
                 season = '0'
@@ -444,7 +443,7 @@ def addGUIItem( url, details, extraData, folder=True ):
             listItemName = details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + season + u"E" + details.get('title','Unknown').decode("utf-8")
             if(addCounts and extraData.get("RecursiveItemCount") != None and extraData.get("RecursiveItemCount") != None):
                 listItemName = listItemName + " (" + str(extraData.get("RecursiveItemCount") - extraData.get("RecursiveUnplayedItemCount")) + "/" + str(extraData.get("RecursiveItemCount")) + ")"
-            list=xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
+            list = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
     else:
         listItemName = details.get('title','Unknown').decode("utf-8")
         if(addCounts and extraData.get("RecursiveItemCount") != None and extraData.get("RecursiveItemCount") != None):
@@ -464,15 +463,15 @@ def addGUIItem( url, details, extraData, folder=True ):
         if(cappedPercentage == 100):
             cappedPercentage = 90
         list.setProperty("complete_percentage", str(cappedPercentage))          
-        
+     
     # add resume percentage text to titles
     addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
     if (addResumePercent and details.get('title') != None and cappedPercentage != None):
         details['title'] = details.get('title') + " (" + str(cappedPercentage) + "%)"
     
     #Set the properties of the item, such as summary, name, season, etc
-    list.setInfo( type=extraData.get('type','Video'), infoLabels=details )
-
+    #list.setInfo( type=extraData.get('type','Video'), infoLabels=details )
+    
     #For all end items    
     if ( not folder):
         #list.setProperty('IsPlayable', 'true')
@@ -486,11 +485,56 @@ def addGUIItem( url, details, extraData, folder=True ):
         imagePath=str(extraData.get(artType,''))
         list=setArt(list,artType, imagePath)
         printDebug( "Setting " + artType + " as " + imagePath, level=2)
-
+    
     menuItems = addContextMenu(details, extraData, folder)
     if(len(menuItems) > 0):
         list.addContextMenuItems( menuItems, g_contextReplace )
+
+    # new way
+    videoInfoLabels = {}
     
+    if(extraData.get('type') == None or extraData.get('type') == "Video"):
+        videoInfoLabels.update(details)
+    else:
+        list.setInfo( type = extraData.get('type','Video'), infoLabels = details )
+    
+    videoInfoLabels["duration"] = extraData.get("duration")
+    videoInfoLabels["playcount"] = extraData.get("playcount")
+    if (extraData.get('favorite') == 'true'):
+        videoInfoLabels["top250"] = "1"    
+        
+    videoInfoLabels["mpaa"] = extraData.get('mpaa')
+    videoInfoLabels["rating"] = extraData.get('rating')
+    videoInfoLabels["director"] = extraData.get('director')
+    videoInfoLabels["writer"] = extraData.get('writer')
+    videoInfoLabels["year"] = extraData.get('year')
+    videoInfoLabels["studio"] = extraData.get('studio')
+    videoInfoLabels["genre"] = extraData.get('genre')
+    
+    videoInfoLabels["episode"] = details.get('episode')
+    videoInfoLabels["season"] = details.get('season') 
+    
+    list.setInfo('video', videoInfoLabels)
+    
+    list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
+    list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
+    
+    list.setProperty('CriticRating', str(extraData.get('criticrating')))
+    if extraData.get('totaltime') != None:
+        list.setProperty('TotalTime', extraData.get('totaltime'))
+    if extraData.get('TotalSeasons')!=None:
+      list.setProperty('TotalSeasons',extraData.get('TotalSeasons'))
+    if extraData.get('TotalEpisodes')!=None:  
+      list.setProperty('TotalEpisodes',extraData.get('TotalEpisodes'))
+    if extraData.get('WatchedEpisodes')!=None:
+      list.setProperty('WatchedEpisodes',extraData.get('WatchedEpisodes'))
+    if extraData.get('UnWatchedEpisodes')!=None:
+      list.setProperty('UnWatchedEpisodes',extraData.get('UnWatchedEpisodes'))
+    if extraData.get('NumEpisodes')!=None:
+      list.setProperty('NumEpisodes',extraData.get('NumEpisodes'))
+    
+    #old way
+    '''
     list.setInfo('video', {'duration' : extraData.get('duration')})
     list.setInfo('video', {'playcount' : extraData.get('playcount')})
     list.setProperty('CriticRating', str(extraData.get('criticrating')))
@@ -527,6 +571,7 @@ def addGUIItem( url, details, extraData, folder=True ):
         list.setProperty('watchedurl', extraData.get('watchedurl'))
     list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
     list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
+    '''
     
     pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + str(extraData.get('id'))
     list.setProperty('CastPluginLink', pluginCastLink)
@@ -2257,14 +2302,25 @@ else:
 
     elif mode == _MODE_GETCONTENT:
         if __settings__.getSetting('profile') == "true":
+        
             xbmcgui.Dialog().ok("Warning", "Profiling enabled.", "Please remember to turn off when finished testing.")
+            
+            pr = cProfile.Profile()
+            pr.enable()
+            getContent(param_url)
+            pr.disable()
+            ps = pstats.Stats(pr)
+            
             fileTimeStamp = time.strftime("%Y-%m-%d %H-%M-%S")
-            profileFileName = __addondir__ + "profile_(" + fileTimeStamp + ").dat"
-            filename = __addondir__ + "profile_cumulative_(" + fileTimeStamp + ").txt"
-            cProfile.run("getContent(param_url)", profileFileName)
-            stream = open(filename, "w")
-            p = pstats.Stats(profileFileName, stream=stream)
-            p.sort_stats('cumulative').print_stats()
+            tabFileName = __addondir__ + "profile_(" + fileTimeStamp + ").tab"
+            f = open(tabFileName, 'wb')
+            f.write("NumbCalls\tTotalTime\tCumulativeTime\tFunctionName\tFileName\r\n")
+            for (key, value) in ps.stats.items():
+                (filename, count, func_name) = key
+                (ccalls, ncalls, total_time, cumulative_time, callers) = value
+                f.write(str(ncalls) + "\t" + "{:10.4f}".format(total_time) + "\t" + "{:10.4f}".format(cumulative_time) + "\t" + func_name + "\t" + filename + "\r\n")
+            f.close()
+            
         else:
             getContent(param_url)
 
