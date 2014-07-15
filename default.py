@@ -455,14 +455,15 @@ def addGUIItem( url, details, extraData, folder=True ):
     cappedPercentage = None
     if (extraData.get('resumetime') != None and int(extraData.get('resumetime')) > 0):
         duration = float(extraData.get('duration'))
-        resume = float(extraData.get('resumetime')) / 60.0
-        percentage = int((resume / duration) * 100.0)
-        cappedPercentage = percentage - (percentage % 10)
-        if(cappedPercentage == 0):
-            cappedPercentage = 10
-        if(cappedPercentage == 100):
-            cappedPercentage = 90
-        list.setProperty("complete_percentage", str(cappedPercentage))          
+        if(duration > 0):
+            resume = float(extraData.get('resumetime')) / 60.0
+            percentage = int((resume / duration) * 100.0)
+            cappedPercentage = percentage - (percentage % 10)
+            if(cappedPercentage == 0):
+                cappedPercentage = 10
+            if(cappedPercentage == 100):
+                cappedPercentage = 90
+            list.setProperty("complete_percentage", str(cappedPercentage))          
      
     # add resume percentage text to titles
     addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
@@ -1433,8 +1434,8 @@ def processDirectory(url, results, progress):
                  }
                  
         try:
-            tempDuration = str(int(item.get("RunTimeTicks"))/(10000000*60))
-            RunTimeTicks = str(item.get("RunTimeTicks"))
+            tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
+            RunTimeTicks = str(item.get("RunTimeTicks", "0"))
         except TypeError:
             try:
                 tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
@@ -1609,8 +1610,8 @@ def processSearch(url, results, progress):
                  }
                  
         try:
-            tempDuration = str(int(item.get("RunTimeTicks"))/(10000000*60))
-            RunTimeTicks = str(item.get("RunTimeTicks"))
+            tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
+            RunTimeTicks = str(item.get("RunTimeTicks", "0"))
         except TypeError:
             try:
                 tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
@@ -1709,8 +1710,8 @@ def processChannels(url, results, progress):
             viewType='_MUSICTRACKS'
                  
         try:
-            tempDuration = str(int(item.get("RunTimeTicks"))/(10000000*60))
-            RunTimeTicks = str(item.get("RunTimeTicks"))
+            tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
+            RunTimeTicks = str(item.get("RunTimeTicks", "0"))
         except TypeError:
             try:
                 tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
@@ -2027,14 +2028,15 @@ def getWigetContent(pluginName, handle, params):
         if(userData != None):
             playBackTicks = float(userData.get("PlaybackPositionTicks"))
             if(playBackTicks != None and playBackTicks > 0):
-                runTimeTicks = float(item.get("RunTimeTicks"))
-                percentage = int((playBackTicks / runTimeTicks) * 100.0)
-                cappedPercentage = percentage - (percentage % 10)
-                if(cappedPercentage == 0):
-                    cappedPercentage = 10
-                if(cappedPercentage == 100):
-                    cappedPercentage = 90
-                list_item.setProperty("complete_percentage", str(cappedPercentage))
+                runTimeTicks = float(item.get("RunTimeTicks", "0"))
+                if(runTimeTicks > 0):
+                    percentage = int((playBackTicks / runTimeTicks) * 100.0)
+                    cappedPercentage = percentage - (percentage % 10)
+                    if(cappedPercentage == 0):
+                        cappedPercentage = 10
+                    if(cappedPercentage == 100):
+                        cappedPercentage = 90
+                    list_item.setProperty("complete_percentage", str(cappedPercentage))
                 
         selectAction = __settings__.getSetting('selectAction')
         if(selectAction == "1"):
