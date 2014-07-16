@@ -46,13 +46,14 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         if(userData != None):
             playBackTicks = float(userData.get("PlaybackPositionTicks"))
             if(playBackTicks != None and playBackTicks > 0):
-                runTimeTicks = float(item.get("RunTimeTicks"))
-                percentage = int((playBackTicks / runTimeTicks) * 100.0)
-                cappedPercentage = percentage - (percentage % 10)
-                if(cappedPercentage == 0):
-                    cappedPercentage = 10
-                if(cappedPercentage == 100):
-                    cappedPercentage = 90        
+                runTimeTicks = float(item.get("RunTimeTicks", "0"))
+                if(runTimeTicks > 0):
+                    percentage = int((playBackTicks / runTimeTicks) * 100.0)
+                    cappedPercentage = percentage - (percentage % 10)
+                    if(cappedPercentage == 0):
+                        cappedPercentage = 10
+                    if(cappedPercentage == 100):
+                        cappedPercentage = 90        
         
         episodeInfo = ""
         type = item.get("Type")

@@ -18,24 +18,16 @@
 			<texture border="40">DialogBack.png</texture>
 		</control>    
     
-    <!--
-		<control type="button" id="8">
-			<description>Close Window button</description>
-			<left>960</left>
-			<top>15</top>
-			<width>64</width>
-			<height>32</height>
-			<label>-</label>
-			<font>-</font>
-			<onclick>PreviousMenu</onclick>
-			<texturefocus>DialogCloseButton-focus.png</texturefocus>
-			<texturenofocus>DialogCloseButton.png</texturenofocus>
-			<onleft>-</onleft>
-			<onright>-</onright>
-			<onup>-</onup>
-			<ondown>3020</ondown>
-		</control>
-    -->
+		<control type="image">
+			<left>20</left>
+			<top>20</top>
+			<width>1000</width>
+			<height>560</height>
+			<texture>$INFO[Skin.CurrentTheme,special://skin/backgrounds/,.jpg]</texture>
+			<visible>![Skin.HasSetting(UseCustomBackground) + !IsEmpty(Skin.String(CustomBackgroundPath))]</visible>
+			<include>VisibleFadeEffect</include>            
+            <colordiffuse>FF444444</colordiffuse>
+		</control>    
     
         <control type="image">
             <left>25</left>
