@@ -1,4 +1,5 @@
 from uuid import getnode as get_mac
+import xbmcaddon
 
 class ClientInformation():
 
@@ -6,4 +7,5 @@ class ClientInformation():
         return "%012X"%get_mac()
         
     def getVersion(self):
-        return "0.9.513"
+        version = xbmcaddon.Addon(id="plugin.video.xbmb3c").getAddonInfo("version")
+        return version
