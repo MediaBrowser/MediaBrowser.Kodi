@@ -787,13 +787,13 @@ class BackgroundRotationThread(threading.Thread):
         images = item.get("BackdropImageTags")
         plot = item.get("Overview")
         id = item.get("Id")
+        urlid = id
         parentID = item.get("ParentId")
         origid = id
         name = item.get("Name")
-        
         if (images == None or images == []):
           images = item.get("ParentBackdropImageTags")
-          id = item.get("ParentId")
+          urlid = item.get("ParentBackdropItemId")
           if (images == None):
             images = []
             
@@ -802,11 +802,11 @@ class BackgroundRotationThread(threading.Thread):
         newBgLinks = []
         for backdrop in images:
             info = {}
-            info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
-            info["index"] = index
-            info["id"] = id
-            info["parent"] = parentID
+            info["url"] = "http://localhost:15001/?id=" + str(urlid) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
             info["plot"] = plot
+            info["index"] = index
+            info["id"] = urlid
+            info["parent"] = parentID
             info["name"] = name
             self.logMsg("BG Item Image Info : " + str(info), level=2)
             newBgLinks.append(info)
