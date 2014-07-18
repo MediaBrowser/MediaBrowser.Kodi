@@ -430,6 +430,8 @@ class BackgroundRotationThread(threading.Thread):
                         actionUrl = ""
                         if(col_item.get("Type") == "Movie" or col_item.get("Type") == "Trailer" or col_item.get("Type") == "MusicVideo"):
                             imageTag = col_item.get("ImageTags").get("Primary")
+                            if imageTag == None:
+                                imageTag = ""
                             posterImage = "http://localhost:15001/?id=" + str(id) + "&type=Primary" + "&tag=" + imageTag
                             url =  mb3Host + ":" + mb3Port + ',;' + id
                             url = urllib.quote(url)
@@ -438,8 +440,8 @@ class BackgroundRotationThread(threading.Thread):
 
                         elif(col_item.get("Type") == "Series"):
                             imageTag = col_item.get("ImageTags").get("Primary")
-                            if imageTag==None:
-                                imageTag=""
+                            if imageTag == None:
+                                imageTag = ""
                             posterImage = "http://localhost:15001/?id=" + str(id) + "&type=Primary" + "&tag=" + imageTag
                             actionUrl = "ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=21&ParentId=" + id + "&Name=" + name + ",return)"
                         plot = col_item.get("Overview")
