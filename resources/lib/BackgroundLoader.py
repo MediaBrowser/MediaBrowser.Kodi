@@ -342,7 +342,7 @@ class BackgroundRotationThread(threading.Thread):
         parentid = result.get("Id")
         self.logMsg("updateCollectionArtLinks ParentID : " + str(parentid), 2)
             
-        userRootPath = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentid + "&SortBy=SortName&Fields=CollectionType,RecursiveItemCount&format=json"
+        userRootPath = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentid + "&SortBy=SortName&Fields=CollectionType,Overview,RecursiveItemCount&format=json"
         try:
             requesthandle = urllib.urlopen(userRootPath, proxies={})
             jsonData = requesthandle.read()
@@ -386,7 +386,7 @@ class BackgroundRotationThread(threading.Thread):
 
             #####################################################################################################
             # Process collection item backgrounds
-            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=Movie,Series,MusicArtist,Trailer,MusicVideo&Fields=ParentId&Recursive=true&CollapseBoxSetItems=false&format=json"
+            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=Movie,Series,MusicArtist,Trailer,MusicVideo&Fields=ParentId,Overview&Recursive=true&CollapseBoxSetItems=false&format=json"
 
             try:
                 requesthandle = urllib2.urlopen(collectionUrl, timeout=60)
@@ -430,8 +430,6 @@ class BackgroundRotationThread(threading.Thread):
                         actionUrl = ""
                         if(col_item.get("Type") == "Movie" or col_item.get("Type") == "Trailer" or col_item.get("Type") == "MusicVideo"):
                             imageTag = col_item.get("ImageTags").get("Primary")
-                            if(imageTag == None):
-                                imageTag = ""
                             posterImage = "http://localhost:15001/?id=" + str(id) + "&type=Primary" + "&tag=" + imageTag
                             url =  mb3Host + ":" + mb3Port + ',;' + id
                             url = urllib.quote(url)
@@ -440,11 +438,11 @@ class BackgroundRotationThread(threading.Thread):
 
                         elif(col_item.get("Type") == "Series"):
                             imageTag = col_item.get("ImageTags").get("Primary")
-                            if(imageTag == None):
-                                imageTag = ""
+                            if imageTag==None:
+                                imageTag=""
                             posterImage = "http://localhost:15001/?id=" + str(id) + "&type=Primary" + "&tag=" + imageTag
                             actionUrl = "ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=21&ParentId=" + id + "&Name=" + name + ",return)"
-                        
+                        plot = col_item.get("Overview")
                         for backdrop in images:
                           
                             info = {}
@@ -453,6 +451,7 @@ class BackgroundRotationThread(threading.Thread):
                             info["action"] = actionUrl
                             info["index"] = index
                             info["id"] = id
+                            info["plot"] = plot
                             info["parent"] = parentID
                             info["name"] = name
                             links.append(info)
@@ -522,7 +521,7 @@ class BackgroundRotationThread(threading.Thread):
         self.logMsg("updateTypeArtLinks UserID : " + userid)
 
         # load Movie BG
-        moviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=ParentId&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=Movie&format=json"
+        moviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=Movie&format=json"
 
         try:
             requesthandle = urllib2.urlopen(moviesUrl, timeout=60)
@@ -543,6 +542,7 @@ class BackgroundRotationThread(threading.Thread):
             id = item.get("Id")
             parentID = item.get("ParentId")
             name = item.get("Name")
+            plot = item.get("Overview")
             if (images == None):
                 images = []
             index = 0
@@ -552,6 +552,7 @@ class BackgroundRotationThread(threading.Thread):
               info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
               info["index"] = index
               info["id"] = id
+              info["plot"] = plot
               info["parent"] = parentID
               info["name"] = name
               self.logMsg("BG Movie Image Info : " + str(info), level=2)
@@ -564,7 +565,7 @@ class BackgroundRotationThread(threading.Thread):
         self.logMsg("Background Movie Art Links : " + str(len(self.movie_art_links)))
 
         # load TV BG links
-        tvUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=ParentId&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=Series&format=json"
+        tvUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=Series&format=json"
 
         try:
             requesthandle = urllib2.urlopen(tvUrl, timeout=60)
@@ -585,6 +586,7 @@ class BackgroundRotationThread(threading.Thread):
             id = item.get("Id")
             parentID = item.get("ParentId")
             name = item.get("Name")
+            plot = item.get("Overview")
             if (images == None):
                 images = []
             index = 0
@@ -594,6 +596,7 @@ class BackgroundRotationThread(threading.Thread):
               info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
               info["index"] = index
               info["id"] = id
+              info["plot"] = plot
               info["parent"] = parentID
               info["name"] = name
               self.logMsg("BG TV Image Info : " + str(info), level=2)
@@ -606,7 +609,7 @@ class BackgroundRotationThread(threading.Thread):
         self.logMsg("Background Tv Art Links : " + str(len(self.tv_art_links)))
 
         # load music BG links
-        musicUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=ParentId&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=MusicArtist&format=json"
+        musicUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=MusicArtist&format=json"
         
         try:
             requesthandle = urllib2.urlopen(musicUrl, timeout=60)
@@ -627,6 +630,7 @@ class BackgroundRotationThread(threading.Thread):
             id = item.get("Id")
             parentID = item.get("ParentId")
             name = item.get("Name")
+            plot = item.get("Overview")
             if (images == None):
                 images = []
             index = 0
@@ -636,6 +640,7 @@ class BackgroundRotationThread(threading.Thread):
               info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
               info["index"] = index
               info["id"] = id
+              info["plot"] = plot
               info["parent"] = parentID
               info["name"] = name
               self.logMsg("BG Music Image Info : " + str(info), level=2)
@@ -711,6 +716,7 @@ class BackgroundRotationThread(threading.Thread):
                     artUrl = listOfBackgrounds[self.current_item_art]["url"] 
                     
                 WINDOW.setProperty("MB3.Background.Item.FanArt", artUrl)
+                WINDOW.setProperty("MB3.Plot", listOfBackgrounds[self.current_item_art]["plot"] )
                 self.logMsg("setItemBackgroundLink MB3.Background.Item.FanArt=" + artUrl, 1)
                 
                 self.current_item_art = self.current_item_art + 1
@@ -758,7 +764,7 @@ class BackgroundRotationThread(threading.Thread):
                 userid = user.get("Id")
                 break            
     
-        itemUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "?Fields=ParentId&format=json"
+        itemUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "?Fields=ParentId,Overview&format=json"
         
         try:
             requesthandle = urllib2.urlopen(itemUrl, timeout=60)
@@ -777,6 +783,7 @@ class BackgroundRotationThread(threading.Thread):
 
         #for item in result:
         images = item.get("BackdropImageTags")
+        plot = item.get("Overview")
         id = item.get("Id")
         parentID = item.get("ParentId")
         origid = id
@@ -797,12 +804,16 @@ class BackgroundRotationThread(threading.Thread):
             info["index"] = index
             info["id"] = id
             info["parent"] = parentID
+            info["plot"] = plot
             info["name"] = name
             self.logMsg("BG Item Image Info : " + str(info), level=2)
             newBgLinks.append(info)
             index = index + 1
+            
+
 
         if(len(newBgLinks) > 0):
             self.item_art_links[origid] = newBgLinks
            
+    
     
