@@ -85,7 +85,7 @@
     <string id="30098">Sort Order Descending</string>
     <string id="30099">Sort Order Ascending</string>
     
-    <string id="30110">Addon</string>
+    <string id="30110">Interface</string>
     <string id="30111">Include Stream Info</string>
     <string id="30112">Include People</string>
     <string id="30113">Include Overview</string>
@@ -136,4 +136,6 @@
     <string id="30155">  - Show Played Percentage Indicator</string>
     <string id="30156">Sort NextUp by Show Title</string>    
     <string id="30157">Disable Enhanced Images (eg CoverArt)</string>
+    <string id="30158">Metadata</string>
+    <string id="30159">Artwork</string>
 </strings>
