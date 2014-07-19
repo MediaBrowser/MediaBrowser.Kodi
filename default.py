@@ -100,11 +100,8 @@ try:
 except:
     pass
 
-if (__settings__.getSetting('useJson')=='false'):
-    import json as json
-else:
-    import simplejson as json
-    
+import json as json
+   
 #define our global download utils
 downloadUtils = DownloadUtils()
 
