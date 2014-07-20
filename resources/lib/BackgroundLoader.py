@@ -709,6 +709,14 @@ class BackgroundRotationThread(threading.Thread):
             
             listOfBackgrounds = self.item_art_links.get(id)
             
+            if listOfBackgrounds != None:
+                if listOfBackgrounds[0]["plot"] != None and listOfBackgrounds[0]["plot"] != "":
+                    plot=listOfBackgrounds[0]["plot"]
+                    plot=plot.encode("utf-8")
+                    WINDOW.setProperty("MB3.Plot", plot )
+                else:
+                    WINDOW.clearProperty("MB3.Plot")                            
+                    
             if(listOfBackgrounds != None and len(listOfBackgrounds) > 0):
                 self.logMsg("setItemBackgroundLink Image " + str(self.current_item_art + 1) + " of " + str(len(listOfBackgrounds)), 1)
                 try: 
@@ -718,7 +726,6 @@ class BackgroundRotationThread(threading.Thread):
                     artUrl = listOfBackgrounds[self.current_item_art]["url"] 
                     
                 WINDOW.setProperty("MB3.Background.Item.FanArt", artUrl)
-                WINDOW.setProperty("MB3.Plot", listOfBackgrounds[self.current_item_art]["plot"] )
                 self.logMsg("setItemBackgroundLink MB3.Background.Item.FanArt=" + artUrl, 1)
                 
                 self.current_item_art = self.current_item_art + 1
@@ -727,11 +734,12 @@ class BackgroundRotationThread(threading.Thread):
                     
             else:
                 self.logMsg("setItemBackgroundLink Resetting MB3.Background.Item.FanArt", 1)
-                WINDOW.clearProperty("MB3.Background.Item.FanArt")            
+                WINDOW.clearProperty("MB3.Background.Item.FanArt")         
                     
         else:
             self.logMsg("setItemBackgroundLink Resetting MB3.Background.Item.FanArt", 1)
             WINDOW.clearProperty("MB3.Background.Item.FanArt")
+      
             
     def loadItemBackgroundLinks(self, id):
     
