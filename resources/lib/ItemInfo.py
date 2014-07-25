@@ -66,7 +66,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         url =  server + ',;' + id
         url = urllib.quote(url)
         self.playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-        
+            
         self.peopleUrl = "XBMC.Container.Update(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id + ")"
         #self.peopleUrl = "XBMC.RunPlugin(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id + ")"
         
@@ -185,6 +185,11 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
             self.getControl(3011).setImage(image)
             if(cappedPercentage != None):
                 self.getControl(3012).setImage("Progress\progress_" + str(cappedPercentage) + ".png")
+                
+        # disable play button
+        if(type == "Season" or type == "Series"):
+            self.setFocusId(3226)
+            self.getControl(3002).setEnabled(False)                
         
     def setId(self, id):
         self.id = id
