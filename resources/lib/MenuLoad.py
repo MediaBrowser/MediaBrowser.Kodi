@@ -82,23 +82,16 @@ class LoadMenuOptionsThread(threading.Thread):
             name = child.get('name')
             action = child.text
         
-            index = action.find("plugin://plugin.video.xbmb3c") # this addon
-                
-            if(index > -1 and len(action) > 10):
-            
-                action_url = action[index:]
-                endIndex = action_url.find("\"")
-                action_url = action_url[:endIndex]
-                               
+            if(len(name) > 1 and name[0:1] != '-'):
                 WINDOW.setProperty("xbmb3c_menuitem_name_" + str(menuItem), name)
-                WINDOW.setProperty("xbmb3c_menuitem_action_" + str(menuItem), action_url)
+                WINDOW.setProperty("xbmb3c_menuitem_action_" + str(menuItem), action)
                 WINDOW.setProperty("xbmb3c_menuitem_collection_" + str(menuItem), name)
                 self.logMsg("xbmb3c_menuitem_name_" + str(menuItem) + " : " + name)
-                self.logMsg("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action_url)
-                self.logMsg("xbmb3c_menuitem_collection_" + str(menuItem) + " : " + name)
-                
-                menuItem = menuItem + 1
+                self.logMsg("xbmb3c_menuitem_action_" + str(menuItem) + " : " + action)
+                self.logMsg("xbmb3c_menuitem_collection_" + str(menuItem) + " : " + name)   
 
+                menuItem = menuItem + 1             
+            
         for x in range(menuItem, menuItem+10):
                 WINDOW.setProperty("xbmb3c_menuitem_name_" + str(x), "")
                 WINDOW.setProperty("xbmb3c_menuitem_action_" + str(x), "")
