@@ -27,8 +27,24 @@ class SearchDialog(xbmcgui.WindowXMLDialog):
     def onFocus(self, controlId):
         pass
         
-    def doAction(self, action):
-        pass
+    def onAction(self, action):
+        xbmc.log("onAction : " + str(action.getId()) + " " + str(action.getButtonCode()) + " " + str(action))
+        
+        ACTION_PREVIOUS_MENU = 10
+        ACTION_SELECT_ITEM = 7
+        ACTION_PARENT_DIR = 9
+        
+        if action == ACTION_PREVIOUS_MENU or action.getId() == 92:
+            searchTerm = self.getControl(3010).getLabel()
+            if(len(searchTerm) == 0):
+                self.close()
+            else:
+                searchTerm = searchTerm[:-1]
+                self.getControl(3010).setLabel(searchTerm)
+                self.searchThread.setSearch(searchTerm)
+    
+        #self.getControl(3010).setLabel(str(action.getButtonCode()))
+
 
     def closeDialog(self):
         thread.stopRunning()
