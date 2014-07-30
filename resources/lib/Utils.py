@@ -61,14 +61,15 @@ class PlayUtils():
             txt_mac = downloadUtils.getMachineId()
             playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/master.m3u8?mediaSourceId=' + id
             playurl = playurl + '&videoCodec=h264'
-            playurl = playurl + '&AudioCodec=aac'
+            playurl = playurl + '&AudioCodec=aac,ac3'
             playurl = playurl + '&deviceId=' + txt_mac
             playurl = playurl + '&VideoBitrate=' + str(int(self.getVideoBitRate()) * 1000)
             mediaSources = result.get("MediaSources")
             if(mediaSources != None):
-              if mediaSources[0].get('DefaultAudioIndex') != None:
-                 playurl = playurl + "&AudioStreamIndex=" + mediaSources[0].get('DefaultAudioIndex')
-           
+              if mediaSources[0].get('DefaultAudioStreamIndex') != None:
+                 playurl = playurl + "&AudioStreamIndex=" + mediaSources[0].get('DefaultAudioStreamIndex')
+              if mediaSources[0].get('DefaultSubtitleStreamIndex') != None:
+                 playurl = playurl + "&SubtitleStreamIndex=" + mediaSources[0].get('DefaultAudioStreamIndex')
       return playurl.encode('utf-8')
 
 
