@@ -61,6 +61,7 @@ class PlayUtils():
             txt_mac = downloadUtils.getMachineId()
             playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/master.m3u8?mediaSourceId=' + id
             playurl = playurl + '&videoCodec=h264'
+            playurl = playurl + '&AudioCodec=aac'
             playurl = playurl + '&deviceId=' + txt_mac
             playurl = playurl + '&VideoBitrate=' + str(int(self.getVideoBitRate()) * 1000)
             mediaSources = result.get("MediaSources")
