@@ -739,6 +739,7 @@ class BackgroundRotationThread(threading.Thread):
         else:
             self.logMsg("setItemBackgroundLink Resetting MB3.Background.Item.FanArt", 1)
             WINDOW.clearProperty("MB3.Background.Item.FanArt")
+            WINDOW.clearProperty("MB3.Plot") 
       
             
     def loadItemBackgroundLinks(self, id):
