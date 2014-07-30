@@ -812,7 +812,8 @@ def PLAY( url, handle ):
     printDebug("Play jsonData: " + jsonData)
     result = json.loads(jsonData)
     
-    playurl = PlayUtils.getPlayUrl(server, id, result)    
+    playurl = PlayUtils().getPlayUrl(server, id, result)
+    printDebug("Play URL: " + playurl)    
     thumbID = id if(result.get("Type") != "Episode") else result.get("SeriesId")
     imageTag = "" if(result.get("ImageTags") == None or result.get("ImageTags").get("Primary") == None) else result.get("ImageTags").get("Primary")
     thumbPath = "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag

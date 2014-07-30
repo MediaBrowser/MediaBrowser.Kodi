@@ -100,7 +100,7 @@ class ThemeMusicThread(threading.Thread):
             
             themeItems = theme.get("Items")
             if themeItems != []:
-                themePlayUrl = PlayUtils.getPlayUrl(mb3Host + ":" + mb3Port,themeItems[0].get("Id"),themeItems[0])
+                themePlayUrl = PlayUtils().getPlayUrl(mb3Host + ":" + mb3Port,themeItems[0].get("Id"),themeItems[0])
                 self.logMsg("updateThemeMusic themeMusicPath : " + str(themePlayUrl))
                 self.playingTheme = True
                 self.setVolume(60)
