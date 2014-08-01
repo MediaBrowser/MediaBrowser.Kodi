@@ -175,6 +175,11 @@ def setPosition (url, method):
     elif method == 'DELETE':
         resp = requests.delete(url, data='', headers=getAuthHeader())
         
+def stopTranscoding(url):
+    xbmc.log('XBMB3C Service -> Stopping transcoding: ' + url)
+    resp = requests.delete(url, data='', headers=getAuthHeader())    
+
+        
 def hasData(data):
     if(data == None or len(data) == 0 or data == "None"):
         return False
@@ -235,6 +240,12 @@ def stopAll(played_information):
         
     played_information.clear()
 
+    # stop transcoding - todo check we are actually transcoding?
+    clientInfo = ClientInformation()
+    txt_mac = clientInfo.getMachineId()
+    url = ("http://%s:%s/mediabrowser/Videos/ActiveEncodings" % (addonSettings.getSetting('ipaddress'), addonSettings.getSetting('port')))  
+    url = url + '?DeviceId=' + txt_mac
+    stopTranscoding(url)
 class Service( xbmc.Player ):
 
     played_information = {}
