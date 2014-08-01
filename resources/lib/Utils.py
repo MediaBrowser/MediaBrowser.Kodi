@@ -67,9 +67,9 @@ class PlayUtils():
             mediaSources = result.get("MediaSources")
             if(mediaSources != None):
               if mediaSources[0].get('DefaultAudioStreamIndex') != None:
-                 playurl = playurl + "&AudioStreamIndex=" + mediaSources[0].get('DefaultAudioStreamIndex')
+                 playurl = playurl + "&AudioStreamIndex=" +str(mediaSources[0].get('DefaultAudioStreamIndex'))
               if mediaSources[0].get('DefaultSubtitleStreamIndex') != None:
-                 playurl = playurl + "&SubtitleStreamIndex=" + mediaSources[0].get('DefaultAudioStreamIndex')
+                 playurl = playurl + "&SubtitleStreamIndex=" + str(mediaSources[0].get('DefaultAudioStreamIndex'))
       return playurl.encode('utf-8')
 
 
