@@ -45,13 +45,13 @@ class PlayUtils():
               playurl += '?|User-Agent=%s' % USER_AGENT
         
             
-      elif self.isNetworkQualitySufficient(result) == True:
-         xbmc.log("XBMB3C getPlayUrl -> Stream")
+     # elif self.isNetworkQualitySufficient(result) == True:
+      #   xbmc.log("XBMB3C getPlayUrl -> Stream")
           #No direct path but sufficient network so static stream   
-         if result.get("Type") == "Audio":
-            playurl = 'http://' + server + '/mediabrowser/Audio/' + id + '/stream?static=true&mediaSourceId=' + id
-         else:
-            playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true&mediaSourceId=' + id   
+       #  if result.get("Type") == "Audio":
+        #    playurl = 'http://' + server + '/mediabrowser/Audio/' + id + '/stream?static=true&mediaSourceId=' + id
+         #else:
+          #  playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true&mediaSourceId=' + id   
       else:
           #No path or has a path but not sufficient network so transcode
           xbmc.log("XBMB3C getPlayUrl -> Transcode")
@@ -87,9 +87,9 @@ class PlayUtils():
                xbmc.log("XBMB3C isNetworkQualitySufficient -> TRUE bit rate")   
                return True
            
-        # Any thing else is not ok
-        xbmc.log("XBMB3C isNetworkQualitySufficient -> FALSE default")
-        return False
+        # Any thing else is ok
+        xbmc.log("XBMB3C isNetworkQualitySufficient -> TRUE default")
+        return True
       
        
     # get the addon video quality
