@@ -661,7 +661,7 @@
             <angle>-90</angle>
         </control>   
         
-        <control type="list" id="3110">
+        <control type="fixedlist" id="3110">
             <left>280</left>
             <top>20</top>
             <width>700</width>
@@ -740,7 +740,7 @@
             <angle>-90</angle>
         </control>   
         
-        <control type="list" id="3111">
+        <control type="fixedlist" id="3111">
             <left>280</left>
             <top>200</top>
             <width>700</width>
@@ -819,7 +819,7 @@
             <angle>-90</angle>
         </control> 
         
-        <control type="list" id="3112">
+        <control type="fixedlist" id="3112">
             <left>280</left>
             <top>380</top>
             <width>700</width>
