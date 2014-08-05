@@ -21,7 +21,7 @@
     <forum>http://mediabrowser.tv/community/index.php?/forum/99-xbmb3c/</forum>
     <website>http://mediabrowser.tv/</website>
     <source>https://github.com/MediaBrowser/MediaBrowser.XBMC/</source>
-    <summary lang="en">Browse and play local video, music and photo media files managed by the Media Browser Server</summary>
-    <description lang="en">Browse and play local video, music and photo media files managed by the Media Browser Server</description>
+    <summary lang="en">Browse and play local video, music and photo media file managed by the Media Browser Server</summary>
+    <description lang="en">Browse and play local video, music and photo media file managed by the Media Browser Server</description>
   </extension>
 </addon>

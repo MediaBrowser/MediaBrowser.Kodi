@@ -926,6 +926,7 @@ def setListItemProps(server, id, listItem,result):
                 studio=temp.encode('utf-8')    
     listItem.setInfo('video', {'studio' : studio})    
 
+    # plsy info
     playinformation = ''
     if PlayUtils().isDirectPlay(result) == True:
         playinformation = 'Direct Play'
