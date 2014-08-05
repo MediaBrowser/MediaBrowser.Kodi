@@ -916,7 +916,7 @@ def setListItemProps(server, id, listItem,result):
     
     listItem.setProperty('IsPlayable', 'true')
     listItem.setProperty('IsFolder', 'false')
-
+    
     studio = ""
     studios = resultForType.get("Studios")
     if(studios != None):
@@ -926,8 +926,13 @@ def setListItemProps(server, id, listItem,result):
                 studio=temp.encode('utf-8')    
     listItem.setInfo('video', {'studio' : studio})    
 
+    playinformation = ''
+    if PlayUtils().isDirectPlay(result) == True:
+        playinformation = 'Direct Play'
+    else:
+        playinformation = 'Transcoding'      
     details = {
-             'title'        : result.get("Name", "Missing Name").encode('utf-8'),
+             'title'        : result.get("Name", "Missing Name").encode('utf-8') + ' - ' + playinformation,
              'plot'         : result.get("Overview")
              }
              

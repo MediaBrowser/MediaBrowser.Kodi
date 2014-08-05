@@ -24,7 +24,7 @@ class PlayUtils():
       addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
       # if the path is local and depending on the video quality play we can direct play it do so
       xbmc.log("XBMB3C getPlayUrl")
-      if result.get("LocationType") == "FileSystem" and self.isNetworkQualitySufficient(result) == True and self.isLocalPath(result) == False:
+      if self.isDirectPlay(result) == True:
           xbmc.log("XBMB3C getPlayUrl -> Direct Play")
           playurl = result.get("Path")
           if playurl != None:
@@ -72,6 +72,13 @@ class PlayUtils():
                  playurl = playurl + "&SubtitleStreamIndex=" + str(mediaSources[0].get('DefaultAudioStreamIndex'))
       return playurl.encode('utf-8')
 
+    # Works out if we are direct playing or not
+    def isDirectPlay(self, result):
+        if result.get("LocationType") == "FileSystem" and self.isNetworkQualitySufficient(result) == True and self.isLocalPath(result) == False:
+            return True
+        else:
+            return False
+        
 
     # Works out if the network quality can play directly or if transcoding is needed
     def isNetworkQualitySufficient(self, result):
