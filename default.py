@@ -1299,7 +1299,7 @@ def processDirectory(url, results, progress):
             xbmcplugin.setContent(pluginhandle, 'tvshows')
             viewType="_SERIES"
         elif item.get("Type") == "Season":
-            xbmcplugin.setContent(pluginhandle, 'tvshows')
+            xbmcplugin.setContent(pluginhandle, 'seasons')
             viewType="_SEASONS"
         elif item.get("Type") == "Episode":
             if __settings__.getSetting('addEpisodeNumber') == 'true':
@@ -1433,7 +1433,7 @@ def processDirectory(url, results, progress):
                  'Overlay'      : overlay,
                  'playcount'    : str(playCount),
                  #'aired'       : episode.get('originallyAvailableAt','') ,
-                 'SeriesName'  :  item.get("SeriesName"),
+                 'TVShowTitle'  :  item.get("SeriesName"),
                  'season'       : tempSeason
                  }
                  
@@ -1609,7 +1609,7 @@ def processSearch(url, results, progress):
         # Populate the details list
         details={'title'        : tempTitle,
                  'episode'      : tempEpisode,
-                 'SeriesName'  :  item.get("Series"),
+                 'TVShowTitle'  : item.get("Series"),
                  'season'       : tempSeason
                  }
                  
