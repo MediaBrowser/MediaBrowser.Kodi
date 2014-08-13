@@ -1040,26 +1040,28 @@ def getAllMoviesCacheValidator (server,url):
     userid = downloadUtils.getUserId()
     jsonData = downloadUtils.downloadUrl("http://"+server+"/mediabrowser/Users/" + userid + "/Views?format=json", suppress=False, popup=1 )
     alldata = json.loads(jsonData)
+    validatorString = ""
+    playedTime = ""
+    playedPercentage = 0.0
+    
     result=alldata.get("Items")
     for item in result:
         if item.get("Name")=="Movies":
-            result=item
-    printDebug ("RecursiveItemCount: " + str(result.get("RecursiveItemCount")))
-    printDebug ("RecursiveUnplayedCount: " + str(result.get("RecursiveUnplayedItemCount")))
-    printDebug ("RecursiveUnplayedCount: " + str(result.get("PlayedPercentage")))
-    
-    playedPercentage = 0.0
-    if(result.get("PlayedPercentage") != None):
-        playedPercentage = result.get("PlayedPercentage")
-    
-    playedTime = "{0:09.6f}".format(playedPercentage)
-    playedTime = playedTime.replace(".","-")
-    validatorString=""
-    if result.get("RecursiveItemCount") != None:
-        if int(result.get("RecursiveItemCount"))<=25:
+            printDebug ("RecursiveItemCount: " + str(item.get("RecursiveItemCount")))
+            printDebug ("RecursiveUnplayedCount: " + str(item.get("RecursiveUnplayedItemCount")))
+            printDebug ("RecursiveUnplayedCount: " + str(item.get("PlayedPercentage")))
+
+            if(item.get("PlayedPercentage") != None):
+                playedPercentage = item.get("PlayedPercentage")
+            
+            playedTime = "{0:09.6f}".format(playedPercentage)
+            playedTime = playedTime.replace(".","-")
+            
+    if item.get("RecursiveItemCount") != None:
+        if int(item.get("RecursiveItemCount"))<=25:
             validatorString='nocache'
         else:
-            validatorString = "allmovies_" + str(result.get("RecursiveItemCount")) + "_" + str(result.get("RecursiveUnplayedItemCount")) + "_" + playedTime
+            validatorString = "allmovies_" + str(item.get("RecursiveItemCount")) + "_" + str(item.get("RecursiveUnplayedItemCount")) + "_" + playedTime
         printDebug ("getAllMoviesCacheValidator : " + validatorString)
     return validatorString    
     
