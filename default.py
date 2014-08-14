@@ -277,7 +277,13 @@ def getCollections(detailsString):
     collections.append({'title':'Music Videos'           , 'sectype' : 'std.music', 'section' : 'musicvideos'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=MusicVideo&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':'Photos'                 , 'sectype' : 'std.photo', 'section' : 'photos'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=Photo&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':'Unwatched Movies'       , 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&Filters=IsUnplayed&IncludeItemTypes=Movie&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    collections.append({'title':'Movie Genres'           , 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Genres?Userid=' + userid + '&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&Recursive=true&IncludeItemTypes=Movie&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    collections.append({'title':'Movie Studios'          , 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Studios?Userid=' + userid + '&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&Recursive=true&IncludeItemTypes=Movie&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    collections.append({'title':'Movie Actors'           , 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Persons?Userid=' + userid + '&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&Recursive=true&IncludeItemTypes=Movie&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':'Unwatched Episodes'     , 'sectype' : 'std.tvshows', 'section' : 'tvshows' , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Users/' + userid + '/Items?Limit=50&Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=' + detailsString + '&Filters=IsUnplayed&IncludeItemTypes=Episode&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    collections.append({'title':'TV Genres'              , 'sectype' : 'std.tvshows', 'section' : 'tvshows'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Genres?Userid=' + userid + '&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&Recursive=true&IncludeItemTypes=Series&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    collections.append({'title':'TV Networks'            , 'sectype' : 'std.tvshows', 'section' : 'tvshows'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Studios?Userid=' + userid + '&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&Recursive=true&IncludeItemTypes=Series&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    collections.append({'title':'TV Actors'              , 'sectype' : 'std.tvshows', 'section' : 'tvshows'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Persons?Userid=' + userid + '&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&Recursive=true&IncludeItemTypes=Series&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     
     if xbmcVersionNum >= 13:    
         collections.append({'title':'Search'                 , 'sectype' : 'std.search', 'section' : 'search'  , 'address' : __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') , 'path' : '/mediabrowser/Search/Hints?' + userid,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
@@ -1221,6 +1227,18 @@ def getContent( url ):
         dirItems = processSearch(url, result, progress)
     elif "Channel" in url:
         dirItems = processChannels(url, result, progress)
+    elif "/mediabrowser/Genres?" in url and "&IncludeItemTypes=Movie" in url:
+        dirItems = processGenres(url, result, progress, "Movie")
+    elif "/mediabrowser/Genres?" in url and "&IncludeItemTypes=Series" in url:
+        dirItems = processGenres(url, result, progress, "Series")
+    elif "/mediabrowser/Studios?" in url and "&IncludeItemTypes=Movie" in url:
+        dirItems = processStudios(url, result, progress, "Movie")
+    elif "/mediabrowser/Studios?" in url and "&IncludeItemTypes=Series" in url:
+        dirItems = processStudios(url, result, progress, "Series")
+    elif "/mediabrowser/Persons?" in url and "&IncludeItemTypes=Movie" in url:
+        dirItems = processPeople(url, result, progress, "Movie")
+    elif "/mediabrowser/Persons?" in url and "&IncludeItemTypes=Series" in url:
+        dirItems = processPeople(url, result, progress, "Series")
     else:
         dirItems = processDirectory(url, result, progress)
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
@@ -1773,6 +1791,278 @@ def processChannels(url, results, progress):
         else: 
             u = server+',;'+id
             dirItems.append(addGUIItem(u, details, extraData, folder=False))
+    return dirItems
+
+def processGenres(url, results, progress, content):
+    global viewType
+    printDebug("== ENTER: processGenres ==")
+    parsed = urlparse(url)
+    parsedserver,parsedport=parsed.netloc.split(':')
+    userid = downloadUtils.getUserId()
+    xbmcplugin.setContent(pluginhandle, 'movies')
+    detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
+    if(__settings__.getSetting('includeStreamInfo') == "true"):
+        detailsString += ",MediaStreams"
+    if(__settings__.getSetting('includePeople') == "true"):
+        detailsString += ",People"
+    if(__settings__.getSetting('includeOverview') == "true"):
+        detailsString += ",Overview"            
+    server = getServerFromURL(url)
+    dirItems = []
+    result = results.get("Items")
+    if(result == None):
+        result = []
+
+    item_count = len(result)
+    current_item = 1;
+        
+    for item in result:
+        id=str(item.get("Id")).encode('utf-8')
+        type=item.get("Type").encode('utf-8')
+        item_type = str(type).encode('utf-8')
+        if(progress != None):
+            percentDone = (float(current_item) / float(item_count)) * 100
+            progress.update(int(percentDone), __language__(30126) + str(current_item))
+            current_item = current_item + 1
+        
+        if(item.get("Name") != None):
+            tempTitle = item.get("Name")
+            tempTitle=tempTitle.encode('utf-8')
+        else:
+            tempTitle = "Missing Title"
+            
+       
+        isFolder = True
+   
+      
+        # Populate the details list
+        details={'title'        : tempTitle}
+        
+        viewType="_MOVIES"
+                 
+        try:
+            tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
+            RunTimeTicks = str(item.get("RunTimeTicks", "0"))
+        except TypeError:
+            try:
+                tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
+                RunTimeTicks = str(item.get("CumulativeRunTimeTicks"))
+            except TypeError:
+                tempDuration = "0"
+                RunTimeTicks = "0"
+
+        # Populate the extraData list
+        extraData={'thumb'        : "http://localhost:15001/?id=" + str(id) + "&type=Primary" ,
+                   'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
+                   'poster'       : downloadUtils.getArtwork(item, "poster") , 
+                   'tvshow.poster': downloadUtils.getArtwork(item, "tvshow.poster") ,
+                   'banner'       : downloadUtils.getArtwork(item, "Banner") ,
+                   'clearlogo'    : downloadUtils.getArtwork(item, "Logo") ,
+                   'discart'      : downloadUtils.getArtwork(item, "Disc") ,
+                   'clearart'     : downloadUtils.getArtwork(item, "Art") ,
+                   'landscape'    : downloadUtils.getArtwork(item, "landscape") ,
+                   'id'           : id ,
+                   'year'         : item.get("ProductionYear"),
+                   'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
+                   'favoriteurl'  : 'http://' + server + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id,
+                   'deleteurl'    : 'http://' + server + '/mediabrowser/Items/' + id,                   
+                   'parenturl'    : url,
+                   'totaltime'    : tempDuration,
+                   'duration'     : tempDuration,
+                   'itemtype'     : item_type}
+                   
+        if extraData['thumb'] == '':
+            extraData['thumb'] = extraData['fanart_image']
+
+        extraData['mode'] = _MODE_GETCONTENT
+                                 
+        u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=' + content + '&Genres=' + item.get("Name") + '&format=json'
+        dirItems.append(addGUIItem(u, details, extraData))
+      
+    return dirItems
+
+def processStudios(url, results, progress, content):
+    global viewType
+    printDebug("== ENTER: processStudios ==")
+    parsed = urlparse(url)
+    parsedserver,parsedport=parsed.netloc.split(':')
+    userid = downloadUtils.getUserId()
+    xbmcplugin.setContent(pluginhandle, 'movies')
+    detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
+    if(__settings__.getSetting('includeStreamInfo') == "true"):
+        detailsString += ",MediaStreams"
+    if(__settings__.getSetting('includePeople') == "true"):
+        detailsString += ",People"
+    if(__settings__.getSetting('includeOverview') == "true"):
+        detailsString += ",Overview"            
+    server = getServerFromURL(url)
+    dirItems = []
+    result = results.get("Items")
+    if(result == None):
+        result = []
+
+    item_count = len(result)
+    current_item = 1;
+        
+    for item in result:
+        id=str(item.get("Id")).encode('utf-8')
+        type=item.get("Type").encode('utf-8')
+        item_type = str(type).encode('utf-8')
+        if(progress != None):
+            percentDone = (float(current_item) / float(item_count)) * 100
+            progress.update(int(percentDone), __language__(30126) + str(current_item))
+            current_item = current_item + 1
+        
+        if(item.get("Name") != None):
+            tempTitle = item.get("Name")
+            tempTitle=tempTitle.encode('utf-8')
+        else:
+            tempTitle = "Missing Title"
+            
+       
+        isFolder = True
+   
+      
+        # Populate the details list
+        details={'title'        : tempTitle}
+        
+        viewType="_MOVIES"
+                 
+        try:
+            tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
+            RunTimeTicks = str(item.get("RunTimeTicks", "0"))
+        except TypeError:
+            try:
+                tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
+                RunTimeTicks = str(item.get("CumulativeRunTimeTicks"))
+            except TypeError:
+                tempDuration = "0"
+                RunTimeTicks = "0"
+
+        # Populate the extraData list
+        extraData={'thumb'        : "http://localhost:15001/?id=" + str(id) + "&type=Primary" ,
+                   'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
+                   'poster'       : downloadUtils.getArtwork(item, "poster") , 
+                   'tvshow.poster': downloadUtils.getArtwork(item, "tvshow.poster") ,
+                   'banner'       : downloadUtils.getArtwork(item, "Banner") ,
+                   'clearlogo'    : downloadUtils.getArtwork(item, "Logo") ,
+                   'discart'      : downloadUtils.getArtwork(item, "Disc") ,
+                   'clearart'     : downloadUtils.getArtwork(item, "Art") ,
+                   'landscape'    : downloadUtils.getArtwork(item, "landscape") ,
+                   'id'           : id ,
+                   'year'         : item.get("ProductionYear"),
+                   'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
+                   'favoriteurl'  : 'http://' + server + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id,
+                   'deleteurl'    : 'http://' + server + '/mediabrowser/Items/' + id,                   
+                   'parenturl'    : url,
+                   'totaltime'    : tempDuration,
+                   'duration'     : tempDuration,
+                   'itemtype'     : item_type}
+                   
+        if extraData['thumb'] == '':
+            extraData['thumb'] = extraData['fanart_image']
+
+        extraData['mode'] = _MODE_GETCONTENT
+        xbmc.log("XBMB3C - process studios nocode: " + tempTitle)
+        tempTitle = tempTitle.replace(' ', '+')
+        xbmc.log("XBMB3C - process studios nocode spaces replaced: " + tempTitle)
+        tempTitle2 = unicode(tempTitle,'utf-8')          
+        u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=' + content + '&Studios=' + tempTitle2.encode('ascii','ignore') + '&format=json'
+        xbmc.log("XBMB3C - process studios: " + u)
+        dirItems.append(addGUIItem(u, details, extraData))
+      
+    return dirItems
+
+def processPeople(url, results, progress, content):
+    global viewType
+    printDebug("== ENTER: processPeople ==")
+    parsed = urlparse(url)
+    parsedserver,parsedport=parsed.netloc.split(':')
+    userid = downloadUtils.getUserId()
+    xbmcplugin.setContent(pluginhandle, 'movies')
+    detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
+    if(__settings__.getSetting('includeStreamInfo') == "true"):
+        detailsString += ",MediaStreams"
+    if(__settings__.getSetting('includePeople') == "true"):
+        detailsString += ",People"
+    if(__settings__.getSetting('includeOverview') == "true"):
+        detailsString += ",Overview"            
+    server = getServerFromURL(url)
+    dirItems = []
+    result = results.get("Items")
+    if(result == None):
+        result = []
+
+    item_count = len(result)
+    current_item = 1;
+        
+    for item in result:
+        id=str(item.get("Id")).encode('utf-8')
+        type=item.get("Type").encode('utf-8')
+        item_type = str(type).encode('utf-8')
+        if(progress != None):
+            percentDone = (float(current_item) / float(item_count)) * 100
+            progress.update(int(percentDone), __language__(30126) + str(current_item))
+            current_item = current_item + 1
+        
+        if(item.get("Name") != None):
+            tempTitle = item.get("Name")
+            tempTitle=tempTitle.encode('utf-8')
+        else:
+            tempTitle = "Missing Title"
+            
+       
+        isFolder = True
+   
+      
+        # Populate the details list
+        details={'title'        : tempTitle}
+        
+        viewType="_MOVIES"
+                 
+        try:
+            tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
+            RunTimeTicks = str(item.get("RunTimeTicks", "0"))
+        except TypeError:
+            try:
+                tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
+                RunTimeTicks = str(item.get("CumulativeRunTimeTicks"))
+            except TypeError:
+                tempDuration = "0"
+                RunTimeTicks = "0"
+
+        # Populate the extraData list
+        extraData={'thumb'        : "http://localhost:15001/?id=" + str(id) + "&type=Primary" ,
+                   'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
+                   'poster'       : downloadUtils.getArtwork(item, "poster") , 
+                   'tvshow.poster': downloadUtils.getArtwork(item, "tvshow.poster") ,
+                   'banner'       : downloadUtils.getArtwork(item, "Banner") ,
+                   'clearlogo'    : downloadUtils.getArtwork(item, "Logo") ,
+                   'discart'      : downloadUtils.getArtwork(item, "Disc") ,
+                   'clearart'     : downloadUtils.getArtwork(item, "Art") ,
+                   'landscape'    : downloadUtils.getArtwork(item, "landscape") ,
+                   'id'           : id ,
+                   'year'         : item.get("ProductionYear"),
+                   'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
+                   'favoriteurl'  : 'http://' + server + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id,
+                   'deleteurl'    : 'http://' + server + '/mediabrowser/Items/' + id,                   
+                   'parenturl'    : url,
+                   'totaltime'    : tempDuration,
+                   'duration'     : tempDuration,
+                   'itemtype'     : item_type}
+                   
+        if extraData['thumb'] == '':
+            extraData['thumb'] = extraData['fanart_image']
+
+        extraData['mode'] = _MODE_GETCONTENT
+        xbmc.log("XBMB3C - process people nocode: " + tempTitle)
+        tempTitle = tempTitle.replace(' ', '+')
+        xbmc.log("XBMB3C - process people nocode spaces replaced: " + tempTitle)
+        tempTitle2 = unicode(tempTitle,'utf-8')          
+        u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=' + content + '&Person=' + tempTitle2.encode('ascii','ignore') + '&format=json'
+        xbmc.log("XBMB3C - process people: " + u)
+        dirItems.append(addGUIItem(u, details, extraData))
+      
     return dirItems
     
 def getServerFromURL( url ):
