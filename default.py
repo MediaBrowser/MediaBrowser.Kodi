@@ -1283,7 +1283,11 @@ def processDirectory(url, results, progress):
     result = results.get("Items")
     if(result == None):
         result = []
-
+    if len(result) == 1 and __settings__.getSetting('autoEnterSingle') == "true":
+        if result[0].get("Type") == "Season":
+            jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + result[0].get("Id") + "&format=json", suppress=False, popup=1 )
+            results = json.loads(jsonData)
+            result=results.get("Items")
     item_count = len(result)
     current_item = 1;
         
@@ -1544,25 +1548,9 @@ def processDirectory(url, results, progress):
             if SortByTemp == '' and not (item_type == 'Series' or item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist'):
                 SortByTemp = 'SortName'
                 
-            if  item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist':
-                u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
-                if (item.get("RecursiveItemCount") != 0):
-                    dirItems.append(addGUIItem(u, details, extraData))
-            else:
-                if __settings__.getSetting('autoEnterSingle') == "true":
-                    if item.get("ChildCount") == 1:
-                        jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + id + "&format=json", suppress=False, popup=1 )
-                        result = json.loads(jsonData)
-                        seasons=result.get("Items")
-                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' + seasons[0].get("Id") +'&Fields=' + detailsString + '&SortBy='+SortByTemp+'&IsVirtualUnAired=false&IsMissing=false&format=json'
-                    else:
-                        u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
-                else:
-                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
-
-                if (item.get("RecursiveItemCount") != 0):
-                    dirItems.append(addGUIItem(u, details, extraData))
-
+            u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
+            if (item.get("RecursiveItemCount") != 0):
+                dirItems.append(addGUIItem(u, details, extraData))
         else:
             u = server+',;'+id
             dirItems.append(addGUIItem(u, details, extraData, folder=False))
