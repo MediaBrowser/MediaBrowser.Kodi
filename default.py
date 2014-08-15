@@ -1285,7 +1285,7 @@ def processDirectory(url, results, progress):
         result = []
     if len(result) == 1 and __settings__.getSetting('autoEnterSingle') == "true":
         if result[0].get("Type") == "Season":
-            jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + result[0].get("Id") + "&format=json", suppress=False, popup=1 )
+            jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + result[0].get("Id") + '&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName&format=json', suppress=False, popup=1 )
             results = json.loads(jsonData)
             result=results.get("Items")
     item_count = len(result)
