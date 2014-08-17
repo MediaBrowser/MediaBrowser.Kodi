@@ -72,7 +72,7 @@ class DownloadUtils():
                 break
                 
         if(secure):
-            self.authenticate('http://' + host + ":" + port + "/mediabrowser/Users/AuthenticateByName")
+            self.authenticate('http://' + host + ":" + port + "/mediabrowser/Users/AuthenticateByName?format=json")
             
         if userid == "":
             return_value = xbmcgui.Dialog().ok(__language__(30045),__language__(30045))
@@ -99,8 +99,9 @@ class DownloadUtils():
         headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}    
         sha1 = hashlib.sha1(self.addonSettings.getSetting('password'))
         resp = requests.post(url, data={'password':sha1.hexdigest(),'Username':self.addonSettings.getSetting('username')}, headers=headers)
-        code=str(resp).split('[')[1]
-        code=code.split(']')[0]
+        code=str(resp.status_code)
+        result = resp.json()
+        self.addonSettings.setSetting('AccessToken', result.get("AccessToken"))
         if int(code) >= 200 and int(code)<300:
             self.logMsg("User Authenticated")
         else:
@@ -193,7 +194,9 @@ class DownloadUtils():
             self.logMsg("urlPath = "+str(urlPath), level=2)
             conn = httplib.HTTPConnection(server, timeout=20)
             #head = {"Accept-Encoding" : "gzip,deflate", "Accept-Charset" : "UTF-8,*"} 
-            head = {"Accept-Encoding" : "gzip", "Accept-Charset" : "UTF-8,*"} 
+            if self.addonSettings.getSetting('AccessToken')==None:
+                self.addonSettings.setSetting('AccessToken','')
+            head = {"Accept-Encoding" : "gzip", "Accept-Charset" : "UTF-8,*", "X-MediaBrowser-Token" : self.addonSettings.getSetting('AccessToken')} 
             #head = getAuthHeader()
             conn.request(method=type, url=urlPath, headers=head)
             #conn.request(method=type, url=urlPath)
