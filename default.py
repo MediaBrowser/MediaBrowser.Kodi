@@ -527,6 +527,7 @@ def addGUIItem( url, details, extraData, folder=True ):
     list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
     
     list.setProperty('CriticRating', str(extraData.get('criticrating')))
+    list.setProperty('ItemType', extraData.get('itemtype'))
     if extraData.get('totaltime') != None:
         list.setProperty('TotalTime', extraData.get('totaltime'))
     if extraData.get('TotalSeasons')!=None:
