@@ -10,8 +10,12 @@ import json
 import threading
 from datetime import datetime
 import urllib
+from DownloadUtils import DownloadUtils
 
 _MODE_BASICPLAY=12
+
+#define our global download utils
+downloadUtils = DownloadUtils()
 
 class RandomInfoUpdaterThread(threading.Thread):
 
@@ -64,47 +68,14 @@ class RandomInfoUpdaterThread(threading.Thread):
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')     
         
-        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
-        self.logMsg("userUrl : " + userUrl, level=2)
-        
-        try:
-            requesthandle = urllib.urlopen(userUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()      
-        except Exception, e:
-            self.logMsg("urlopen : " + str(e) + " (" + userUrl + ")", level=1)
-            return           
-        
-        self.logMsg("jsonData : " + jsonData, level=2)
-        
-        result = []
-        
-        try:
-            result = json.loads(jsonData)
-        except Exception, e:
-            self.logMsg("jsonload : " + str(e) + " (" + jsonData + ")", level=2)
-            return              
-        
-        userid = ""
-        for user in result:
-            if(user.get("Name") == userName):
-                userid = user.get("Id")    
-                break
-        
+        userid = downloadUtils.getUserId()
         self.logMsg("updateRandomMovies UserID : " + userid)
         
         self.logMsg("Updating Random Movie List")
         
         randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
-        
-        try:
-            requesthandle = urllib.urlopen(randomUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()     
-        except Exception, e:
-            self.logMsg("updateRandom urlopen : " + str(e) + " (" + randomUrl + ")", level=0)
-            return           
-
+                
+        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("Random Movie Json Data : " + str(result), level=2)
         
@@ -178,15 +149,8 @@ class RandomInfoUpdaterThread(threading.Thread):
         self.logMsg("Updating Random TV Show List")
         
         randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json"
-        
-        try:
-            requesthandle = urllib.urlopen(randomUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()         
-        except Exception, e:
-            self.logMsg("updateRandom urlopen : " + str(e) + " (" + randomUrl + ")", level=0)
-            return          
-        
+                 
+        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("Random TV Show Json Data : " + str(result), level=2)
         
@@ -230,11 +194,14 @@ class RandomInfoUpdaterThread(threading.Thread):
                series_id = item.get("SeriesId")
             
             poster = self.getImageLink(item, "Primary", str(series_id))
-            thumbnail = self.getImageLink(item, "Primary", str(item_id))         
+            thumbnail = self.getImageLink(item, "Primary", str(item_id))
             logo = self.getImageLink(item, "Logo", str(series_id))             
             fanart = self.getImageLink(item, "Backdrop", str(series_id))
             banner = self.getImageLink(item, "Banner", str(series_id))
-            
+            if item.get("SeriesThumbImageTag") != None:
+              seriesthumbnail = self.getImageLink(item, "Thumb", str(series_id))
+            else:
+              seriesthumbnail = fanart
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
             playUrl = playUrl.replace("\\\\","smb://")
@@ -259,6 +226,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".EpisodeNo", tempEpisodeNumber)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".SeasonNo", tempSeasonNumber)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Thumb", thumbnail)
+            WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".SeriesThumb", seriesthumbnail)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Path", playUrl)            
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Rating", rating)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)", fanart)
@@ -276,14 +244,7 @@ class RandomInfoUpdaterThread(threading.Thread):
     
         randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=MusicAlbum&format=json"
     
-        try:
-            requesthandle = urllib.urlopen(randomUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()     
-        except Exception, e:
-            self.logMsg("updateRandom urlopen : " + str(e) + " (" + randomUrl + ")", level=2)
-            return  
-    
+        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("Random MusicList Json Data : " + str(result), level=2)
     

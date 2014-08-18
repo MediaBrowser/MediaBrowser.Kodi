@@ -31,6 +31,7 @@ base_window = xbmcgui.Window( 10000 )
 
 from InfoUpdater import InfoUpdaterThread
 from NextUpItems import NextUpUpdaterThread
+from SuggestedItems import SuggestedUpdaterThread
 from RandomItems import RandomInfoUpdaterThread
 from BackgroundLoader import BackgroundRotationThread
 from ThemeMusic import ThemeMusicThread
@@ -86,7 +87,14 @@ if __addon__.getSetting('useNextUp') == "true":
     newNextUpThread = NextUpUpdaterThread()
     newNextUpThread.start()
 else:
-    xbmc.log("XBMB3C Service NextUp Disabled")     
+    xbmc.log("XBMB3C Service NextUp Disabled")    
+    
+newSuggestedThread = None
+if __addon__.getSetting('useSuggested') == "true":
+    newSuggestedThread = SuggestedUpdaterThread()
+    newSuggestedThread.start()
+else:
+    xbmc.log("XBMB3C Service Suggested Disabled")   
 
 newWebSocketThread = None
 if __addon__.getSetting('useWebSocketRemote') == "true":

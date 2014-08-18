@@ -10,8 +10,12 @@ import json
 import threading
 from datetime import datetime
 import urllib
+from DownloadUtils import DownloadUtils
 
 _MODE_BASICPLAY=12
+
+#define our global download utils
+downloadUtils = DownloadUtils()
 
 class NextUpUpdaterThread(threading.Thread):
 
@@ -65,44 +69,14 @@ class NextUpUpdaterThread(threading.Thread):
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')     
         
-        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
-        
-        try:
-            requesthandle = urllib.urlopen(userUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()     
-        except Exception, e:
-            self.logMsg("urlopen : " + str(e) + " (" + userUrl + ")", level=0)
-            return  
-        
-        result = []
-        
-        try:
-            result = json.loads(jsonData)
-        except Exception, e:
-            self.logMsg("jsonload : " + str(e) + " (" + jsonData + ")", level=2)
-            return              
-        
-        userid = ""
-        for user in result:
-            if(user.get("Name") == userName):
-                userid = user.get("Id")    
-                break
-        
+        userid = downloadUtils.getUserId()
         self.logMsg("updateNextUp UserID : " + userid)
         
         self.logMsg("Updating NextUp List")
         
         nextUpUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Shows/NextUp?UserId=" + userid + "&Fields=Path,Genres,MediaStreams,Overview&format=json"
         
-        try:
-            requesthandle = urllib.urlopen(nextUpUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()   
-        except Exception, e:
-            self.logMsg("NextUpUpdaterThread updateNextUp urlopen : " + str(e) + " (" + nextUpUrl + ")", level=0)
-            return  
-        
+        jsonData = downloadUtils.downloadUrl(nextUpUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("NextUP TV Show Json Data : " + str(result), level=2)
         
@@ -152,6 +126,10 @@ class NextUpUpdaterThread(threading.Thread):
             logo = self.getImageLink(item, "Logo", str(series_id))
             fanart = self.getImageLink(item, "Backdrop", str(series_id))
             banner = self.getImageLink(item, "Banner", str(series_id))
+            if item.get("SeriesThumbImageTag") != None:
+              seriesthumbnail = self.getImageLink(item, "Thumb", str(series_id))
+            else:
+              seriesthumbnail = fanart
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
@@ -187,6 +165,7 @@ class NextUpUpdaterThread(threading.Thread):
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".EpisodeNo", tempEpisodeNumber)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".SeasonNo", tempSeasonNumber)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Thumb", thumbnail)
+            WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".SeriesThumb", seriesthumbnail)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Path", playUrl)            
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Rating", rating)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)", fanart)

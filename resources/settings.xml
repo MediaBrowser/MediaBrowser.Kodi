@@ -14,7 +14,7 @@
 		<setting id="deviceName" type="text" label="30016" default="XBMB3C" visible="true" enable="true" />
 	</category>
 	<category label="30110"> <!-- Interface -->
-        <setting id="selectAction" type="enum" label="30151" values="Play|Info" default="0" />
+		<setting id="selectAction" type="enum" label="30151" values="Play|Info" default="0" />
 		<setting id="resumeJumpBack" type="number" label="30114" default="10" visible="true" enable="true" />
 		<setting id="markPlayedAt" type="number" label="30115" default="90" visible="true" enable="true" />
 		<setting id="addCounts" type="bool" label="30116" default="true" visible="true" enable="true" />
@@ -22,41 +22,42 @@
 		<setting id="addResumePercent" type="bool" label="30118" default="true" visible="true" enable="true" />
 		<setting id="autoEnterSingle" type="bool" label="30001" default="true" visible="true" enable="true" />
 		<setting id="sortNextUp" type="bool" label="30156" default="false" visible="true" enable="true" />
-		<setting id="offerDelete" type="bool" label="30127" default="false" visible="true" enable="true" />        
+		<setting id="offerDelete" type="bool" label="30127" default="false" visible="true" enable="true" />
 		<setting id="showLoadProgress" type="bool" label="30120" default="false" visible="true" enable="true" />
-    </category>
+	</category>
 	<category label="30158"> <!-- Metadata -->
 		<setting id="includeStreamInfo" type="bool" label="30111" default="true" visible="true" enable="true" />
 		<setting id="includePeople" type="bool" label="30112" default="true" visible="true" enable="true" />
-		<setting id="includeOverview" type="bool" label="30113" default="true" visible="true" enable="true" />        
-        <setting id="numRecentMovies" type="number" label="30036" default="20" visible="true" enable="true" />
+		<setting id="includeOverview" type="bool" label="30113" default="true" visible="true" enable="true" />
+		<setting id="numRecentMovies" type="number" label="30036" default="20" visible="true" enable="true" />
 		<setting id="numRecentTV" type="number" label="30037" default="20" visible="true" enable="true" />
 		<setting id="numRecentMusic" type="number" label="30035" default="20" visible="true" enable="true" />
-    </category>
-    <category label="30159"> <!-- Artwork -->
+	</category>
+	<category label="30159"> <!-- Artwork -->
 		<setting id="backgroundRefresh" type="number" label="30117" default="30" visible="true" enable="true" />
-        <setting id="useSeasonPoster" type="bool" label="30039" default="false" visible="true" enable="true" />
-		<setting id="disableCoverArt" type="bool" label="30157" default="false" visible="true" enable="true" />        
+		<setting id="useSeasonPoster" type="bool" label="30039" default="false" visible="true" enable="true" />
+		<setting id="disableCoverArt" type="bool" label="30157" default="false" visible="true" enable="true" />
 		<setting id="showIndicators" type="bool" label="30152" default="false" visible="true" enable="true" />
 		<setting id="showWatchedIndicators" type="bool" label="30153" default="true" visible="eq(-1,true)" enable="eq(-1,true)" />
 		<setting id="showUnplayedIndicators" type="bool" label="30154" default="true" visible="eq(-2,true)" enable="eq(-2,true)" />
 		<setting id="showPlayedPrecentageIndicators" type="bool" label="30155" default="true" visible="eq(-3,true)" enable="eq(-3,true)" />
 		<setting id="useThemeMusic" type="bool" label="30139" default="true" visible="true" enable="true" />
 		<setting id="loopThemeMusic" type="bool" label="30140" default="true" visible="true" enable="true" />
-    </category>
-        <category label="30142"> <!-- Services -->
-        <setting id="useBackgroundLoader" type="bool" label="30141" default="true" visible="true" enable="true" />
-        <setting id="useInfoLoader" type="bool" label="30143" default="true" visible="true" enable="true" />
-        <setting id="useMenuLoader" type="bool" label="30144" default="true" visible="true" enable="true" />
-        <setting id="useWebSocketRemote" type="bool" label="30145" default="true" visible="true" enable="true" />
-        <setting id="useInProgressUpdater" type="bool" label="30146" default="true" visible="true" enable="true" />
-        <setting id="useRecentInfoUpdater" type="bool" label="30147" default="true" visible="true" enable="true" />
-        <setting id="useRandomInfo" type="bool" label="30148" default="true" visible="true" enable="true" />
-        <setting id="useNextUp" type="bool" label="30149" default="true" visible="true" enable="true" />
-	</category>    
+	</category>
+	<category label="30142"> <!-- Services -->
+		<setting id="useBackgroundLoader" type="bool" label="30141" default="true" visible="true" enable="true" />
+		<setting id="useInfoLoader" type="bool" label="30143" default="true" visible="true" enable="true" />
+		<setting id="useMenuLoader" type="bool" label="30144" default="true" visible="true" enable="true" />
+		<setting id="useWebSocketRemote" type="bool" label="30145" default="true" visible="true" enable="true" />
+		<setting id="useInProgressUpdater" type="bool" label="30146" default="true" visible="true" enable="true" />
+		<setting id="useRecentInfoUpdater" type="bool" label="30147" default="true" visible="true" enable="true" />
+		<setting id="useRandomInfo" type="bool" label="30148" default="true" visible="true" enable="true" />
+		<setting id="useNextUp" type="bool" label="30149" default="true" visible="true" enable="true" />
+		<setting id="useSuggested" type="bool" label="30161" default="true" visible="true" enable="true" />
+	</category>
 	<category label="30022"> <!-- Advanced -->
 		<setting id="logLevel" type="enum" label="30004" values="None(0)|Info(1)|Debug(2)" default="0" />
 		<setting id="profile" type="bool" label="30010" default="false" visible="true" enable="true" />
-		<!--setting id="useJson" type="bool" label="30026" default="false" visible="true" enable="true" />-->
+		<!--setting id="useJson" type="bool" label="30026" default="false" visible="true" enable="true" /> -->
 	</category>
 </settings>

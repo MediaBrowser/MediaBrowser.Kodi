@@ -10,8 +10,13 @@ import json
 import threading
 from datetime import datetime
 import urllib
+from DownloadUtils import DownloadUtils
 
 _MODE_BASICPLAY=12
+
+#define our global download utils
+downloadUtils = DownloadUtils()
+
 
 class RecentInfoUpdaterThread(threading.Thread):
 
@@ -73,44 +78,15 @@ class RecentInfoUpdaterThread(threading.Thread):
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')     
         
-        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
-        
-        try:
-            requesthandle = urllib.urlopen(userUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()              
-        except Exception, e:
-            self.logMsg("updateRecent urlopen : " + str(e) + " (" + userUrl + ")", level=0)
-            return
-
-        result = []
-        
-        try:
-            result = json.loads(jsonData)
-        except Exception, e:
-            self.logMsg("jsonload : " + str(e) + " (" + jsonData + ")", level=2)
-            return              
-        
-        userid = ""
-        for user in result:
-            if(user.get("Name") == userName):
-                userid = user.get("Id")    
-                break
+        userid = downloadUtils.getUserId()
         
         self.logMsg("UserName : " + userName + " UserID : " + userid)
         
         self.logMsg("Updating Recent Movie List")
         
         recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
-        
-        try:
-            requesthandle = urllib.urlopen(recentUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()              
-        except Exception, e:
-            self.logMsg("RecentInfoUpdaterThread updateRecent urlopen : " + str(e) + " (" + recentUrl + ")", level=0)
-            return    
-
+         
+        jsonData = downloadUtils.downloadUrl(recentUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("Recent Movie Json Data : " + str(result), level=2)
         
@@ -187,14 +163,7 @@ class RecentInfoUpdaterThread(threading.Thread):
         
         recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json"
         
-        try:
-            requesthandle = urllib.urlopen(recentUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()               
-        except Exception, e:
-            self.logMsg("updateRecent urlopen : " + str(e) + " (" + recentUrl + ")", level=0)
-            return
-
+        jsonData = downloadUtils.downloadUrl(recentUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("Recent TV Show Json Data : " + str(result), level=2)
         
@@ -242,7 +211,11 @@ class RecentInfoUpdaterThread(threading.Thread):
             logo = self.getImageLink(item, "Logo", str(series_id))             
             fanart = self.getImageLink(item, "Backdrop", str(series_id))
             banner = self.getImageLink(item, "Banner", str(series_id))
-            
+            if item.get("SeriesThumbImageTag") != None:
+              seriesthumbnail = self.getImageLink(item, "Thumb", str(series_id))
+            else:
+              seriesthumbnail = fanart
+              
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
             playUrl = playUrl.replace("\\\\","smb://")
@@ -266,6 +239,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".EpisodeNo", tempEpisodeNumber)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".SeasonNo", tempSeasonNumber)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Thumb", thumbnail)
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".SeriesThumb", seriesthumbnail)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Path", playUrl)            
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Rating", rating)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)", fanart)
@@ -283,14 +257,7 @@ class RecentInfoUpdaterThread(threading.Thread):
     
         recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=MusicAlbum&format=json"
     
-        try:
-            requesthandle = urllib.urlopen(recentUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()                 
-        except Exception, e:
-            self.logMsg("RecentInfoUpdaterThread updateRecent urlopen : " + str(e) + " (" + recentUrl + ")", level=0)
-            return
-    
+        jsonData = downloadUtils.downloadUrl(recentUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("Recent MusicList Json Data : " + str(result), level=2)
     
@@ -363,14 +330,7 @@ class RecentInfoUpdaterThread(threading.Thread):
     
         recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Photo&format=json"
     
-        try:
-            requesthandle = urllib.urlopen(recentUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()                 
-        except Exception, e:
-            self.logMsg("RecentInfoUpdaterThread updateRecent urlopen : " + str(e) + " (" + recentUrl + ")", level=0)
-            return
-    
+        jsonData = downloadUtils.downloadUrl(recentUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("Recent Photo Json Data : " + str(result), level=2)
     
