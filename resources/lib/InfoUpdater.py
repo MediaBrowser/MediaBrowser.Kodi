@@ -10,8 +10,12 @@ import json
 import threading
 from datetime import datetime
 import urllib
+from DownloadUtils import DownloadUtils
 
 _MODE_BASICPLAY=12
+
+#define our global download utils
+downloadUtils = DownloadUtils()
 
 class InfoUpdaterThread(threading.Thread):
 
@@ -59,44 +63,14 @@ class InfoUpdaterThread(threading.Thread):
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')        
         
-        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users?format=json"
-        
-        try:
-            requesthandle = urllib.urlopen(userUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()        
-        except Exception, e:
-            self.logMsg("urlopen : " + str(e) + " (" + userUrl + ")", level=0)
-            return          
-        
-        result = []
-        
-        try:
-            result = json.loads(jsonData)
-        except Exception, e:
-            self.logMsg("jsonload : " + str(e) + " (" + jsonData + ")", level=2)
-            return              
-        
-        userid = ""
-        for user in result:
-            if(user.get("Name") == userName):
-                userid = user.get("Id")    
-                break
-        
+        userid = downloadUtils.getUserId()
         self.logMsg("updateInfo UserID : " + userid)
         
         self.logMsg("Updating info List")
         
         infoUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=CollectionType&format=json"
         
-        try:
-            requesthandle = urllib.urlopen(infoUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()      
-        except Exception, e:
-            self.logMsg("updateInfo urlopen : " + str(e) + " (" + infoUrl + ")", level=0)
-            return  
-        
+        jsonData = downloadUtils.downloadUrl(infoUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
         
         result = result.get("Items")
@@ -192,15 +166,7 @@ class InfoUpdaterThread(threading.Thread):
         self.logMsg("InfoTV start")
         infoTVUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?&IncludeItemTypes=Series&Recursive=true&SeriesStatus=Continuing&format=json"
         
-        try:
-            requesthandle = urllib.urlopen(infoTVUrl, proxies={})
-            self.logMsg("InfoTV start open")
-            jsonData = requesthandle.read()
-            requesthandle.close()  
-        except Exception, e:
-            self.logMsg("updateInfo urlopen : " + str(e) + " (" + infoTVUrl + ")", level=0)
-            return  
-        
+        jsonData = downloadUtils.downloadUrl(infoTVUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("InfoTV Json Data : " + str(result), level=2)
         
@@ -210,15 +176,8 @@ class InfoUpdaterThread(threading.Thread):
         
         self.logMsg("InfoNextAired start")
         InfoNextAiredUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?IsUnaired=true&SortBy=PremiereDate%2CAirTime%2CSortName&SortOrder=Ascending&IncludeItemTypes=Episode&Limit=1&Recursive=true&Fields=SeriesInfo%2CUserData&format=json"
-        
-        try:
-            requesthandle = urllib.urlopen(InfoNextAiredUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()   
-        except Exception, e:
-            self.logMsg("updateInfo urlopen : " + str(e) + " (" + InfoNextAiredUrl + ")", level=0)
-            return  
-        
+         
+        jsonData = downloadUtils.downloadUrl(InfoNextAiredUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("InfoNextAired Json Data : " + str(result), level=2)
         
@@ -261,14 +220,7 @@ class InfoUpdaterThread(threading.Thread):
         dateformat = today.strftime("%Y-%m-%d") 
         nextAiredUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?IsUnaired=true&SortBy=PremiereDate%2CAirTime%2CSortName&SortOrder=Ascending&IncludeItemTypes=Episode&Recursive=true&Fields=SeriesInfo%2CUserData&MinPremiereDate="  + str(dateformat) + "&MaxPremiereDate=" + str(dateformat) + "&format=json"
         
-        try:
-            requesthandle = urllib.urlopen(nextAiredUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()   
-        except Exception, e:
-            self.logMsg("updateInfo total urlopen : " + str(e) + " (" + nextAiredUrl + ")", level=0)
-            return  
-        
+        jsonData = downloadUtils.downloadUrl(nextAiredUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("InfoNextAired total url: " + nextAiredUrl)
         self.logMsg("InfoNextAired total Json Data : " + str(result), level=2)
