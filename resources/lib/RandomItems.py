@@ -73,7 +73,7 @@ class RandomInfoUpdaterThread(threading.Thread):
         
         self.logMsg("Updating Random Movie List")
         
-        randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
+        randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
                 
         jsonData = downloadUtils.downloadUrl(randomUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
@@ -93,6 +93,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             
             rating = item.get("CommunityRating")
             criticrating = item.get("CriticRating")
+            officialrating = item.get("OfficialRating")
             criticratingsummary = ""
             if(item.get("CriticRatingSummary") != None):
                 criticratingsummary = item.get("CriticRatingSummary").encode('utf-8')
@@ -136,6 +137,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Art(poster)", thumbnail)
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Rating", str(rating))
+            WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Mpaa", str(officialrating))
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".CriticRating", str(criticrating))
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".CriticRatingSummary", criticratingsummary)
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Plot", plot)
@@ -242,7 +244,7 @@ class RandomInfoUpdaterThread(threading.Thread):
         # update random music
         self.logMsg("Updating Random MusicList")
     
-        randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=MusicAlbum&format=json"
+        randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=MusicAlbum&format=json"
     
         jsonData = downloadUtils.downloadUrl(randomUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)

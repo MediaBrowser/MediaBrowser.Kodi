@@ -75,7 +75,7 @@ class InProgressUpdaterThread(threading.Thread):
         
         self.logMsg("Updating In Progress Movie List")
         
-        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&Filters=IsResumable&IncludeItemTypes=Movie&format=json"
+        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&Filters=IsResumable&IncludeItemTypes=Movie&format=json"
    
         jsonData = downloadUtils.downloadUrl(recentUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
@@ -123,6 +123,10 @@ class InProgressUpdaterThread(threading.Thread):
             thumbnail = self.getImageLink(item, "Primary", str(item_id))
             logo = self.getImageLink(item, "Logo", str(item_id))
             fanart = self.getImageLink(item, "Backdrop", str(item_id))
+            if item.get("ImageTags").get("Thumb") != None:
+              realthumbnail = self.getImageLink(item, "Thumb", str(item_id))
+            else:
+              realthumbnail = fanart
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
@@ -130,7 +134,7 @@ class InProgressUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\","/")    
 
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Title = " + title, level=2)
-            self.logMsg("InProgressMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, level=2)
+            self.logMsg("InProgressMovieMB3." + str(item_count) + ".Thumb = " + realthumbnail, level=2)
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=2)
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=2)
@@ -143,7 +147,7 @@ class InProgressUpdaterThread(threading.Thread):
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Runtime  = " + str(runtime), level=2)
             
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Title", title)
-            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Thumb", thumbnail)
+            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Thumb", realthumbnail)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Path", playUrl)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(fanart)", fanart)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
@@ -178,7 +182,7 @@ class InProgressUpdaterThread(threading.Thread):
         #Updating Recent TV Show List
         self.logMsg("Updating In Progress Episode List")
         
-        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&Filters=IsResumable&IncludeItemTypes=Episode&format=json"
+        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&Filters=IsResumable&IncludeItemTypes=Episode&format=json"
         
         jsonData = downloadUtils.downloadUrl(recentUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)

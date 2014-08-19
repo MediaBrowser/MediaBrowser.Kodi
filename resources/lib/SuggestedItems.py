@@ -94,6 +94,7 @@ class SuggestedUpdaterThread(threading.Thread):
             
             rating = item.get("CommunityRating")
             criticrating = item.get("CriticRating")
+            officialrating = item.get("OfficialRating")
             criticratingsummary = ""
             if(item.get("CriticRatingSummary") != None):
                 criticratingsummary = item.get("CriticRatingSummary").encode('utf-8')
@@ -111,6 +112,10 @@ class SuggestedUpdaterThread(threading.Thread):
             thumbnail = self.getImageLink(item, "Primary",str(item_id))
             logo = self.getImageLink(item, "Logo",str(item_id))
             fanart = self.getImageLink(item, "Backdrop",str(item_id))
+            if item.get("ImageTags").get("Thumb") != None:
+              realthumbnail = self.getImageLink(item, "Thumb", str(item_id))
+            else:
+              realthumbnail = fanart
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
@@ -118,7 +123,7 @@ class SuggestedUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\","/")    
 
             self.logMsg("SuggestedMovieMB3." + str(item_count) + ".Title = " + title, level=2)
-            self.logMsg("SuggestedMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, level=2)
+            self.logMsg("SuggestedMovieMB3." + str(item_count) + ".Thumb = " + realthumbnail, level=2)
             self.logMsg("SuggestedMovieMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
             self.logMsg("SuggestedMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=2)
             self.logMsg("SuggestedMovieMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=2)
@@ -133,12 +138,13 @@ class SuggestedUpdaterThread(threading.Thread):
             
             
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Title", title)
-            WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Thumb", thumbnail)
+            WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Thumb", realthumbnail)
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Path", playUrl)
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Art(fanart)", fanart)
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Art(poster)", thumbnail)
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Rating", str(rating))
+            WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Mpaa", str(officialrating))
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".CriticRating", str(criticrating))
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".CriticRatingSummary", criticratingsummary)
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Plot", plot)
