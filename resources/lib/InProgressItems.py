@@ -39,8 +39,31 @@ class InProgressUpdaterThread(threading.Thread):
     def getImageLink(self, item, type, item_id):
         imageTag = "none"
         if(item.get("ImageTags") != None and item.get("ImageTags").get(type) != None):
-            imageTag = item.get("ImageTags").get(type)            
-        return "http://localhost:15001/?id=" + str(item_id) + "&type=" + type + "&tag=" + imageTag        
+            imageTag = item.get("ImageTags").get(type)
+        query = "&type=" + type + "&tag=" + imageTag
+        userData = item.get("UserData") 
+        if type=="Primary":
+            PlayedPercentage = 0 if item.get("PlayedPercentage")==None else item.get("PlayedPercentage")
+            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
+                PlayedPercentage = userData.get("PlayedPercentage")
+            if (PlayedPercentage != 100 or PlayedPercentage != 0):
+                query = query + "&PercentPlayed=" + str(PlayedPercentage)
+            query = query + "&height=220&width=156"
+        if type=="Thumb":
+            PlayedPercentage = 0 if item.get("PlayedPercentage")==None else item.get("PlayedPercentage")
+            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
+                PlayedPercentage = userData.get("PlayedPercentage")
+            if (PlayedPercentage != 100 or PlayedPercentage != 0):
+                query = query + "&PercentPlayed=" + str(PlayedPercentage)
+            query = query + "&height=255&width=441"
+        if type=="Backdrop":
+            PlayedPercentage = 0 if item.get("PlayedPercentage")==None else item.get("PlayedPercentage")
+            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
+                PlayedPercentage = userData.get("PlayedPercentage")
+            if (PlayedPercentage != 100 or PlayedPercentage != 0):
+                query = query + "&PercentPlayed=" + str(PlayedPercentage)
+            query = query + "&height=255&width=441"              
+        return "http://localhost:15001/?id=" + str(item_id) + query        
     
     def run(self):
         self.logMsg("Started")

@@ -486,7 +486,7 @@ def addGUIItem( url, details, extraData, folder=True ):
             list.setProperty('TotalTime', str(extraData.get('duration')))
             list.setProperty('ResumeTime', str(extraData.get('resumetime')))
     
-    artTypes=['poster', 'tvshow.poster', 'fanart_image', 'clearlogo', 'discart', 'banner', 'clearart', 'landscape']
+    artTypes=['poster', 'tvshow.poster', 'fanart_image', 'clearlogo', 'discart', 'banner', 'clearart', 'landscape', 'big_poster']
     
     for artType in artTypes:
         imagePath=str(extraData.get(artType,''))
@@ -1026,14 +1026,14 @@ def getCacheValidator (server,url):
     id = idAndOptions[1].split("&")
     jsonData = downloadUtils.downloadUrl("http://"+server+"/mediabrowser/Users/" + userid + "/Items/" +id[0]+"?format=json", suppress=False, popup=1 )
     result = json.loads(jsonData)
-    
+    userData = result.get("UserData")
     printDebug ("RecursiveItemCount: " + str(result.get("RecursiveItemCount")))
-    printDebug ("RecursiveUnplayedCount: " + str(result.get("RecursiveUnplayedItemCount")))
-    printDebug ("RecursiveUnplayedCount: " + str(result.get("PlayedPercentage")))
+    printDebug ("UnplayedItemCount: " + str(userData.get("UnplayedItemCount")))
+    printDebug ("PlayedPercentage: " + str(userData.get("PlayedPercentage")))
     
     playedPercentage = 0.0
-    if(result.get("PlayedPercentage") != None):
-        playedPercentage = result.get("PlayedPercentage")
+    if(userData.get("PlayedPercentage") != None):
+        playedPercentage = userData.get("PlayedPercentage")
     
     playedTime = "{0:09.6f}".format(playedPercentage)
     playedTime = playedTime.replace(".","-")
@@ -1042,7 +1042,7 @@ def getCacheValidator (server,url):
         if int(result.get("RecursiveItemCount"))<=25:
             validatorString='nocache'
         else:
-            validatorString = str(result.get("RecursiveItemCount")) + "_" + str(result.get("RecursiveUnplayedItemCount")) + "_" + playedTime
+            validatorString = str(result.get("RecursiveItemCount")) + "_" + str(userData.get("UnplayedItemCount")) + "_" + playedTime
         printDebug ("getCacheValidator : " + validatorString)
     return validatorString
     
@@ -1058,12 +1058,13 @@ def getAllMoviesCacheValidator (server,url):
     result=alldata.get("Items")
     for item in result:
         if item.get("Name")=="Movies":
+            userData = item.get("UserData")
             printDebug ("RecursiveItemCount: " + str(item.get("RecursiveItemCount")))
-            printDebug ("RecursiveUnplayedCount: " + str(item.get("RecursiveUnplayedItemCount")))
-            printDebug ("RecursiveUnplayedCount: " + str(item.get("PlayedPercentage")))
+            printDebug ("RecursiveUnplayedCount: " + str(userData.get("UnplayedItemCount")))
+            printDebug ("RecursiveUnplayedCount: " + str(userData.get("PlayedPercentage")))
 
-            if(item.get("PlayedPercentage") != None):
-                playedPercentage = item.get("PlayedPercentage")
+            if(userData.get("PlayedPercentage") != None):
+                playedPercentage = userData.get("PlayedPercentage")
             
             playedTime = "{0:09.6f}".format(playedPercentage)
             playedTime = playedTime.replace(".","-")
@@ -1072,7 +1073,7 @@ def getAllMoviesCacheValidator (server,url):
         if int(item.get("RecursiveItemCount"))<=25:
             validatorString='nocache'
         else:
-            validatorString = "allmovies_" + str(item.get("RecursiveItemCount")) + "_" + str(item.get("RecursiveUnplayedItemCount")) + "_" + playedTime
+            validatorString = "allmovies_" + str(item.get("RecursiveItemCount")) + "_" + str(userData.get("UnplayedItemCount")) + "_" + playedTime
         printDebug ("getAllMoviesCacheValidator : " + validatorString)
     return validatorString    
     
@@ -1100,8 +1101,8 @@ def getCacheValidatorFromData(result):
                     totalPlayedPercentage = totalPlayedPercentage + 100
             else:
                 itemCount = itemCount + item.get("RecursiveItemCount")
-                unwatchedItemCount = unwatchedItemCount + item.get("RecursiveUnplayedItemCount")
-                PlayedPercentage=item.get("PlayedPercentage")
+                unwatchedItemCount = unwatchedItemCount + userData.get("UnplayedItemCount")
+                PlayedPercentage=userData.get("PlayedPercentage")
                 if PlayedPercentage==None:
                     PlayedPercentage=0
                 totalPlayedPercentage = totalPlayedPercentage + (item.get("RecursiveItemCount") * PlayedPercentage)
@@ -1487,8 +1488,8 @@ def processDirectory(url, results, progress):
                 RunTimeTicks = "0"
         TotalSeasons     = 0 if item.get("ChildCount")==None else item.get("ChildCount")
         TotalEpisodes    = 0 if item.get("RecursiveItemCount")==None else item.get("RecursiveItemCount")
-        WatchedEpisodes  = 0 if item.get("RecursiveUnplayedItemCount")==None else TotalEpisodes-item.get("RecursiveUnplayedItemCount")
-        UnWatchedEpisodes = 0 if item.get("RecursiveUnplayedItemCount")==None else item.get("RecursiveUnplayedItemCount")
+        WatchedEpisodes  = 0 if userData.get("UnplayedItemCount")==None else TotalEpisodes-userData.get("UnplayedItemCount")
+        UnWatchedEpisodes = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")
         NumEpisodes      = TotalEpisodes
         # Populate the extraData list
         extraData={'thumb'        : downloadUtils.getArtwork(item, "Primary") ,
@@ -1499,7 +1500,8 @@ def processDirectory(url, results, progress):
                    'clearlogo'    : downloadUtils.getArtwork(item, "Logo") ,
                    'discart'      : downloadUtils.getArtwork(item, "Disc") ,
                    'clearart'     : downloadUtils.getArtwork(item, "Art") ,
-                   'landscape'    : downloadUtils.getArtwork(item, "Thumb") ,                   
+                   'landscape'    : downloadUtils.getArtwork(item, "Thumb") ,
+                   'big_poster'   : downloadUtils.getArtwork(item, "Primary2") ,                   
                    'id'           : id ,
                    'guiid'        : guiid ,
                    'mpaa'         : item.get("OfficialRating"),
@@ -1529,7 +1531,7 @@ def processDirectory(url, results, progress):
                    'totaltime'    : tempDuration,
                    'duration'     : tempDuration,
                    'RecursiveItemCount' : item.get("RecursiveItemCount"),
-                   'RecursiveUnplayedItemCount' : item.get("RecursiveUnplayedItemCount"),
+                   'RecursiveUnplayedItemCount' : userData.get("UnplayedItemCount"),
                    'TotalSeasons' : str(TotalSeasons),
                    'TotalEpisodes': str(TotalEpisodes),
                    'WatchedEpisodes': str(WatchedEpisodes),
@@ -2102,7 +2104,7 @@ def getLinkURL( url, pathData, server ):
     return url
 
 def setArt (list,name,path):
-    if name=='thumb' or name=='fanart_image':
+    if name=='thumb' or name=='fanart_image' or name=='big_poster':
         list.setProperty(name, path)
     elif xbmcVersionNum >= 13:
         list.setArt({name:path})

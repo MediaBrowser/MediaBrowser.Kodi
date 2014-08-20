@@ -39,8 +39,27 @@ class SuggestedUpdaterThread(threading.Thread):
     def getImageLink(self, item, type, item_id):
         imageTag = "none"
         if(item.get("ImageTags") != None and item.get("ImageTags").get(type) != None):
-            imageTag = item.get("ImageTags").get(type)            
-        return "http://localhost:15001/?id=" + str(item_id) + "&type=" + type + "&tag=" + imageTag    
+            imageTag = item.get("ImageTags").get(type)
+            
+        query = "&type=" + type + "&tag=" + imageTag
+        userData = item.get("UserData")
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c') 
+        if type=="Primary" and addonSettings.getSetting('showIndicators')=='true' and addonSettings.getSetting('showWatchedIndicators')=='true':
+            if(userData != None and userData.get("Played")) == True:
+                query = query + "&AddPlayedIndicator=true"
+                
+            query = query + "&height=220&width=156"
+        if type=="Thumb" and addonSettings.getSetting('showIndicators')=='true' and addonSettings.getSetting('showWatchedIndicators')=='true':
+            if(userData != None and userData.get("Played")) == True:
+                query = query + "&AddPlayedIndicator=true"
+                
+            query = query + "&height=255&width=441"
+        if type=="Backdrop" and addonSettings.getSetting('showIndicators')=='true' and addonSettings.getSetting('showWatchedIndicators')=='true':
+            if(userData != None and userData.get("Played")) == True:
+                query = query + "&AddPlayedIndicator=true"
+                
+            query = query + "&height=255&width=441"              
+        return "http://localhost:15001/?id=" + str(item_id) + query                   
         
     def run(self):
         self.logMsg("Started")

@@ -39,8 +39,25 @@ class NextUpUpdaterThread(threading.Thread):
     def getImageLink(self, item, type, item_id):
         imageTag = "none"
         if(item.get("ImageTags") != None and item.get("ImageTags").get(type) != None):
-            imageTag = item.get("ImageTags").get(type)            
-        return "http://localhost:15001/?id=" + str(item_id) + "&type=" + type + "&tag=" + imageTag    
+            imageTag = item.get("ImageTags").get(type)
+        query = "&type=" + type + "&tag=" + imageTag
+        if type=="Primary":
+          addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+          if addonSettings.getSetting('showIndicators')=='true' and addonSettings.getSetting('showUnplayedIndicators')=='true':
+            mb3Host = addonSettings.getSetting('ipaddress')
+            mb3Port = addonSettings.getSetting('port')    
+            userName = addonSettings.getSetting('username')     
+        
+            userid = downloadUtils.getUserId()  
+            seriesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + item_id +"?format=json"
+            jsonData = downloadUtils.downloadUrl(seriesUrl, suppress=False, popup=1 )
+            result = json.loads(jsonData)
+            userData = result.get("UserData")   
+            UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
+            if UnWatched <> 0:
+              query = query + "&UnplayedCount=" + str(UnWatched)
+            query = query + "&height=220&width=156"            
+        return "http://localhost:15001/?id=" + str(item_id) + query   
         
     def run(self):
         self.logMsg("Started")

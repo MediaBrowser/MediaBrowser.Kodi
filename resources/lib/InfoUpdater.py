@@ -97,31 +97,32 @@ class InfoUpdaterThread(threading.Thread):
             collectionType = item.get("CollectionType")
             if collectionType==None:
                 collectionType="unknown"
-            self.logMsg("collectionType "  + collectionType)    
+            self.logMsg("collectionType "  + collectionType) 
+            userData = item.get("UserData")   
             if(collectionType == "movies"):
                 movie_count = movie_count + item.get("RecursiveItemCount")
-                movie_unwatched_count = movie_unwatched_count + item.get("RecursiveUnplayedItemCount")
+                movie_unwatched_count = movie_unwatched_count + userData.get("UnplayedItemCount")
                 
             if(collectionType == "musicvideos"):
                 musicvideos_count = musicvideos_count + item.get("RecursiveItemCount")
-                musicvideos_unwatched_count = musicvideos_unwatched_count + item.get("RecursiveUnplayedItemCount")
+                musicvideos_unwatched_count = musicvideos_unwatched_count + userData.get("UnplayedItemCount")
             
             if(collectionType == "tvshows"):
                 tv_count = tv_count + item.get("ChildCount")
                 episode_count = episode_count + item.get("RecursiveItemCount")
-                episode_unwatched_count = episode_unwatched_count + item.get("RecursiveUnplayedItemCount")
+                episode_unwatched_count = episode_unwatched_count + userData.get("UnplayedItemCount")
             
             if(collectionType == "music"):
                 music_count = music_count + item.get("ChildCount")
                 music_songs_count = music_songs_count + item.get("RecursiveItemCount")
-                music_songs_unplayed_count = music_songs_unplayed_count + item.get("RecursiveUnplayedItemCount")
+                music_songs_unplayed_count = music_songs_unplayed_count + userData.get("UnplayedItemCount")
              
             if(collectionType == "photos"):
                 photos_count = photos_count + item.get("RecursiveItemCount")
                      
             if(item.get("Name") == "Trailers"):
                 trailers_count = trailers_count + item.get("RecursiveItemCount")
-                trailers_unwatched_count = trailers_unwatched_count + item.get("RecursiveUnplayedItemCount")
+                trailers_unwatched_count = trailers_unwatched_count + userData.get("UnplayedItemCount")
                
         self.logMsg("MoviesCount "  + str(movie_count), level=2)
         self.logMsg("MoviesUnWatchedCount "  + str(movie_unwatched_count), level=2)
