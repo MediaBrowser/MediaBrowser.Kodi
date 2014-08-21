@@ -75,7 +75,7 @@ class DownloadUtils():
             self.authenticate('http://' + host + ":" + port + "/mediabrowser/Users/AuthenticateByName?format=json")
             
         if userid == "":
-            return_value = xbmcgui.Dialog().ok(__language__(30045),__language__(30045))
+            return_value = xbmcgui.Dialog().ok(self.getString(30045),self.getString(30045))
             sys.exit()
             
         self.logMsg("userid : " + userid)
