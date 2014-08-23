@@ -141,5 +141,7 @@
     <string id="30160">Video Quality</string>
     
      <string id="30161">Enable Suggested Loader (Requires Restart)</string>
+     <string id="30162">Add Season Number</string>     
+     <string id="30163">Flatten Seasons</string>     
    
 </strings>

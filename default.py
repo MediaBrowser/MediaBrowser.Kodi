@@ -1435,6 +1435,8 @@ def processDirectory(url, results, progress):
         tempSeason = ""
         if (str(item.get("ParentIndexNumber")) != None):
             tempSeason = str(item.get("ParentIndexNumber"))
+            if item.get("ParentIndexNumber") < 10:
+                tempSeason = "0" + tempSeason
       
         viewType=""
         if item.get("Type") == "Movie":
@@ -1453,8 +1455,16 @@ def processDirectory(url, results, progress):
             xbmcplugin.setContent(pluginhandle, 'seasons')
             viewType="_SEASONS"
         elif item.get("Type") == "Episode":
+            prefix=''
+            if __settings__.getSetting('addSeasonNumber') == 'true':
+                prefix = "S" + str(tempSeason)
+                if __settings__.getSetting('addEpisodeNumber') == 'true':
+                    prefix = prefix + "E"
+                #prefix = str(tempEpisode)
             if __settings__.getSetting('addEpisodeNumber') == 'true':
-                tempTitle = str(tempEpisode) + ' - ' + tempTitle
+                prefix = prefix + str(tempEpisode)
+            if prefix != '':
+                tempTitle = prefix + ' - ' + tempTitle
             xbmcplugin.setContent(pluginhandle, 'episodes')
             viewType="_EPISODES"
             guiid = item.get("Id")
@@ -1663,8 +1673,10 @@ def processDirectory(url, results, progress):
             SortByTemp = __settings__.getSetting('sortby')
             if SortByTemp == '' and not (item_type == 'Series' or item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist'):
                 SortByTemp = 'SortName'
-                
-            u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
+            if item_type=='Series' and __settings__.getSetting('flattenSeasons')=='true':
+                u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IncludeItemTypes=Episode&Recursive=true&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName'+'&format=json'
+            else:
+                u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
             if (item.get("RecursiveItemCount") != 0):
                 dirItems.append(addGUIItem(u, details, extraData))
         else:
