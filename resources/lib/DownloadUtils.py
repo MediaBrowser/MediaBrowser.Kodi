@@ -156,7 +156,7 @@ class DownloadUtils():
                   if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                     query = query + "&PercentPlayed=" + str(PlayedPercentage)  
                     
-                  query = query + "&height=220&width=156"
+                  query = query + "&height=685&width=480"
             elif originalType =="Primary2" and data.get("Type") != "Episode":
                 userData = data.get("UserData") 
                 if userData != None:
@@ -176,7 +176,7 @@ class DownloadUtils():
                   if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                     query = query + "&PercentPlayed=" + str(PlayedPercentage)  
                     
-                  query = query + "&height=685&width=480"
+                  query = query + "&height=220&width=156"
             elif type =="Primary" and data.get("Type") == "Episode":
                 userData = data.get("UserData")
                 if userData != None:

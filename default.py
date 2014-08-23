@@ -490,7 +490,7 @@ def addGUIItem( url, details, extraData, folder=True ):
             list.setProperty('TotalTime', str(extraData.get('duration')))
             list.setProperty('ResumeTime', str(extraData.get('resumetime')))
     
-    artTypes=['poster', 'tvshow.poster', 'fanart_image', 'clearlogo', 'discart', 'banner', 'clearart', 'landscape', 'big_poster']
+    artTypes=['poster', 'tvshow.poster', 'fanart_image', 'clearlogo', 'discart', 'banner', 'clearart', 'landscape', 'small_poster']
     
     for artType in artTypes:
         imagePath=str(extraData.get(artType,''))
@@ -1624,7 +1624,7 @@ def processDirectory(url, results, progress):
                    'discart'      : downloadUtils.getArtwork(item, "Disc") ,
                    'clearart'     : downloadUtils.getArtwork(item, "Art") ,
                    'landscape'    : downloadUtils.getArtwork(item, "Thumb") ,
-                   'big_poster'   : downloadUtils.getArtwork(item, "Primary2") ,                   
+                   'small_poster' : downloadUtils.getArtwork(item, "Primary2") ,                   
                    'id'           : id ,
                    'guiid'        : guiid ,
                    'mpaa'         : item.get("OfficialRating"),
@@ -2312,7 +2312,7 @@ def getLinkURL( url, pathData, server ):
     return url
 
 def setArt (list,name,path):
-    if name=='thumb' or name=='fanart_image' or name=='big_poster':
+    if name=='thumb' or name=='fanart_image' or name=='small_poster':
         list.setProperty(name, path)
     elif xbmcVersionNum >= 13:
         list.setArt({name:path})
