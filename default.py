@@ -224,7 +224,7 @@ def getCollections(detailsString):
     printDebug("parentid : " + parentid)
        
     htmlpath = ("http://%s:%s/mediabrowser/Users/" % ( __settings__.getSetting('ipaddress'), __settings__.getSetting('port')))
-    jsonData = downloadUtils.downloadUrl(htmlpath + userid + "/items?ParentId=" + parentid + "&format=json")
+    jsonData = downloadUtils.downloadUrl(htmlpath + userid + "/items?ParentId=" + parentid + "&Sortby=SortName&format=json")
     printDebug("jsonData : " + jsonData, level=2)
     collections=[]
 
