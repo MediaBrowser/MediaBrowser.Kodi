@@ -1019,10 +1019,12 @@ def setListItemProps(server, id, listItem,result):
     thumbID = id
     eppNum = -1
     seasonNum = -1
+    tvshowTitle = ""
     if(result.get("Type") == "Episode"):
         thumbID = result.get("SeriesId")
         seasonNum = result.get("ParentIndexNumber")
         eppNum = result.get("IndexNumber")
+        tvshowTitle = result.get("SeriesName")
         seriesJsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + thumbID + "?format=json", suppress=False, popup=1 )     
         seriesResult = json.loads(seriesJsonData)
         resultForType=seriesResult
@@ -1071,7 +1073,10 @@ def setListItemProps(server, id, listItem,result):
         details["episode"] = str(eppNum)
         
     if(seasonNum > -1):
-        details["season"] = str(seasonNum)        
+        details["season"] = str(seasonNum)  
+
+    if tvshowTitle != None:
+        details["TVShowTitle"] = tvshowTitle	
     
     listItem.setInfo( "Video", infoLabels=details )
 
