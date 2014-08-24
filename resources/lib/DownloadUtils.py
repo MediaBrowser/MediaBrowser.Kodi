@@ -41,7 +41,7 @@ class DownloadUtils():
 
         jsonData = None
         try:
-            jsonData = self.downloadUrl(host + ":" + port + "/mediabrowser/Users?format=json")
+            jsonData = self.downloadUrl(host + ":" + port + "/mediabrowser/Users/Public?format=json")
         except Exception, msg:
             error = "Get User unable to connect to " + host + ":" + port + " : " + str(msg)
             xbmc.log (error)
