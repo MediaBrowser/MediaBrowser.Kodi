@@ -2487,6 +2487,7 @@ def getWigetContent(pluginName, handle, params):
     if(result == None):
         result = []   
 
+    itemCount = 1
     listItems = []
     for item in result:
         item_id = item.get("Id")
@@ -2525,6 +2526,10 @@ def getWigetContent(pluginName, handle, params):
             name =  tempSeasonNumber + "x" + tempEpisodeNumber + "-" + name
         
         list_item = xbmcgui.ListItem(label=name, iconImage=image, thumbnailImage=image)
+        
+        # add count
+        list_item.setProperty("item_index", str(itemCount))
+        itemCount = itemCount + 1
 
         # add progress percent
         
