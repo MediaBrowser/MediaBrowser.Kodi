@@ -94,7 +94,7 @@
     <string id="30116">Inclusief aantal en afspeel tellers</string>
     <string id="30117"> - Achtergrond plaatjes verversen (secondes)</string>
     <string id="30118">Inclusief hervat-percentage</string>
-    <string id="30119">Inclusief afleveringnummer</string>
+    <string id="30119">Afleveringnummer tonen in titel</string>
     <string id="30120">Toon voortgang</string>
     <string id="30121">Laden van content</string>
     <string id="30122">Retrieving Data</string>
@@ -140,6 +140,6 @@
     <string id="30159">Afbeeldingen</string>
     <string id="30160">Video kwaliteit</string>
 	<string id="30161">Activeer Suggested Loader (vereist herstart)</string>
-    <string id="30162">Seizoen toevoegen</string>     
+    <string id="30162">Seizoen tonen in titel</string>     
     <string id="30163">Seizoenen verbergen</string>    
 </strings>
