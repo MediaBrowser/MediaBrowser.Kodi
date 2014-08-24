@@ -2703,9 +2703,12 @@ def checkServer():
     if(return_value > -1):
         selected_user = userList[return_value]
         printDebug("Setting Selected User : " + selected_user)
-        __settings__.setSetting("port", server_port)
-        __settings__.setSetting("ipaddress", server_address)        
-        __settings__.setSetting("username", selected_user)
+        if __settings__.getSetting("port") != server_port:
+            __settings__.setSetting("port", server_port)
+        if __settings__.getSetting("ipaddress") != server_address:        
+            __settings__.setSetting("ipaddress", server_address)        
+        if __settings__.getSetting("username") != selected_user:          
+            __settings__.setSetting("username", selected_user)
 
 ###########################################################################  
 ##Start of Main

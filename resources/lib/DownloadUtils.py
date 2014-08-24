@@ -101,7 +101,8 @@ class DownloadUtils():
         resp = requests.post(url, data={'password':sha1.hexdigest(),'Username':self.addonSettings.getSetting('username')}, headers=headers)
         code=str(resp.status_code)
         result = resp.json()
-        self.addonSettings.setSetting('AccessToken', result.get("AccessToken"))
+        if result.get("AccessToken") != self.addonSettings.getSetting('AccessToken'):
+            self.addonSettings.setSetting('AccessToken', result.get("AccessToken"))
         if int(code) >= 200 and int(code)<300:
             self.logMsg("User Authenticated")
         else:
