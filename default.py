@@ -733,6 +733,7 @@ def skin( filter=None, shared=False ):
         WINDOW.setProperty("xbmb3c.%d.title"    % (sectionCount) , section.get('title', 'Unknown'))
         WINDOW.setProperty("xbmb3c.%d.path"     % (sectionCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
         WINDOW.setProperty("xbmb3c.%d.type"     % (sectionCount) , section.get('section'))
+        WINDOW.setProperty("xbmb3c.%d.fanart"   % (sectionCount) , section.get('fanart_image'))
         WINDOW.setProperty("xbmb3c.%d.total" % (sectionCount) , str(total))
         if section.get('sectype')=='movies':
             WINDOW.setProperty("xbmb3c.usr.movies.%d.title"         % (usrMoviesCount) , section.get('title', 'Unknown'))
