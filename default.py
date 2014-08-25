@@ -2478,9 +2478,9 @@ def getWigetContent(pluginName, handle, params):
     userid = downloadUtils.getUserId()
     
     if(type == "recent"):
-        itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DateCreated&Fields=Path&SortOrder=Descending&Filters=IsNotFolder&IncludeItemTypes=Movie,Episode,Trailer,Musicvideo,Video&CollapseBoxSetItems=false&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json"
+        itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DateCreated&Fields=Path,Overview&SortOrder=Descending&Filters=IsNotFolder&IncludeItemTypes=Movie,Episode,Trailer,Musicvideo,Video&CollapseBoxSetItems=false&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json"
     elif(type == "active"):
-        itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DatePlayed&Fields=Path&SortOrder=Descending&Filters=IsResumable,IsNotFolder&IncludeItemTypes=Movie,Episode,Trailer,Musicvideo,Video&CollapseBoxSetItems=false&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json"
+        itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DatePlayed&Fields=Path,Overview&SortOrder=Descending&Filters=IsResumable,IsNotFolder&IncludeItemTypes=Movie,Episode,Trailer,Musicvideo,Video&CollapseBoxSetItems=false&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json"
         
     printDebug("WIDGET_DATE_URL: " + itemsUrl, 2)
     
@@ -2507,10 +2507,21 @@ def getWigetContent(pluginName, handle, params):
             imageTag = item.get("ImageTags").get("Primary")
         
         image = "http://localhost:15001/?id=" + str(image_id) + "&type=" + "Primary" + "&tag=" + imageTag
+
+        fanart = ''
+        if (item.get("Type") != "Episode"):
+            if(item.get("BackdropImageTags") != None and len(item.get("BackdropImageTags")) > 0):
+                fanart = "http://localhost:15001/?id=" + str(image_id) + "&type=" + "Backdrop" + "&tag=" + imageTag
+        else:
+            if(item.get("ParentBackdropImageTags") != None and len(item.get("ParentBackdropImageTags")) > 0):
+                fanart = "http://localhost:15001/?id=" + str(image_id) + "&type=" + "Backdrop" + "&tag=" + imageTag
+
+        Duration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
         
         name = item.get("Name")
         printDebug("WIDGET_DATE_NAME: " + name, 2)
         
+        seriesName = ''
         if(item.get("SeriesName") != None):
             seriesName = item.get("SeriesName").encode('utf-8')   
 
@@ -2532,6 +2543,8 @@ def getWigetContent(pluginName, handle, params):
             name =  tempSeasonNumber + "x" + tempEpisodeNumber + "-" + name
         
         list_item = xbmcgui.ListItem(label=name, iconImage=image, thumbnailImage=image)
+        list_item.setInfo( type="Video", infoLabels={ "year":item.get("ProductionYear"), "duration":str(Duration), "plot":item.get("Overview"), "tvshowtitle":str(seriesName), "premiered":item.get("PremiereDate"), "rating":item.get("CommunityRating") } )
+        list_item.setProperty('fanart_image',fanart)
         
         # add count
         list_item.setProperty("item_index", str(itemCount))
