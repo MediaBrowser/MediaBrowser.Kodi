@@ -1496,7 +1496,7 @@ def processDirectory(url, results, progress):
 
         #Add show name to special TV collections RAL, NextUp etc
         WINDOW = xbmcgui.Window( 10000 )
-        if WINDOW.getProperty("addshowname") == "true":
+        if (WINDOW.getProperty("addshowname") == "true" and item.get("SeriesName") != None):
             tempTitle=item.get("SeriesName").encode('utf-8') + " - " + tempTitle
         else:
             tempTitle=tempTitle
