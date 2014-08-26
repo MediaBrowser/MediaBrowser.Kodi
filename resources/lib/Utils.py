@@ -43,7 +43,9 @@ class PlayUtils():
         
             if ("apple.com" in playurl):
               playurl += '?|User-Agent=%s' % USER_AGENT
-        
+            if addonSettings.getSetting('playFromStream') == "true":
+              playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true' 
+  
             
      # elif self.isNetworkQualitySufficient(result) == True:
       #   xbmc.log("XBMB3C getPlayUrl -> Stream")
