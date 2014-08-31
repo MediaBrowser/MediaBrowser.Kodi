@@ -476,6 +476,9 @@ class BackgroundRotationThread(threading.Thread):
             parentID = item.get("ParentId")
             name = item.get("Name")
             plot = item.get("Overview")
+            url =  mb3Host + ":" + mb3Port + ',;' + id
+            url = urllib.quote(url)        
+            actionUrl = "RunPlugin(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + url + ")"
             if (images == None):
                 images = []
             index = 0
@@ -486,6 +489,7 @@ class BackgroundRotationThread(threading.Thread):
               info["index"] = index
               info["id"] = id
               info["plot"] = plot
+              info["action"] = actionUrl
               info["parent"] = parentID
               info["name"] = name
               self.logMsg("BG Movie Image Info : " + str(info), level=2)
@@ -633,6 +637,12 @@ class BackgroundRotationThread(threading.Thread):
                     WINDOW.setProperty("MB3.Plot", plot )
                 else:
                     WINDOW.clearProperty("MB3.Plot")                            
+
+                if listOfBackgrounds[0]["action"] != None and listOfBackgrounds[0]["action"] != "":
+                    action=listOfBackgrounds[0]["action"]
+                    WINDOW.setProperty("MB3.Action", action )
+                else:
+                    WINDOW.clearProperty("MB3.Action")
                     
             if(listOfBackgrounds != None and len(listOfBackgrounds) > 0):
                 self.logMsg("setItemBackgroundLink Image " + str(self.current_item_art + 1) + " of " + str(len(listOfBackgrounds)), 1)
@@ -657,6 +667,7 @@ class BackgroundRotationThread(threading.Thread):
             self.logMsg("setItemBackgroundLink Resetting MB3.Background.Item.FanArt", 1)
             WINDOW.clearProperty("MB3.Background.Item.FanArt")
             WINDOW.clearProperty("MB3.Plot") 
+            WINDOW.clearProperty("MB3.Action") 
       
             
     def loadItemBackgroundLinks(self, id):
@@ -694,12 +705,16 @@ class BackgroundRotationThread(threading.Thread):
             images = []
             
         index = 0
-     
+        url =  mb3Host + ":" + mb3Port + ',;' + id
+        url = urllib.quote(url)        
+        actionUrl = "RunPlugin(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + url + ")"
+      
         newBgLinks = []
         for backdrop in images:
             info = {}
             info["url"] = "http://localhost:15001/?id=" + str(urlid) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
             info["plot"] = plot
+            info["action"] = actionUrl
             info["index"] = index
             info["id"] = urlid
             info["parent"] = parentID
