@@ -414,6 +414,7 @@ class BackgroundRotationThread(threading.Thread):
                             info["action"] = actionUrl
                             info["index"] = index
                             info["id"] = id
+                            info["action"] = "None"
                             info["plot"] = plot
                             info["parent"] = parentID
                             info["name"] = name
@@ -526,6 +527,7 @@ class BackgroundRotationThread(threading.Thread):
               info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
               info["index"] = index
               info["id"] = id
+              info["action"] = "None"
               info["plot"] = plot
               info["parent"] = parentID
               info["name"] = name
@@ -563,6 +565,7 @@ class BackgroundRotationThread(threading.Thread):
               info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
               info["index"] = index
               info["id"] = id
+              info["action"] = "None"
               info["plot"] = plot
               info["parent"] = parentID
               info["name"] = name
