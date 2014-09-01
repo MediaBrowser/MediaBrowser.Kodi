@@ -861,7 +861,7 @@ def PLAY( url, handle ):
     setListItemProps(server, id, listItem, result)
 
     # Can not play virtual items
-    if (result.get("LocationType") == "Virtual") or (result.get("IsPlaceholder")=="true"):
+    if (result.get("LocationType") == "Virtual"):
         xbmcgui.Dialog().ok(__language__(30128), __language__(30129))
         return
 
@@ -957,7 +957,7 @@ def PLAYPlaylist( url, handle ):
         setListItemProps(server, id, listItem, result)
 
         # Can not play virtual items
-        if (result.get("LocationType") == "Virtual") or (result.get("IsPlaceholder")=="true"):
+        if (result.get("LocationType") == "Virtual") or (result.get("IsPlaceHolder") == True):
             xbmcgui.Dialog().ok(__language__(30128), __language__(30129))
             return
 
@@ -1069,7 +1069,10 @@ def setListItemProps(server, id, listItem,result):
     # plsy info
     playinformation = ''
     if PlayUtils().isDirectPlay(result) == True:
-        playinformation = 'Direct Play'
+        if __settings__.getSetting('playFromStream') == "true":
+            playinformation = 'Direct Play - HTTP'
+        else:
+            playinformation = 'Direct Play - SMB'
     else:
         playinformation = 'Transcoding'      
     details = {
@@ -1566,11 +1569,11 @@ def processDirectory(url, results, progress):
         # Process Genres
         genre = ""
         genres = item.get("Genres")
-        if(genres != None):
+        if(genres != None and genres != []):
             for genre_string in genres:
                 if genre == "": #Just take the first genre
                     genre = genre_string
-                else:
+                elif genre_string != None:
                     genre = genre + " / " + genre_string
                 
         # Process UserData

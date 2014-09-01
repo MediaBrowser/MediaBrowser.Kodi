@@ -31,10 +31,12 @@ class PlayUtils():
             #We have a path to play so play it
             USER_AGENT = 'QuickTime/7.7.4'
         
-            if (result.get("VideoType") == "Dvd"):
-              playurl = playurl + "/VIDEO_TS/VIDEO_TS.IFO"
-            if (result.get("VideoType") == "BluRay"):
-              playurl = playurl + "/BDMV/index.bdmv"            
+            # If the file it is not a media stub
+            if (result.get("IsPlaceHolder") != True):
+              if (result.get("VideoType") == "Dvd"):
+                playurl = playurl + "/VIDEO_TS/VIDEO_TS.IFO"
+              elif (result.get("VideoType") == "BluRay"):
+                playurl = playurl + "/BDMV/index.bdmv"
             if addonSettings.getSetting('smbusername') == '':
               playurl = playurl.replace("\\\\", "smb://")
             else:
@@ -43,7 +45,9 @@ class PlayUtils():
         
             if ("apple.com" in playurl):
               playurl += '?|User-Agent=%s' % USER_AGENT
-        
+            if addonSettings.getSetting('playFromStream') == "true":
+              playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true' 
+  
             
      # elif self.isNetworkQualitySufficient(result) == True:
       #   xbmc.log("XBMB3C getPlayUrl -> Stream")
