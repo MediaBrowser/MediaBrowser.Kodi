@@ -399,6 +399,8 @@ def delete (url):
                
 def addGUIItem( url, details, extraData, folder=True ):
 
+    url = url.encode('utf-8')
+
     printDebug("Adding GuiItem for [%s]" % details.get('title','Unknown'), level=2)
     printDebug("Passed details: " + str(details), level=2)
     printDebug("Passed extraData: " + str(extraData), level=2)
