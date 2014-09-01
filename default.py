@@ -1562,11 +1562,11 @@ def processDirectory(url, results, progress):
         # Process Genres
         genre = ""
         genres = item.get("Genres")
-        if(genres != None):
+        if(genres != None and genres != []):
             for genre_string in genres:
                 if genre == "": #Just take the first genre
                     genre = genre_string
-                else:
+                elif genre_string != None:
                     genre = genre + " / " + genre_string
                 
         # Process UserData
