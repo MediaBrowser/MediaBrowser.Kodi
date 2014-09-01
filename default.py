@@ -854,7 +854,7 @@ def PLAY( url, handle ):
     setListItemProps(server, id, listItem, result)
 
     # Can not play virtual items
-    if (result.get("LocationType") == "Virtual") or (result.get("IsPlaceholder")=="true"):
+    if (result.get("LocationType") == "Virtual"):
         xbmcgui.Dialog().ok(__language__(30128), __language__(30129))
         return
 
@@ -950,7 +950,7 @@ def PLAYPlaylist( url, handle ):
         setListItemProps(server, id, listItem, result)
 
         # Can not play virtual items
-        if (result.get("LocationType") == "Virtual") or (result.get("IsPlaceholder")=="true"):
+        if (result.get("LocationType") == "Virtual") or (result.get("IsPlaceHolder") == True):
             xbmcgui.Dialog().ok(__language__(30128), __language__(30129))
             return
 
