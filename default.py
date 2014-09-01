@@ -253,7 +253,8 @@ def getCollections(detailsString):
                     'sectype'      : section,
                     'section'      : section,
                     'guiid'        : item.get("Id"),
-                    'path'          : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json')})
+                    'path'         : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json'),
+                    'recent_url'   : '?url=' + urllib.quote('http://' + __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port') + '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder&ExcludeLocationTypes=Virtual&format=json')})
             printDebug("Title " + Name)    
     
     # Add standard nodes
@@ -397,6 +398,8 @@ def delete (url):
         xbmc.executebuiltin("Container.Refresh")
                
 def addGUIItem( url, details, extraData, folder=True ):
+
+    url = url.encode('utf-8')
 
     printDebug("Adding GuiItem for [%s]" % details.get('title','Unknown'), level=2)
     printDebug("Passed details: " + str(details), level=2)
@@ -734,6 +737,10 @@ def skin( filter=None, shared=False ):
         WINDOW.setProperty("xbmb3c.%d.path"     % (sectionCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
         WINDOW.setProperty("xbmb3c.%d.type"     % (sectionCount) , section.get('section'))
         WINDOW.setProperty("xbmb3c.%d.fanart"   % (sectionCount) , section.get('fanart_image'))
+        recent_url=''
+        if section.get('recent_url') != None and section.get('recent_url') != '':
+            recent_url="ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + section.get('recent_url') + "&mode=0,return)"
+        WINDOW.setProperty("xbmb3c.%d.recent.path"   % (sectionCount) , recent_url)
         WINDOW.setProperty("xbmb3c.%d.total" % (sectionCount) , str(total))
         if section.get('sectype')=='movies':
             WINDOW.setProperty("xbmb3c.usr.movies.%d.title"         % (usrMoviesCount) , section.get('title', 'Unknown'))
