@@ -548,45 +548,6 @@ def addGUIItem( url, details, extraData, folder=True ):
     if extraData.get('NumEpisodes')!=None:
       list.setProperty('NumEpisodes',extraData.get('NumEpisodes'))
     
-    #old way
-    '''
-    list.setInfo('video', {'duration' : extraData.get('duration')})
-    list.setInfo('video', {'playcount' : extraData.get('playcount')})
-    list.setProperty('CriticRating', str(extraData.get('criticrating')))
-    if extraData.get('favorite')=='true':
-        list.setInfo('video', {'top250' : '1'})
-    if extraData.get('totaltime') != None:
-        list.setProperty('TotalTime', extraData.get('totaltime'))
-        #list.setProperty('ResumeTime', str(int(extraData.get('resumetime'))/60))
-    list.setInfo('video', {'director' : extraData.get('director')})
-    list.setInfo('video', {'writer' : extraData.get('writer')})
-    list.setInfo('video', {'year' : extraData.get('year')})
-    list.setInfo('video', {'studio' : extraData.get('studio')})
-    list.setInfo('video', {'genre' : extraData.get('genre')})
-    if extraData.get('cast')!=None:
-        list.setInfo('video', {'cast' : tuple(extraData.get('cast'))}) #--- Broken in Frodo
-    #list.setInfo('video', {'castandrole' : extraData.get('cast')}) --- Broken in Frodo
-    #list.setInfo('video', {'plotoutline' : extraData.get('cast')}) # Hack to get cast data into skin
-    list.setInfo('video', {'episode': details.get('episode')})
-    list.setInfo('video', {'season': details.get('season')})
-    if extraData.get('TotalSeasons')!=None:
-      list.setProperty('TotalSeasons',extraData.get('TotalSeasons'))
-    if extraData.get('TotalEpisodes')!=None:  
-      list.setProperty('TotalEpisodes',extraData.get('TotalEpisodes'))
-    if extraData.get('WatchedEpisodes')!=None:
-      list.setProperty('WatchedEpisodes',extraData.get('WatchedEpisodes'))
-    if extraData.get('UnWatchedEpisodes')!=None:
-      list.setProperty('UnWatchedEpisodes',extraData.get('UnWatchedEpisodes'))
-    if extraData.get('NumEpisodes')!=None:
-      list.setProperty('NumEpisodes',extraData.get('NumEpisodes'))
-    list.setInfo('video', {'mpaa': extraData.get('mpaa')})
-    list.setInfo('video', {'rating': extraData.get('rating')})
-    watched = extraData.get('watchedurl')
-    if watched != None:
-        list.setProperty('watchedurl', extraData.get('watchedurl'))
-    list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
-    list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
-    '''
     
     pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + str(extraData.get('id'))
     list.setProperty('CastPluginLink', pluginCastLink)
