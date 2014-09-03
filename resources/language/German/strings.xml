@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+    <string id="30000">IP-Adresse des Servers</string>
+    <string id="30001">Automatisches &#214;ffnen von Ordnern mit einem Eintrag</string>
+    <string id="30002">Via HTTP abspielen statt SMB:</string>
+    <string id="30004">Log Level:</string>
+    <string id="30005">Benutzername: </string>
+    <string id="30006">Passwort: </string>
+    <string id="30007">Samba-Benutzername: </string>
+    <string id="30008">Samba-Passwort: </string>
+    <string id="30009">Transkodieren: </string>
+    <string id="30010">Performance profiling aktivieren</string>
+
+    <string id="30014">MediaBrowser</string>
+    <string id="30015">Netzwerk</string>    
+    <string id="30016">Ger&#228;tename</string>        
+
+    <string id="30022">Erweitert</string>
+    <string id="30024">Benutzername:</string>
+    <string id="30025">Passwort:</string>
+    
+    <string id="30030">Portnummer:</string>
+    <string id="30036">Anzahl der zuletzt hinzugef&#252;gten Filme:</string>    
+    <string id="30037">Anzahl der zuletzt hinzugef&#252;gten Episoden:</string>    
+    <string id="30035">Anzahl der zuletzt hinzugef&#252;gten Alben:</string>    
+    <string id="30038">Bei Start der Wiedergabe als 'gesehen' markieren:</string>    
+    <string id="30039">Staffelposter f&#252;r Episoden nutzen</string>
+
+    <string id="30040">Genre Filter ...</string>
+    <string id="30041">Alles von hier abspielen</string>
+    <string id="30042">Aktualisieren</string>
+    <string id="30043">L&#246;schen</string>
+    <string id="30046">Film zu CouchPotato hinzuf&#252;gen</string>
+    
+    <string id="30044">Benutzername/Passwort falsch</string>
+    <string id="30045">Benutzername nicht gefunden</string>
+    
+    <string id="30052">L&#246;sche</string>
+    <string id="30053">L&#246;sche von Server</string>
+    
+    <string id="30059">Server Standard</string>
+    <string id="30060">Titel</string>
+    <string id="30061">Jahr</string>
+    <string id="30062">Premierendatum</string>
+    <string id="30063">Datum hinzugef&#252;gt</string>
+    <string id="30064">Bewertung</string>
+    <string id="30065">Zuschauerbewertung</string>
+    <string id="30066">Abspielz&#228;hler</string>
+    <string id="30067">Budget</string>
+    
+    <string id="30068">Sortiere nach</string>
+    
+    <string id="30069">Kein Filter</string>
+    <string id="30070">Action</string>
+    <string id="30071">Adventure</string>
+    <string id="30072">Animation</string>
+    <string id="30073">Crime</string>
+    <string id="30074">Comedy</string>
+    <string id="30075">Documentary</string>
+    <string id="30076">Drama</string>
+    <string id="30077">Fantasy</string>
+    <string id="30078">Foreign</string>
+    <string id="30079">History</string>
+    <string id="30080">Horror</string>
+    <string id="30081">Music</string>
+    <string id="30082">Musical</string>
+    <string id="30083">Mystery</string>
+    <string id="30084">Romance</string>
+    <string id="30085">Science Fiction</string>
+    <string id="30086">Short</string>
+    <string id="30087">Suspense</string>
+    <string id="30088">Thriller</string>
+    <string id="30089">Western</string>
+    
+    <string id="30090">Genre Filter</string>
+    <string id="30091">L&#246;schen von Dateien best&#228;tigen?</string>
+    <string id="30092">Diesen Eintrag l&#246;schen? Diese Aktion l&#246;scht die Mediendatei und damit verbundene Daten.</string>
+    
+    <string id="30093">Als 'gesehen' markieren</string>
+    <string id="30094">Als 'ungesehen' markieren</string>
+    <string id="30095">Zu Favoriten hinzuf&#252;gen</string>
+    <string id="30096">Von Favoriten entfernen</string>
+    <string id="30097">Sortiere nach ...</string>
+    <string id="30098">Sortierreihenfolge absteigend</string>
+    <string id="30099">Sortierreihenfolge aufsteigend</string>
+    
+    <string id="30110">Benutzeroberfl&#228;che</string>
+    <string id="30111">Lade Streaminformationen</string>
+    <string id="30112">Lade Darsteller</string>
+    <string id="30113">Lade Inhalts&#252;bersicht</string>
+    <string id="30114">R&#252;cksprung bei Fortsetzen</string>
+    <string id="30115">Bei Stop nach x % als 'gesehen' markieren</string>
+    <string id="30116">Medien- und 'Abgespielt'-Z&#228;hler hinzuf&#252;gen</string>
+    <string id="30117"> - Aktualisierungsintervall von Hintergrundbildern (Sekunden)</string>
+    <string id="30118">Prozentanzeige f&#252;r Fortsetzen</string>
+    <string id="30119">Episodennummer hinzuf&#252;gen</string>
+    <string id="30120">Ladefortschritt anzeigen</string>
+    <string id="30121">Lade Inhalt</string>
+    <string id="30122">Lade Daten</string>
+    <string id="30123">Verarbeite Json Daten</string>
+    <string id="30124">Lade Json Daten</string>
+    <string id="30125">Fertig</string>
+    <string id="30126">Verarbeite Eintrag : </string>
+    <string id="30127">L&#246;schen von gesehenen Episoden anbieten</string>   
+    <string id="30128">Abspielfehler</string>
+    <string id="30129">Dieser Eintrag ist nicht abspielbar</string>    
+    <string id="30130">Lokaler Pfad erkannt</string>
+    <string id="30131">Your MB3 Server contains local paths.  Please change server paths to UNC or change XBMB3C setting 'Play from Stream' to true.  Path: </string>
+    <string id="30132">Warnung</string>
+    <string id="30133">Debug Logging aktiviert.</string>
+    <string id="30134">Dies beeintr&#228;chtigt die Performance.</string>
+    <string id="30135">Fehler</string>
+    <string id="30136">XBMB3C-Service l&#228;uft nicht</string>
+    <string id="30137">Bitte XBMC neustarten</string>
+    <string id="30138">Suche</string>
+    
+    <string id="30139">Themen-Musik aktivieren (Erfordert Neustart)</string>
+    <string id="30140"> - Themen-Musik in Schleife abspielen</string>
+    <string id="30141">Hintergrundbild aktivieren (Erfordert Neustart)</string>
+    <string id="30142">Dienste</string>
+    <string id="30143">Info-Loader aktivieren (Erfordert Neustart)</string>
+    <string id="30144">Men&#252;-Loader aktivieren (Erfordert Neustart)</string>
+    <string id="30145">WebSocket Fernbedienung aktivieren (Erfordert Neustart)</string>   
+    <string id="30146">'Laufende Medien'-Loader aktivieren (Erfordert Neustart)</string>
+    <string id="30147">'Zuletzt hinzugef&#252;gt' Loader aktivieren (Erfordert Neustart)</string>
+    <string id="30148">'Zufallsmedien'-Loader aktivieren (Erfordert Neustart)</string>
+    <string id="30149">'N&#228;chste'-Loader aktivieren (Erfordert Neustart)</string>
+    
+    <string id="30150">Skin unterst&#252;tzt das Setzen von Views nicht</string>
+    <string id="30151">Aktion bei Auswahl (Erfordert Neustart)</string>
+    
+    <string id="30152">Indikatoren</string>
+    <string id="30153">  - 'Gesehen'-Indikator anzeigen</string>
+    <string id="30154">  - Z&#228;hler f&#252;r ungesehene Medien anzeigen</string>
+    <string id="30155">  - Abspiel-Prozentanzeige aktivieren</string>
+    <string id="30156">Sortiere 'N&#228;chste' nach Serientitel</string>    
+    <string id="30157">Deaktiviere erweiterte Bilder (z.B. CoverArt)</string>
+    <string id="30158">Metadaten</string>
+    <string id="30159">Grafiken</string>
+    <string id="30160">Videoqualit&#228;t</string>
+    
+     <string id="30161">'Empfohlen'-Loader aktivieren (Erfordert Neustart)</string>
+     <string id="30162">Staffelnummer hinzuf&#252;gen</string>     
+     <string id="30163">Serien Staffeln reduzieren</string>     
+   
+</strings>
