@@ -833,7 +833,7 @@ def PLAY( url, handle ):
     else:
         userData = result.get("UserData")
         resume_result = 0
-        if userData.get("PlaybackPositionTicks") != 0 and __settings__.getSetting('transcode') == 'false':
+        if userData.get("PlaybackPositionTicks") != 0:
             reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
             seekTime = reasonableTicks / 10000
             displayTime = str(datetime.timedelta(seconds=seekTime))
@@ -929,7 +929,7 @@ def PLAYPlaylist( url, handle ):
         else:
             userData = result.get("UserData")
             resume_result = 0
-            if userData.get("PlaybackPositionTicks") != 0 and __settings__.getSetting('transcode') == 'false':
+            if userData.get("PlaybackPositionTicks") != 0:
                 reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
                 seekTime = reasonableTicks / 10000
                 displayTime = str(datetime.timedelta(seconds=seekTime))
