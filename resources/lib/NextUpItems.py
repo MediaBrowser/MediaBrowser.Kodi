@@ -37,11 +37,30 @@ class NextUpUpdaterThread(threading.Thread):
             xbmc.log("XBMB3C NextUpUpdaterThread -> " + msg)
     
     def getImageLink(self, item, type, item_id):
+        originalType = type
+        if type == "Primary2":
+            type = "Primary"
         imageTag = "none"
         if(item.get("ImageTags") != None and item.get("ImageTags").get(type) != None):
             imageTag = item.get("ImageTags").get(type)
         query = "&type=" + type + "&tag=" + imageTag
-        if type=="Primary":
+        if originalType=="Primary":
+          addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+          if addonSettings.getSetting('showIndicators')=='true' and addonSettings.getSetting('showUnplayedIndicators')=='true':
+            mb3Host = addonSettings.getSetting('ipaddress')
+            mb3Port = addonSettings.getSetting('port')    
+            userName = addonSettings.getSetting('username')     
+        
+            userid = downloadUtils.getUserId()  
+            seriesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + item_id +"?format=json"
+            jsonData = downloadUtils.downloadUrl(seriesUrl, suppress=False, popup=1 )
+            result = json.loads(jsonData)
+            userData = result.get("UserData")   
+            UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
+            if UnWatched <> 0:
+              query = query + "&UnplayedCount=" + str(UnWatched)
+            query = query + "&height=685&width=480"
+        elif originalType=="Primary2":
           addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
           if addonSettings.getSetting('showIndicators')=='true' and addonSettings.getSetting('showUnplayedIndicators')=='true':
             mb3Host = addonSettings.getSetting('ipaddress')
@@ -139,6 +158,7 @@ class NextUpUpdaterThread(threading.Thread):
                series_id = item.get("SeriesId")
             
             poster = self.getImageLink(item, "Primary", str(series_id))
+            small_poster = self.getImageLink(item, "Primary2", series_id)
             thumbnail = self.getImageLink(item, "Primary", str(item_id))
             logo = self.getImageLink(item, "Logo", str(series_id))
             fanart = self.getImageLink(item, "Backdrop", str(series_id))
@@ -189,6 +209,7 @@ class NextUpUpdaterThread(threading.Thread):
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)", logo)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
+            WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.small_poster)", small_poster)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Plot", plot)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Resume", resume)
             
