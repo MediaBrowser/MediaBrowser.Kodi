@@ -1027,7 +1027,7 @@ def setListItemProps(server, id, listItem,result):
         if __settings__.getSetting('playFromStream') == "true":
             playinformation = 'Direct Play - HTTP'
         else:
-            playinformation = 'Direct Play - SMB'
+            playinformation = 'Direct Play'
     else:
         playinformation = 'Transcoding'      
     details = {
