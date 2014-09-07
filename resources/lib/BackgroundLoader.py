@@ -483,6 +483,16 @@ class BackgroundRotationThread(threading.Thread):
             if (images == None):
                 images = []
             index = 0
+            
+            trailerActionUrl = None
+            if item.get("LocalTrailerCount") != None and item.get("LocalTrailerCount") > 0:
+              itemTrailerUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "/LocalTrailers?format=json"
+              jsonData = downloadUtils.downloadUrl(itemTrailerUrl, suppress=False, popup=1 ) 
+              trailerItem = json.loads(jsonData)
+              trailerUrl = mb3Host + ":" + mb3Port + ',;' + trailerItem[0].get("Id")
+              trailerUrl = urllib.quote(trailerUrl) 
+              trailerActionUrl = "RunPlugin(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + trailerUrl + ")"
+            
             for backdrop in images:
               
               info = {}
@@ -491,6 +501,7 @@ class BackgroundRotationThread(threading.Thread):
               info["id"] = id
               info["plot"] = plot
               info["action"] = actionUrl
+              info["trailer"] = trailerActionUrl
               info["parent"] = parentID
               info["name"] = name
               self.logMsg("BG Movie Image Info : " + str(info), level=2)
@@ -528,6 +539,7 @@ class BackgroundRotationThread(threading.Thread):
               info["index"] = index
               info["id"] = id
               info["action"] = "None"
+              info["trailer"] = "None"
               info["plot"] = plot
               info["parent"] = parentID
               info["name"] = name
@@ -566,6 +578,7 @@ class BackgroundRotationThread(threading.Thread):
               info["index"] = index
               info["id"] = id
               info["action"] = "None"
+              info["trailer"] = "None"
               info["plot"] = plot
               info["parent"] = parentID
               info["name"] = name
@@ -647,6 +660,12 @@ class BackgroundRotationThread(threading.Thread):
                 else:
                     WINDOW.clearProperty("MB3.Action")
                     
+                if listOfBackgrounds[0]["trailer"] != None and listOfBackgrounds[0]["trailer"] != "":
+                    trailerAction=listOfBackgrounds[0]["trailer"]
+                    WINDOW.setProperty("MB3.TrailerAction", trailerAction )
+                else:
+                    WINDOW.clearProperty("MB3.TrailerAction")
+                    
             if(listOfBackgrounds != None and len(listOfBackgrounds) > 0):
                 self.logMsg("setItemBackgroundLink Image " + str(self.current_item_art + 1) + " of " + str(len(listOfBackgrounds)), 1)
                 try: 
@@ -670,7 +689,8 @@ class BackgroundRotationThread(threading.Thread):
             self.logMsg("setItemBackgroundLink Resetting MB3.Background.Item.FanArt", 1)
             WINDOW.clearProperty("MB3.Background.Item.FanArt")
             WINDOW.clearProperty("MB3.Plot") 
-            WINDOW.clearProperty("MB3.Action") 
+            WINDOW.clearProperty("MB3.Action")
+            WINDOW.clearProperty("MB3.TrailerAction") 
       
             
     def loadItemBackgroundLinks(self, id):
