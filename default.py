@@ -2820,7 +2820,10 @@ else:
             for (key, value) in ps.stats.items():
                 (filename, count, func_name) = key
                 (ccalls, ncalls, total_time, cumulative_time, callers) = value
-                f.write(str(ncalls) + "\t" + "{:10.4f}".format(total_time) + "\t" + "{:10.4f}".format(cumulative_time) + "\t" + func_name + "\t" + filename + "\r\n")
+                try:
+                    f.write(str(ncalls) + "\t" + "{:10.4f}".format(total_time) + "\t" + "{:10.4f}".format(cumulative_time) + "\t" + func_name + "\t" + filename + "\r\n")
+                except ValueError:
+                    f.write(str(ncalls) + "\t" + "{0}".format(total_time) + "\t" + "{0}".format(cumulative_time) + "\t" + func_name + "\t" + filename + "\r\n")
             f.close()
             
         else:
