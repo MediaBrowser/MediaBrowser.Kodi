@@ -248,15 +248,20 @@ def getCollections(detailsString):
             if (section == None):
               section = "movies"
             collections.append( {'title'      : Name,
-                    'address'      : MB_server ,
-                    'thumb'        : downloadUtils.getArtwork(item,"Primary") ,
-                    'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
-                    'poster'       : downloadUtils.getArtwork(item,"Primary") ,
-                    'sectype'      : section,
-                    'section'      : section,
-                    'guiid'        : item.get("Id"),
-                    'path'         : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json'),
-                    'recent_path'  : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder&ExcludeLocationTypes=Virtual&format=json')})
+                    'address'           : MB_server ,
+                    'thumb'             : downloadUtils.getArtwork(item,"Primary") ,
+                    'fanart_image'      : downloadUtils.getArtwork(item, "Backdrop") ,
+                    'poster'            : downloadUtils.getArtwork(item,"Primary") ,
+                    'sectype'           : section,
+                    'section'           : section,
+                    'guiid'             : item.get("Id"),
+                    'path'              : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json'),
+                    'recent_path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder&ExcludeLocationTypes=Virtual&format=json'),
+                    'inprogress_path'   : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") +'&Recursive=true&SortBy=DatePlayed&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsResumable&ExcludeLocationTypes=Virtual&format=json'),
+                    'genre_path'        : ('/mediabrowser/Genres?Userid=' + userid + '&parentId=' + item.get("Id") +'&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&Recursive=true&format=json'),
+                    'nextepisodes_path' : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&parentId=' + item.get("Id") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsUnplayed&IsVirtualUnaired=false&IsMissing=False&ExcludeLocationTypes=Virtual&IncludeItemTypes=Episode&format=json'),
+                    'unwatched_path'    : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") +'&Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&Filters=IsNotFolder,IsUnplayed&ExcludeLocationTypes=Virtual&format=json')})
+
             printDebug("Title " + Name)    
     
     # Add standard nodes
@@ -691,11 +696,15 @@ def skin( filter=None, shared=False ):
         total = section.get('total')
         if (total == None):
             total = 0
-        WINDOW.setProperty("xbmb3c.%d.title"         % (sectionCount) , section.get('title', 'Unknown'))
-        WINDOW.setProperty("xbmb3c.%d.path"          % (sectionCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
-        WINDOW.setProperty("xbmb3c.%d.type"          % (sectionCount) , section.get('section'))
-        WINDOW.setProperty("xbmb3c.%d.fanart"        % (sectionCount) , section.get('fanart_image'))
-        WINDOW.setProperty("xbmb3c.%d.recent.path"   % (sectionCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('recent_path', '')) + modeurl + ",return)")
+        WINDOW.setProperty("xbmb3c.%d.title"               % (sectionCount) , section.get('title', 'Unknown'))
+        WINDOW.setProperty("xbmb3c.%d.path"                % (sectionCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+        WINDOW.setProperty("xbmb3c.%d.type"                % (sectionCount) , section.get('section'))
+        WINDOW.setProperty("xbmb3c.%d.fanart"              % (sectionCount) , section.get('fanart_image'))
+        WINDOW.setProperty("xbmb3c.%d.recent.path"         % (sectionCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('recent_path', '')) + modeurl + ",return)")
+        WINDOW.setProperty("xbmb3c.%d.unwatched.path"      % (sectionCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('unwatched_path', '')) + modeurl + ",return)")
+        WINDOW.setProperty("xbmb3c.%d.inprogress.path"     % (sectionCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('inprogress_path', '')) + modeurl + ",return)")
+        WINDOW.setProperty("xbmb3c.%d.genre.path"          % (sectionCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('genre_path', '')) + modeurl + ",return)")
+        WINDOW.setProperty("xbmb3c.%d.nextepisodes.path"   % (sectionCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('nextepisodes_path', '')) + modeurl + ",return)")
         WINDOW.setProperty("xbmb3c.%d.total" % (sectionCount) , str(total))
         if section.get('sectype')=='movies':
             WINDOW.setProperty("xbmb3c.usr.movies.%d.title"         % (usrMoviesCount) , section.get('title', 'Unknown'))
@@ -1314,10 +1323,12 @@ def getContent( url ):
         dirItems = processChannels(url, result, progress)
     elif "&IncludeItemTypes=Playlist" in url:
         dirItems = processPlaylists(url, result, progress)
-    elif "/mediabrowser/Genres?" in url and "&IncludeItemTypes=Movie" in url:
+    elif "/mediabrowser/Genres?" in url and "&IncludeItemTypes=Movie" in url and "&parentId" not in url:
         dirItems = processGenres(url, result, progress, "Movie")
-    elif "/mediabrowser/Genres?" in url and "&IncludeItemTypes=Series" in url:
+    elif "/mediabrowser/Genres?" in url and "&IncludeItemTypes=Series" in url and "&parentId" not in url:
         dirItems = processGenres(url, result, progress, "Series")
+    elif "/mediabrowser/Genres?" in url and "&parentId" in url:
+        dirItems = processGenres(url, result, progress, "Movie")
     elif "/mediabrowser/Studios?" in url and "&IncludeItemTypes=Movie" in url:
         dirItems = processStudios(url, result, progress, "Movie")
     elif "/mediabrowser/Studios?" in url and "&IncludeItemTypes=Series" in url:
