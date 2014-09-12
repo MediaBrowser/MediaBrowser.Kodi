@@ -1137,6 +1137,7 @@ def getAllMoviesCacheValidator (server,url):
     playedTime = ""
     playedPercentage = 0.0
     
+    userData = {}
     result=alldata.get("Items")
     for item in result:
         if item.get("Name")=="Movies":
