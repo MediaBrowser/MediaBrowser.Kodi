@@ -146,6 +146,10 @@
     <string id="30164">Direct Play - HTTP</string>     
     <string id="30165">Direct Play</string>     
     <string id="30166">Transcoding</string>     
+    <string id="30167">Server Detection Succeeded</string>     
+    <string id="30168">Found server</string>     
+    <string id="30169">Address : </string>     
+    
      
     <string id="30170">All Movies</string>             
     <string id="30171">All TV</string>                 
@@ -177,6 +181,13 @@
     <string id="30197">Playlists</string>              
     <string id="30198">Search</string>              
     <string id="30199">Set Views</string>              
-     
+    
+    <string id="30200">Select User</string>              
+    <string id="30201">Profiling enabled.</string>              
+    <string id="30202">Please remember to turn off when finished testing.</string>              
+    <string id="30203">Error in BackgroundRotationThread</string>              
+    <string id="30204">Unable to connect to host</string>         
+    <string id="30205">Error in LoadMenuOptionsThread</string>        
+    
 
 </strings>

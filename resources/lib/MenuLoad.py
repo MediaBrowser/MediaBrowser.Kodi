@@ -14,11 +14,15 @@ import threading
 class LoadMenuOptionsThread(threading.Thread):
 
     logLevel = 0
-    
+    addonSettings = None
+    getString = None
+
     def __init__(self, *args):
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         level = addonSettings.getSetting('logLevel')        
         self.logLevel = 0
+        self.getString = self.addonSettings.getLocalizedString
         if(level != None):
             self.logLevel = int(level)           
     
@@ -34,7 +38,7 @@ class LoadMenuOptionsThread(threading.Thread):
         try:
             self.run_internal()
         except Exception, e:
-            xbmcgui.Dialog().ok("Error in LoadMenuOptionsThread", str(e))
+            xbmcgui.Dialog().ok(self.getString(30205), str(e))
             raise
             
     def run_internal(self):

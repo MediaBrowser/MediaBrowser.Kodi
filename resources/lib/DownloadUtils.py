@@ -266,7 +266,7 @@ class DownloadUtils():
                     if popup == 0:
                         xbmc.executebuiltin("XBMC.Notification(URL error: "+ str(data.reason) +",)")
                     else:
-                        xbmcgui.Dialog().ok("Error",server)
+                        xbmcgui.Dialog().ok(self.getString(30135),server)
                 xbmc.log (error)
                 try: conn.close()
                 except: pass
@@ -277,12 +277,7 @@ class DownloadUtils():
             error = "Unable to connect to " + str(server) + " : " + str(msg)
             xbmc.log (error)
             xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to connect to server,)")
-            xbmcgui.Dialog().ok("","Unable to connect to host")
-            #if suppress is False:
-            #    if popup == 0:
-            #        xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to connect to server,)")
-            #    else:
-            #        xbmcgui.Dialog().ok("","Unable to connect to host")
+            xbmcgui.Dialog().ok("",self.getString(30204))
             raise
         else:
             try: conn.close()

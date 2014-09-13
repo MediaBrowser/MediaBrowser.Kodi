@@ -2662,7 +2662,7 @@ def checkServer():
     server_port = serverInfo[index+1:]
     printDebug ("XBMB3C detected server info " + server_address + " : " + server_port)
     
-    xbmcgui.Dialog().ok("Server Detection Succeeded", "Found server", "Address : " + server_address, "Port : " + server_port)
+    xbmcgui.Dialog().ok(__language__(30167), __language__(30168), __language__(30169) + server_address, __language__(30030) + server_port)
 
     # get a list of users
     printDebug ("Getting user list")
@@ -2694,7 +2694,7 @@ def checkServer():
 
     printDebug ("User List : " + str(names))
     printDebug ("User List : " + str(userList))
-    return_value = xbmcgui.Dialog().select("Select User", names)
+    return_value = xbmcgui.Dialog().select(__language__(30200), names)
     
     if(return_value > -1):
         selected_user = userList[return_value]
@@ -2817,7 +2817,7 @@ else:
     elif mode == _MODE_GETCONTENT:
         if __settings__.getSetting('profile') == "true":
         
-            xbmcgui.Dialog().ok("Warning", "Profiling enabled.", "Please remember to turn off when finished testing.")
+            xbmcgui.Dialog().ok(__language__(30201), __language__(30202), __language__(30203))
             
             pr = cProfile.Profile()
             pr.enable()

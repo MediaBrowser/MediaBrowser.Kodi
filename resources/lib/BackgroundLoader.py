@@ -38,6 +38,8 @@ class BackgroundRotationThread(threading.Thread):
    
     def __init__(self, *args):
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        self.getString = self.addonSettings.getLocalizedString
         level = addonSettings.getSetting('logLevel')        
         self.logLevel = 0
         if(level != None):
@@ -55,7 +57,7 @@ class BackgroundRotationThread(threading.Thread):
         try:
             self.run_internal()
         except Exception, e:
-            xbmcgui.Dialog().ok("Error in BackgroundRotationThread", str(e))
+            xbmcgui.Dialog().ok(self.getString(30203), str(e))
             raise
     
     def run_internal(self):
