@@ -52,6 +52,13 @@ class BackgroundRotationThread(threading.Thread):
             xbmc.log("XBMB3C BackgroundRotationThread -> " + msg)
     
     def run(self):
+        try:
+            self.run_internal()
+        except Exception, e:
+            xbmcgui.Dialog().ok("Error in BackgroundRotationThread", str(e))
+            raise
+    
+    def run_internal(self):
         self.logMsg("Started")
         
         try:
