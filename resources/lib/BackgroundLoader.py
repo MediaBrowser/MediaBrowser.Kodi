@@ -669,7 +669,7 @@ class BackgroundRotationThread(threading.Thread):
                 else:
                     WINDOW.clearProperty("MB3.Action")
                     
-                if listOfBackgrounds[0]["trailer"] != None and listOfBackgrounds[0]["trailer"] != "":
+                if listOfBackgrounds[0].get("trailer") != None and listOfBackgrounds[0]["trailer"] != "":
                     trailerAction=listOfBackgrounds[0]["trailer"]
                     WINDOW.setProperty("MB3.TrailerAction", trailerAction )
                 else:
