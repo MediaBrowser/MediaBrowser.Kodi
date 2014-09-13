@@ -342,7 +342,7 @@ class BackgroundRotationThread(threading.Thread):
             collectionType = item.get("CollectionType", "")
             name = item.get("Name")
             childCount = item.get("RecursiveItemCount")
-            self.logMsg("updateCollectionArtLinks Name : " + str(name), level=1)
+            self.logMsg("updateCollectionArtLinks Name : " + name, level=1)
             self.logMsg("updateCollectionArtLinks RecursiveItemCount : " + str(childCount), level=1)
             if(childCount == None or childCount == 0):
                 continue
@@ -353,7 +353,7 @@ class BackgroundRotationThread(threading.Thread):
             # Process collection item menu item
             timeNow = time.time()
             contentUrl = "plugin://plugin.video.xbmb3c?mode=16&ParentId=" + item.get("Id") + "&CollectionType=" + collectionType + "&SessionId=(" + str(timeNow) + ")"
-            actionUrl = "ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=21&ParentId=" + item.get("Id") + "&Name=" + name + ",return)"
+            actionUrl = ("ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=21&ParentId=" + item.get("Id") + "&Name=" + name + ",return)").encode('utf-8')
             xbmc.log("COLLECTION actionUrl: " + actionUrl)
             WINDOW.setProperty("xbmb3c_collection_menuitem_name_" + str(collection_count), name)
             WINDOW.setProperty("xbmb3c_collection_menuitem_action_" + str(collection_count), actionUrl)
