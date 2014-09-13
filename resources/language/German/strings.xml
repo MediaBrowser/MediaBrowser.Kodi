@@ -83,6 +83,7 @@
     <string id="30097">Sortiere nach ...</string>
     <string id="30098">Sortierreihenfolge absteigend</string>
     <string id="30099">Sortierreihenfolge aufsteigend</string>
+    <string id="30100">Zeige Mitwirkende</string>
     
     <string id="30110">Benutzeroberfl&#228;che</string>
     <string id="30111">Lade Streaminformationen</string>
@@ -105,7 +106,6 @@
     <string id="30128">Abspielfehler</string>
     <string id="30129">Dieser Eintrag ist nicht abspielbar</string>    
     <string id="30130">Lokaler Pfad erkannt</string>
-    <string id="30131">Your MB3 Server contains local paths.  Please change server paths to UNC or change XBMB3C setting 'Play from Stream' to true.  Path: </string>
     <string id="30132">Warnung</string>
     <string id="30133">Debug Logging aktiviert.</string>
     <string id="30134">Dies beeintr&#228;chtigt die Performance.</string>

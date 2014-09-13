@@ -570,7 +570,7 @@ def addContextMenu(details, extraData, folder):
         scriptToRun = PLUGINPATH + "/default.py"
         
         pluginCastLink = "XBMC.Container.Update(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + str(extraData.get('id')) + ")"
-        commands.append(( "Show People", pluginCastLink))
+        commands.append(( __language__(30100), pluginCastLink))
         
         if extraData.get("playcount") == "0":
             argsToPass = 'markWatched,' + extraData.get('watchedurl')
