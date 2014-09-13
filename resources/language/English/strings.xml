@@ -140,8 +140,43 @@
     <string id="30159">Artwork</string>
     <string id="30160">Video Quality</string>
     
-     <string id="30161">Enable Suggested Loader (Requires Restart)</string>
-     <string id="30162">Add Season Number</string>     
-     <string id="30163">Flatten Seasons</string>     
-   
+    <string id="30161">Enable Suggested Loader (Requires Restart)</string>
+    <string id="30162">Add Season Number</string>     
+    <string id="30163">Flatten Seasons</string>     
+    <string id="30164">Direct Play - HTTP</string>     
+    <string id="30165">Direct Play</string>     
+    <string id="30166">Transcoding</string>     
+     
+    <string id="30170">All Movies</string>             
+    <string id="30171">All TV</string>                 
+    <string id="30172">All Music</string>              
+    <string id="30173">Channels</string>               
+    <string id="30174">Recently Added Movies</string>  
+    <string id="30175">Recently Added Episodes</string>
+    <string id="30176">Recently Added Albums</string>  
+    <string id="30177">In Progress Movies</string>     
+    <string id="30178">In Progress Episodes</string>   
+    <string id="30179">Next Episodes</string>          
+    <string id="30180">Favorite Movies</string>        
+    <string id="30181">Favorite Shows</string>         
+    <string id="30182">Favorite Episodes</string>      
+    <string id="30183">Frequent Played Albums</string> 
+    <string id="30184">Upcoming TV</string>            
+    <string id="30185">BoxSets</string>                
+    <string id="30186">Trailers</string>               
+    <string id="30187">Music Videos</string>           
+    <string id="30188">Photos</string>                 
+    <string id="30189">Unwatched Movies</string>       
+    <string id="30190">Movie Genres</string>           
+    <string id="30191">Movie Studios</string>          
+    <string id="30192">Movie Actors</string>           
+    <string id="30193">Unwatched Episodes</string>     
+    <string id="30194">TV Genres</string>              
+    <string id="30195">TV Networks</string>            
+    <string id="30196">TV Actors</string>              
+    <string id="30197">Playlists</string>              
+    <string id="30198">Search</string>              
+    <string id="30199">Set Views</string>              
+     
+
 </strings>
