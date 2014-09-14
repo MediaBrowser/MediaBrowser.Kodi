@@ -687,7 +687,7 @@ class BackgroundRotationThread(threading.Thread):
                 self.logMsg("setItemBackgroundLink MB3.Background.Item.FanArt=" + artUrl, 1)
                 
                 self.current_item_art = self.current_item_art + 1
-                if(self.current_item_art == len(listOfBackgrounds)):
+                if(self.current_item_art == len(listOfBackgrounds) - 1):
                     self.current_item_art = 0
                     
             else:
