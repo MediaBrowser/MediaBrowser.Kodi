@@ -1437,6 +1437,7 @@ def processDirectory(url, results, progress):
         elif item.get("Type") == "Season":
             xbmcplugin.setContent(pluginhandle, 'seasons')
             viewType="_SEASONS"
+            guiid = item.get("SeriesId")
         elif item.get("Type") == "Episode":
             prefix=''
             if __settings__.getSetting('addSeasonNumber') == 'true':
@@ -1450,7 +1451,7 @@ def processDirectory(url, results, progress):
                 tempTitle = prefix + ' - ' + tempTitle
             xbmcplugin.setContent(pluginhandle, 'episodes')
             viewType="_EPISODES"
-            guiid = item.get("Id")
+            guiid = item.get("SeriesId")
         elif item.get("Type") == "MusicArtist":
             xbmcplugin.setContent(pluginhandle, 'songs')
             viewType='_MUSICARTISTS'
