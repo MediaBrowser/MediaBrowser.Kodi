@@ -33,7 +33,7 @@ from InfoUpdater import InfoUpdaterThread
 from NextUpItems import NextUpUpdaterThread
 from SuggestedItems import SuggestedUpdaterThread
 from RandomItems import RandomInfoUpdaterThread
-from BackgroundLoader import BackgroundRotationThread
+from ArtworkLoader import ArtworkRotationThread
 from ThemeMusic import ThemeMusicThread
 from RecentItems import RecentInfoUpdaterThread
 from InProgressItems import InProgressUpdaterThread
@@ -110,10 +110,10 @@ if __addon__.getSetting('useMenuLoader') == "true":
 else:
     xbmc.log("XBMB3C Service MenuLoader Disabled")
 
-backgroundUpdaterThread = None    
+artworkRotationThread = None    
 if __addon__.getSetting('useBackgroundLoader') == "true":
-    backgroundUpdaterThread = BackgroundRotationThread()
-    backgroundUpdaterThread.start()
+    artworkRotationThread = ArtworkRotationThread()
+    artworkRotationThread.start()
 else:
     xbmc.log("XBMB3C Service BackgroundLoader Disabled")
     
@@ -243,8 +243,8 @@ def stopAll(played_information):
     if(newNextUpThread != None):
         newNextUpThread.updateNextUp()
         
-    if(backgroundUpdaterThread != None):
-        backgroundUpdaterThread.updateActionUrls()
+    if(artworkRotationThread != None):
+        artworkRotationThread.updateActionUrls()
         
     played_information.clear()
 

@@ -186,7 +186,7 @@
     <string id="30200">Select User</string>              
     <string id="30201">Profiling enabled.</string>              
     <string id="30202">Please remember to turn off when finished testing.</string>              
-    <string id="30203">Error in BackgroundRotationThread</string>              
+    <string id="30203">Error in ArtworkRotationThread</string>              
     <string id="30204">Unable to connect to host</string>         
     <string id="30205">Error in LoadMenuOptionsThread</string>        
     

@@ -21,7 +21,7 @@ _MODE_BASICPLAY=12
 #define our global download utils
 downloadUtils = DownloadUtils()
 
-class BackgroundRotationThread(threading.Thread):
+class ArtworkRotationThread(threading.Thread):
 
     movie_art_links = []
     tv_art_links = []
