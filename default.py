@@ -1040,7 +1040,7 @@ def setListItemProps(server, id, listItem,result):
     else:
         playinformation = __language__(30166)      
     details = {
-             'title'        : result.get("Name", "Missing Name").encode('utf-8') + ' - ' + playinformation,
+             'title'        : result.get("Name", "Missing Name") + ' - ' + playinformation,
              'plot'         : result.get("Overview")
              }
              
