@@ -141,5 +141,51 @@
     <string id="30160">Video kwaliteit</string>
 	<string id="30161">Activeer Suggested Loader (vereist herstart)</string>
     <string id="30162">Seizoen tonen in titel</string>     
-    <string id="30163">Seizoenen verbergen</string>    
+    <string id="30163">Seizoenen verbergen</string>   
+
+<string id="30164">Direct Play - HTTP</string>     
+    <string id="30165">Direct Play</string>     
+    <string id="30166">Transcoding</string>     
+    <string id="30167">Server Detection Succeeded</string>     
+    <string id="30168">Found server</string>     
+    <string id="30169">Address : </string>     
+    
+     
+    <string id="30170">Alle films</string>             
+    <string id="30171">Alle TV</string>                 
+    <string id="30172">Alle Muziek</string>              
+    <string id="30173">Kanalen</string>               
+    <string id="30174">Recent toegevoegde films</string>  
+    <string id="30175">Recent toegevoegde afleveringen</string>
+    <string id="30176">Recent toegevoegde albums</string>  
+    <string id="30177">Niet afgekeken films</string>     
+    <string id="30178">Niet afgekeken afleveringen</string>   
+    <string id="30179">NextUp afleveringen</string>          
+    <string id="30180">Favoriete films</string>        
+    <string id="30181">Favoriete TV-series</string>         
+    <string id="30182">Favoriete afleveringen</string>      
+    <string id="30183">Vaak afgespeelde albums</string> 
+    <string id="30184">Upcoming TV</string>            
+    <string id="30185">BoxSets</string>                
+    <string id="30186">Trailers</string>               
+    <string id="30187">Muziek videos</string>           
+    <string id="30188">Fotos</string>                 
+    <string id="30189">Onbekeken films</string>       
+    <string id="30190">Film Genres</string>           
+    <string id="30191">Film Studios</string>          
+    <string id="30192">Film Acteurs</string>           
+    <string id="30193">Onbekeken afleveringen</string>     
+    <string id="30194">TV Genres</string>              
+    <string id="30195">TV Networks</string>            
+    <string id="30196">TV Acteurs</string>              
+    <string id="30197">Afspeellijsten</string>              
+    <string id="30198">Zoeken</string>              
+    <string id="30199">Views instellen</string>              
+    
+    <string id="30200">Selecteer gebruiker</string>              
+    <string id="30201">Profilering ingeschakeld.</string>              
+    <string id="30202">Svp onthouden om weer uit te schakelen na het testen.</string>              
+    <string id="30203">Error in ArtworkRotationThread</string>              
+    <string id="30204">Kan niet verbinden met server</string>         
+    <string id="30205">Error in LoadMenuOptionsThread</string>       	
 </strings>
