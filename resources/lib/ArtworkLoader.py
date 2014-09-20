@@ -654,7 +654,6 @@ class ArtworkRotationThread(threading.Thread):
             if(listOfBackgrounds == None or len(listOfBackgrounds) == 0):
                 self.loadItemBackgroundLinks(id)
             if(listOfData == None or len(listOfData) == 0):
-                print "Hit none type"
                 self.loadItemBackgroundLinks(xbmc.getInfoLabel('ListItem.Property(id)'))
                 
             
