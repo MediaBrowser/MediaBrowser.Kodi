@@ -183,7 +183,7 @@
     <string id="30200">Wähle Benutzer</string>
     <string id="30201">Messung aktiviert.</string>
     <string id="30202">Bitte daran denken, nach dem Testen wieder zu deaktivieren.</string>
-    <string id="30203">Fehler in BackgroundRotationThread</string>
+    <string id="30203">Fehler in ArtworkRotationThread</string>
     <string id="30204">Verbindung zum Server fehlgeschlagen</string>
     <string id="30205">Fehler in LoadMenuOptionsThread</string>
    
