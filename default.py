@@ -558,6 +558,7 @@ def addGUIItem( url, details, extraData, folder=True ):
     pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + str(extraData.get('id'))
     list.setProperty('CastPluginLink', pluginCastLink)
     list.setProperty('ItemGUID', extraData.get('guiid'))
+    list.setProperty('id', extraData.get('id'))
     list.setProperty('Video3DFormat', details.get('Video3DFormat'))
         
     return (u, list, folder)

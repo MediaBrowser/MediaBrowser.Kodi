@@ -113,7 +113,7 @@ class ArtworkRotationThread(threading.Thread):
                 itemLastRun = datetime.today()
                 
             # update item BG on selected item changes
-            current_id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
+            current_id = xbmc.getInfoLabel('ListItem.Property(id)')
             if current_id != last_id:
                 self.setItemBackgroundLink()
                 itemLastRun = datetime.today()
@@ -363,7 +363,7 @@ class ArtworkRotationThread(threading.Thread):
 
             #####################################################################################################
             # Process collection item backgrounds
-            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=Movie,Series,MusicArtist,Trailer,MusicVideo&Fields=ParentId,Overview&Recursive=true&CollapseBoxSetItems=false&format=json"
+            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=Movie,Series,Episode,MusicArtist,Trailer,MusicVideo&Fields=ParentId,Overview&Recursive=true&CollapseBoxSetItems=false&format=json"
    
             jsonData = downloadUtils.downloadUrl(collectionUrl, suppress=False, popup=1 ) 
             collectionResult = json.loads(jsonData)
@@ -495,12 +495,12 @@ class ArtworkRotationThread(threading.Thread):
             
             trailerActionUrl = None
             if item.get("LocalTrailerCount") != None and item.get("LocalTrailerCount") > 0:
-              itemTrailerUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "/LocalTrailers?format=json"
-              jsonData = downloadUtils.downloadUrl(itemTrailerUrl, suppress=False, popup=1 ) 
-              trailerItem = json.loads(jsonData)
-              trailerUrl = mb3Host + ":" + mb3Port + ',;' + trailerItem[0].get("Id")
-              trailerUrl = urllib.quote(trailerUrl) 
-              trailerActionUrl = "RunPlugin(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + trailerUrl + ")"
+                itemTrailerUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "/LocalTrailers?format=json"
+                jsonData = downloadUtils.downloadUrl(itemTrailerUrl, suppress=False, popup=1 ) 
+                trailerItem = json.loads(jsonData)
+                trailerUrl = mb3Host + ":" + mb3Port + ',;' + trailerItem[0].get("Id")
+                trailerUrl = urllib.quote(trailerUrl) 
+                trailerActionUrl = "RunPlugin(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + trailerUrl + ")"
             
             for backdrop in images:
               
@@ -648,18 +648,25 @@ class ArtworkRotationThread(threading.Thread):
         if id != None and id != "":    
     
             listOfBackgrounds = self.item_art_links.get(id)
+            listOfData = self.item_art_links.get(xbmc.getInfoLabel('ListItem.Property(id)'))
             
             # if for some reson the item is not in the cache try to load it now
             if(listOfBackgrounds == None or len(listOfBackgrounds) == 0):
                 self.loadItemBackgroundLinks(id)
+            if(listOfData == None or len(listOfData) == 0):
+                print "Hit none type"
+                self.loadItemBackgroundLinks(xbmc.getInfoLabel('ListItem.Property(id)'))
+                
             
             listOfBackgrounds = self.item_art_links.get(id)
+            listOfData = self.item_art_links.get(xbmc.getInfoLabel('ListItem.Property(id)'))
             
             if listOfBackgrounds != None:
-                if listOfBackgrounds[0]["plot"] != None and listOfBackgrounds[0]["plot"] != "":
-                    plot=listOfBackgrounds[0]["plot"]
-                    plot=plot.encode("utf-8")
-                    WINDOW.setProperty("MB3.Plot", plot )
+                if listOfData != None:
+                    if listOfData[0]["plot"] != "" and listOfData[0]["plot"] != None:
+                        plot=listOfData[0]["plot"]
+                        plot=plot.encode("utf-8")
+                        WINDOW.setProperty("MB3.Plot", plot )
                 else:
                     WINDOW.clearProperty("MB3.Plot")                            
 
@@ -740,6 +747,14 @@ class ArtworkRotationThread(threading.Thread):
         url =  mb3Host + ":" + mb3Port + ',;' + id
         url = urllib.quote(url)        
         actionUrl = "RunPlugin(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + url + ")"
+        trailerActionUrl = None
+        if item.get("LocalTrailerCount") != None and item.get("LocalTrailerCount") > 0:
+            itemTrailerUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "/LocalTrailers?format=json"
+            jsonData = downloadUtils.downloadUrl(itemTrailerUrl, suppress=False, popup=1 ) 
+            trailerItem = json.loads(jsonData)
+            trailerUrl = mb3Host + ":" + mb3Port + ',;' + trailerItem[0].get("Id")
+            trailerUrl = urllib.quote(trailerUrl) 
+            trailerActionUrl = "RunPlugin(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + trailerUrl + ")"		
       
         newBgLinks = []
         for backdrop in images:
@@ -747,6 +762,7 @@ class ArtworkRotationThread(threading.Thread):
             info["url"] = "http://localhost:15001/?id=" + str(urlid) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
             info["plot"] = plot
             info["action"] = actionUrl
+            info["trailer"] = trailerActionUrl
             info["index"] = index
             info["id"] = urlid
             info["parent"] = parentID
@@ -754,8 +770,6 @@ class ArtworkRotationThread(threading.Thread):
             self.logMsg("BG Item Image Info : " + str(info), level=2)
             newBgLinks.append(info)
             index = index + 1
-            
-
 
         if(len(newBgLinks) > 0):
             self.item_art_links[origid] = newBgLinks
