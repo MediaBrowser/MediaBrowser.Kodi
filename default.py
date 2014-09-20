@@ -256,6 +256,7 @@ def getCollections(detailsString):
                     'section'           : section,
                     'guiid'             : item.get("Id"),
                     'path'              : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json'),
+                    'collapsed_path'    : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json&CollapseBoxSetItems=true'),
                     'recent_path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder&ExcludeLocationTypes=Virtual&format=json'),
                     'inprogress_path'   : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") +'&Recursive=true&SortBy=DatePlayed&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsResumable&ExcludeLocationTypes=Virtual&format=json'),
                     'genre_path'        : ('/mediabrowser/Genres?Userid=' + userid + '&parentId=' + item.get("Id") +'&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&Recursive=true&format=json'),
@@ -699,6 +700,7 @@ def skin( filter=None, shared=False ):
             total = 0
         WINDOW.setProperty("xbmb3c.%d.title"               % (sectionCount) , section.get('title', 'Unknown'))
         WINDOW.setProperty("xbmb3c.%d.path"                % (sectionCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+        WINDOW.setProperty("xbmb3c.%d.collapsed.path"      % (sectionCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('collapsed_path', '')) + modeurl + ",return)")
         WINDOW.setProperty("xbmb3c.%d.type"                % (sectionCount) , section.get('section'))
         WINDOW.setProperty("xbmb3c.%d.fanart"              % (sectionCount) , section.get('fanart_image'))
         WINDOW.setProperty("xbmb3c.%d.recent.path"         % (sectionCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('recent_path', '')) + modeurl + ",return)")
