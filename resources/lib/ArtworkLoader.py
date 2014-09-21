@@ -113,7 +113,12 @@ class ArtworkRotationThread(threading.Thread):
                 itemLastRun = datetime.today()
                 
             # update item BG on selected item changes
-            current_id = xbmc.getInfoLabel('ListItem.Property(id)')
+            if xbmc.getInfoLabel('ListItem.Property(id)') != None:
+                current_id = xbmc.getInfoLabel('ListItem.Property(id)')
+            elif xbmc.getInfoLabel('ListItem.Property(ItemGUID)') != None:
+                current_id=xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
+            else:                               
+                current_id = ''
             if current_id != last_id:
                 self.setItemBackgroundLink()
                 itemLastRun = datetime.today()
