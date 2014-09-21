@@ -93,6 +93,7 @@ class InfoUpdaterThread(threading.Thread):
         trailers_count = 0
         trailers_unwatched_count = 0
         photos_count = 0
+        channels_count = 0
         for item in result:
             collectionType = item.get("CollectionType")
             if collectionType==None:
@@ -230,3 +231,13 @@ class InfoUpdaterThread(threading.Thread):
         self.logMsg("MB3NextAiredTotalToday "  + str(totalToday))
         WINDOW.setProperty("MB3NextAiredTotalToday", str(totalToday))  
         
+        self.logMsg("Channels start")
+        channelsUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Channels/?format=json"
+        
+        jsonData = downloadUtils.downloadUrl(channelsUrl, suppress=False, popup=1 )
+        result = json.loads(jsonData)
+        self.logMsg("Channels Json Data : " + str(result), level=2)
+        
+        totalChannels = result.get("TotalRecordCount")
+        self.logMsg("TotalChannels "  + str(totalRunning))
+        WINDOW.setProperty("MB3TotalChannels", str(totalChannels))

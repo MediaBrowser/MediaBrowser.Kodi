@@ -59,6 +59,13 @@ class NextUpUpdaterThread(threading.Thread):
             UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
             if UnWatched <> 0:
               query = query + "&UnplayedCount=" + str(UnWatched)
+              
+            PlayedPercentage = 0 if userData.get("PlayedPercentage")==None else userData.get("PlayedPercentage")
+            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
+                PlayedPercentage = userData.get("PlayedPercentage")
+            if (PlayedPercentage != 100 or PlayedPercentage) != 0 and addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
+                query = query + "&PercentPlayed=" + str(PlayedPercentage)  
+                        
             query = query + "&height=685&width=480"
         elif originalType=="Primary2":
           addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -75,6 +82,12 @@ class NextUpUpdaterThread(threading.Thread):
             UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
             if UnWatched <> 0:
               query = query + "&UnplayedCount=" + str(UnWatched)
+              
+            PlayedPercentage = 0 if userData.get("PlayedPercentage")==None else userData.get("PlayedPercentage")
+            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
+                PlayedPercentage = userData.get("PlayedPercentage")
+            if (PlayedPercentage != 100 or PlayedPercentage) != 0 and addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
+                query = query + "&PercentPlayed=" + str(PlayedPercentage)
             query = query + "&height=220&width=156"            
         return "http://localhost:15001/?id=" + str(item_id) + query   
         
