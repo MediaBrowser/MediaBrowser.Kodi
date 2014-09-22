@@ -1013,6 +1013,7 @@ def setListItemProps(server, id, listItem,result):
         clearArtTag = "" if result.get("ImageTags").get("Logo")     == None else result.get("ImageTags").get("Logo")
         discArtTag  = "" if result.get("ImageTags").get("Disc")     == None else result.get("ImageTags").get("Disc")        
         fanArtTag   = "" if result.get("ImageTags").get("Backdrop") == None else result.get("ImageTags").get("Backdrop")
+        thumbArtTag = "" if result.get("ImageTags").get("Thumb")  == None else result.get("ImageTags").get("Thumb")
 
     setArt(listItem,'poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + posterTag)
     setArt(listItem,'tvshow.poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + posterTag)
@@ -1020,6 +1021,8 @@ def setListItemProps(server, id, listItem,result):
     setArt(listItem,'tvshow.clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearArtTag)    
     setArt(listItem,'discart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Disc&tag=" + discArtTag)  
     setArt(listItem,'fanart_image', "http://localhost:15001/?id=" + str(thumbID) + "&type=Backdrop&tag=" + fanArtTag)
+    setArt(listItem,'landscape', "http://localhost:15001/?id=" + str(thumbID) + "&type=Thumb&tag=" + thumbArtTag)
+    
     
     listItem.setProperty('IsPlayable', 'true')
     listItem.setProperty('IsFolder', 'false')
