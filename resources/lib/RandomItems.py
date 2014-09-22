@@ -37,10 +37,37 @@ class RandomInfoUpdaterThread(threading.Thread):
             xbmc.log("XBMB3C RandomInfoUpdaterThread -> " + msg)
             
     def getImageLink(self, item, type, item_id):
+        originalType = type
         imageTag = "none"
         if(item.get("ImageTags") != None and item.get("ImageTags").get(type) != None):
-            imageTag = item.get("ImageTags").get(type)            
-        return "http://localhost:15001/?id=" + str(item_id) + "&type=" + type + "&tag=" + imageTag                
+            imageTag = item.get("ImageTags").get(type)
+        query = "&type=" + type + "&tag=" + imageTag
+        
+        if originalType=="Thumb":
+          addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+          if addonSettings.getSetting('showIndicators')=='true' and addonSettings.getSetting('showUnplayedIndicators')=='true':
+            mb3Host = addonSettings.getSetting('ipaddress')
+            mb3Port = addonSettings.getSetting('port')    
+            userName = addonSettings.getSetting('username')     
+        
+            userid = downloadUtils.getUserId()  
+            seriesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + item_id +"?format=json"
+            jsonData = downloadUtils.downloadUrl(seriesUrl, suppress=False, popup=1 )
+            result = json.loads(jsonData)
+            userData = result.get("UserData")   
+            UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
+            if UnWatched <> 0:
+              query = query + "&UnplayedCount=" + str(UnWatched)
+              
+            PlayedPercentage = 0 if userData.get("PlayedPercentage")==None else userData.get("PlayedPercentage")
+            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
+                PlayedPercentage = userData.get("PlayedPercentage")
+            if (PlayedPercentage != 100 or PlayedPercentage) != 0 and addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
+                query = query + "&PercentPlayed=" + str(PlayedPercentage)  
+                        
+            query = query + "&height=660&width=1080"
+        
+        return "http://localhost:15001/?id=" + str(item_id) + query                 
     
     def run(self):
         self.logMsg("Started")
