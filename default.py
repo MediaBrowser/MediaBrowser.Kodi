@@ -814,7 +814,70 @@ def PLAY( url, handle ):
     userid = downloadUtils.getUserId()
     seekTime = 0
     resume = 0
+    
+    playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+    playlist.clear()
+    # check for any intros first
+    jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "/Intros?format=json", suppress=False, popup=1 )     
+    printDebug("Intros jsonData: " + jsonData)
+    result = json.loads(jsonData)
+    
+    if result.get("Items") != None:
+      for item in result.get("Items"):
+        id = item.get("Id")
+        jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
+        result = json.loads(jsonData)
+        autoResume = 0
+        playurl = PlayUtils().getPlayUrl(server, id, result)
+        printDebug("Play URL: " + playurl)    
+        thumbID = id if(result.get("Type") != "Episode") else result.get("SeriesId")
+        imageTag = "" if(result.get("ImageTags") == None or result.get("ImageTags").get("Primary") == None) else result.get("ImageTags").get("Primary")
+        thumbPath = "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag
+        listItem = xbmcgui.ListItem(path=playurl, iconImage=thumbPath, thumbnailImage=thumbPath)
+        setListItemProps(server, id, listItem, result)
 
+        # Can not play virtual items
+        if (result.get("LocationType") == "Virtual") or (result.get("IsPlaceHolder") == True):
+            xbmcgui.Dialog().ok(__language__(30128), __language__(30129))
+            return
+
+        watchedurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
+        positionurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
+        deleteurl = 'http://' + server + '/mediabrowser/Items/' + id
+
+        if(autoResume != 0):
+            if(autoResume == -1):
+                resume_result = 1
+            else:
+                resume_result = 0
+                seekTime = (autoResume / 1000) / 10000
+        else:
+            userData = result.get("UserData")
+            resume_result = 0
+            if userData.get("PlaybackPositionTicks") != 0:
+                reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
+                seekTime = reasonableTicks / 10000
+                displayTime = str(datetime.timedelta(seconds=seekTime))
+                display_list = [ "Resume from " + displayTime, "Start from beginning"]
+                resumeScreen = xbmcgui.Dialog()
+                resume_result = resumeScreen.select('Resume', display_list)
+                if resume_result == -1:
+                    return
+    
+        # set the current playing info
+        WINDOW = xbmcgui.Window( 10000 )
+        WINDOW.setProperty("watchedurl", watchedurl)
+        WINDOW.setProperty("positionurl", positionurl)
+        WINDOW.setProperty("deleteurl", "")
+        if result.get("Type")=="Episode" and __settings__.getSetting("offerDelete")=="true":
+           WINDOW.setProperty("deleteurl", deleteurl)
+    
+        WINDOW.setProperty("runtimeticks", str(result.get("RunTimeTicks")))
+        WINDOW.setProperty("item_id", id)
+        
+        playlist.add(playurl, listItem)
+   
+    id = urlParts[1]
     jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
     printDebug("Play jsonData: " + jsonData)
     result = json.loads(jsonData)
@@ -829,31 +892,31 @@ def PLAY( url, handle ):
 
     # Can not play virtual items
     if (result.get("LocationType") == "Virtual"):
-        xbmcgui.Dialog().ok(__language__(30128), __language__(30129))
-        return
+      xbmcgui.Dialog().ok(__language__(30128), __language__(30129))
+      return
 
     watchedurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
     positionurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
     deleteurl = 'http://' + server + '/mediabrowser/Items/' + id
 
     if(autoResume != 0):
-        if(autoResume == -1):
-            resume_result = 1
-        else:
-            resume_result = 0
-            seekTime = (autoResume / 1000) / 10000
-    else:
-        userData = result.get("UserData")
+      if(autoResume == -1):
+        resume_result = 1
+      else:
         resume_result = 0
-        if userData.get("PlaybackPositionTicks") != 0:
-            reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
-            seekTime = reasonableTicks / 10000
-            displayTime = str(datetime.timedelta(seconds=seekTime))
-            display_list = [ "Resume from " + displayTime, "Start from beginning"]
-            resumeScreen = xbmcgui.Dialog()
-            resume_result = resumeScreen.select('Resume', display_list)
-            if resume_result == -1:
-                return
+        seekTime = (autoResume / 1000) / 10000
+    else:
+      userData = result.get("UserData")
+      resume_result = 0
+      if userData.get("PlaybackPositionTicks") != 0:
+        reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
+        seekTime = reasonableTicks / 10000
+        displayTime = str(datetime.timedelta(seconds=seekTime))
+        display_list = [ "Resume from " + displayTime, "Start from beginning"]
+        resumeScreen = xbmcgui.Dialog()
+        resume_result = resumeScreen.select('Resume', display_list)
+        if resume_result == -1:
+          return
     
     # set the current playing info
     WINDOW = xbmcgui.Window( 10000 )
@@ -861,14 +924,14 @@ def PLAY( url, handle ):
     WINDOW.setProperty("positionurl", positionurl)
     WINDOW.setProperty("deleteurl", "")
     if result.get("Type")=="Episode" and __settings__.getSetting("offerDelete")=="true":
-       WINDOW.setProperty("deleteurl", deleteurl)
+      WINDOW.setProperty("deleteurl", deleteurl)
     
     WINDOW.setProperty("runtimeticks", str(result.get("RunTimeTicks")))
     WINDOW.setProperty("item_id", id)
     
-    xbmc.Player().play(playurl, listItem)
-    printDebug( "Sent the following url to the xbmc player: "+str(playurl))
+    playlist.add(playurl, listItem)
 
+    xbmc.Player().play(playlist)
     #Set a loop to wait for positive confirmation of playback
     count = 0
     while not xbmc.Player().isPlaying():
