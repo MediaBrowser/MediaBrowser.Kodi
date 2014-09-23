@@ -138,6 +138,10 @@ class RandomInfoUpdaterThread(threading.Thread):
             thumbnail = self.getImageLink(item, "Primary",str(item_id))
             logo = self.getImageLink(item, "Logo",str(item_id))
             fanart = self.getImageLink(item, "Backdrop",str(item_id))
+            if (item.get("ImageTags") != None and item.get("ImageTags").get("Thumb") != None):
+              realthumb = self.getImageLink(item, "Thumb", str(item_id))
+            else:
+              realthumb = fanart  
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
@@ -163,6 +167,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Art(fanart)", fanart)
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Art(poster)", thumbnail)
+            WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".RealThumb", realthumb)
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Rating", str(rating))
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Mpaa", str(officialrating))
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".CriticRating", str(criticrating))
