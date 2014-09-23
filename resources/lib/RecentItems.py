@@ -231,7 +231,8 @@ class RecentInfoUpdaterThread(threading.Thread):
             if (item.get("ImageTags") != None and item.get("ImageTags").get("Thumb") != None):
               realthumb = self.getImageLink(item, "Thumb", str(item_id))
             else:
-              realthumb = fanart  
+              realthumb = fanart
+            
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
             playUrl = playUrl.replace("\\\\","smb://")

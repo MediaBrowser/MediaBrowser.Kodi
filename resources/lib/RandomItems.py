@@ -143,6 +143,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             else:
               realthumb = fanart  
             
+            
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
             playUrl = playUrl.replace("\\\\","smb://")
