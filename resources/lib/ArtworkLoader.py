@@ -35,6 +35,7 @@ class ArtworkRotationThread(threading.Thread):
     current_item_art = 0
     linksLoaded = False
     logLevel = 0
+    currentFilteredIndex = {}
    
     def __init__(self, *args):
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -247,6 +248,28 @@ class ArtworkRotationThread(threading.Thread):
 
             
     def findNextLink(self, linkList, startIndex, filterOnParent):
+    
+        if(filterOnParent == None or filterOnParent == ""):
+            filterOnParent = "empty"
+        
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        backgroundRefresh = int(addonSettings.getSetting('backgroundRefresh'))
+        if(backgroundRefresh < 10):
+            backgroundRefresh = 10
+            
+        # first check the cache if we are filtering
+        if(self.currentFilteredIndex.get(filterOnParent) != None):
+            cachedItem = self.currentFilteredIndex.get(filterOnParent)
+            self.logMsg("filterOnParent=existing=" + filterOnParent + "=" + str(cachedItem))
+            cachedIndex = cachedItem[0]
+            dateStamp = cachedItem[1]
+            td = datetime.today() - dateStamp
+            secTotal = td.seconds
+            if(secTotal < backgroundRefresh):
+                # use the cached background index
+                self.logMsg("filterOnParent=using=" + filterOnParent + "=" + str(secTotal))
+                return (cachedIndex, linkList[cachedIndex])
+    
         currentIndex = startIndex
         
         isParentMatch = False
@@ -264,9 +287,15 @@ class ArtworkRotationThread(threading.Thread):
                 return (currentIndex, linkList[currentIndex]) # we checked everything and nothing was ok so return the first one again
 
             isParentMatch = True
-            if(filterOnParent != None and filterOnParent != ""):
+            # if filter on not empty then make sure we have a bg from the correct collection
+            if(filterOnParent != "empty"):
                 isParentMatch = filterOnParent in linkList[currentIndex]["collections"]
-             
+                
+        # save the cached index
+        cachedItem = [currentIndex, datetime.today()]
+        self.logMsg("filterOnParent=adding=" + filterOnParent + "=" + str(cachedItem))
+        self.currentFilteredIndex[filterOnParent] = cachedItem        
+         
         nextIndex = currentIndex + 1
         
         if(nextIndex == len(linkList)):
