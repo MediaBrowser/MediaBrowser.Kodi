@@ -863,17 +863,6 @@ def PLAY( url, handle ):
                 resume_result = resumeScreen.select('Resume', display_list)
                 if resume_result == -1:
                     return
-    
-        # set the current playing info
-        WINDOW = xbmcgui.Window( 10000 )
-        WINDOW.setProperty("watchedurl", watchedurl)
-        WINDOW.setProperty("positionurl", positionurl)
-        WINDOW.setProperty("deleteurl", "")
-        if result.get("Type")=="Episode" and __settings__.getSetting("offerDelete")=="true":
-           WINDOW.setProperty("deleteurl", deleteurl)
-    
-        WINDOW.setProperty("runtimeticks", str(result.get("RunTimeTicks")))
-        WINDOW.setProperty("item_id", id)
         
         playlist.add(playurl, listItem)
    
@@ -1073,15 +1062,20 @@ def setListItemProps(server, id, listItem,result):
 
     if result.get("ImageTags") != None:
         posterTag   = "" if result.get("ImageTags").get("Primary")  == None else result.get("ImageTags").get("Primary")
-        clearArtTag = "" if result.get("ImageTags").get("Logo")     == None else result.get("ImageTags").get("Logo")
+        clearArtTag = "" if result.get("ImageTags").get("Art")     == None else result.get("ImageTags").get("Art")
+        clearLogoTag = "" if result.get("ImageTags").get("Logo")     == None else result.get("ImageTags").get("Logo")
         discArtTag  = "" if result.get("ImageTags").get("Disc")     == None else result.get("ImageTags").get("Disc")        
         fanArtTag   = "" if result.get("ImageTags").get("Backdrop") == None else result.get("ImageTags").get("Backdrop")
         thumbArtTag = "" if result.get("ImageTags").get("Thumb")  == None else result.get("ImageTags").get("Thumb")
 
     setArt(listItem,'poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + posterTag)
     setArt(listItem,'tvshow.poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + posterTag)
-    setArt(listItem,'clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearArtTag)
-    setArt(listItem,'tvshow.clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearArtTag)    
+    if clearArtTag != "":
+      setArt(listItem,'clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Art&tag=" + clearArtTag)
+      setArt(listItem,'tvshow.clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Art&tag=" + clearArtTag)    
+    if clearLogoTag != "":
+      setArt(listItem,'clearlogo', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearLogoTag)
+      setArt(listItem,'tvshow.clearlogo', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearLogoTag)    
     setArt(listItem,'discart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Disc&tag=" + discArtTag)  
     setArt(listItem,'fanart_image', "http://localhost:15001/?id=" + str(thumbID) + "&type=Backdrop&tag=" + fanArtTag)
     setArt(listItem,'landscape', "http://localhost:15001/?id=" + str(thumbID) + "&type=Thumb&tag=" + thumbArtTag)
