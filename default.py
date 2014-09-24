@@ -107,6 +107,7 @@ import json as json
 downloadUtils = DownloadUtils()
 
 def printDebug( msg, level = 1):
+    msg=msg.encode('utf-8')
     if(logLevel >= level):
         if(logLevel == 2):
             xbmc.log("XBMB3C " + str(level) + " -> " + inspect.stack()[1][3] + " : " + str(msg))
