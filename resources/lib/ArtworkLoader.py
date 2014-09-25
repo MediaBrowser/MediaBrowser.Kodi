@@ -397,7 +397,7 @@ class ArtworkRotationThread(threading.Thread):
 
             #####################################################################################################
             # Process collection item backgrounds
-            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=Movie,Series,Episode,MusicArtist,Trailer,MusicVideo&Fields=ParentId,Overview&Recursive=true&CollapseBoxSetItems=false&format=json"
+            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=Movie,Series,Episode,MusicArtist,Trailer,MusicVideo,Video&Fields=ParentId,Overview&Recursive=true&CollapseBoxSetItems=false&format=json"
    
             jsonData = downloadUtils.downloadUrl(collectionUrl, suppress=False, popup=1 ) 
             collectionResult = json.loads(jsonData)
@@ -432,7 +432,7 @@ class ArtworkRotationThread(threading.Thread):
                         # build poster image link
                         posterImage = ""
                         actionUrl = ""
-                        if(col_item.get("Type") == "Movie" or col_item.get("Type") == "Trailer" or col_item.get("Type") == "MusicVideo"):
+                        if(col_item.get("Type") == "Movie" or col_item.get("Type") == "Trailer" or col_item.get("Type") == "MusicVideo" or col_item.get("Type") == "Video"):
                             imageTag = col_item.get("ImageTags").get("Primary")
                             if imageTag == None:
                                 imageTag = ""
