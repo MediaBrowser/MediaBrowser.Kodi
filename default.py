@@ -815,19 +815,44 @@ def PLAY( url, handle ):
     seekTime = 0
     resume = 0
     
+    id = urlParts[1]
+    jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
+    result = json.loads(jsonData)
+    
+    if(autoResume != 0):
+      if(autoResume == -1):
+        resume_result = 1
+      else:
+        resume_result = 0
+        seekTime = (autoResume / 1000) / 10000
+    else:
+      userData = result.get("UserData")
+      resume_result = 0
+        
+      if userData.get("PlaybackPositionTicks") != 0:
+        reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
+        seekTime = reasonableTicks / 10000
+        displayTime = str(datetime.timedelta(seconds=seekTime))
+        display_list = [ "Resume from " + displayTime, "Start from beginning"]
+        resumeScreen = xbmcgui.Dialog()
+        resume_result = resumeScreen.select('Resume', display_list)
+        if resume_result == -1:
+          return
+    
+    
     playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     playlist.clear()
     # check for any intros first
     jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "/Intros?format=json", suppress=False, popup=1 )     
     printDebug("Intros jsonData: " + jsonData)
     result = json.loads(jsonData)
-    
-    if result.get("Items") != None:
+        
+     # do not add intros when resume is invoked
+    if result.get("Items") != None and (seekTime == 0 or resume_result == 1):
       for item in result.get("Items"):
         id = item.get("Id")
         jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
         result = json.loads(jsonData)
-        autoResume = 0
         playurl = PlayUtils().getPlayUrl(server, id, result)
         printDebug("Play URL: " + playurl)    
         thumbID = id if(result.get("Type") != "Episode") else result.get("SeriesId")
@@ -844,25 +869,15 @@ def PLAY( url, handle ):
         watchedurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
         positionurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
         deleteurl = 'http://' + server + '/mediabrowser/Items/' + id
-
-        if(autoResume != 0):
-            if(autoResume == -1):
-                resume_result = 1
-            else:
-                resume_result = 0
-                seekTime = (autoResume / 1000) / 10000
-        else:
-            userData = result.get("UserData")
-            resume_result = 0
-            if userData.get("PlaybackPositionTicks") != 0:
-                reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
-                seekTime = reasonableTicks / 10000
-                displayTime = str(datetime.timedelta(seconds=seekTime))
-                display_list = [ "Resume from " + displayTime, "Start from beginning"]
-                resumeScreen = xbmcgui.Dialog()
-                resume_result = resumeScreen.select('Resume', display_list)
-                if resume_result == -1:
-                    return
+        
+        # set the current playing info
+        WINDOW = xbmcgui.Window( 10000 )
+        WINDOW.setProperty(playurl+"watchedurl", watchedurl)
+        WINDOW.setProperty(playurl+"positionurl", positionurl)
+        WINDOW.setProperty(playurl+"deleteurl", "")
+     
+        WINDOW.setProperty(playurl+"runtimeticks", str(result.get("RunTimeTicks")))
+        WINDOW.setProperty(playurl+"item_id", id)
         
         playlist.add(playurl, listItem)
    
@@ -888,35 +903,16 @@ def PLAY( url, handle ):
     positionurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
     deleteurl = 'http://' + server + '/mediabrowser/Items/' + id
 
-    if(autoResume != 0):
-      if(autoResume == -1):
-        resume_result = 1
-      else:
-        resume_result = 0
-        seekTime = (autoResume / 1000) / 10000
-    else:
-      userData = result.get("UserData")
-      resume_result = 0
-      if userData.get("PlaybackPositionTicks") != 0:
-        reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
-        seekTime = reasonableTicks / 10000
-        displayTime = str(datetime.timedelta(seconds=seekTime))
-        display_list = [ "Resume from " + displayTime, "Start from beginning"]
-        resumeScreen = xbmcgui.Dialog()
-        resume_result = resumeScreen.select('Resume', display_list)
-        if resume_result == -1:
-          return
-    
     # set the current playing info
     WINDOW = xbmcgui.Window( 10000 )
-    WINDOW.setProperty("watchedurl", watchedurl)
-    WINDOW.setProperty("positionurl", positionurl)
-    WINDOW.setProperty("deleteurl", "")
+    WINDOW.setProperty(playurl+"watchedurl", watchedurl)
+    WINDOW.setProperty(playurl+"positionurl", positionurl)
+    WINDOW.setProperty(playurl+"deleteurl", "")
     if result.get("Type")=="Episode" and __settings__.getSetting("offerDelete")=="true":
-      WINDOW.setProperty("deleteurl", deleteurl)
+      WINDOW.setProperty(playurl+"deleteurl", deleteurl)
     
-    WINDOW.setProperty("runtimeticks", str(result.get("RunTimeTicks")))
-    WINDOW.setProperty("item_id", id)
+    WINDOW.setProperty(playurl+"runtimeticks", str(result.get("RunTimeTicks")))
+    WINDOW.setProperty(playurl+"item_id", id)
     
     playlist.add(playurl, listItem)
 
@@ -984,35 +980,16 @@ def PLAYPlaylist( url, handle ):
         positionurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
         deleteurl = 'http://' + server + '/mediabrowser/Items/' + id
 
-        if(autoResume != 0):
-            if(autoResume == -1):
-                resume_result = 1
-            else:
-                resume_result = 0
-                seekTime = (autoResume / 1000) / 10000
-        else:
-            userData = result.get("UserData")
-            resume_result = 0
-            if userData.get("PlaybackPositionTicks") != 0:
-                reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
-                seekTime = reasonableTicks / 10000
-                displayTime = str(datetime.timedelta(seconds=seekTime))
-                display_list = [ "Resume from " + displayTime, "Start from beginning"]
-                resumeScreen = xbmcgui.Dialog()
-                resume_result = resumeScreen.select('Resume', display_list)
-                if resume_result == -1:
-                    return
-    
         # set the current playing info
         WINDOW = xbmcgui.Window( 10000 )
-        WINDOW.setProperty("watchedurl", watchedurl)
-        WINDOW.setProperty("positionurl", positionurl)
-        WINDOW.setProperty("deleteurl", "")
+        WINDOW.setProperty(playurl+"watchedurl", watchedurl)
+        WINDOW.setProperty(playurl+"positionurl", positionurl)
+        WINDOW.setProperty(playurl+"deleteurl", "")
         if result.get("Type")=="Episode" and __settings__.getSetting("offerDelete")=="true":
-           WINDOW.setProperty("deleteurl", deleteurl)
+           WINDOW.setProperty(playurl+"deleteurl", deleteurl)
     
-        WINDOW.setProperty("runtimeticks", str(result.get("RunTimeTicks")))
-        WINDOW.setProperty("item_id", id)
+        WINDOW.setProperty(playurl+"runtimeticks", str(result.get("RunTimeTicks")))
+        WINDOW.setProperty(playurl+"item_id", id)
         
         playlist.add(playurl, listItem)
     
@@ -1060,13 +1037,13 @@ def setListItemProps(server, id, listItem,result):
         
     # get image tags
 
-    if result.get("ImageTags") != None:
-        posterTag   = "" if result.get("ImageTags").get("Primary")  == None else result.get("ImageTags").get("Primary")
-        clearArtTag = "" if result.get("ImageTags").get("Art")     == None else result.get("ImageTags").get("Art")
-        clearLogoTag = "" if result.get("ImageTags").get("Logo")     == None else result.get("ImageTags").get("Logo")
-        discArtTag  = "" if result.get("ImageTags").get("Disc")     == None else result.get("ImageTags").get("Disc")        
-        fanArtTag   = "" if result.get("ImageTags").get("Backdrop") == None else result.get("ImageTags").get("Backdrop")
-        thumbArtTag = "" if result.get("ImageTags").get("Thumb")  == None else result.get("ImageTags").get("Thumb")
+    if resultForType.get("ImageTags") != None:
+        posterTag   = "" if resultForType.get("ImageTags").get("Primary")  == None else resultForType.get("ImageTags").get("Primary")
+        clearArtTag = "" if resultForType.get("ImageTags").get("Art")     == None else resultForType.get("ImageTags").get("Art")
+        clearLogoTag = "" if resultForType.get("ImageTags").get("Logo")     == None else resultForType.get("ImageTags").get("Logo")
+        discArtTag  = "" if resultForType.get("ImageTags").get("Disc")     == None else resultForType.get("ImageTags").get("Disc")        
+        fanArtTag   = "" if resultForType.get("ImageTags").get("Backdrop") == None else resultForType.get("ImageTags").get("Backdrop")
+        thumbArtTag = "" if resultForType.get("ImageTags").get("Thumb")  == None else resultForType.get("ImageTags").get("Thumb")
 
     setArt(listItem,'poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + posterTag)
     setArt(listItem,'tvshow.poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + posterTag)

@@ -262,28 +262,28 @@ class Service( xbmc.Player ):
         xbmc.log("XBMB3C Service -> starting monitor service")
         self.played_information = {}
         pass
-
+    
     def onPlayBackStarted( self ):
         # Will be called when xbmc starts playing a file
-        
         stopAll(self.played_information)
         
         currentFile = xbmc.Player().getPlayingFile()
+        xbmc.log("XBMB3C Service -> onPlayBackStarted" + currentFile)
         
         WINDOW = xbmcgui.Window( 10000 )
-        watchedurl = WINDOW.getProperty("watchedurl")
-        deleteurl = WINDOW.getProperty("deleteurl")
-        positionurl = WINDOW.getProperty("positionurl")
-        runtime = WINDOW.getProperty("runtimeticks")
-        item_id = WINDOW.getProperty("item_id")
+        watchedurl = WINDOW.getProperty(currentFile+"watchedurl")
+        deleteurl = WINDOW.getProperty(currentFile+"deleteurl")
+        positionurl = WINDOW.getProperty(currentFile+"positionurl")
+        runtime = WINDOW.getProperty(currentFile+"runtimeticks")
+        item_id = WINDOW.getProperty(currentFile+"item_id")
         
         # reset all these so they dont get used is xbmc plays a none 
         # xbmb3c MB item
-        WINDOW.setProperty("watchedurl", "")
-        WINDOW.setProperty("deleteurl", "")
-        WINDOW.setProperty("positionurl", "")
-        WINDOW.setProperty("runtimeticks", "")
-        WINDOW.setProperty("item_id", "")
+        # WINDOW.setProperty(currentFile+"watchedurl", "")
+        # WINDOW.setProperty(currentFile+"deleteurl", "")
+        # WINDOW.setProperty(currentFile+"positionurl", "")
+        # WINDOW.setProperty(currentFile+"runtimeticks", "")
+        # WINDOW.setProperty(currentFile+"item_id", "")
         
         if(item_id == None or len(item_id) == 0):
             return
