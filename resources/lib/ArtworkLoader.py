@@ -433,26 +433,20 @@ class ArtworkRotationThread(threading.Thread):
                         posterImage = ""
                         actionUrl = ""
                         if(col_item.get("Type") == "Movie" or col_item.get("Type") == "Trailer" or col_item.get("Type") == "MusicVideo" or col_item.get("Type") == "Video"):
-                            imageTag = col_item.get("ImageTags").get("Primary")
-                            if imageTag == None:
-                                imageTag = ""
-                            posterImage = "http://localhost:15001/?id=" + str(id) + "&type=Primary" + "&tag=" + imageTag
+                            posterImage = downloadUtils.getArtwork(col_item, "Primary")
                             url =  mb3Host + ":" + mb3Port + ',;' + id
                             url = urllib.quote(url)
                             #actionUrl = "ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + url + " ,return)"
                             actionUrl = "RunPlugin(plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + url + ")"
 
                         elif(col_item.get("Type") == "Series"):
-                            imageTag = col_item.get("ImageTags").get("Primary")
-                            if imageTag == None:
-                                imageTag = ""
-                            posterImage = "http://localhost:15001/?id=" + str(id) + "&type=Primary" + "&tag=" + imageTag
+                            posterImage = downloadUtils.getArtwork(col_item, "Primary")
                             actionUrl = "ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=21&ParentId=" + id + "&Name=" + name + ",return)"
                         plot = col_item.get("Overview")
                         for backdrop in images:
                           
                             info = {}
-                            info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
+                            info["url"] = downloadUtils.getArtwork(col_item, "Backdrop", index=str(index))
                             info["poster"] = posterImage
                             info["action"] = actionUrl
                             info["index"] = index
@@ -539,7 +533,7 @@ class ArtworkRotationThread(threading.Thread):
             for backdrop in images:
               
               info = {}
-              info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
+              info["url"] = downloadUtils.getArtwork(item, "Backdrop", index=str(index))
               info["index"] = index
               info["id"] = id
               info["plot"] = plot
@@ -578,7 +572,7 @@ class ArtworkRotationThread(threading.Thread):
             for backdrop in images:
               
               info = {}
-              info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
+              info["url"] = downloadUtils.getArtwork(item, "Backdrop", index=str(index))
               info["index"] = index
               info["id"] = id
               info["action"] = "None"
@@ -617,7 +611,7 @@ class ArtworkRotationThread(threading.Thread):
             for backdrop in images:
               
               info = {}
-              info["url"] = "http://localhost:15001/?id=" + str(id) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
+              info["url"] = downloadUtils.getArtwork(col_item, "Backdrop", index=str(index))
               info["index"] = index
               info["id"] = id
               info["action"] = "None"
@@ -792,7 +786,7 @@ class ArtworkRotationThread(threading.Thread):
         newBgLinks = []
         for backdrop in images:
             info = {}
-            info["url"] = "http://localhost:15001/?id=" + str(urlid) + "&type=Backdrop" + "&index=" + str(index) + "&tag=" + backdrop
+            info["url"] = downloadUtils.getArtwork(item, "Backdrop", index=str(index))
             info["plot"] = plot
             info["action"] = actionUrl
             info["trailer"] = trailerActionUrl

@@ -36,40 +36,7 @@ class RecentInfoUpdaterThread(threading.Thread):
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
             xbmc.log("XBMB3C RecentInfoUpdaterThread -> " + msg)
-            
-    def getImageLink(self, item, type, item_id):
-        originalType = type
-        imageTag = "none"
-        if(item.get("ImageTags") != None and item.get("ImageTags").get(type) != None):
-            imageTag = item.get("ImageTags").get(type)
-        query = "&type=" + type + "&tag=" + imageTag
-        
-        if originalType=="Thumb":
-          addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-          if addonSettings.getSetting('showIndicators')=='true' and addonSettings.getSetting('showUnplayedIndicators')=='true':
-            mb3Host = addonSettings.getSetting('ipaddress')
-            mb3Port = addonSettings.getSetting('port')    
-            userName = addonSettings.getSetting('username')     
-        
-            userid = downloadUtils.getUserId()  
-            seriesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + item_id +"?format=json"
-            jsonData = downloadUtils.downloadUrl(seriesUrl, suppress=False, popup=1 )
-            result = json.loads(jsonData)
-            userData = result.get("UserData")   
-            UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
-            if UnWatched <> 0:
-              query = query + "&UnplayedCount=" + str(UnWatched)
-              
-            PlayedPercentage = 0 if userData.get("PlayedPercentage")==None else userData.get("PlayedPercentage")
-            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
-                PlayedPercentage = userData.get("PlayedPercentage")
-            if (PlayedPercentage != 100 or PlayedPercentage) != 0 and addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
-                query = query + "&PercentPlayed=" + str(PlayedPercentage)  
-                        
-            query = query + "&height=660&width=1080"
-        
-        return "http://localhost:15001/?id=" + str(item_id) + query   
-    
+                
     def run(self):
         self.logMsg("Started")
         
@@ -147,9 +114,9 @@ class RecentInfoUpdaterThread(threading.Thread):
 
             item_id = item.get("Id")
             
-            thumbnail = self.getImageLink(item, "Primary", str(item_id))
-            logo = self.getImageLink(item, "Logo",str(item_id))
-            fanart = self.getImageLink(item, "Backdrop",str(item_id))
+            thumbnail = downloadUtils.getArtwork(item, "Primary")
+            logo = downloadUtils.getArtwork(item, "Logo")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
@@ -225,11 +192,11 @@ class RecentInfoUpdaterThread(threading.Thread):
 
             item_id = item.get("Id")
             
-            thumbnail = self.getImageLink(item, "Primary", str(item_id))
-            logo = self.getImageLink(item, "Logo",str(item_id))
-            fanart = self.getImageLink(item, "Backdrop",str(item_id))
+            thumbnail = downloadUtils.getArtwork(item, "Primary")
+            logo = downloadUtils.getArtwork(item, "Logo")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
             if (item.get("ImageTags") != None and item.get("ImageTags").get("Thumb") != None):
-              realthumb = self.getImageLink(item, "Thumb", str(item_id))
+              realthumb = downloadUtils.getArtwork(item, "Thumb")
             else:
               realthumb = fanart
             
@@ -318,13 +285,13 @@ class RecentInfoUpdaterThread(threading.Thread):
             if item.get("Type") == "Episode" or item.get("Type") == "Season":
                series_id = item.get("SeriesId")
                       
-            poster = self.getImageLink(item, "Primary", str(series_id))
-            thumbnail = self.getImageLink(item, "Primary", str(item_id))         
-            logo = self.getImageLink(item, "Logo", str(series_id))             
-            fanart = self.getImageLink(item, "Backdrop", str(series_id))
-            banner = self.getImageLink(item, "Banner", str(series_id))
+            poster = downloadUtils.getArtwork(item, "Primary")
+            thumbnail = downloadUtils.getArtwork(item, "Primary")      
+            logo = downloadUtils.getArtwork(item, "Logo")          
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
+            banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
-              seriesthumbnail = self.getImageLink(item, "Thumb", str(series_id))
+              seriesthumbnail = downloadUtils.getArtwork(item, "Thumb")
             else:
               seriesthumbnail = fanart
               
@@ -411,13 +378,13 @@ class RecentInfoUpdaterThread(threading.Thread):
             if item.get("Type") == "Episode" or item.get("Type") == "Season":
                series_id = item.get("SeriesId")
                       
-            poster = self.getImageLink(item, "Primary", str(series_id))
-            thumbnail = self.getImageLink(item, "Primary", str(item_id))         
-            logo = self.getImageLink(item, "Logo", str(series_id))             
-            fanart = self.getImageLink(item, "Backdrop", str(series_id))
-            banner = self.getImageLink(item, "Banner", str(series_id))
+            poster = downloadUtils.getArtwork(item, "Primary")
+            thumbnail = downloadUtils.getArtwork(item, "Primary") 
+            logo = downloadUtils.getArtwork(item, "Logo")           
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
+            banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
-              seriesthumbnail = self.getImageLink(item, "Thumb", str(series_id))
+              seriesthumbnail = downloadUtils.getArtwork(item, "Thumb")
             else:
               seriesthumbnail = fanart
               
@@ -492,10 +459,10 @@ class RecentInfoUpdaterThread(threading.Thread):
             if item.get("Type") == "MusicAlbum":
                parentId = item.get("ParentLogoItemId")
             
-            thumbnail = self.getImageLink(item, "Primary", str(item_id))
-            logo = self.getImageLink(item, "Logo", str(parentId))
-            fanart = self.getImageLink(item, "Backdrop", str(parentId))
-            banner = self.getImageLink(item, "Banner", str(parentId))
+            thumbnail = downloadUtils.getArtwork(item, "Primary")
+            logo = downloadUtils.getArtwork(item, "Logo")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
+            banner = downloadUtils.getArtwork(item, "Banner")
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
@@ -556,10 +523,10 @@ class RecentInfoUpdaterThread(threading.Thread):
 
             item_id = item.get("Id") 
             
-            thumbnail = self.getImageLink(item, "Primary", str(item_id))
-            logo = self.getImageLink(item, "Logo", str(item_id))
-            fanart = self.getImageLink(item, "Backdrop", str(item_id))
-            banner = self.getImageLink(item, "Banner", str(item_id))
+            thumbnail = downloadUtils.getArtwork(item, "Primary")
+            logo = downloadUtils.getArtwork(item, "Logo")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
+            banner = downloadUtils.getArtwork(item, "Banner")
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)

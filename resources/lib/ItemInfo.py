@@ -132,7 +132,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
             
             tag = person.get("PrimaryImageTag")
             if(tag != None):
-                thumbPath = "http://localhost:15001/?name=" + baseName + "&type=Primary&maxheight=500&tag=" + tag
+                thumbPath = "http://" + server + "/mediabrowser/Persons/" + baseName + "/Images/Primary?Format=original&maxheight=500"
                 listItem = xbmcgui.ListItem(label=displayName, label2=role, iconImage=thumbPath, thumbnailImage=thumbPath)
             else:
                 listItem = xbmcgui.ListItem(label=displayName, label2=role)

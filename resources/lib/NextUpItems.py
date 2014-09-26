@@ -35,61 +35,6 @@ class NextUpUpdaterThread(threading.Thread):
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
             xbmc.log("XBMB3C NextUpUpdaterThread -> " + msg)
-    
-    def getImageLink(self, item, type, item_id):
-        originalType = type
-        if type == "Primary2":
-            type = "Primary"
-        imageTag = "none"
-        if(item.get("ImageTags") != None and item.get("ImageTags").get(type) != None):
-            imageTag = item.get("ImageTags").get(type)
-        query = "&type=" + type + "&tag=" + imageTag
-        if originalType=="Primary":
-          addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-          if addonSettings.getSetting('showIndicators')=='true' and addonSettings.getSetting('showUnplayedIndicators')=='true':
-            mb3Host = addonSettings.getSetting('ipaddress')
-            mb3Port = addonSettings.getSetting('port')    
-            userName = addonSettings.getSetting('username')     
-        
-            userid = downloadUtils.getUserId()  
-            seriesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + item_id +"?format=json"
-            jsonData = downloadUtils.downloadUrl(seriesUrl, suppress=False, popup=1 )
-            result = json.loads(jsonData)
-            userData = result.get("UserData")   
-            UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
-            if UnWatched <> 0:
-              query = query + "&UnplayedCount=" + str(UnWatched)
-              
-            PlayedPercentage = 0 if userData.get("PlayedPercentage")==None else userData.get("PlayedPercentage")
-            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
-                PlayedPercentage = userData.get("PlayedPercentage")
-            if (PlayedPercentage != 100 or PlayedPercentage) != 0 and addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
-                query = query + "&PercentPlayed=" + str(PlayedPercentage)  
-                        
-            query = query + "&height=685&width=480"
-        elif originalType=="Primary2":
-          addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-          if addonSettings.getSetting('showIndicators')=='true' and addonSettings.getSetting('showUnplayedIndicators')=='true':
-            mb3Host = addonSettings.getSetting('ipaddress')
-            mb3Port = addonSettings.getSetting('port')    
-            userName = addonSettings.getSetting('username')     
-        
-            userid = downloadUtils.getUserId()  
-            seriesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + item_id +"?format=json"
-            jsonData = downloadUtils.downloadUrl(seriesUrl, suppress=False, popup=1 )
-            result = json.loads(jsonData)
-            userData = result.get("UserData")   
-            UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
-            if UnWatched <> 0:
-              query = query + "&UnplayedCount=" + str(UnWatched)
-              
-            PlayedPercentage = 0 if userData.get("PlayedPercentage")==None else userData.get("PlayedPercentage")
-            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
-                PlayedPercentage = userData.get("PlayedPercentage")
-            if (PlayedPercentage != 100 or PlayedPercentage) != 0 and addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
-                query = query + "&PercentPlayed=" + str(PlayedPercentage)
-            query = query + "&height=220&width=156"            
-        return "http://localhost:15001/?id=" + str(item_id) + query   
         
     def run(self):
         self.logMsg("Started")
@@ -166,18 +111,15 @@ class NextUpUpdaterThread(threading.Thread):
             plot=plot.encode('utf-8')
 
             item_id = item.get("Id")
-           
-            if item.get("Type") == "Episode" or item.get("Type") == "Season":
-               series_id = item.get("SeriesId")
-            
-            poster = self.getImageLink(item, "Primary", str(series_id))
-            small_poster = self.getImageLink(item, "Primary2", series_id)
-            thumbnail = self.getImageLink(item, "Primary", str(item_id))
-            logo = self.getImageLink(item, "Logo", str(series_id))
-            fanart = self.getImageLink(item, "Backdrop", str(series_id))
-            banner = self.getImageLink(item, "Banner", str(series_id))
+                      
+            poster = downloadUtils.getArtwork(item, "Primary")
+            small_poster = downloadUtils.getArtwork(item, "Primary2")
+            thumbnail = downloadUtils.getArtwork(item, "Primary")
+            logo = downloadUtils.getArtwork(item, "Logo")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
+            banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
-              seriesthumbnail = self.getImageLink(item, "Thumb", str(series_id))
+              seriesthumbnail = downloadUtils.getArtwork(item, "Thumb")
             else:
               seriesthumbnail = fanart
             

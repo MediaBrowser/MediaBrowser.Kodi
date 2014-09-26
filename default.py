@@ -855,9 +855,7 @@ def PLAY( url, handle ):
         result = json.loads(jsonData)
         playurl = PlayUtils().getPlayUrl(server, id, result)
         printDebug("Play URL: " + playurl)    
-        thumbID = id if(result.get("Type") != "Episode") else result.get("SeriesId")
-        imageTag = "" if(result.get("ImageTags") == None or result.get("ImageTags").get("Primary") == None) else result.get("ImageTags").get("Primary")
-        thumbPath = "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag
+        thumbPath = downloadUtils.getArtwork(item, "Primary")
         listItem = xbmcgui.ListItem(path=playurl, iconImage=thumbPath, thumbnailImage=thumbPath)
         setListItemProps(server, id, listItem, result)
 
@@ -888,9 +886,7 @@ def PLAY( url, handle ):
     
     playurl = PlayUtils().getPlayUrl(server, id, result)
     printDebug("Play URL: " + playurl)    
-    thumbID = id if(result.get("Type") != "Episode") else result.get("SeriesId")
-    imageTag = "" if(result.get("ImageTags") == None or result.get("ImageTags").get("Primary") == None) else result.get("ImageTags").get("Primary")
-    thumbPath = "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag
+    thumbPath = downloadUtils.getArtwork(result, "Primary")
     listItem = xbmcgui.ListItem(path=playurl, iconImage=thumbPath, thumbnailImage=thumbPath)
     setListItemProps(server, id, listItem, result)
 
@@ -965,9 +961,7 @@ def PLAYPlaylist( url, handle ):
         autoResume = 0
         playurl = PlayUtils().getPlayUrl(server, id, result)
         printDebug("Play URL: " + playurl)    
-        thumbID = id if(result.get("Type") != "Episode") else result.get("SeriesId")
-        imageTag = "" if(result.get("ImageTags") == None or result.get("ImageTags").get("Primary") == None) else result.get("ImageTags").get("Primary")
-        thumbPath = "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + imageTag
+        thumbPath = downloadUtils.getArtwork(item, "Primary")
         listItem = xbmcgui.ListItem(path=playurl, iconImage=thumbPath, thumbnailImage=thumbPath)
         setListItemProps(server, id, listItem, result)
 
@@ -1017,7 +1011,7 @@ def PLAYPlaylist( url, handle ):
             xbmc.Player().play()
     return
 
-def setListItemProps(server, id, listItem,result):
+def setListItemProps(server, id, listItem, result):
     # set up item and item info
     userid = downloadUtils.getUserId()
     thumbID = id
@@ -1033,30 +1027,17 @@ def setListItemProps(server, id, listItem,result):
         seriesResult = json.loads(seriesJsonData)
         resultForType=seriesResult
     else:
-        resultForType=result
+        resultForType = result
         
-    # get image tags
-
-    if resultForType.get("ImageTags") != None:
-        posterTag   = "" if resultForType.get("ImageTags").get("Primary")  == None else resultForType.get("ImageTags").get("Primary")
-        clearArtTag = "" if resultForType.get("ImageTags").get("Art")     == None else resultForType.get("ImageTags").get("Art")
-        clearLogoTag = "" if resultForType.get("ImageTags").get("Logo")     == None else resultForType.get("ImageTags").get("Logo")
-        discArtTag  = "" if resultForType.get("ImageTags").get("Disc")     == None else resultForType.get("ImageTags").get("Disc")        
-        fanArtTag   = "" if resultForType.get("ImageTags").get("Backdrop") == None else resultForType.get("ImageTags").get("Backdrop")
-        thumbArtTag = "" if resultForType.get("ImageTags").get("Thumb")  == None else resultForType.get("ImageTags").get("Thumb")
-
-    setArt(listItem,'poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + posterTag)
-    setArt(listItem,'tvshow.poster', "http://localhost:15001/?id=" + str(thumbID) + "&type=Primary&tag=" + posterTag)
-    if clearArtTag != "":
-      setArt(listItem,'clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Art&tag=" + clearArtTag)
-      setArt(listItem,'tvshow.clearart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Art&tag=" + clearArtTag)    
-    if clearLogoTag != "":
-      setArt(listItem,'clearlogo', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearLogoTag)
-      setArt(listItem,'tvshow.clearlogo', "http://localhost:15001/?id=" + str(thumbID) + "&type=Logo&tag=" + clearLogoTag)    
-    setArt(listItem,'discart', "http://localhost:15001/?id=" + str(thumbID) + "&type=Disc&tag=" + discArtTag)  
-    setArt(listItem,'fanart_image', "http://localhost:15001/?id=" + str(thumbID) + "&type=Backdrop&tag=" + fanArtTag)
-    setArt(listItem,'landscape', "http://localhost:15001/?id=" + str(thumbID) + "&type=Thumb&tag=" + thumbArtTag)
-    
+    setArt(listItem,'poster', downloadUtils.getArtwork(result, "Primary"))
+    setArt(listItem,'tvshow.poster', downloadUtils.getArtwork(result, "Primary"))
+    setArt(listItem,'clearart', downloadUtils.getArtwork(result, "Art"))
+    setArt(listItem,'tvshow.clearart', downloadUtils.getArtwork(result, "Art"))    
+    setArt(listItem,'clearlogo', downloadUtils.getArtwork(result, "Logo"))
+    setArt(listItem,'tvshow.clearlogo', downloadUtils.getArtwork(result, "Logo"))    
+    setArt(listItem,'discart', downloadUtils.getArtwork(result, "Disc"))  
+    setArt(listItem,'fanart_image', downloadUtils.getArtwork(result, "Backdrop"))
+    setArt(listItem,'landscape', downloadUtils.getArtwork(result, "Thumb"))   
     
     listItem.setProperty('IsPlayable', 'true')
     listItem.setProperty('IsFolder', 'false')
@@ -1070,7 +1051,7 @@ def setListItemProps(server, id, listItem,result):
                 studio=temp.encode('utf-8')    
     listItem.setInfo('video', {'studio' : studio})    
 
-    # plsy info
+    # play info
     playinformation = ''
     if PlayUtils().isDirectPlay(result) == True:
         if __settings__.getSetting('playFromStream') == "true":
@@ -1802,7 +1783,7 @@ def processSearch(url, results, progress):
                 RunTimeTicks = "0"
 
         # Populate the extraData list
-        extraData={'thumb'        : "http://localhost:15001/?id=" + str(id) + "&type=Primary" ,
+        extraData={'thumb'        : downloadUtils.getArtwork(item, "Primary")  ,
                    'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
                    'poster'       : downloadUtils.getArtwork(item, "poster") , 
                    'tvshow.poster': downloadUtils.getArtwork(item, "tvshow.poster") ,
@@ -1902,7 +1883,7 @@ def processChannels(url, results, progress):
                 RunTimeTicks = "0"
 
         # Populate the extraData list
-        extraData={'thumb'        : "http://localhost:15001/?id=" + str(id) + "&type=Primary" ,
+        extraData={'thumb'        : downloadUtils.getArtwork(item, "Primary")  ,
                    'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
                    'poster'       : downloadUtils.getArtwork(item, "poster") , 
                    'tvshow.poster': downloadUtils.getArtwork(item, "tvshow.poster") ,
@@ -1992,7 +1973,7 @@ def processPlaylists(url, results, progress):
                 RunTimeTicks = "0"
 
         # Populate the extraData list
-        extraData={'thumb'        : "http://localhost:15001/?id=" + str(id) + "&type=Primary" ,
+        extraData={'thumb'        : downloadUtils.getArtwork(item, "Primary")  ,
                    'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
                    'poster'       : downloadUtils.getArtwork(item, "poster") , 
                    'tvshow.poster': downloadUtils.getArtwork(item, "tvshow.poster") ,
@@ -2079,7 +2060,7 @@ def processGenres(url, results, progress, content):
                 RunTimeTicks = "0"
 
         # Populate the extraData list
-        extraData={'thumb'        : "http://localhost:15001/?id=" + str(id) + "&type=Primary" ,
+        extraData={'thumb'        : downloadUtils.getArtwork(item, "Primary") ,
                    'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
                    'poster'       : downloadUtils.getArtwork(item, "poster") , 
                    'tvshow.poster': downloadUtils.getArtwork(item, "tvshow.poster") ,
@@ -2167,7 +2148,7 @@ def processStudios(url, results, progress, content):
                 RunTimeTicks = "0"
 
         # Populate the extraData list
-        extraData={'thumb'        : "http://localhost:15001/?id=" + str(id) + "&type=Primary" ,
+        extraData={'thumb'        : downloadUtils.getArtwork(item, "Primary") ,
                    'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
                    'poster'       : downloadUtils.getArtwork(item, "poster") , 
                    'tvshow.poster': downloadUtils.getArtwork(item, "tvshow.poster") ,
@@ -2259,7 +2240,7 @@ def processPeople(url, results, progress, content):
                 RunTimeTicks = "0"
 
         # Populate the extraData list
-        extraData={'thumb'        : "http://localhost:15001/?id=" + str(id) + "&type=Primary" ,
+        extraData={'thumb'        : downloadUtils.getArtwork(item, "Primary") ,
                    'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
                    'poster'       : downloadUtils.getArtwork(item, "poster") , 
                    'tvshow.poster': downloadUtils.getArtwork(item, "tvshow.poster") ,
@@ -2419,7 +2400,7 @@ def getCastList(pluginName, handle, params):
         baseName = baseName.replace("=", "_")
             
         if(tag != None):
-            thumbPath = "http://localhost:15001/?name=" + baseName + "&type=Primary&maxheight=500&tag=" + tag
+            thumbPath = "http://" + server + "/mediabrowser/Persons/" + baseName + "/Images/Primary?Format=original&maxheight=500"
             item = xbmcgui.ListItem(label=displayName, iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
             item = xbmcgui.ListItem(label=displayName)
@@ -2528,16 +2509,8 @@ def getWigetContent(pluginName, handle, params):
         if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
             imageTag = item.get("ImageTags").get("Primary")
         
-        image = "http://localhost:15001/?id=" + str(image_id) + "&type=" + "Primary" + "&tag=" + imageTag
-
-        fanart = ''
-        if (item.get("Type") != "Episode"):
-            if(item.get("BackdropImageTags") != None and len(item.get("BackdropImageTags")) > 0):
-                fanart = "http://localhost:15001/?id=" + str(image_id) + "&type=" + "Backdrop" + "&tag=" + imageTag
-        else:
-            if(item.get("ParentBackdropImageTags") != None and len(item.get("ParentBackdropImageTags")) > 0):
-                fanart = "http://localhost:15001/?id=" + str(image_id) + "&type=" + "Backdrop" + "&tag=" + imageTag
-
+        image = downloadUtils.getArtwork(item, "Primary")
+        
         Duration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
         
         name = item.get("Name")
@@ -2566,7 +2539,6 @@ def getWigetContent(pluginName, handle, params):
         
         list_item = xbmcgui.ListItem(label=name, iconImage=image, thumbnailImage=image)
         list_item.setInfo( type="Video", infoLabels={ "year":item.get("ProductionYear"), "duration":str(Duration), "plot":item.get("Overview"), "tvshowtitle":str(seriesName), "premiered":item.get("PremiereDate"), "rating":item.get("CommunityRating") } )
-        list_item.setProperty('fanart_image',fanart)
         
         # add count
         list_item.setProperty("item_index", str(itemCount))

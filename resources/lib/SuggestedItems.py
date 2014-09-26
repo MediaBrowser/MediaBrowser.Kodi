@@ -35,32 +35,7 @@ class SuggestedUpdaterThread(threading.Thread):
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
             xbmc.log("XBMB3C SuggestedUpdaterThread -> " + msg)
-    
-    def getImageLink(self, item, type, item_id):
-        imageTag = "none"
-        if(item.get("ImageTags") != None and item.get("ImageTags").get(type) != None):
-            imageTag = item.get("ImageTags").get(type)
             
-        query = "&type=" + type + "&tag=" + imageTag
-        userData = item.get("UserData")
-        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c') 
-        if type=="Primary" and addonSettings.getSetting('showIndicators')=='true' and addonSettings.getSetting('showWatchedIndicators')=='true':
-            if(userData != None and userData.get("Played")) == True:
-                query = query + "&AddPlayedIndicator=true"
-                
-            query = query + "&height=220&width=156"
-        if type=="Thumb" and addonSettings.getSetting('showIndicators')=='true' and addonSettings.getSetting('showWatchedIndicators')=='true':
-            if(userData != None and userData.get("Played")) == True:
-                query = query + "&AddPlayedIndicator=true"
-                
-            query = query + "&height=255&width=441"
-        if type=="Backdrop" and addonSettings.getSetting('showIndicators')=='true' and addonSettings.getSetting('showWatchedIndicators')=='true':
-            if(userData != None and userData.get("Played")) == True:
-                query = query + "&AddPlayedIndicator=true"
-                
-            query = query + "&height=255&width=441"              
-        return "http://localhost:15001/?id=" + str(item_id) + query                   
-        
     def run(self):
         self.logMsg("Started")
         
@@ -98,8 +73,13 @@ class SuggestedUpdaterThread(threading.Thread):
         result = json.loads(jsonData)
         self.logMsg("Suggested Movie Json Data : " + str(result), level=2)
         basemovie = "Missing Base Title"
+        
+        if(result != None or len(result) == 0):
+            return
+        
         if (result[0].get("BaselineItemName") != None):
             basemovie = result[0].get("BaselineItemName").encode('utf-8')
+            
         result = result[0].get("Items")
         WINDOW = xbmcgui.Window( 10000 )
         if(result == None):
@@ -128,11 +108,11 @@ class SuggestedUpdaterThread(threading.Thread):
                 runtime = "0"
 
             item_id = item.get("Id")
-            thumbnail = self.getImageLink(item, "Primary",str(item_id))
-            logo = self.getImageLink(item, "Logo",str(item_id))
-            fanart = self.getImageLink(item, "Backdrop",str(item_id))
+            thumbnail = downloadUtils.getArtwork(item, "Primary")
+            logo = downloadUtils.getArtwork(item, "Logo")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
             if item.get("ImageTags").get("Thumb") != None:
-              realthumbnail = self.getImageLink(item, "Thumb", str(item_id))
+              realthumbnail = downloadUtils.getArtwork(item, "Thumb")
             else:
               realthumbnail = fanart
             

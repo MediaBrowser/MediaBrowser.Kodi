@@ -35,36 +35,7 @@ class InProgressUpdaterThread(threading.Thread):
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
             xbmc.log("XBMB3C InProgressUpdaterThread -> " + msg)
-    
-    def getImageLink(self, item, type, item_id):
-        imageTag = "none"
-        if(item.get("ImageTags") != None and item.get("ImageTags").get(type) != None):
-            imageTag = item.get("ImageTags").get(type)
-        query = "&type=" + type + "&tag=" + imageTag
-        userData = item.get("UserData") 
-        if type=="Primary":
-            PlayedPercentage = 0 if item.get("PlayedPercentage")==None else item.get("PlayedPercentage")
-            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
-                PlayedPercentage = userData.get("PlayedPercentage")
-            if (PlayedPercentage != 100 or PlayedPercentage != 0):
-                query = query + "&PercentPlayed=" + str(PlayedPercentage)
-            query = query + "&height=220&width=156"
-        if type=="Thumb":
-            PlayedPercentage = 0 if item.get("PlayedPercentage")==None else item.get("PlayedPercentage")
-            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
-                PlayedPercentage = userData.get("PlayedPercentage")
-            if (PlayedPercentage != 100 or PlayedPercentage != 0):
-                query = query + "&PercentPlayed=" + str(PlayedPercentage)
-            query = query + "&height=255&width=441"
-        if type=="Backdrop":
-            PlayedPercentage = 0 if item.get("PlayedPercentage")==None else item.get("PlayedPercentage")
-            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
-                PlayedPercentage = userData.get("PlayedPercentage")
-            if (PlayedPercentage != 100 or PlayedPercentage != 0):
-                query = query + "&PercentPlayed=" + str(PlayedPercentage)
-            query = query + "&height=255&width=441"              
-        return "http://localhost:15001/?id=" + str(item_id) + query        
-    
+        
     def run(self):
         self.logMsg("Started")
         
@@ -143,11 +114,11 @@ class InProgressUpdaterThread(threading.Thread):
                 title = str(perasint) + "% " + title        
                 
             item_id = item.get("Id")
-            thumbnail = self.getImageLink(item, "Primary", str(item_id))
-            logo = self.getImageLink(item, "Logo", str(item_id))
-            fanart = self.getImageLink(item, "Backdrop", str(item_id))
+            thumbnail = downloadUtils.getArtwork(item, "Primary")
+            logo = downloadUtils.getArtwork(item, "Logo")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
             if item.get("ImageTags").get("Thumb") != None:
-              realthumbnail = self.getImageLink(item, "Thumb", str(item_id))
+              realthumbnail = downloadUtils.getArtwork(item, "Thumb")
             else:
               realthumbnail = fanart
             
@@ -267,15 +238,16 @@ class InProgressUpdaterThread(threading.Thread):
             if item.get("Type") == "Episode" or item.get("Type") == "Season":
                series_id = item.get("SeriesId")
             
-            poster = self.getImageLink(item, "Primary", str(series_id))
-            thumbnail = self.getImageLink(item, "Primary", str(item_id))          
-            logo = self.getImageLink(item, "Logo", str(series_id))             
-            fanart = self.getImageLink(item, "Backdrop", str(series_id))
-            banner = self.getImageLink(item, "Banner", str(series_id))
+            poster = downloadUtils.getArtwork(item, "Primary")
+            thumbnail = downloadUtils.getArtwork(item, "Primary")       
+            logo = downloadUtils.getArtwork(item, "Logo")       
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
+            banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
-              seriesthumbnail = self.getImageLink(item, "Thumb", str(series_id))
+              seriesthumbnail = downloadUtils.getArtwork(item, "Thumb")
             else:
               seriesthumbnail = fanart
+              
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
             playUrl = playUrl.replace("\\\\","smb://")
