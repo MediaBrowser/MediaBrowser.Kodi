@@ -109,9 +109,9 @@ downloadUtils = DownloadUtils()
 def printDebug( msg, level = 1):
     if(logLevel >= level):
         if(logLevel == 2):
-            xbmc.log("XBMB3C " + str(level) + " -> " + inspect.stack()[1][3] + " : " + str(msg.encode('utf-8')))
+            xbmc.log("XBMB3C " + str(level) + " -> " + inspect.stack()[1][3] + " : " + str(msg))
         else:
-            xbmc.log("XBMB3C " + str(level) + " -> " + str(msg.encode('utf-8')))
+            xbmc.log("XBMB3C " + str(level) + " -> " + str(msg))
 
 
 def getAuthHeader():
@@ -2519,7 +2519,8 @@ def getWigetContent(pluginName, handle, params):
         if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
             imageTag = item.get("ImageTags").get("Primary")
         
-        image = downloadUtils.getArtwork(item, "Primary")
+        #image = downloadUtils.getArtwork(item, "Primary")
+        image = downloadUtils.imageUrl(image_id, "Primary", 0, 200, 200)
         
         Duration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
         
