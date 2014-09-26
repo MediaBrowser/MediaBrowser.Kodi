@@ -163,7 +163,8 @@ class DownloadUtils():
                 userData = data.get("UserData")
                 if originalType =="Backdrop" and index == "0":
                   totalbackdrops = len(data.get("BackdropImageTags"))
-                  index = str(randrange(0,totalbackdrops)) 
+                  if totalbackdrops != 0:
+                    index = str(randrange(0,totalbackdrops))
                 if userData != None:
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
@@ -255,7 +256,8 @@ class DownloadUtils():
                 userData = data.get("UserData")
                 if originalType =="Backdrop2":
                   totalbackdrops = len(data.get("BackdropImageTags"))
-                  index = str(randrange(0,totalbackdrops)) 
+                  if totalbackdrops != 0:
+                    index = str(randrange(0,totalbackdrops))
                 if userData != None:
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
@@ -281,7 +283,8 @@ class DownloadUtils():
                 userData = data.get("UserData")
                 if originalType =="Backdrop3":
                   totalbackdrops = len(data.get("BackdropImageTags"))
-                  index = str(randrange(0,totalbackdrops))
+                  if totalbackdrops != 0:
+                    index = str(randrange(0,totalbackdrops))
                 if userData != None:
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
