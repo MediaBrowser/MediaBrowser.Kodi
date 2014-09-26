@@ -74,7 +74,7 @@ class SuggestedUpdaterThread(threading.Thread):
         self.logMsg("Suggested Movie Json Data : " + str(result), level=2)
         basemovie = "Missing Base Title"
         
-        if(result != None or len(result) == 0):
+        if(result == None or len(result) == 0):
             return
         
         if (result[0].get("BaselineItemName") != None):
