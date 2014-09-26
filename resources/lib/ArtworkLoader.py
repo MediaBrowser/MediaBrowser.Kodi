@@ -611,7 +611,7 @@ class ArtworkRotationThread(threading.Thread):
             for backdrop in images:
               
               info = {}
-              info["url"] = downloadUtils.getArtwork(col_item, "Backdrop", index=str(index))
+              info["url"] = downloadUtils.getArtwork(item, "Backdrop", index=str(index))
               info["index"] = index
               info["id"] = id
               info["action"] = "None"
