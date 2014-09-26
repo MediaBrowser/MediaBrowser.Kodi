@@ -737,9 +737,13 @@ class ArtworkRotationThread(threading.Thread):
       
             
     def loadItemBackgroundLinks(self, id):
-    
+
+        if(id == None or len(id) == 0):
+            self.logMsg("loadItemBackgroundLinks id was empty")
+            return
+            
         self.logMsg("loadItemBackgroundLinks Called for id : " + id)
-        
+    
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         mb3Host = addonSettings.getSetting('ipaddress')
         mb3Port = addonSettings.getSetting('port')

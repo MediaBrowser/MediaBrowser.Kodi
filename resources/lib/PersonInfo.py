@@ -116,8 +116,7 @@ class PersonInfo(xbmcgui.WindowXMLDialog):
                     eppNum = item.get("IndexNumber")
                     type_info = "S" + str(season).zfill(2) + "E" + str(eppNum).zfill(2)
                 
-                
-                thumbPath = downloadUtils.getArtwork(item, "Primary")
+                thumbPath = downloadUtils.imageUrl(image_id, "Primary", 0, 200, 200)
                 
                 listItem = xbmcgui.ListItem(label=item_name, label2=type_info, iconImage=thumbPath, thumbnailImage=thumbPath)
                 
