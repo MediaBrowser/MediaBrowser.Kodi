@@ -87,6 +87,7 @@ class InProgressUpdaterThread(threading.Thread):
             
             rating = item.get("CommunityRating")
             criticrating = item.get("CriticRating")
+            officialrating = item.get("OfficialRating")
             criticratingsummary = ""
             if(item.get("CriticRatingSummary") != None):
                 criticratingsummary = item.get("CriticRatingSummary").encode('utf-8')
@@ -116,7 +117,7 @@ class InProgressUpdaterThread(threading.Thread):
             item_id = item.get("Id")
             thumbnail = downloadUtils.getArtwork(item, "Primary2")
             logo = downloadUtils.getArtwork(item, "Logo")
-            fanart = downloadUtils.getArtwork(item, "Backdrop2")
+            fanart = downloadUtils.getArtwork(item, "Backdrop3")
             if item.get("ImageTags").get("Thumb") != None:
               realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
             else:

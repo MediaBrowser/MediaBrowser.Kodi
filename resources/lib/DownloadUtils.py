@@ -10,6 +10,7 @@ import StringIO
 import gzip
 import sys
 import json as json
+from random import randrange
 from uuid import getnode as get_mac
 from ClientInformation import ClientInformation
 
@@ -113,9 +114,11 @@ class DownloadUtils():
     def getArtwork(self, data, type, index = "0"):
 
         id = data.get("Id")
+        getseriesdata = False
         if type == "tvshow.poster": # Change the Id to the series to get the overall series poster
             if data.get("Type") == "Season" or data.get("Type")== "Episode":
                 id = data.get("SeriesId")
+                getseriesdata = True
         elif type == "poster" and data.get("Type") == "Episode" and self.addonSettings.getSetting('useSeasonPoster')=='true': # Change the Id to the Season to get the season poster
             id = data.get("SeasonId")
         if type == "poster" or type == "tvshow.poster": # Now that the Ids are right, change type to MB3 name
@@ -123,9 +126,20 @@ class DownloadUtils():
         if data.get("Type") == "Season":  # For seasons: primary (poster), thumb and banner get season art, rest series art
             if type != "Primary" and type != "Thumb" and type != "Banner":
                 id = data.get("SeriesId")
+                getseriesdata = True
         if data.get("Type") == "Episode":  # For episodes: primary (episode thumb) gets episode art, rest series art. 
             if type != "Primary":
                 id = data.get("SeriesId")
+                getseriesdata = True
+        
+        if getseriesdata == True:   
+            mb3Host = self.addonSettings.getSetting('ipaddress')
+            mb3Port = self.addonSettings.getSetting('port')    
+            userid = self.getUserId()
+            seriesJsonData = self.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
+            seriesResult = json.loads(seriesJsonData)
+            data = seriesResult
+        
         imageTag = ""
         originalType = type
         if type == "Primary2" or type == "Primary3" or type=="SeriesPrimary":
@@ -145,8 +159,11 @@ class DownloadUtils():
 
         if self.addonSettings.getSetting('showIndicators')=='true': # add watched, unplayedcount and percentage played indicators to posters
 
-            if ((originalType =="Primary" or  originalType =="Backdrop") and data.get("Type") != "Episode") or originalType == "SeriesPrimary":
-                userData = data.get("UserData") 
+            if (originalType =="Primary" or  originalType =="Backdrop") and data.get("Type") != "Episode":
+                userData = data.get("UserData")
+                if originalType =="Backdrop" and index == "0":
+                  totalbackdrops = len(data.get("BackdropImageTags"))
+                  index = str(randrange(0,totalbackdrops)) 
                 if userData != None:
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
@@ -188,7 +205,7 @@ class DownloadUtils():
                     #query = query + "&height=340&width=226"
                     height = "340"
                     width = "226"
-            elif originalType =="Primary3" and data.get("Type") != "Episode":
+            elif (originalType =="Primary3" and data.get("Type") != "Episode") or originalType == "SeriesPrimary":
                 userData = data.get("UserData") 
                 if userData != None:
 
@@ -209,8 +226,8 @@ class DownloadUtils():
                         played = str(PlayedPercentage)
                         
                     #query = query + "&height=600&width=400"
-                    height = "600"
-                    width = "400"                    
+                    height = "800"
+                    width = "550"                    
             elif type =="Primary" and data.get("Type") == "Episode":
                 userData = data.get("UserData")
                 if userData != None:
@@ -232,10 +249,13 @@ class DownloadUtils():
                         played = str(PlayedPercentage)
                         
                     #query = query + "&height=225&width=400"
-                    height = "225"
-                    width = "400"                       
+                    height = "410"
+                    width = "770"                       
             elif originalType =="Backdrop2" or originalType =="Thumb2" and data.get("Type") != "Episode":
-                userData = data.get("UserData") 
+                userData = data.get("UserData")
+                if originalType =="Backdrop2":
+                  totalbackdrops = len(data.get("BackdropImageTags"))
+                  index = str(randrange(0,totalbackdrops)) 
                 if userData != None:
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
@@ -258,7 +278,10 @@ class DownloadUtils():
                     height = "270"
                     width = "480"      
             elif originalType =="Backdrop3" or originalType =="Thumb3" and data.get("Type") != "Episode":
-                userData = data.get("UserData") 
+                userData = data.get("UserData")
+                if originalType =="Backdrop3":
+                  totalbackdrops = len(data.get("BackdropImageTags"))
+                  index = str(randrange(0,totalbackdrops))
                 if userData != None:
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
@@ -278,8 +301,8 @@ class DownloadUtils():
                         played = str(PlayedPercentage)
                         
                     #query = query + "&height=660&width=1180"
-                    height = "660"
-                    width = "1180"                        
+                    height = "900"
+                    width = "1480"                        
 
         # use the local image proxy server that is made available by this addons service
         

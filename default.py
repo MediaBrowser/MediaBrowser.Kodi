@@ -1039,15 +1039,15 @@ def setListItemProps(server, id, listItem, result):
     else:
         resultForType = result
         
-    setArt(listItem,'poster', downloadUtils.getArtwork(resultForType, "Primary"))
-    setArt(listItem,'tvshow.poster', downloadUtils.getArtwork(resultForType, "Primary"))
-    setArt(listItem,'clearart', downloadUtils.getArtwork(resultForType, "Art"))
-    setArt(listItem,'tvshow.clearart', downloadUtils.getArtwork(resultForType, "Art"))    
-    setArt(listItem,'clearlogo', downloadUtils.getArtwork(resultForType, "Logo"))
-    setArt(listItem,'tvshow.clearlogo', downloadUtils.getArtwork(resultForType, "Logo"))    
-    setArt(listItem,'discart', downloadUtils.getArtwork(resultForType, "Disc"))  
-    setArt(listItem,'fanart_image', downloadUtils.getArtwork(resultForType, "Backdrop"))
-    setArt(listItem,'landscape', downloadUtils.getArtwork(resultForType, "Thumb"))   
+    setArt(listItem,'poster', downloadUtils.getArtwork(result, "Primary"))
+    setArt(listItem,'tvshow.poster', downloadUtils.getArtwork(result, "Primary"))
+    setArt(listItem,'clearart', downloadUtils.getArtwork(result, "Art"))
+    setArt(listItem,'tvshow.clearart', downloadUtils.getArtwork(result, "Art"))    
+    setArt(listItem,'clearlogo', downloadUtils.getArtwork(result, "Logo"))
+    setArt(listItem,'tvshow.clearlogo', downloadUtils.getArtwork(result, "Logo"))    
+    setArt(listItem,'discart', downloadUtils.getArtwork(result, "Disc"))  
+    setArt(listItem,'fanart_image', downloadUtils.getArtwork(result, "Backdrop"))
+    setArt(listItem,'landscape', downloadUtils.getArtwork(result, "Thumb"))   
     
     listItem.setProperty('IsPlayable', 'true')
     listItem.setProperty('IsFolder', 'false')
