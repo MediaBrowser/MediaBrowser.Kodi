@@ -714,6 +714,10 @@ def skin( filter=None, shared=False ):
             WINDOW.setProperty("xbmb3c.usr.movies.%d.path"          % (usrMoviesCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
             WINDOW.setProperty("xbmb3c.usr.movies.%d.type"          % (usrMoviesCount) , section.get('section'))
             WINDOW.setProperty("xbmb3c.usr.movies.%d.content"       % (usrMoviesCount) , "plugin://plugin.video.xbmb3c/" + murl)
+            WINDOW.setProperty("xbmb3c.usr.movies.%d.recent.path"         % (usrMoviesCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('recent_path', '')) + modeurl + ",return)")
+            WINDOW.setProperty("xbmb3c.usr.movies.%d.unwatched.path"      % (usrMoviesCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('unwatched_path', '')) + modeurl + ",return)")
+            WINDOW.setProperty("xbmb3c.usr.movies.%d.inprogress.path"     % (usrMoviesCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('inprogress_path', '')) + modeurl + ",return)")
+            WINDOW.setProperty("xbmb3c.usr.movies.%d.genre.path"          % (usrMoviesCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('genre_path', '')) + modeurl + ",return)")
             printDebug("xbmb3c.usr.movies.%d.title"  % (usrMoviesCount) + "title is:" + section.get('title', 'Unknown'))
             printDebug("xbmb3c.usr.movies.%d.type"  % (usrMoviesCount) + "section is:" + section.get('section'))   
             usrMoviesCount += 1
@@ -722,6 +726,12 @@ def skin( filter=None, shared=False ):
             WINDOW.setProperty("xbmb3c.usr.tvshows.%d.path"         % (usrTVshowsCount) , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
             WINDOW.setProperty("xbmb3c.usr.tvshows.%d.type"         % (usrTVshowsCount) , section.get('section'))
             WINDOW.setProperty("xbmb3c.usr.tvshows.%d.content"       % (usrTVshowsCount) , "plugin://plugin.video.xbmb3c/" + murl)
+            WINDOW.setProperty("xbmb3c.usr.tvshows.%d.recent.path"         % (usrTVshowsCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('recent_path', '')) + modeurl + ",return)")
+            WINDOW.setProperty("xbmb3c.usr.tvshows.%d.unwatched.path"      % (usrTVshowsCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('unwatched_path', '')) + modeurl + ",return)")
+            WINDOW.setProperty("xbmb3c.usr.tvshows.%d.inprogress.path"     % (usrTVshowsCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('inprogress_path', '')) + modeurl + ",return)")
+            WINDOW.setProperty("xbmb3c.usr.tvshows.%d.genre.path"          % (usrTVshowsCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('genre_path', '')) + modeurl + ",return)")
+            WINDOW.setProperty("xbmb3c.usr.tvshows.%d.nextepisodes.path"   % (usrTVshowsCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('nextepisodes_path', '')) + modeurl + ",return)")
+        
             printDebug("xbmb3c.usr.tvshows.%d.title"  % (usrTVshowsCount) + "title is:" + section.get('title', 'Unknown'))
             printDebug("xbmb3c.usr.tvshows.%d.type"  % (usrTVshowsCount) + "section is:" + section.get('section'))     
             usrTVshowsCount +=1
@@ -1029,15 +1039,15 @@ def setListItemProps(server, id, listItem, result):
     else:
         resultForType = result
         
-    setArt(listItem,'poster', downloadUtils.getArtwork(result, "Primary"))
-    setArt(listItem,'tvshow.poster', downloadUtils.getArtwork(result, "Primary"))
-    setArt(listItem,'clearart', downloadUtils.getArtwork(result, "Art"))
-    setArt(listItem,'tvshow.clearart', downloadUtils.getArtwork(result, "Art"))    
-    setArt(listItem,'clearlogo', downloadUtils.getArtwork(result, "Logo"))
-    setArt(listItem,'tvshow.clearlogo', downloadUtils.getArtwork(result, "Logo"))    
-    setArt(listItem,'discart', downloadUtils.getArtwork(result, "Disc"))  
-    setArt(listItem,'fanart_image', downloadUtils.getArtwork(result, "Backdrop"))
-    setArt(listItem,'landscape', downloadUtils.getArtwork(result, "Thumb"))   
+    setArt(listItem,'poster', downloadUtils.getArtwork(resultForType, "Primary"))
+    setArt(listItem,'tvshow.poster', downloadUtils.getArtwork(resultForType, "Primary"))
+    setArt(listItem,'clearart', downloadUtils.getArtwork(resultForType, "Art"))
+    setArt(listItem,'tvshow.clearart', downloadUtils.getArtwork(resultForType, "Art"))    
+    setArt(listItem,'clearlogo', downloadUtils.getArtwork(resultForType, "Logo"))
+    setArt(listItem,'tvshow.clearlogo', downloadUtils.getArtwork(resultForType, "Logo"))    
+    setArt(listItem,'discart', downloadUtils.getArtwork(resultForType, "Disc"))  
+    setArt(listItem,'fanart_image', downloadUtils.getArtwork(resultForType, "Backdrop"))
+    setArt(listItem,'landscape', downloadUtils.getArtwork(resultForType, "Thumb"))   
     
     listItem.setProperty('IsPlayable', 'true')
     listItem.setProperty('IsFolder', 'false')
@@ -1629,7 +1639,7 @@ def processDirectory(url, results, progress):
                    'discart'      : downloadUtils.getArtwork(item, "Disc") ,
                    'clearart'     : downloadUtils.getArtwork(item, "Art") ,
                    'landscape'    : downloadUtils.getArtwork(item, "Thumb") ,
-                   'medium_landscape': downloadUtils.getArtwork(item, "Thumb2") ,
+                   'medium_landscape': downloadUtils.getArtwork(item, "Thumb3") ,
                    'small_poster' : downloadUtils.getArtwork(item, "Primary2") ,
                    'medium_poster': downloadUtils.getArtwork(item, "Primary3") ,
                    'small_fanartimage' : downloadUtils.getArtwork(item, "Backdrop2") ,

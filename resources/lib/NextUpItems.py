@@ -112,14 +112,14 @@ class NextUpUpdaterThread(threading.Thread):
 
             item_id = item.get("Id")
                       
-            poster = downloadUtils.getArtwork(item, "Primary")
+            poster = downloadUtils.getArtwork(item, "SeriesPrimary")
             small_poster = downloadUtils.getArtwork(item, "Primary2")
             thumbnail = downloadUtils.getArtwork(item, "Primary")
             logo = downloadUtils.getArtwork(item, "Logo")
-            fanart = downloadUtils.getArtwork(item, "Backdrop")
+            fanart = downloadUtils.getArtwork(item, "Backdrop3")
             banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
-              seriesthumbnail = downloadUtils.getArtwork(item, "Thumb")
+              seriesthumbnail = downloadUtils.getArtwork(item, "Thumb3")
             else:
               seriesthumbnail = fanart
             

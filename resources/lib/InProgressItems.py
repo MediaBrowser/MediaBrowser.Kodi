@@ -114,11 +114,11 @@ class InProgressUpdaterThread(threading.Thread):
                 title = str(perasint) + "% " + title        
                 
             item_id = item.get("Id")
-            thumbnail = downloadUtils.getArtwork(item, "Primary")
+            thumbnail = downloadUtils.getArtwork(item, "Primary2")
             logo = downloadUtils.getArtwork(item, "Logo")
-            fanart = downloadUtils.getArtwork(item, "Backdrop")
+            fanart = downloadUtils.getArtwork(item, "Backdrop2")
             if item.get("ImageTags").get("Thumb") != None:
-              realthumbnail = downloadUtils.getArtwork(item, "Thumb")
+              realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
             else:
               realthumbnail = fanart
             
@@ -147,6 +147,7 @@ class InProgressUpdaterThread(threading.Thread):
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(poster)", thumbnail)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Rating", str(rating))
+            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Mpaa", str(officialrating))
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".CriticRating", str(criticrating))
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".CriticRatingSummary", criticratingsummary)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Plot", plot)
@@ -238,13 +239,13 @@ class InProgressUpdaterThread(threading.Thread):
             if item.get("Type") == "Episode" or item.get("Type") == "Season":
                series_id = item.get("SeriesId")
             
-            poster = downloadUtils.getArtwork(item, "Primary")
+            poster = downloadUtils.getArtwork(item, "SeriesPrimary")
             thumbnail = downloadUtils.getArtwork(item, "Primary")       
             logo = downloadUtils.getArtwork(item, "Logo")       
-            fanart = downloadUtils.getArtwork(item, "Backdrop")
+            fanart = downloadUtils.getArtwork(item, "Backdrop3")
             banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
-              seriesthumbnail = downloadUtils.getArtwork(item, "Thumb")
+              seriesthumbnail = downloadUtils.getArtwork(item, "Thumb3")
             else:
               seriesthumbnail = fanart
               

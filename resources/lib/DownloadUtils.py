@@ -128,11 +128,11 @@ class DownloadUtils():
                 id = data.get("SeriesId")
         imageTag = ""
         originalType = type
-        if type == "Primary2" or type == "Primary3":
+        if type == "Primary2" or type == "Primary3" or type=="SeriesPrimary":
             type = "Primary"
         if type == "Backdrop2" or type=="Backdrop3":
             type = "Backdrop"
-        if type == "Thumb2":
+        if type == "Thumb2" or type=="Thumb3":
             type = "Thumb"
         if(data.get("ImageTags") != None and data.get("ImageTags").get(type) != None):
             imageTag = data.get("ImageTags").get(type)   
@@ -145,7 +145,7 @@ class DownloadUtils():
 
         if self.addonSettings.getSetting('showIndicators')=='true': # add watched, unplayedcount and percentage played indicators to posters
 
-            if (originalType =="Primary" or  originalType =="Backdrop") and data.get("Type") != "Episode":
+            if ((originalType =="Primary" or  originalType =="Backdrop") and data.get("Type") != "Episode") or originalType == "SeriesPrimary":
                 userData = data.get("UserData") 
                 if userData != None:
 
@@ -234,7 +234,7 @@ class DownloadUtils():
                     #query = query + "&height=225&width=400"
                     height = "225"
                     width = "400"                       
-            elif originalType =="Backdrop2" and data.get("Type") != "Episode":
+            elif originalType =="Backdrop2" or originalType =="Thumb2" and data.get("Type") != "Episode":
                 userData = data.get("UserData") 
                 if userData != None:
 
@@ -257,7 +257,7 @@ class DownloadUtils():
                     #query = query + "&height=270&width=480"
                     height = "270"
                     width = "480"      
-            elif originalType =="Backdrop3" or originalType =="Thumb2" and data.get("Type") != "Episode":
+            elif originalType =="Backdrop3" or originalType =="Thumb3" and data.get("Type") != "Episode":
                 userData = data.get("UserData") 
                 if userData != None:
 
