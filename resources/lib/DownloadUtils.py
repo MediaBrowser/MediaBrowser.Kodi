@@ -132,6 +132,7 @@ class DownloadUtils():
             if type != "Primary":
                 id = data.get("SeriesId")
                 getSeriesData = True
+                userParentInfo = True
 
         # if requested get parent info
         if getSeriesData == True and userParentInfo == True:
