@@ -116,7 +116,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             
             thumbnail = downloadUtils.getArtwork(item, "Primary")
             logo = downloadUtils.getArtwork(item, "Logo")
-            fanart = downloadUtils.getArtwork(item, "Backdrop2")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
@@ -194,7 +194,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             
             thumbnail = downloadUtils.getArtwork(item, "Primary")
             logo = downloadUtils.getArtwork(item, "Logo")
-            fanart = downloadUtils.getArtwork(item, "Backdrop3")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
             if (item.get("ImageTags") != None and item.get("ImageTags").get("Thumb") != None):
               realthumb = downloadUtils.getArtwork(item, "Thumb3")
             else:
@@ -288,7 +288,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             poster = downloadUtils.getArtwork(item, "Primary")
             thumbnail = downloadUtils.getArtwork(item, "Primary")      
             logo = downloadUtils.getArtwork(item, "Logo")          
-            fanart = downloadUtils.getArtwork(item, "Backdrop3")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
             banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
               seriesthumbnail = downloadUtils.getArtwork(item, "Thumb3")
@@ -381,7 +381,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             poster = downloadUtils.getArtwork(item, "SeriesPrimary")
             thumbnail = downloadUtils.getArtwork(item, "Primary") 
             logo = downloadUtils.getArtwork(item, "Logo")           
-            fanart = downloadUtils.getArtwork(item, "Backdrop3")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
             banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
               seriesthumbnail = downloadUtils.getArtwork(item, "Thumb3")
@@ -461,7 +461,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             
             thumbnail = downloadUtils.getArtwork(item, "Primary")
             logo = downloadUtils.getArtwork(item, "Logo")
-            fanart = downloadUtils.getArtwork(item, "Backdrop2")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
             banner = downloadUtils.getArtwork(item, "Banner")
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id

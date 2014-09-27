@@ -117,7 +117,7 @@ class InProgressUpdaterThread(threading.Thread):
             item_id = item.get("Id")
             thumbnail = downloadUtils.getArtwork(item, "Primary2")
             logo = downloadUtils.getArtwork(item, "Logo")
-            fanart = downloadUtils.getArtwork(item, "Backdrop3")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
             if item.get("ImageTags").get("Thumb") != None:
               realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
             else:
@@ -243,7 +243,7 @@ class InProgressUpdaterThread(threading.Thread):
             poster = downloadUtils.getArtwork(item, "SeriesPrimary")
             thumbnail = downloadUtils.getArtwork(item, "Primary")       
             logo = downloadUtils.getArtwork(item, "Logo")       
-            fanart = downloadUtils.getArtwork(item, "Backdrop3")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
             banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
               seriesthumbnail = downloadUtils.getArtwork(item, "Thumb3")

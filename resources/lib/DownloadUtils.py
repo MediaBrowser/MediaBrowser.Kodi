@@ -132,6 +132,7 @@ class DownloadUtils():
             if type != "Primary":
                 id = data.get("SeriesId")
                 getSeriesData = True
+                userParentInfo = True
 
         # if requested get parent info
         if getSeriesData == True and userParentInfo == True:
@@ -304,6 +305,8 @@ class DownloadUtils():
         server = host + ":" + port
         
         artwork = "http://" + server + "/mediabrowser/Items/" + str(id) + "/Images/" + type + "/" + index + "/" + imageTag + "/original/" + height + "/" + width + "/" + played + "?" + query
+        if self.addonSettings.getSetting('disableCoverArt')=='true':
+            artwork = artwork + "&EnableImageEnhancers=false"
         
         self.logMsg("getArtwork : " + artwork, level=2)
         
