@@ -2523,7 +2523,7 @@ def getWigetContent(pluginName, handle, params):
             image_id = item.get("SeriesId")
         
         #image = downloadUtils.getArtwork(item, "Primary")
-        image = downloadUtils.imageUrl(image_id, "Primary", 0, 200, 200)
+        image = downloadUtils.imageUrl(image_id, "Primary", 0, 400, 400)
         fanart = downloadUtils.getArtwork(item, "Backdrop")
         
         Duration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
