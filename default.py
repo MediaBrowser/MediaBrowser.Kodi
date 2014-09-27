@@ -109,9 +109,15 @@ downloadUtils = DownloadUtils()
 def printDebug( msg, level = 1):
     if(logLevel >= level):
         if(logLevel == 2):
-            xbmc.log("XBMB3C " + str(level) + " -> " + inspect.stack()[1][3] + " : " + str(msg))
+            try:
+                xbmc.log("XBMB3C " + str(level) + " -> " + inspect.stack()[1][3] + " : " + str(msg))
+            except UnicodeEncodeError:
+                xbmc.log("XBMB3C " + str(level) + " -> " + inspect.stack()[1][3] + " : " + str(msg.encode('utf-8')))
         else:
-            xbmc.log("XBMB3C " + str(level) + " -> " + str(msg))
+            try:
+                xbmc.log("XBMB3C " + str(level) + " -> " + str(msg))
+            except UnicodeEncodeError:
+                xbmc.log("XBMB3C " + str(level) + " -> " + str(msg.encode('utf-8')))
 
 
 def getAuthHeader():
@@ -2401,6 +2407,7 @@ def getCastList(pluginName, handle, params):
             displayName = displayName + " (" + person.get("Role") + ")"
             
         tag = person.get("PrimaryImageTag")
+        id = person.get("Id")
         
         baseName = person.get("Name")
         #urllib.quote(baseName)
@@ -2410,7 +2417,7 @@ def getCastList(pluginName, handle, params):
         baseName = baseName.replace("=", "_")
             
         if(tag != None):
-            thumbPath = "http://" + server + "/mediabrowser/Persons/" + baseName + "/Images/Primary?Format=original&maxheight=500"
+            thumbPath = downloadUtils.imageUrl(id, "Primary", 0, 400, 400)
             item = xbmcgui.ListItem(label=displayName, iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
             item = xbmcgui.ListItem(label=displayName)
