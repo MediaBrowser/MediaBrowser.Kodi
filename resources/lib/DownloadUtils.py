@@ -304,6 +304,8 @@ class DownloadUtils():
         server = host + ":" + port
         
         artwork = "http://" + server + "/mediabrowser/Items/" + str(id) + "/Images/" + type + "/" + index + "/" + imageTag + "/original/" + height + "/" + width + "/" + played + "?" + query
+        if self.addonSettings.getSetting('disableCoverArt')=='true':
+            artwork = artwork + "&EnableImageEnhancers=false"
         
         self.logMsg("getArtwork : " + artwork, level=2)
         
