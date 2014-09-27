@@ -1046,7 +1046,7 @@ def setListItemProps(server, id, listItem, result):
         resultForType = result
         
     setArt(listItem,'poster', downloadUtils.getArtwork(result, "Primary"))
-    setArt(listItem,'tvshow.poster', downloadUtils.getArtwork(result, "Primary"))
+    setArt(listItem,'tvshow.poster', downloadUtils.getArtwork(result, "SeriesPrimary"))
     setArt(listItem,'clearart', downloadUtils.getArtwork(result, "Art"))
     setArt(listItem,'tvshow.clearart', downloadUtils.getArtwork(result, "Art"))    
     setArt(listItem,'clearlogo', downloadUtils.getArtwork(result, "Logo"))
