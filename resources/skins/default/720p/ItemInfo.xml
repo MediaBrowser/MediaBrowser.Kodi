@@ -304,6 +304,7 @@
             <pagecontrol>3231</pagecontrol>
             <scrolltime>200</scrolltime>
             <itemlayout height="60">
+            <!-- for now until the person image url has HEAD added dont show the images
                 <control type="image">
                     <left>0</left>
                     <top>0</top>
@@ -311,7 +312,8 @@
                     <height>60</height>
                     <texture fallback="DefaultArtist.png">$INFO[Listitem.Icon]</texture>
                     <aspectratio>scale</aspectratio>
-                </control>            
+                </control>     
+            -->
                 <control type="label">
                     <left>65</left>
                     <top>0</top>
@@ -338,6 +340,7 @@
                 </control>
             </itemlayout>
             <focusedlayout height="60">
+            <!-- for now until the person image url has HEAD added dont show the images
                 <control type="image">
                     <left>0</left>
                     <top>0</top>
@@ -346,6 +349,7 @@
                     <texture fallback="DefaultArtist.png">$INFO[Listitem.Icon]</texture>
                     <aspectratio>scale</aspectratio>
                 </control>
+            -->
                 <control type="image">
                     <left>60</left>
                     <top>0</top>

@@ -249,7 +249,6 @@ class BackgroundSearchThread(threading.Thread):
             
             typeLabel = "Movie"
             
-            #thumbPath = downloadUtils.getArtwork(item, "Primary")
             thumbPath = downloadUtils.imageUrl(item_id, "Primary", 0, 200, 200)
             xbmc.log(thumbPath)
             
@@ -286,8 +285,7 @@ class BackgroundSearchThread(threading.Thread):
             image_id = item.get("ItemId")
             typeLabel = "Series"                  
                     
-            #thumbPath =  downloadUtils.getArtwork(item, "Primary")
-            thumbPath = downloadUtils.imageUrl(item_id, "Primary", 0, 200, 200)
+            thumbPath = downloadUtils.imageUrl(image_id, "Primary", 0, 200, 200)
             xbmc.log(thumbPath)
             
             listItem = xbmcgui.ListItem(label=item_name, label2=typeLabel, iconImage=thumbPath, thumbnailImage=thumbPath)
@@ -322,8 +320,7 @@ class BackgroundSearchThread(threading.Thread):
             eppNum = item.get("IndexNumber")
             typeLabel = "S" + str(season).zfill(2) + "E" + str(eppNum).zfill(2)
                     
-            #thumbPath = downloadUtils.getArtwork(item, "Primary")
-            thumbPath = downloadUtils.imageUrl(item_id, "Primary", 0, 200, 200)
+            thumbPath = downloadUtils.imageUrl(image_id, "Primary", 0, 200, 200)
             
             xbmc.log(thumbPath)
             
