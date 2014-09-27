@@ -118,6 +118,8 @@ class InProgressUpdaterThread(threading.Thread):
             thumbnail = downloadUtils.getArtwork(item, "Primary2")
             logo = downloadUtils.getArtwork(item, "Logo")
             fanart = downloadUtils.getArtwork(item, "Backdrop")
+            medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
+            
             if item.get("ImageTags").get("Thumb") != None:
               realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
             else:
@@ -145,6 +147,7 @@ class InProgressUpdaterThread(threading.Thread):
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Thumb", realthumbnail)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Path", playUrl)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(fanart)", fanart)
+            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(medium_fanart)", medium_fanart)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(poster)", thumbnail)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Rating", str(rating))
@@ -244,6 +247,8 @@ class InProgressUpdaterThread(threading.Thread):
             thumbnail = downloadUtils.getArtwork(item, "Primary")       
             logo = downloadUtils.getArtwork(item, "Logo")       
             fanart = downloadUtils.getArtwork(item, "Backdrop")
+            medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
+            
             banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
               seriesthumbnail = downloadUtils.getArtwork(item, "Thumb3")
@@ -277,6 +282,8 @@ class InProgressUpdaterThread(threading.Thread):
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Path", playUrl)            
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Rating", rating)
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)", fanart)
+            WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Art(tvshow.medium_fanart)", medium_fanart)
+            
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)", logo)
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)

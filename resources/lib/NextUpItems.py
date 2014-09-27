@@ -117,6 +117,7 @@ class NextUpUpdaterThread(threading.Thread):
             thumbnail = downloadUtils.getArtwork(item, "Primary")
             logo = downloadUtils.getArtwork(item, "Logo")
             fanart = downloadUtils.getArtwork(item, "Backdrop")
+            medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
             banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
               seriesthumbnail = downloadUtils.getArtwork(item, "Thumb3")
@@ -161,6 +162,7 @@ class NextUpUpdaterThread(threading.Thread):
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Path", playUrl)            
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Rating", rating)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)", fanart)
+            WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.medium_fanart)", medium_fanart)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)", logo)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)

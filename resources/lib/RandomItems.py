@@ -105,6 +105,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             thumbnail = downloadUtils.getArtwork(item, "Primary")
             logo = downloadUtils.getArtwork(item, "Logo")
             fanart = downloadUtils.getArtwork(item, "Backdrop")
+            medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
             if (item.get("ImageTags") != None and item.get("ImageTags").get("Thumb") != None):
               realthumb = downloadUtils.getArtwork(item, "Thumb3")
             else:
@@ -132,6 +133,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Thumb", thumbnail)
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Path", playUrl)
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Art(fanart)", fanart)
+            WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Art(medium_fanart)", medium_fanart)
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Art(poster)", thumbnail)
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".RealThumb", realthumb)
@@ -195,6 +197,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             thumbnail = downloadUtils.getArtwork(item, "Primary")
             logo = downloadUtils.getArtwork(item, "Logo")
             fanart = downloadUtils.getArtwork(item, "Backdrop")
+            medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
             banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
               seriesthumbnail = downloadUtils.getArtwork(item, "Thumb3")
@@ -229,6 +232,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Path", playUrl)            
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Rating", rating)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)", fanart)
+            WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.medium_fanart)", medium_fanart)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)", logo)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
