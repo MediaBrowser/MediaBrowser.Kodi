@@ -285,7 +285,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             if item.get("Type") == "Episode" or item.get("Type") == "Season":
                series_id = item.get("SeriesId")
                       
-            poster = downloadUtils.getArtwork(item, "Primary")
+            poster = downloadUtils.getArtwork(item, "SeriesPrimary")
             thumbnail = downloadUtils.getArtwork(item, "Primary")      
             logo = downloadUtils.getArtwork(item, "Logo")          
             fanart = downloadUtils.getArtwork(item, "Backdrop")
