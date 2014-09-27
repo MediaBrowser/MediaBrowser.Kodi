@@ -111,13 +111,15 @@ class DownloadUtils():
             return_value = xbmcgui.Dialog().ok(self.getString(30044), self.getString(30044))
             sys.exit()            
 
-    def getArtwork(self, data, type, index = "0"):
+    def getArtwork(self, data, type, index = "0", userParentInfo = False):
 
         id = data.get("Id")
+        getSeriesData = False
 
         if type == "tvshow.poster": # Change the Id to the series to get the overall series poster
             if data.get("Type") == "Season" or data.get("Type")== "Episode":
                 id = data.get("SeriesId")
+                getSeriesData = True
         elif type == "poster" and data.get("Type") == "Episode" and self.addonSettings.getSetting('useSeasonPoster')=='true': # Change the Id to the Season to get the season poster
             id = data.get("SeasonId")
         if type == "poster" or type == "tvshow.poster": # Now that the Ids are right, change type to MB3 name
@@ -125,9 +127,21 @@ class DownloadUtils():
         if data.get("Type") == "Season":  # For seasons: primary (poster), thumb and banner get season art, rest series art
             if type != "Primary" and type != "Thumb" and type != "Banner":
                 id = data.get("SeriesId")
+                getSeriesData = True
         if data.get("Type") == "Episode":  # For episodes: primary (episode thumb) gets episode art, rest series art. 
             if type != "Primary":
                 id = data.get("SeriesId")
+                getSeriesData = True
+
+        # if requested get parent info
+        if getSeriesData == True and userParentInfo == True:
+            self.logMsg("Using Parent Info for image link", level=1)
+            mb3Host = self.addonSettings.getSetting('ipaddress')
+            mb3Port = self.addonSettings.getSetting('port')
+            userid = self.getUserId()
+            seriesJsonData = self.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )
+            seriesResult = json.loads(seriesJsonData)
+            data = seriesResult
                 
         imageTag = "e3ab56fe27d389446754d0fb04910a34" # a place holder tag, needs to be in this format
         originalType = type
