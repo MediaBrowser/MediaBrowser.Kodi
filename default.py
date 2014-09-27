@@ -1046,7 +1046,7 @@ def setListItemProps(server, id, listItem, result):
         resultForType = result
         
     setArt(listItem,'poster', downloadUtils.getArtwork(result, "Primary"))
-    setArt(listItem,'tvshow.poster', downloadUtils.getArtwork(result, "Primary"))
+    setArt(listItem,'tvshow.poster', downloadUtils.getArtwork(result, "SeriesPrimary"))
     setArt(listItem,'clearart', downloadUtils.getArtwork(result, "Art"))
     setArt(listItem,'tvshow.clearart', downloadUtils.getArtwork(result, "Art"))    
     setArt(listItem,'clearlogo', downloadUtils.getArtwork(result, "Logo"))
@@ -2521,13 +2521,10 @@ def getWigetContent(pluginName, handle, params):
         image_id = item_id
         if item.get("Type") == "Episode":
             image_id = item.get("SeriesId")
-
-        imageTag = ""
-        if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
-            imageTag = item.get("ImageTags").get("Primary")
         
         #image = downloadUtils.getArtwork(item, "Primary")
-        image = downloadUtils.imageUrl(image_id, "Primary", 0, 200, 200)
+        image = downloadUtils.imageUrl(image_id, "Primary", 0, 400, 400)
+        fanart = downloadUtils.getArtwork(item, "Backdrop")
         
         Duration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
         
@@ -2557,6 +2554,7 @@ def getWigetContent(pluginName, handle, params):
         
         list_item = xbmcgui.ListItem(label=name, iconImage=image, thumbnailImage=image)
         list_item.setInfo( type="Video", infoLabels={ "year":item.get("ProductionYear"), "duration":str(Duration), "plot":item.get("Overview"), "tvshowtitle":str(seriesName), "premiered":item.get("PremiereDate"), "rating":item.get("CommunityRating") } )
+        list_item.setProperty('fanart_image',fanart)
         
         # add count
         list_item.setProperty("item_index", str(itemCount))

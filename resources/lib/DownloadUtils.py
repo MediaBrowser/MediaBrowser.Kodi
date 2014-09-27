@@ -132,8 +132,7 @@ class DownloadUtils():
             if type != "Primary":
                 id = data.get("SeriesId")
                 getSeriesData = True
-                userParentInfo = True
-
+                
         # if requested get parent info
         if getSeriesData == True and userParentInfo == True:
             self.logMsg("Using Parent Info for image link", level=1)
@@ -311,13 +310,12 @@ class DownloadUtils():
         self.logMsg("getArtwork : " + artwork, level=2)
         
         # do not return non-existing images
-        if (    (type!="Backdrop" and imageTag=="") | (type=="Backdrop" and 
-                data.get("BackdropImageTags") != None and 
-                len(data.get("BackdropImageTags")) == 0) | (type=="Backdrop" and 
-                data.get("BackdropImageTag") != None and 
-                len(data.get("BackdropImageTag")) == 0)
+        if (    (type!="Backdrop" and imageTag=="") | 
+                (type=="Backdrop" and data.get("BackdropImageTags") != None and len(data.get("BackdropImageTags")) == 0) | 
+                (type=="Backdrop" and data.get("BackdropImageTag") != None and len(data.get("BackdropImageTag")) == 0)                
                 ):
-            artwork=''        
+            if type=="Backdrop" and getSeriesData==True and data.get("ParentBackdropImageTags") == None:
+                artwork=''        
         
         return artwork            
 
