@@ -224,7 +224,7 @@ class DownloadUtils():
                         played = str(PlayedPercentage)
                         
                     height = "800"
-                    width = "550"    
+                    width = "560"    
                     
             elif type =="Primary" and data.get("Type") == "Episode":
                 userData = data.get("UserData")

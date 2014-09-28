@@ -285,10 +285,11 @@ class RecentInfoUpdaterThread(threading.Thread):
 
             item_id = item.get("Id")
            
-            if item.get("Type") == "Episode" or item.get("Type") == "Season":
-               series_id = item.get("SeriesId")
+            seriesId = item.get("SeriesId")          
+            seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=False, popup=1 )
+            seriesResult = json.loads(seriesJsonData)      
                       
-            poster = downloadUtils.getArtwork(item, "SeriesPrimary")
+            poster = downloadUtils.getArtwork(seriesResult, "Primary3")
             thumbnail = downloadUtils.getArtwork(item, "Primary")      
             logo = downloadUtils.getArtwork(item, "Logo")          
             fanart = downloadUtils.getArtwork(item, "Backdrop")
@@ -378,14 +379,15 @@ class RecentInfoUpdaterThread(threading.Thread):
 
             item_id = item.get("Id")
            
-            if item.get("Type") == "Episode" or item.get("Type") == "Season":
-               series_id = item.get("SeriesId")
-                      
-            poster = downloadUtils.getArtwork(item, "SeriesPrimary")
+            seriesId = item.get("SeriesId")          
+            seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=False, popup=1 )
+            seriesResult = json.loads(seriesJsonData)      
+               
+            poster = downloadUtils.getArtwork(seriesResult, "Primary3")
             thumbnail = downloadUtils.getArtwork(item, "Primary") 
             logo = downloadUtils.getArtwork(item, "Logo")           
             fanart = downloadUtils.getArtwork(item, "Backdrop")
-            medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
+            medium_fanart = downloadUtils.getArtwork(seriesResult, "Backdrop3")
             banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
               seriesthumbnail = downloadUtils.getArtwork(item, "Thumb3")

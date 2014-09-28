@@ -111,9 +111,12 @@ class NextUpUpdaterThread(threading.Thread):
             plot=plot.encode('utf-8')
 
             item_id = item.get("Id")
+            seriesId = item.get("SeriesId")          
+            seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=False, popup=1 )
+            seriesResult = json.loads(seriesJsonData)      
                       
-            poster = downloadUtils.getArtwork(item, "SeriesPrimary")
-            small_poster = downloadUtils.getArtwork(item, "Primary2")
+            poster = downloadUtils.getArtwork(seriesResult, "Primary3")
+            small_poster = downloadUtils.getArtwork(seriesResult, "Primary2")
             thumbnail = downloadUtils.getArtwork(item, "Primary")
             logo = downloadUtils.getArtwork(item, "Logo")
             fanart = downloadUtils.getArtwork(item, "Backdrop")
