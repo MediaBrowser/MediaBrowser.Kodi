@@ -310,7 +310,7 @@ class DownloadUtils():
         self.logMsg("getArtwork : " + artwork, level=2)
         
         # do not return non-existing images
-        if (    (type!="Backdrop" and imageTag=="") | 
+        if (    (type!="Backdrop" and imageTag=="e3ab56fe27d389446754d0fb04910a34") |  #Remember, this is the placeholder tag, meaning we didn't find a valid tag
                 (type=="Backdrop" and data.get("BackdropImageTags") != None and len(data.get("BackdropImageTags")) == 0) | 
                 (type=="Backdrop" and data.get("BackdropImageTag") != None and len(data.get("BackdropImageTag")) == 0)                
                 ):
