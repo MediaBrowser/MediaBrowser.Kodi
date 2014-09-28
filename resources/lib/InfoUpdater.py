@@ -164,14 +164,7 @@ class InfoUpdaterThread(threading.Thread):
         WINDOW.setProperty("MB3TotalUnWatchedTrailers", str(trailers_unwatched_count))
         WINDOW.setProperty("MB3TotalWatchedTrailers", str(trailers_watched_count))
         WINDOW.setProperty("MB3TotalPhotos", str(photos_count))
-        
-        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "?format=json"
-        jsonData = downloadUtils.downloadUrl(userUrl, suppress=False, popup=1 )
-        
-        result = json.loads(jsonData)
-        userImage = downloadUtils.getUserArtwork(result, "Primary")
-        WINDOW.setProperty("MB3UserImage", userImage)
-        xbmc.log("XBMB3C MB3UserImage -> " + userImage)
+
         self.logMsg("InfoTV start")
         infoTVUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?&IncludeItemTypes=Series&Recursive=true&SeriesStatus=Continuing&format=json"
         

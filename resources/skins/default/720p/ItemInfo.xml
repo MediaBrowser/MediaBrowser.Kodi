@@ -311,7 +311,7 @@
                     <height>60</height>
                     <texture fallback="DefaultArtist.png">$INFO[Listitem.Icon]</texture>
                     <aspectratio>scale</aspectratio>
-                </control>
+                </control>            
                 <control type="label">
                     <left>65</left>
                     <top>0</top>
