@@ -546,8 +546,10 @@ def addGUIItem( url, details, extraData, folder=True ):
     list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
     list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
     
-    list.setProperty('CriticRating', str(extraData.get('criticrating')))
-    list.setProperty('ItemType', extraData.get('itemtype'))
+    if extraData.get('criticrating') != None:
+        list.setProperty('CriticRating', str(extraData.get('criticrating')))
+    if extraData.get('itemtype') != None:
+        list.setProperty('ItemType', extraData.get('itemtype'))
     if extraData.get('totaltime') != None:
         list.setProperty('TotalTime', extraData.get('totaltime'))
     if extraData.get('TotalSeasons')!=None:
