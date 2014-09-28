@@ -322,20 +322,16 @@ class DownloadUtils():
     def getUserArtwork(self, data, type, index = "0"):
 
         id = data.get("Id")
-        #query = "&type=" + type + "&tag=" + imageTag
-        query = ""
-        height = "60"
-        width = "60"
-        played = "0"
-
+        query = "&type=" + type + "&user=user"
         # use the local image proxy server that is made available by this addons service
         port = self.addonSettings.getSetting('port')
         host = self.addonSettings.getSetting('ipaddress')
         server = host + ":" + port
         
-        artwork = "http://" + server + "/mediabrowser/Users/" + str(id) + "/Images/Primary/0" + "?height=60&width=60&format=png" 
-        
-        return artwork             
+        # use the local image proxy server that is made available by this addons service
+        artwork = "http://localhost:15001/?id=" + str(id) + query
+       
+        return artwork                  
 
     def imageUrl(self, id, type, index, width, height):
     

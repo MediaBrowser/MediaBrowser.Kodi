@@ -171,7 +171,10 @@ class InfoUpdaterThread(threading.Thread):
         result = json.loads(jsonData)
         userImage = downloadUtils.getUserArtwork(result, "Primary")
         WINDOW.setProperty("MB3UserImage", userImage)
-        xbmc.log("XBMB3C MB3UserImage -> " + userImage)
+        if(result.get("Name") != None):
+            userName = result.get("Name").encode('utf-8')
+            WINDOW.setProperty("MB3UserName", userName)
+            
         self.logMsg("InfoTV start")
         infoTVUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?&IncludeItemTypes=Series&Recursive=true&SeriesStatus=Continuing&format=json"
         

@@ -40,6 +40,8 @@ from InProgressItems import InProgressUpdaterThread
 from WebSocketClient import WebSocketThread
 from ClientInformation import ClientInformation
 from MenuLoad import LoadMenuOptionsThread
+from ImageProxy import MyHandler
+from ImageProxy import ThreadingHTTPServer
 
 _MODE_BASICPLAY=12
 
@@ -127,6 +129,23 @@ if __addon__.getSetting('useInfoLoader') == "true":
     newInfoThread.start()
 else:
     xbmc.log("XBMB3C Service InfoLoader Disabled")
+    
+###############################################
+# start the image proxy server
+###############################################
+
+keepServing = True
+def startImageProxyServer():
+
+    xbmc.log("XBMB3 -> HTTP Image Proxy Server Starting")
+    server = ThreadingHTTPServer(("",15001), MyHandler)
+    
+    while (keepServing):
+        server.handle_request()
+    
+    xbmc.log("XBMB3 -> HTTP Image Proxy Server EXITING")
+    
+Thread(target=startImageProxyServer).start()
     
 def deleteItem (url):
     return_value = xbmcgui.Dialog().yesno(__language__(30091),__language__(30092))
@@ -335,6 +354,10 @@ if(newWebSocketThread != None):
 
 # stop the image proxy
 keepServing = False
+try:
+    requesthandle = urllib.urlopen("http://localhost:15001/?id=dummy&type=Primary", proxies={})
+except:
+    xbmc.log("XBMB3C Service -> Tried to stop image proxy server but it was already stopped")
 
 xbmc.log("XBMB3C Service -> Service shutting down")
 
