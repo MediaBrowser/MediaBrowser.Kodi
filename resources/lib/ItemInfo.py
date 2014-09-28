@@ -121,6 +121,8 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         for person in people:
             displayName = person.get("Name")
             role = person.get("Role")
+            id = person.get("Id")
+            tag = person.get("PrimaryImageTag")
             
             baseName = person.get("Name")
             baseName = baseName.replace(" ", "+")
@@ -130,9 +132,8 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
             
             actionUrl = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_PERSON_DETAILS) +"&name=" + baseName
             
-            tag = person.get("PrimaryImageTag")
-            if(tag != None):
-                thumbPath = "http://localhost:15001/?name=" + baseName + "&type=Primary&maxheight=500&tag=" + tag
+            if(tag != None and len(tag) > 0):
+                thumbPath = downloadUtils.imageUrl(id, "Primary", 0, 400, 400)
                 listItem = xbmcgui.ListItem(label=displayName, label2=role, iconImage=thumbPath, thumbnailImage=thumbPath)
             else:
                 listItem = xbmcgui.ListItem(label=displayName, label2=role)

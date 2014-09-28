@@ -35,36 +35,7 @@ class InProgressUpdaterThread(threading.Thread):
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
             xbmc.log("XBMB3C InProgressUpdaterThread -> " + msg)
-    
-    def getImageLink(self, item, type, item_id):
-        imageTag = "none"
-        if(item.get("ImageTags") != None and item.get("ImageTags").get(type) != None):
-            imageTag = item.get("ImageTags").get(type)
-        query = "&type=" + type + "&tag=" + imageTag
-        userData = item.get("UserData") 
-        if type=="Primary":
-            PlayedPercentage = 0 if item.get("PlayedPercentage")==None else item.get("PlayedPercentage")
-            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
-                PlayedPercentage = userData.get("PlayedPercentage")
-            if (PlayedPercentage != 100 or PlayedPercentage != 0):
-                query = query + "&PercentPlayed=" + str(PlayedPercentage)
-            query = query + "&height=220&width=156"
-        if type=="Thumb":
-            PlayedPercentage = 0 if item.get("PlayedPercentage")==None else item.get("PlayedPercentage")
-            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
-                PlayedPercentage = userData.get("PlayedPercentage")
-            if (PlayedPercentage != 100 or PlayedPercentage != 0):
-                query = query + "&PercentPlayed=" + str(PlayedPercentage)
-            query = query + "&height=255&width=441"
-        if type=="Backdrop":
-            PlayedPercentage = 0 if item.get("PlayedPercentage")==None else item.get("PlayedPercentage")
-            if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
-                PlayedPercentage = userData.get("PlayedPercentage")
-            if (PlayedPercentage != 100 or PlayedPercentage != 0):
-                query = query + "&PercentPlayed=" + str(PlayedPercentage)
-            query = query + "&height=255&width=441"              
-        return "http://localhost:15001/?id=" + str(item_id) + query        
-    
+        
     def run(self):
         self.logMsg("Started")
         
@@ -116,6 +87,7 @@ class InProgressUpdaterThread(threading.Thread):
             
             rating = item.get("CommunityRating")
             criticrating = item.get("CriticRating")
+            officialrating = item.get("OfficialRating")
             criticratingsummary = ""
             if(item.get("CriticRatingSummary") != None):
                 criticratingsummary = item.get("CriticRatingSummary").encode('utf-8')
@@ -143,11 +115,13 @@ class InProgressUpdaterThread(threading.Thread):
                 title = str(perasint) + "% " + title        
                 
             item_id = item.get("Id")
-            thumbnail = self.getImageLink(item, "Primary", str(item_id))
-            logo = self.getImageLink(item, "Logo", str(item_id))
-            fanart = self.getImageLink(item, "Backdrop", str(item_id))
+            thumbnail = downloadUtils.getArtwork(item, "Primary2")
+            logo = downloadUtils.getArtwork(item, "Logo")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
+            medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
+            
             if item.get("ImageTags").get("Thumb") != None:
-              realthumbnail = self.getImageLink(item, "Thumb", str(item_id))
+              realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
             else:
               realthumbnail = fanart
             
@@ -173,9 +147,11 @@ class InProgressUpdaterThread(threading.Thread):
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Thumb", realthumbnail)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Path", playUrl)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(fanart)", fanart)
+            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(medium_fanart)", medium_fanart)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(poster)", thumbnail)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Rating", str(rating))
+            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Mpaa", str(officialrating))
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".CriticRating", str(criticrating))
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".CriticRatingSummary", criticratingsummary)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Plot", plot)
@@ -267,15 +243,18 @@ class InProgressUpdaterThread(threading.Thread):
             if item.get("Type") == "Episode" or item.get("Type") == "Season":
                series_id = item.get("SeriesId")
             
-            poster = self.getImageLink(item, "Primary", str(series_id))
-            thumbnail = self.getImageLink(item, "Primary", str(item_id))          
-            logo = self.getImageLink(item, "Logo", str(series_id))             
-            fanart = self.getImageLink(item, "Backdrop", str(series_id))
-            banner = self.getImageLink(item, "Banner", str(series_id))
+            poster = downloadUtils.getArtwork(item, "SeriesPrimary")
+            thumbnail = downloadUtils.getArtwork(item, "Primary")       
+            logo = downloadUtils.getArtwork(item, "Logo")       
+            fanart = downloadUtils.getArtwork(item, "Backdrop")
+            medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
+            
+            banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
-              seriesthumbnail = self.getImageLink(item, "Thumb", str(series_id))
+              seriesthumbnail = downloadUtils.getArtwork(item, "Thumb3")
             else:
               seriesthumbnail = fanart
+              
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
             playUrl = playUrl.replace("\\\\","smb://")
@@ -303,6 +282,8 @@ class InProgressUpdaterThread(threading.Thread):
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Path", playUrl)            
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Rating", rating)
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Art(tvshow.fanart)", fanart)
+            WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Art(tvshow.medium_fanart)", medium_fanart)
+            
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Art(tvshow.clearlogo)", logo)
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
             WINDOW.setProperty("InProgresstEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)

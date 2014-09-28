@@ -62,11 +62,7 @@ class PersonInfo(xbmcgui.WindowXMLDialog):
             overview = overview + over
 
         #person image
-        imageTag = ""
-        if(result.get("ImageTags") != None and result.get("ImageTags").get("Primary") != None):
-            imageTag = result.get("ImageTags").get("Primary")
-                
-        image = "http://localhost:15001/?id=" + id + "&type=" + "Primary" + "&tag=" + imageTag
+        image = downloadUtils.getArtwork(result, "Primary")
         
         #get other movies
         encoded = name.encode("utf-8")
@@ -120,10 +116,7 @@ class PersonInfo(xbmcgui.WindowXMLDialog):
                     eppNum = item.get("IndexNumber")
                     type_info = "S" + str(season).zfill(2) + "E" + str(eppNum).zfill(2)
                 
-                imageTag = ""
-                if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
-                    imageTag = item.get("ImageTags").get("Primary")             
-                thumbPath = "http://localhost:15001/?id=" + str(image_id) + "&type=Primary&tag=" + imageTag
+                thumbPath = downloadUtils.imageUrl(image_id, "Primary", 0, 200, 200)
                 
                 listItem = xbmcgui.ListItem(label=item_name, label2=type_info, iconImage=thumbPath, thumbnailImage=thumbPath)
                 

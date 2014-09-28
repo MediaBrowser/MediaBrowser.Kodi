@@ -28,7 +28,7 @@ class SearchDialog(xbmcgui.WindowXMLDialog):
         pass
         
     def onAction(self, action):
-        xbmc.log("onAction : " + str(action.getId()) + " " + str(action.getButtonCode()) + " " + str(action))
+        #xbmc.log("onAction : " + str(action.getId()) + " " + str(action.getButtonCode()) + " " + str(action))
         
         ACTION_PREVIOUS_MENU = 10
         ACTION_SELECT_ITEM = 7
@@ -232,7 +232,7 @@ class BackgroundSearchThread(threading.Thread):
         #
         search = urllib.quote(searchTerm)
         url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&Limit=10&IncludeItemTypes=Movie&format=json"
-        jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 ) 
+        jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1) 
         result = json.loads(jsonData)
             
         items = result.get("SearchHints")
@@ -248,12 +248,8 @@ class BackgroundSearchThread(threading.Thread):
             item_type = item.get("Type")
             
             typeLabel = "Movie"
-                    
-            imageTag = ""
-            if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
-                imageTag = item.get("ImageTags").get("Primary")
             
-            thumbPath = "http://localhost:15001/?id=" + str(item_id) + "&type=Primary&tag=" + imageTag
+            thumbPath = downloadUtils.imageUrl(item_id, "Primary", 0, 200, 200)
             xbmc.log(thumbPath)
             
             listItem = xbmcgui.ListItem(label=item_name, label2=typeLabel, iconImage=thumbPath, thumbnailImage=thumbPath)
@@ -289,11 +285,7 @@ class BackgroundSearchThread(threading.Thread):
             image_id = item.get("ItemId")
             typeLabel = "Series"                  
                     
-            imageTag = ""
-            if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
-                imageTag = item.get("ImageTags").get("Primary")
-            
-            thumbPath = "http://localhost:15001/?id=" + str(image_id) + "&type=Primary&tag=" + imageTag
+            thumbPath = downloadUtils.imageUrl(image_id, "Primary", 0, 200, 200)
             xbmc.log(thumbPath)
             
             listItem = xbmcgui.ListItem(label=item_name, label2=typeLabel, iconImage=thumbPath, thumbnailImage=thumbPath)
@@ -328,11 +320,8 @@ class BackgroundSearchThread(threading.Thread):
             eppNum = item.get("IndexNumber")
             typeLabel = "S" + str(season).zfill(2) + "E" + str(eppNum).zfill(2)
                     
-            imageTag = ""
-            if(item.get("ImageTags") != None and item.get("ImageTags").get("Primary") != None):
-                imageTag = item.get("ImageTags").get("Primary")
+            thumbPath = downloadUtils.imageUrl(image_id, "Primary", 0, 200, 200)
             
-            thumbPath = "http://localhost:15001/?id=" + str(image_id) + "&type=Primary&tag=" + imageTag
             xbmc.log(thumbPath)
             
             listItem = xbmcgui.ListItem(label=item_name, label2=typeLabel, iconImage=thumbPath, thumbnailImage=thumbPath)
