@@ -125,7 +125,7 @@ class DownloadUtils():
         if type == "poster" or type == "tvshow.poster": # Now that the Ids are right, change type to MB3 name
             type="Primary"
         if data.get("Type") == "Season":  # For seasons: primary (poster), thumb and banner get season art, rest series art
-            if type != "Primary" and type != "Thumb" and type != "Banner":
+            if type != "Primary" and type != "Primary2" and type != "Primary3" and type != "Thumb" and type != "Banner":
                 id = data.get("SeriesId")
                 getSeriesData = True
         if data.get("Type") == "Episode":  # For episodes: primary (episode thumb) gets episode art, rest series art. 
