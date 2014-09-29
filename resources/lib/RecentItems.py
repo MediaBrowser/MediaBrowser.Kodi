@@ -291,7 +291,7 @@ class RecentInfoUpdaterThread(threading.Thread):
                       
             poster = downloadUtils.getArtwork(seriesResult, "Primary3")
             thumbnail = downloadUtils.getArtwork(item, "Primary")      
-            logo = downloadUtils.getArtwork(item, "Logo")          
+            logo = downloadUtils.getArtwork(seriesResult, "Logo")          
             fanart = downloadUtils.getArtwork(item, "Backdrop")
             banner = downloadUtils.getArtwork(item, "Banner")
             if item.get("SeriesThumbImageTag") != None:
@@ -385,7 +385,7 @@ class RecentInfoUpdaterThread(threading.Thread):
                
             poster = downloadUtils.getArtwork(seriesResult, "Primary3")
             thumbnail = downloadUtils.getArtwork(item, "Primary") 
-            logo = downloadUtils.getArtwork(item, "Logo")           
+            logo = downloadUtils.getArtwork(seriesResult, "Logo")           
             fanart = downloadUtils.getArtwork(item, "Backdrop")
             medium_fanart = downloadUtils.getArtwork(seriesResult, "Backdrop3")
             banner = downloadUtils.getArtwork(item, "Banner")
