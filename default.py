@@ -537,6 +537,8 @@ def addGUIItem( url, details, extraData, folder=True ):
     videoInfoLabels["year"] = extraData.get('year')
     videoInfoLabels["studio"] = extraData.get('studio')
     videoInfoLabels["genre"] = extraData.get('genre')
+    if extraData.get('premieredate') != None:
+        videoInfoLabels["premiered"] = extraData.get('premieredate').decode("utf-8")
     
     videoInfoLabels["episode"] = details.get('episode')
     videoInfoLabels["season"] = details.get('season') 
@@ -1550,6 +1552,7 @@ def processDirectory(url, results, progress):
         writer=''
         cast=[]
         people = item.get("People")
+        xbmc.log("xxxxx:" + str(people))
         if(people != None):
             for person in people:
                 if(person.get("Type") == "Director"):
