@@ -1552,7 +1552,6 @@ def processDirectory(url, results, progress):
         writer=''
         cast=[]
         people = item.get("People")
-        xbmc.log("xxxxx:" + str(people))
         if(people != None):
             for person in people:
                 if(person.get("Type") == "Director"):
