@@ -186,5 +186,19 @@
     <string id="30203">Fehler in ArtworkRotationThread</string>
     <string id="30204">Verbindung zum Server fehlgeschlagen</string>
     <string id="30205">Fehler in LoadMenuOptionsThread</string>
+
+	<!-- Default views -->
+    <string id="30300">Aktiviert</string>              
+    <string id="30301">Zurücksetzen</string>              
+    <string id="30302">Filme</string>              
+    <string id="30303">BoxSets</string>              
+    <string id="30304">Trailer</string>              
+    <string id="30305">Serien</string>              
+    <string id="30306">Staffeln</string>              
+    <string id="30307">Episoden</string>              
+    <string id="30308">Interpreten</string>              
+    <string id="30309">Alben</string>              
+    <string id="30310">Musikvideos</string>              
+    <string id="30311">Musikstücke</string>              
    
 </strings>

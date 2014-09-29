@@ -190,5 +190,18 @@
     <string id="30204">Unable to connect to host</string>         
     <string id="30205">Error in LoadMenuOptionsThread</string>        
     
+	<!-- Default views -->
+    <string id="30300">Active</string>              
+    <string id="30301">Clear Settings</string>              
+    <string id="30302">Movies</string>              
+    <string id="30303">BoxSets</string>              
+    <string id="30304">Trailers</string>              
+    <string id="30305">Series</string>              
+    <string id="30306">Seasons</string>              
+    <string id="30307">Episodes</string>              
+    <string id="30308">Music Artists</string>              
+    <string id="30309">Music Albums</string>              
+    <string id="30310">Music Videos</string>              
+    <string id="30311">Music Tracks</string>              
 
 </strings>

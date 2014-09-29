@@ -2624,7 +2624,7 @@ def showParentContent(pluginName, handle, params):
     getContent(contentUrl)
     
 def showViewList(url, pluginhandle):
-    viewCats=['Movies', 'BoxSets', 'Trailers', 'Series', 'Seasons', 'Episodes', 'Music Artists', 'Music Albums', 'Music Videos', 'Music Tracks']
+    viewCats=[__language__(30302), __language__(30303), __language__(30304), __language__(30305), __language__(30306), __language__(30307), __language__(30308), __language__(30309), __language__(30310), __language__(30311)]
     viewTypes=['_MOVIES', '_BOXSETS', '_TRAILERS', '_SERIES', '_SEASONS', '_EPISODES', '_MUSICARTISTS', '_MUSICALBUMS', '_MUSICVIDEOS', '_MUSICTRACKS']
     if "SETVIEWS" in url:
         for viewCat in viewCats:
@@ -2643,10 +2643,10 @@ def showViewList(url, pluginhandle):
             xbmcgui.Dialog().ok(__language__(30135), __language__(30150))            
             sys.exit()
         root = tree.getroot()
-        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c?url=_SETVIEW_'+ url.split('_')[2] + '_' + '' + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem('Clear Settings', 'test'))
+        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c?url=_SETVIEW_'+ url.split('_')[2] + '_' + '' + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem(__language__(30301), 'test'))
         for view in root.findall('view'):
             if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_'+ url.split('_')[2]) == view.attrib['value']:
-                name=view.attrib['id'] + " (Active)"
+                name=view.attrib['id'] + " (" + __language__(30300) + ")"
             else:
                 name=view.attrib['id']
             xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c?url=_SETVIEW_'+ url.split('_')[2] + '_' + view.attrib['value'] + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem(name, 'test'))
