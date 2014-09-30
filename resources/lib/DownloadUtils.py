@@ -129,10 +129,12 @@ class DownloadUtils():
                 id = data.get("SeriesId")
                 getSeriesData = True
         if data.get("Type") == "Episode":  # For episodes: primary (episode thumb) gets episode art, rest series art. 
-            if type != "Primary":
+            if type != "Primary" and type != "Primary2" and type != "Primary3":
                 id = data.get("SeriesId")
                 getSeriesData = True
-                
+            if type =="Primary2" or type=="Primary3":
+                id = data.get("SeasonId")
+                getSeriesData = True
         # if requested get parent info
         if getSeriesData == True and userParentInfo == True:
             self.logMsg("Using Parent Info for image link", level=1)
@@ -161,7 +163,7 @@ class DownloadUtils():
 
         if self.addonSettings.getSetting('showIndicators')=='true': # add watched, unplayedcount and percentage played indicators to posters
 
-            if (originalType =="Primary" or  originalType =="Backdrop") and data.get("Type") != "Episode":
+            if (originalType =="Primary" or  originalType =="Backdrop" or  originalType =="Banner") and data.get("Type") != "Episode":
                 userData = data.get("UserData")
                 if originalType =="Backdrop" and index == "0":
                   totalbackdrops = len(data.get("BackdropImageTags"))
@@ -184,7 +186,7 @@ class DownloadUtils():
                     if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                         played = str(PlayedPercentage)
 
-            elif originalType =="Primary2" and data.get("Type") != "Episode":
+            elif originalType =="Primary2":
                 userData = data.get("UserData") 
                 if userData != None:
 
@@ -205,7 +207,7 @@ class DownloadUtils():
                     height = "340"
                     width = "226"
                     
-            elif (originalType =="Primary3" and data.get("Type") != "Episode") or originalType == "SeriesPrimary":
+            elif originalType =="Primary3" or originalType == "SeriesPrimary":
                 userData = data.get("UserData") 
                 if userData != None:
 
@@ -269,8 +271,8 @@ class DownloadUtils():
                     if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                         played = str(PlayedPercentage)
                         
-                    height = "270"
-                    width = "480"      
+                    height = "370"
+                    width = "660"      
                     
             elif originalType =="Backdrop3" or originalType =="Thumb3" and data.get("Type") != "Episode":
                 userData = data.get("UserData")

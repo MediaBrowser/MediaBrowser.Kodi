@@ -68,7 +68,7 @@ class SuggestedUpdaterThread(threading.Thread):
         
         self.logMsg("Updating Suggested List")
         
-        suggestedUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Movies/Recommendations?UserId=" + userid + "&categoryLimit=1&ItemLimit=6&format=json" 
+        suggestedUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Movies/Recommendations?UserId=" + userid + "&categoryLimit=1&ItemLimit=6&Fields=Overview,CriticRatingSummary&format=json" 
         jsonData = downloadUtils.downloadUrl(suggestedUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("Suggested Movie Json Data : " + str(result), level=2)
