@@ -78,7 +78,7 @@ class RecentInfoUpdaterThread(threading.Thread):
         
         self.logMsg("Updating Recent Movie List")
         
-        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
+        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
          
         jsonData = downloadUtils.downloadUrl(recentUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
@@ -106,6 +106,10 @@ class RecentInfoUpdaterThread(threading.Thread):
             if plot == None:
                 plot=''
             plot=plot.encode('utf-8')
+            shortplot = item.get("ShortOverview")
+            if shortplot == None:
+                shortplot = ''
+            shortplot = shortplot.encode('utf-8')
             year = item.get("ProductionYear")
             if(item.get("RunTimeTicks") != None):
                 runtime = str(int(item.get("RunTimeTicks"))/(10000000*60))
@@ -147,6 +151,8 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".CriticRating", str(criticrating))
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".CriticRatingSummary", criticratingsummary)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Plot", plot)
+            WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".ShortPlot", shortplot)
+            
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Year", str(year))
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Runtime", str(runtime))
             
@@ -157,7 +163,7 @@ class RecentInfoUpdaterThread(threading.Thread):
         #Updating Recent Unplayed Movie List
         self.logMsg("Updating Recent Unplayed Movie List")
         
-        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/Latest?Limit=30&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&IsPlayed=false&IncludeItemTypes=Movie&format=json"
+        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/Latest?Limit=30&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary&IsPlayed=false&IncludeItemTypes=Movie&format=json"
          
         jsonData = downloadUtils.downloadUrl(recentUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
@@ -184,6 +190,10 @@ class RecentInfoUpdaterThread(threading.Thread):
             if plot == None:
                 plot=''
             plot=plot.encode('utf-8')
+            shortplot = item.get("ShortOverview")
+            if shortplot == None:
+                shortplot = ''
+            shortplot = shortplot.encode('utf-8')
             year = item.get("ProductionYear")
             if(item.get("RunTimeTicks") != None):
                 runtime = str(int(item.get("RunTimeTicks"))/(10000000*60))
@@ -233,6 +243,8 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".CriticRating", str(criticrating))
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".CriticRatingSummary", criticratingsummary)
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Plot", plot)
+            WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".ShortPlot", shortplot)
+            
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Year", str(year))
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Runtime", str(runtime))
             
@@ -243,7 +255,7 @@ class RecentInfoUpdaterThread(threading.Thread):
         #Updating Recent TV Show List
         self.logMsg("Updating Recent TV Show List")
         
-        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json"
+        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,ShortOverview,Overview&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json"
         
         jsonData = downloadUtils.downloadUrl(recentUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
@@ -282,7 +294,10 @@ class RecentInfoUpdaterThread(threading.Thread):
             if plot == None:
                 plot=''
             plot=plot.encode('utf-8')
-
+            shortplot = item.get("ShortOverview")
+            if shortplot == None:
+                shortplot = ''
+            shortplot = shortplot.encode('utf-8')
             item_id = item.get("Id")
            
             seriesId = item.get("SeriesId")          
@@ -330,6 +345,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".Plot", plot)
+            WINDOW.setProperty("LatestEpisodeMB3." + str(item_count) + ".ShortPlot", shortplot)
             
             WINDOW.setProperty("LatestEpisodeMB3.Enabled", "true")
             
@@ -338,7 +354,7 @@ class RecentInfoUpdaterThread(threading.Thread):
         #Updating Recent Unplayed TV Show List
         self.logMsg("Updating Recent Unplayed TV Show List")
                                                                                            
-        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/Latest?Limit=30&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,Overview&IsPlayed=false&GroupItems=false&IncludeItemTypes=Episode&format=json"
+        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/Latest?Limit=30&SortBy=DateCreated&Fields=Path,Genres,MediaStreams,ShortOverview,Overview&IsPlayed=false&GroupItems=false&IncludeItemTypes=Episode&format=json"
         
         jsonData = downloadUtils.downloadUrl(recentUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
@@ -376,7 +392,10 @@ class RecentInfoUpdaterThread(threading.Thread):
             if plot == None:
                 plot=''
             plot=plot.encode('utf-8')
-
+            shortplot = item.get("ShortOverview")
+            if shortplot == None:
+                shortplot = ''
+            shortplot = shortplot.encode('utf-8')
             item_id = item.get("Id")
            
             seriesId = item.get("SeriesId")          
@@ -427,6 +446,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestUnplayedEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
             WINDOW.setProperty("LatestUnplayedEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("LatestUnplayedEpisodeMB3." + str(item_count) + ".Plot", plot)
+            WINDOW.setProperty("LatestUnplayedEpisodeMB3." + str(item_count) + ".ShortPlot", shortplot)
             
             WINDOW.setProperty("LatestUnplayedEpisodeMB3.Enabled", "true")
             

@@ -1645,7 +1645,7 @@ def processDirectory(url, results, progress):
                    'poster'       : downloadUtils.getArtwork(item, "poster") , 
                    'tvshow.poster': downloadUtils.getArtwork(item, "tvshow.poster") ,
                    'banner'       : downloadUtils.getArtwork(item, "Banner") ,
-                   'clearlogo'    : downloadUtils.getArtwork(item, "Logo", "0",True) ,
+                   'clearlogo'    : downloadUtils.getArtwork(item, "Logo") ,
                    'discart'      : downloadUtils.getArtwork(item, "Disc") ,
                    'clearart'     : downloadUtils.getArtwork(item, "Art") ,
                    'landscape'    : downloadUtils.getArtwork(item, "Thumb") ,

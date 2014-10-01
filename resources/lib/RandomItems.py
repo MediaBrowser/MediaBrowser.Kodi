@@ -12,9 +12,9 @@ from datetime import datetime
 import urllib
 from DownloadUtils import DownloadUtils
 
-_MODE_BASICPLAY=12
+_MODE_BASICPLAY = 12
 
-#define our global download utils
+# define our global download utils
 downloadUtils = DownloadUtils()
 
 class RandomInfoUpdaterThread(threading.Thread):
@@ -28,11 +28,11 @@ class RandomInfoUpdaterThread(threading.Thread):
         if(level != None):
             self.logLevel = int(level)           
     
-        xbmc.log("XBMB3C RandomInfoUpdaterThread -> Log Level:" +  str(self.logLevel))
+        xbmc.log("XBMB3C RandomInfoUpdaterThread -> Log Level:" + str(self.logLevel))
         
         threading.Thread.__init__(self, *args)    
     
-    def logMsg(self, msg, level = 1):
+    def logMsg(self, msg, level=1):
         if(self.logLevel >= level):
             xbmc.log("XBMB3C RandomInfoUpdaterThread -> " + msg)               
     
@@ -67,9 +67,9 @@ class RandomInfoUpdaterThread(threading.Thread):
         
         self.logMsg("Updating Random Movie List")
         
-        randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
+        randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
                 
-        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=False, popup=1)
         result = json.loads(jsonData)
         self.logMsg("Random Movie Json Data : " + str(result), level=2)
         
@@ -77,7 +77,7 @@ class RandomInfoUpdaterThread(threading.Thread):
         if(result == None):
             result = []
             
-        WINDOW = xbmcgui.Window( 10000 )
+        WINDOW = xbmcgui.Window(10000)
 
         item_count = 1
         for item in result:
@@ -93,11 +93,15 @@ class RandomInfoUpdaterThread(threading.Thread):
                 criticratingsummary = item.get("CriticRatingSummary").encode('utf-8')
             plot = item.get("Overview")
             if plot == None:
-                plot=''
-            plot=plot.encode('utf-8')
+                plot = ''
+            plot = plot.encode('utf-8')
+            shortplot = item.get("ShortOverview")
+            if shortplot == None:
+                shortplot = ''
+            shortplot = shortplot.encode('utf-8')
             year = item.get("ProductionYear")
             if(item.get("RunTimeTicks") != None):
-                runtime = str(int(item.get("RunTimeTicks"))/(10000000*60))
+                runtime = str(int(item.get("RunTimeTicks")) / (10000000 * 60))
             else:
                 runtime = "0"
 
@@ -111,10 +115,10 @@ class RandomInfoUpdaterThread(threading.Thread):
             else:
               realthumb = fanart  
             
-            url =  mb3Host + ":" + mb3Port + ',;' + item_id
+            url = mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-            playUrl = playUrl.replace("\\\\","smb://")
-            playUrl = playUrl.replace("\\","/")    
+            playUrl = playUrl.replace("\\\\", "smb://")
+            playUrl = playUrl.replace("\\", "/")    
 
             self.logMsg("RandomMovieMB3." + str(item_count) + ".Title = " + title, level=2)
             self.logMsg("RandomMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, level=2)
@@ -142,6 +146,8 @@ class RandomInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".CriticRating", str(criticrating))
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".CriticRatingSummary", criticratingsummary)
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Plot", plot)
+            WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".ShortPlot", shortplot)
+            
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Year", str(year))
             WINDOW.setProperty("RandomMovieMB3." + str(item_count) + ".Runtime", str(runtime))
             
@@ -151,9 +157,9 @@ class RandomInfoUpdaterThread(threading.Thread):
         
         self.logMsg("Updating Random TV Show List")
         
-        randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json"
+        randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview,ShortOverview&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json"
                  
-        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=False, popup=1)
         result = json.loads(jsonData)
         self.logMsg("Random TV Show Json Data : " + str(result), level=2)
         
@@ -188,12 +194,15 @@ class RandomInfoUpdaterThread(threading.Thread):
             rating = str(item.get("CommunityRating"))
             plot = item.get("Overview")
             if plot == None:
-                plot=''
-            plot=plot.encode('utf-8')
-
+                plot = ''
+            plot = plot.encode('utf-8')
+            shortplot = item.get("ShortOverview")
+            if shortplot == None:
+                shortplot = ''
+            shortplot = shortplot.encode('utf-8')
             item_id = item.get("Id")
             seriesId = item.get("SeriesId")          
-            seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=False, popup=1 )
+            seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=False, popup=1)
             seriesResult = json.loads(seriesJsonData)      
            
             poster = downloadUtils.getArtwork(seriesResult, "Primary3") 
@@ -207,10 +216,10 @@ class RandomInfoUpdaterThread(threading.Thread):
             else:
               seriesthumbnail = fanart
               
-            url =  mb3Host + ":" + mb3Port + ',;' + item_id
+            url = mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-            playUrl = playUrl.replace("\\\\","smb://")
-            playUrl = playUrl.replace("\\","/")    
+            playUrl = playUrl.replace("\\\\", "smb://")
+            playUrl = playUrl.replace("\\", "/")    
 
             self.logMsg("RandomEpisodeMB3." + str(item_count) + ".EpisodeTitle = " + title, level=2)
             self.logMsg("RandomEpisodeMB3." + str(item_count) + ".ShowTitle = " + seriesName, level=2)
@@ -240,6 +249,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.banner)", banner)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".Plot", plot)
+            WINDOW.setProperty("RandomEpisodeMB3." + str(item_count) + ".ShortPlot", shortplot)
             
             WINDOW.setProperty("RandomEpisodeMB3.Enabled", "true")
             
@@ -250,7 +260,7 @@ class RandomInfoUpdaterThread(threading.Thread):
     
         randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=MusicAlbum&format=json"
     
-        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=False, popup=1)
         result = json.loads(jsonData)
         self.logMsg("Random MusicList Json Data : " + str(result), level=2)
     
@@ -285,10 +295,10 @@ class RandomInfoUpdaterThread(threading.Thread):
             fanart = downloadUtils.getArtwork(item, "Backdrop")
             banner = downloadUtils.getArtwork(item, "Banner")
             
-            url =  mb3Host + ":" + mb3Port + ',;' + item_id
+            url = mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-            playUrl = playUrl.replace("\\\\","smb://")
-            playUrl = playUrl.replace("\\","/")    
+            playUrl = playUrl.replace("\\\\", "smb://")
+            playUrl = playUrl.replace("\\", "/")    
 
             self.logMsg("RandomAlbumMB3." + str(item_count) + ".Title = " + title, level=2)
             self.logMsg("RandomAlbumMB3." + str(item_count) + ".Artist = " + artist, level=2)

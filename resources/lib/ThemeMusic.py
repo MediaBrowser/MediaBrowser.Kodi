@@ -111,8 +111,8 @@ class ThemeMusicThread(threading.Thread):
             # stop
             if  xbmc.Player().isPlayingAudio():
                 self.stop()
-    
-    
+            self.setVolume(self.volume)    
+                
     def stop(self, forceStop = False):
         # Only stop if playing audio
         if xbmc.Player().isPlayingAudio() or forceStop == True:

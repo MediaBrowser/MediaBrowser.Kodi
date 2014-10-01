@@ -69,7 +69,7 @@ class InProgressUpdaterThread(threading.Thread):
         
         self.logMsg("Updating In Progress Movie List")
         
-        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&Filters=IsResumable&IncludeItemTypes=Movie&format=json"
+        recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=Path,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary&Filters=IsResumable&IncludeItemTypes=Movie&format=json"
    
         jsonData = downloadUtils.downloadUrl(recentUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
@@ -95,6 +95,10 @@ class InProgressUpdaterThread(threading.Thread):
             if plot == None:
                 plot=''
             plot=plot.encode('utf-8')
+            shortplot = item.get("ShortOverview")
+            if shortplot == None:
+                shortplot = ''
+            shortplot = shortplot.encode('utf-8')
             year = item.get("ProductionYear")
             if(item.get("RunTimeTicks") != None):
                 runtime = str(int(item.get("RunTimeTicks"))/(10000000*60))
@@ -155,6 +159,8 @@ class InProgressUpdaterThread(threading.Thread):
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".CriticRating", str(criticrating))
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".CriticRatingSummary", criticratingsummary)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Plot", plot)
+            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".ShortPlot", shortplot)
+            
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Year", str(year))
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Runtime", str(runtime))
             

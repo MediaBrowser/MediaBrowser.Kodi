@@ -68,7 +68,7 @@ class SuggestedUpdaterThread(threading.Thread):
         
         self.logMsg("Updating Suggested List")
         
-        suggestedUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Movies/Recommendations?UserId=" + userid + "&categoryLimit=1&ItemLimit=6&Fields=Overview,CriticRatingSummary&format=json" 
+        suggestedUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Movies/Recommendations?UserId=" + userid + "&categoryLimit=1&ItemLimit=6&Fields=Overview,ShortOverview,CriticRatingSummary&format=json" 
         jsonData = downloadUtils.downloadUrl(suggestedUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("Suggested Movie Json Data : " + str(result), level=2)
@@ -101,6 +101,10 @@ class SuggestedUpdaterThread(threading.Thread):
             if plot == None:
                 plot=''
             plot=plot.encode('utf-8')
+            shortplot = item.get("ShortOverview")
+            if shortplot == None:
+                shortplot = ''
+            shortplot = shortplot.encode('utf-8')
             year = item.get("ProductionYear")
             if(item.get("RunTimeTicks") != None):
                 runtime = str(int(item.get("RunTimeTicks"))/(10000000*60))
@@ -149,6 +153,8 @@ class SuggestedUpdaterThread(threading.Thread):
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".CriticRating", str(criticrating))
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".CriticRatingSummary", criticratingsummary)
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Plot", plot)
+            WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".ShortPlot", shortplot)
+            
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Year", str(year))
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Runtime", str(runtime))
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".SuggestedMovieTitle", basemovie)

@@ -68,7 +68,7 @@ class NextUpUpdaterThread(threading.Thread):
         
         self.logMsg("Updating NextUp List")
         
-        nextUpUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Shows/NextUp?UserId=" + userid + "&Fields=Path,Genres,MediaStreams,Overview&format=json"
+        nextUpUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Shows/NextUp?UserId=" + userid + "&Fields=Path,Genres,MediaStreams,Overview,ShortOverview&format=json"
         
         jsonData = downloadUtils.downloadUrl(nextUpUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
@@ -109,7 +109,10 @@ class NextUpUpdaterThread(threading.Thread):
             if plot == None:
                 plot=''
             plot=plot.encode('utf-8')
-
+            shortplot = item.get("ShortOverview")
+            if shortplot == None:
+                shortplot = ''
+            shortplot = shortplot.encode('utf-8')
             item_id = item.get("Id")
             seriesId = item.get("SeriesId")          
             seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=False, popup=1 )
@@ -171,6 +174,8 @@ class NextUpUpdaterThread(threading.Thread):
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.small_poster)", small_poster)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Plot", plot)
+            WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".ShortPlot", shortplot)
+            
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Resume", resume)
             
             WINDOW.setProperty("NextUpEpisodeMB3.Enabled", "true")
