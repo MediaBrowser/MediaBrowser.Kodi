@@ -84,6 +84,11 @@
     <string id="30098">Sortierreihenfolge absteigend</string>
     <string id="30099">Sortierreihenfolge aufsteigend</string>
     <string id="30100">Zeige Mitwirkende</string>
+
+    <!-- resume dialog -->
+    <string id="30105">Fortsetzen</string>
+    <string id="30106">Fortsetzen bei</string>
+    <string id="30107">Am Anfang starten</string>
     
     <string id="30110">Benutzeroberfläche</string>
     <string id="30111">Lade Streaminformationen</string>

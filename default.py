@@ -853,9 +853,9 @@ def PLAY( url, handle ):
         reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
         seekTime = reasonableTicks / 10000
         displayTime = str(datetime.timedelta(seconds=seekTime))
-        display_list = [ "Resume from " + displayTime, "Start from beginning"]
+        display_list = [ __language__(30106) + ' ' + displayTime, __language__(30107)]
         resumeScreen = xbmcgui.Dialog()
-        resume_result = resumeScreen.select('Resume', display_list)
+        resume_result = resumeScreen.select(__language__(30105), display_list)
         if resume_result == -1:
           return
     
