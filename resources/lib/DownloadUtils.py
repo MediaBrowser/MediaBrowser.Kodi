@@ -149,7 +149,7 @@ class DownloadUtils():
         originalType = type
         if type == "Primary2" or type == "Primary3" or type=="SeriesPrimary":
             type = "Primary"
-        if type == "Backdrop2" or type=="Backdrop3":
+        if type == "Backdrop2" or type=="Backdrop3" or type=="BackdropNoIndicators":
             type = "Backdrop"
         if type == "Thumb2" or type=="Thumb3":
             type = "Thumb"
