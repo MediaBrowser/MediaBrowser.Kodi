@@ -135,6 +135,8 @@ class DownloadUtils():
             if type =="Primary2" or type=="Primary3":
                 id = data.get("SeasonId")
                 getSeriesData = True
+        if id == None:
+            id=data.get("Id")
         # if requested get parent info
         if getSeriesData == True and userParentInfo == True:
             self.logMsg("Using Parent Info for image link", level=1)
