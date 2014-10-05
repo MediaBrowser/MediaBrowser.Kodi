@@ -105,6 +105,7 @@ import json as json
    
 #define our global download utils
 downloadUtils = DownloadUtils()
+clientInfo = ClientInformation()
 
 def printDebug( msg, level = 1):
     if(logLevel >= level):
@@ -121,8 +122,8 @@ def printDebug( msg, level = 1):
 
 
 def getAuthHeader():
-    txt_mac = downloadUtils.getMachineId()
-    version = ClientInformation().getVersion()
+    txt_mac = clientInfo.getMachineId()
+    version = clientInfo.getVersion()
     userid = xbmcgui.Window( 10000 ).getProperty("userid")
     deviceName = __settings__.getSetting('deviceName')
     deviceName = deviceName.replace("\"", "_")

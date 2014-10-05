@@ -84,34 +84,12 @@ class DownloadUtils():
         WINDOW = xbmcgui.Window( 10000 )
         WINDOW.setProperty("userid", userid)
 
-        return userid            
-
-    def getMachineId(self):
-    
-        WINDOW = xbmcgui.Window( 10000 )
-        
-        clientId = WINDOW.getProperty("client_id")
-        
-        if(clientId == None or clientId == ""):
-            xbmc.log("CLIENT_ID - > No Client ID in WINDOW")
-            clientId = self.addonSettings.getSetting('client_id')
-        
-            if(clientId == None or clientId == ""):
-                xbmc.log("CLIENT_ID - > No Client ID in SETTINGS")
-                uuid = uuid4()
-                clientId = str("%012X" % uuid)
-                WINDOW.setProperty("client_id", clientId)
-                self.addonSettings.setSetting('client_id', clientId)
-                xbmc.log("CLIENT_ID - > New Client ID : " + clientId)
-            else:
-                WINDOW.setProperty('client_id', clientId)
-                xbmc.log("CLIENT_ID - > Client ID saved to WINDOW from Settings : " + clientId)
-                
-        return clientId
+        return userid
 
     def authenticate(self, url):
-        txt_mac = self.getMachineId()
-        version = ClientInformation().getVersion()
+        clientInfo = ClientInformation()
+        txt_mac = clientInfo.getMachineId()
+        version = clientInfo.getVersion()
 
         deviceName = self.addonSettings.getSetting('deviceName')
         deviceName = deviceName.replace("\"", "_")

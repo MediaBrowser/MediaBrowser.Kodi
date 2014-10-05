@@ -10,11 +10,13 @@ import json
 import threading
 from datetime import datetime
 from DownloadUtils import DownloadUtils
+from ClientInformation import ClientInformation
 import urllib
 import sys
 
 #define our global download utils
 downloadUtils = DownloadUtils()
+clientInfo = ClientInformation()
 
 ###########################################################################
 class PlayUtils():
@@ -68,7 +70,7 @@ class PlayUtils():
           if result.get("Type") == "Audio":
             playurl = 'http://' + server + '/mediabrowser/Audio/' + id + '/stream.mp3'
           else:
-            txt_mac = downloadUtils.getMachineId()
+            txt_mac = clientInfo.getMachineId()
             playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/master.m3u8?mediaSourceId=' + id
             playurl = playurl + '&videoCodec=h264'
             playurl = playurl + '&AudioCodec=aac,ac3'
