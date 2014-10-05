@@ -11,7 +11,7 @@ import gzip
 import sys
 import json as json
 from random import randrange
-from uuid import getnode as get_mac
+from uuid import uuid4 as uuid4
 from ClientInformation import ClientInformation
 
 class DownloadUtils():
@@ -87,7 +87,27 @@ class DownloadUtils():
         return userid            
 
     def getMachineId(self):
-        return "%012X"%get_mac()
+    
+        WINDOW = xbmcgui.Window( 10000 )
+        
+        clientId = WINDOW.getProperty("client_id")
+        
+        if(clientId == None or clientId == ""):
+            xbmc.log("CLIENT_ID - > No Client ID in WINDOW")
+            clientId = self.addonSettings.getSetting('client_id')
+        
+            if(clientId == None or clientId == ""):
+                xbmc.log("CLIENT_ID - > No Client ID in SETTINGS")
+                uuid = uuid4()
+                clientId = str("%012X" % uuid)
+                WINDOW.setProperty("client_id", clientId)
+                self.addonSettings.setSetting('client_id', clientId)
+                xbmc.log("CLIENT_ID - > New Client ID : " + clientId)
+            else:
+                WINDOW.setProperty('client_id', clientId)
+                xbmc.log("CLIENT_ID - > Client ID saved to WINDOW from Settings : " + clientId)
+                
+        return clientId
 
     def authenticate(self, url):
         txt_mac = self.getMachineId()
