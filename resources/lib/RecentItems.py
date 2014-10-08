@@ -121,6 +121,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             thumbnail = downloadUtils.getArtwork(item, "Primary")
             logo = downloadUtils.getArtwork(item, "Logo")
             fanart = downloadUtils.getArtwork(item, "Backdrop")
+            discart = downloadUtils.getArtwork(item, "Disc")
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
@@ -131,6 +132,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             self.logMsg("LatestMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, level=2)
             self.logMsg("LatestMovieMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
             self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=2)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(discart)  = " + discart, level=2)
             self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=2)
             self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=2)
             self.logMsg("LatestMovieMB3." + str(item_count) + ".Rating  = " + str(rating), level=2)
@@ -144,6 +146,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Thumb", thumbnail)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Path", playUrl)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Art(fanart)", fanart)
+            WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Art(discart)", discart)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Art(poster)", thumbnail)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Rating", str(rating))

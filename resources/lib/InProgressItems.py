@@ -122,6 +122,7 @@ class InProgressUpdaterThread(threading.Thread):
             thumbnail = downloadUtils.getArtwork(item, "Primary2")
             logo = downloadUtils.getArtwork(item, "Logo")
             fanart = downloadUtils.getArtwork(item, "Backdrop")
+            discart = downloadUtils.getArtwork(item, "Disc")
             medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
             
             if item.get("ImageTags").get("Thumb") != None:
@@ -138,6 +139,7 @@ class InProgressUpdaterThread(threading.Thread):
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Thumb = " + realthumbnail, level=2)
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=2)
+            self.logMsg("InProgressMovieMB3." + str(item_count) + ".Art(discart)  = " + discart, level=2)
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=2)
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=2)
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Rating  = " + str(rating), level=2)
@@ -151,6 +153,7 @@ class InProgressUpdaterThread(threading.Thread):
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Thumb", realthumbnail)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Path", playUrl)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(fanart)", fanart)
+            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(discart)", discart)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(medium_fanart)", medium_fanart)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(poster)", thumbnail)
@@ -174,6 +177,7 @@ class InProgressUpdaterThread(threading.Thread):
             WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Thumb", "")
             WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Path", "")
             WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Art(fanart)", "")
+            WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Art(discart)", "")
             WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Art(clearlogo)", "")
             WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Art(poster)", "")
             WINDOW.setProperty("InProgressMovieMB3." + str(x) + ".Rating", "")
