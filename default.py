@@ -244,7 +244,7 @@ def getCollections(detailsString):
     result = result.get("Items")
     
     for item in result:
-        if(item.get("RecursiveItemCount") != "0"):
+        if(item.get("RecursiveItemCount") != 0):
             Name =(item.get("Name")).encode('utf-8')
             if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
                 __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
