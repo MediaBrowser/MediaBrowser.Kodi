@@ -165,12 +165,13 @@ class DownloadUtils():
         height = "10000"
         width = "10000"
         played = "0"
+        totalbackdrops = 0
 
         if self.addonSettings.getSetting('showIndicators')=='true': # add watched, unplayedcount and percentage played indicators to posters
 
             if (originalType =="Primary" or  originalType =="Backdrop" or  originalType =="Banner") and data.get("Type") != "Episode":
                 userData = data.get("UserData")
-                if originalType =="Backdrop" and index == "0":
+                if originalType =="Backdrop" and index == "0" and data.get("BackdropImageTags") != None:
                   totalbackdrops = len(data.get("BackdropImageTags"))
                   if totalbackdrops != 0:
                     index = str(randrange(0,totalbackdrops))
