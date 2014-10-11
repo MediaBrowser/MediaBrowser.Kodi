@@ -1,5 +1,8 @@
-from uuid import getnode as get_mac
+from uuid import uuid4 as uuid4
+import xbmc
 import xbmcaddon
+import xbmcgui
+
 
 class ClientInformation():
 
@@ -8,7 +11,7 @@ class ClientInformation():
         WINDOW = xbmcgui.Window( 10000 )
         
         clientId = WINDOW.getProperty("client_id")
-        
+        self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         if(clientId == None or clientId == ""):
             xbmc.log("CLIENT_ID - > No Client ID in WINDOW")
             clientId = self.addonSettings.getSetting('client_id')
