@@ -193,7 +193,9 @@
     <string id="30202">Please remember to turn off when finished testing.</string>              
     <string id="30203">Error in ArtworkRotationThread</string>              
     <string id="30204">Unable to connect to host</string>         
-    <string id="30205">Error in LoadMenuOptionsThread</string>        
+    <string id="30205">Error in LoadMenuOptionsThread</string>     
+    
+    <string id="30206">Enable Playlists Loader (Requires Restart)</string>   
     
 	<!-- Default views -->
     <string id="30300">Active</string>              

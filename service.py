@@ -42,6 +42,7 @@ from ClientInformation import ClientInformation
 from MenuLoad import LoadMenuOptionsThread
 from ImageProxy import MyHandler
 from ImageProxy import ThreadingHTTPServer
+from PlaylistItems import PlaylistItemUpdaterThread
 
 _MODE_BASICPLAY=12
 
@@ -129,6 +130,13 @@ if __addon__.getSetting('useInfoLoader') == "true":
     newInfoThread.start()
 else:
     xbmc.log("XBMB3C Service InfoLoader Disabled")
+    
+newPlaylistsThread = None
+if __addon__.getSetting('usePlaylistsUpdater') == "true":
+    newPlaylistsThread = PlaylistItemUpdaterThread()
+    newPlaylistsThread.start()
+else:
+    xbmc.log("XBMB3C Service PlaylistsUpdater Disabled")
     
 ###############################################
 # start the image proxy server
