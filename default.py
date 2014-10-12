@@ -289,7 +289,6 @@ def getCollections(detailsString):
     collections.append({'title':__language__(30183), 'sectype' : 'std.music', 'section' : 'music' , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMusic") + '&Recursive=true&SortBy=PlayCount&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsPlayed&IncludeItemTypes=MusicAlbum&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':__language__(30184), 'sectype' : 'std.tvshows', 'section' : 'tvshows' , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=PremiereDate&Fields=' + detailsString + '&SortOrder=Ascending&Filters=IsUnplayed&IsVirtualUnaired=true&IsNotFolder&IncludeItemTypes=Episode&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':__language__(30185), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=BoxSet&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
-    collections.append({'title':__language__(30186), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=Trailer&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':__language__(30187), 'sectype' : 'std.music', 'section' : 'musicvideos'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=MusicVideo&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':__language__(30188), 'sectype' : 'std.photo', 'section' : 'photos'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&IncludeItemTypes=Photo&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':__language__(30189), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&Filters=IsUnplayed&IncludeItemTypes=Movie&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
@@ -621,7 +620,7 @@ def addContextMenu(details, extraData, folder):
         argsToPass = 'delete,' + extraData.get('deleteurl')
         commands.append(( __language__(30043), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
         
-        if  extraData.get('itemtype') == 'Trailer':
+        if details.get('channelname') == 'Trailers':
             commands.append(( __language__(30046),"XBMC.RunPlugin(%s)" % CP_ADD_URL % details.get('title')))
             
     return(commands)
@@ -1469,10 +1468,7 @@ def processDirectory(url, results, progress):
             viewType="_MOVIES"
         elif item.get("Type") == "BoxSet":
             xbmcplugin.setContent(pluginhandle, 'movies')
-            viewType="_BOXSETS"
-        elif item.get("Type") == "Trailer":
-            xbmcplugin.setContent(pluginhandle, 'movies')
-            viewType="_TRAILERS"            
+            viewType="_BOXSETS"          
         elif item.get("Type") == "Series":
             xbmcplugin.setContent(pluginhandle, 'tvshows')
             viewType="_SERIES"
@@ -1881,13 +1877,19 @@ def processChannels(url, results, progress):
         
         if(item.get("ChannelId") != None):
            channelId = str(item.get("ChannelId")).encode('utf-8')
+        
+        channelName = ''   
+        if(item.get("ChannelName") != None):
+           channelName = item.get("ChannelName").encode('utf-8')   
+           
         # Populate the details list
-        details={'title'        : tempTitle}
+        details={'title'        : tempTitle,
+                 'channelname'   : channelName}
         
         viewType=""
         if item.get("Type") == "ChannelVideoItem":
             xbmcplugin.setContent(pluginhandle, 'movies')
-            viewType="_MOVIES"
+            viewType="_TRAILERS"
         elif item.get("Type") == "ChannelAudioItem":
             xbmcplugin.setContent(pluginhandle, 'songs')
             viewType='_MUSICTRACKS'
