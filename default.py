@@ -1991,7 +1991,7 @@ def processChannels(url, results, progress):
         viewType=""
         if item.get("Type") == "ChannelVideoItem":
             xbmcplugin.setContent(pluginhandle, 'movies')
-            viewType="_TRAILERS"
+            viewType="_CHANNELS"
         elif item.get("Type") == "ChannelAudioItem":
             xbmcplugin.setContent(pluginhandle, 'songs')
             viewType='_MUSICTRACKS'
@@ -2744,8 +2744,8 @@ def showParentContent(pluginName, handle, params):
     getContent(contentUrl)
     
 def showViewList(url, pluginhandle):
-    viewCats=[__language__(30302), __language__(30303), __language__(30304), __language__(30305), __language__(30306), __language__(30307), __language__(30308), __language__(30309), __language__(30310), __language__(30311)]
-    viewTypes=['_MOVIES', '_BOXSETS', '_TRAILERS', '_SERIES', '_SEASONS', '_EPISODES', '_MUSICARTISTS', '_MUSICALBUMS', '_MUSICVIDEOS', '_MUSICTRACKS']
+    viewCats=[__language__(30302), __language__(30303), __language__(30312), __language__(30305), __language__(30306), __language__(30307), __language__(30308), __language__(30309), __language__(30310), __language__(30311)]
+    viewTypes=['_MOVIES', '_BOXSETS', '_CHANNELS', '_SERIES', '_SEASONS', '_EPISODES', '_MUSICARTISTS', '_MUSICALBUMS', '_MUSICVIDEOS', '_MUSICTRACKS']
     if "SETVIEWS" in url:
         for viewCat in viewCats:
             xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c/?url=_SHOWVIEWS' + viewTypes[viewCats.index(viewCat)] + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem(viewCat, ''), isFolder=True)
