@@ -1882,9 +1882,111 @@ def processChannels(url, results, progress):
         if(item.get("ChannelName") != None):
            channelName = item.get("ChannelName").encode('utf-8')   
            
+        if(item.get("PremiereDate") != None):
+            premieredatelist = (item.get("PremiereDate")).split("T")
+            premieredate = premieredatelist[0]
+        else:
+            premieredate = ""
+        
+        # Process MediaStreams
+        channels = ''
+        videocodec = ''
+        audiocodec = ''
+        height = ''
+        width = ''
+        aspectratio = '1:1'
+        aspectfloat = 1.85
+        
+        mediaSources = item.get("MediaSources")
+        if(mediaSources != None):
+            mediaStreams = mediaSources[0].get("MediaStreams")
+            if(mediaStreams != None):
+                for mediaStream in mediaStreams:
+                    if(mediaStream.get("Type") == "Video"):
+                        videocodec = mediaStream.get("Codec")
+                        height = str(mediaStream.get("Height"))
+                        width = str(mediaStream.get("Width"))
+                        aspectratio = mediaStream.get("AspectRatio")
+                        if aspectratio != None and len(aspectratio) >= 3:
+                            try:
+                                aspectwidth,aspectheight = aspectratio.split(':')
+                                aspectfloat = float(aspectwidth) / float(aspectheight)
+                            except:
+                                aspectfloat = 1.85
+                    if(mediaStream.get("Type") == "Audio"):
+                        audiocodec = mediaStream.get("Codec")
+                        channels = mediaStream.get("Channels")
+                
+        # Process People
+        director=''
+        writer=''
+        cast=[]
+        people = item.get("People")
+        if(people != None):
+            for person in people:
+                if(person.get("Type") == "Director"):
+                    director = director + person.get("Name") + ' ' 
+                if(person.get("Type") == "Writing"):
+                    writer = person.get("Name")
+                if(person.get("Type") == "Writer"):
+                    writer = person.get("Name")                 
+                if(person.get("Type") == "Actor"):
+                    Name = person.get("Name")
+                    Role = person.get("Role")
+                    if Role == None:
+                        Role = ''
+                    cast.append(Name)
+
+        # Process Studios
+        studio = ""
+        studios = item.get("Studios")
+        if(studios != None):
+            for studio_string in studios:
+                if studio=="": #Just take the first one
+                    temp=studio_string.get("Name")
+                    studio=temp.encode('utf-8')
+        # Process Genres
+        genre = ""
+        genres = item.get("Genres")
+        if(genres != None and genres != []):
+            for genre_string in genres:
+                if genre == "": #Just take the first genre
+                    genre = genre_string
+                elif genre_string != None:
+                    genre = genre + " / " + genre_string
+                
+        # Process UserData
+        userData = item.get("UserData")
+        PlaybackPositionTicks = '100'
+        overlay = "0"
+        favorite = "false"
+        seekTime = 0
+        if(userData != None):
+            if userData.get("Played") != True:
+                overlay = "7"
+                watched = "true"
+            else:
+                overlay = "6"
+                watched = "false"
+            if userData.get("IsFavorite") == True:
+                overlay = "5"
+                favorite = "true"
+            else:
+                favorite = "false"
+            if userData.get("PlaybackPositionTicks") != None:
+                PlaybackPositionTicks = str(userData.get("PlaybackPositionTicks"))
+                reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
+                seekTime = reasonableTicks / 10000
+        
+        playCount = 0
+        if(userData != None and userData.get("Played") == True):
+            playCount = 1
         # Populate the details list
         details={'title'        : tempTitle,
-                 'channelname'   : channelName}
+                 'channelname'  : channelName,
+                 'plot'         : item.get("Overview"),
+                 'Overlay'      : overlay,
+                 'playcount'    : str(playCount)}
         
         viewType=""
         if item.get("Type") == "ChannelVideoItem":
@@ -1916,7 +2018,22 @@ def processChannels(url, results, progress):
                    'clearart'     : downloadUtils.getArtwork(item, "Art") ,
                    'landscape'    : downloadUtils.getArtwork(item, "Thumb") ,
                    'id'           : id ,
+                   'rating'       : item.get("CommunityRating"),
                    'year'         : item.get("ProductionYear"),
+                   'premieredate' : premieredate,
+                   'studio'       : studio,
+                   'genre'        : genre,
+                   'playcount'    : str(playCount),
+                   'director'     : director,
+                   'writer'       : writer,
+                   'channels'     : channels,
+                   'videocodec'   : videocodec,
+                   'aspectratio'  : str(aspectfloat),
+                   'audiocodec'   : audiocodec,
+                   'height'       : height,
+                   'width'        : width,
+                   'cast'         : cast,
+                   'favorite'     : favorite,   
                    'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
                    'favoriteurl'  : 'http://' + server + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id,
                    'deleteurl'    : 'http://' + server + '/mediabrowser/Items/' + id,                   
