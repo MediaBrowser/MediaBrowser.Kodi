@@ -317,6 +317,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             logo = downloadUtils.getArtwork(seriesResult, "Logo")          
             fanart = downloadUtils.getArtwork(item, "Backdrop")
             banner = downloadUtils.getArtwork(item, "Banner")
+			
             if item.get("SeriesThumbImageTag") != None:
               seriesthumbnail = downloadUtils.getArtwork(item, "Thumb3")
             else:

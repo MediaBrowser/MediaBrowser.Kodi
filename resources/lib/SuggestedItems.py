@@ -117,6 +117,7 @@ class SuggestedUpdaterThread(threading.Thread):
             fanart = downloadUtils.getArtwork(item, "Backdrop")
             landscape = downloadUtils.getArtwork(item, "Thumb3")
             medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
+			
             if item.get("ImageTags").get("Thumb") != None:
               realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
             else:

@@ -208,15 +208,17 @@ class RandomInfoUpdaterThread(threading.Thread):
             seriesResult = json.loads(seriesJsonData)      
            
             poster = downloadUtils.getArtwork(seriesResult, "Primary3") 
-            thumbnail = downloadUtils.getArtwork(seriesResult, "Primary")
+            thumbnail = downloadUtils.getArtwork(item, "Primary")
             logo = downloadUtils.getArtwork(seriesResult, "Logo")
             fanart = downloadUtils.getArtwork(item, "Backdrop")
             medium_fanart = downloadUtils.getArtwork(seriesResult, "Backdrop3")
             banner = downloadUtils.getArtwork(item, "Banner")
+			
             if item.get("SeriesThumbImageTag") != None:
-              seriesthumbnail = downloadUtils.getArtwork(item, "Thumb3")
+              seriesthumbnail = downloadUtils.getArtwork(seriesResult, "Thumb3")
             else:
               seriesthumbnail = fanart
+			
               
             url = mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
