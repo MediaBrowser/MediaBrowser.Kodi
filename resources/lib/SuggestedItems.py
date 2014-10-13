@@ -115,6 +115,7 @@ class SuggestedUpdaterThread(threading.Thread):
             thumbnail = downloadUtils.getArtwork(item, "Primary")
             logo = downloadUtils.getArtwork(item, "Logo")
             fanart = downloadUtils.getArtwork(item, "Backdrop")
+            landscape = downloadUtils.getArtwork(item, "Thumb3")
             medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
             if item.get("ImageTags").get("Thumb") != None:
               realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
@@ -145,6 +146,7 @@ class SuggestedUpdaterThread(threading.Thread):
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Thumb", realthumbnail)
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Path", playUrl)
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Art(fanart)", fanart)
+            WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Art(landscape)", landscape)
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Art(medium_fanart)", medium_fanart)
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
             WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Art(poster)", thumbnail)

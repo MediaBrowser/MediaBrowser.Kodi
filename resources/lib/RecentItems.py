@@ -121,6 +121,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             thumbnail = downloadUtils.getArtwork(item, "Primary")
             logo = downloadUtils.getArtwork(item, "Logo")
             fanart = downloadUtils.getArtwork(item, "Backdrop")
+            landscape = downloadUtils.getArtwork(item, "Thumb3")
             discart = downloadUtils.getArtwork(item, "Disc")
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
@@ -132,6 +133,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             self.logMsg("LatestMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, level=2)
             self.logMsg("LatestMovieMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
             self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=2)
+            self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(landscape)  = " + landscape, level=2)
             self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(discart)  = " + discart, level=2)
             self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=2)
             self.logMsg("LatestMovieMB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=2)
@@ -146,6 +148,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Thumb", thumbnail)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Path", playUrl)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Art(fanart)", fanart)
+            WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Art(landscape)", landscape)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Art(discart)", discart)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
             WINDOW.setProperty("LatestMovieMB3." + str(item_count) + ".Art(poster)", thumbnail)
@@ -209,6 +212,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             logo = downloadUtils.getArtwork(item, "Logo")
             fanart = downloadUtils.getArtwork(item, "Backdrop")
             medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
+            landscape = downloadUtils.getArtwork(item, "Thumb3")
             
             if (item.get("ImageTags") != None and item.get("ImageTags").get("Thumb") != None):
               realthumb = downloadUtils.getArtwork(item, "Thumb3")
@@ -237,6 +241,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Thumb", thumbnail)
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Path", playUrl)
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Art(fanart)", fanart)
+            WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Art(landscape)", landscape)
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Art(medium_fanart)", medium_fanart)
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Art(poster)", thumbnail)

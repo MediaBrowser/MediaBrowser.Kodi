@@ -119,16 +119,17 @@ class InProgressUpdaterThread(threading.Thread):
                 title = str(perasint) + "% " + title        
                 
             item_id = item.get("Id")
-            thumbnail = downloadUtils.getArtwork(item, "Primary2")
+            thumbnail = downloadUtils.getArtwork(item, "Primary")
             logo = downloadUtils.getArtwork(item, "Logo")
             fanart = downloadUtils.getArtwork(item, "Backdrop")
+            landscape = downloadUtils.getArtwork(item, "Thumb3")
             discart = downloadUtils.getArtwork(item, "Disc")
             medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
-            
-            if item.get("ImageTags").get("Thumb") != None:
-              realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
+			
+            if (item.get("ImageTags") != None and item.get("ImageTags").get("Thumb") != None):
+              realthumb = downloadUtils.getArtwork(item, "Thumb3")
             else:
-              realthumbnail = fanart
+              realthumb = thumbnail
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
@@ -136,7 +137,7 @@ class InProgressUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\","/")    
 
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Title = " + title, level=2)
-            self.logMsg("InProgressMovieMB3." + str(item_count) + ".Thumb = " + realthumbnail, level=2)
+            self.logMsg("InProgressMovieMB3." + str(item_count) + ".Thumb = " + realthumb, level=2)
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=2)
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Art(discart)  = " + discart, level=2)
@@ -150,9 +151,10 @@ class InProgressUpdaterThread(threading.Thread):
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Runtime  = " + str(runtime), level=2)
             
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Title", title)
-            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Thumb", realthumbnail)
+            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Thumb", realthumb)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Path", playUrl)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(fanart)", fanart)
+            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(landscape)", landscape)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(discart)", discart)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(medium_fanart)", medium_fanart)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
