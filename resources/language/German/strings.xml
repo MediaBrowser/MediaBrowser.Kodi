@@ -121,7 +121,7 @@
     
     <string id="30139">Themen-Musik aktivieren (Erfordert Neustart)</string>
     <string id="30140"> - Themen-Musik in Schleife abspielen</string>
-    <string id="30141">Hintergrundbild aktivieren (Erfordert Neustart)</string>
+    <string id="30141">Laden im Hintergrund aktivieren (Erfordert Neustart)</string>
     <string id="30142">Dienste</string>
     <string id="30143">Info-Loader aktivieren (Erfordert Neustart)</string>
     <string id="30144">Menü-Loader aktivieren (Erfordert Neustart)</string>
@@ -191,6 +191,8 @@
     <string id="30203">Fehler in ArtworkRotationThread</string>
     <string id="30204">Verbindung zum Server fehlgeschlagen</string>
     <string id="30205">Fehler in LoadMenuOptionsThread</string>
+    
+    <string id="30206">'Playlist'-Loader aktivieren (Erfordert Neustart)</string> 
 
 	<!-- Default views -->
     <string id="30300">Aktiviert</string>              
