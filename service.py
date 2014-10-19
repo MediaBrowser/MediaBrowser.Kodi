@@ -5,7 +5,6 @@ import urllib
 import httplib
 import os
 import time
-import requests
 import socket
 
 import threading
@@ -43,21 +42,18 @@ from MenuLoad import LoadMenuOptionsThread
 from ImageProxy import MyHandler
 from ImageProxy import ThreadingHTTPServer
 from PlaylistItems import PlaylistItemUpdaterThread
+from DownloadUtils import DownloadUtils
+
 
 _MODE_BASICPLAY=12
 
-def getAuthHeader():
-    addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-    deviceName = addonSettings.getSetting('deviceName')
-    deviceName = deviceName.replace("\"", "_") # might need to url encode this as it is getting added to the header and is user entered data
-    clientInfo = ClientInformation()
-    txt_mac = clientInfo.getMachineId()
-    version = clientInfo.getVersion()  
-    userid = xbmcgui.Window( 10000 ).getProperty("userid")
-    authString = "MediaBrowser UserId=\"" + userid + "\",Client=\"XBMC\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
-    headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}
-    xbmc.log("XBMB3C Authentication Header : " + str(headers))
-    return headers 
+downloadUtils = DownloadUtils()
+
+# auth the service
+try:
+    downloadUtils.authenticate()
+except Exception, e:
+    pass 
 
 # start some worker threads
 
@@ -161,7 +157,7 @@ def deleteItem (url):
         xbmc.log('Deleting via URL: ' + url)
         progress = xbmcgui.DialogProgress()
         progress.create(__language__(30052), __language__(30053))
-        resp = requests.delete(url, data='', headers=getAuthHeader())
+        downloadUtils.downloadUrl(url, type="DELETE")
         deleteSleep=0
         while deleteSleep<10:
             xbmc.sleep(1000)
@@ -175,22 +171,23 @@ def deleteItem (url):
         
 def markWatched(url):
     xbmc.log('XBMB3C Service -> Marking watched via: ' + url)
-    resp = requests.post(url, data='', headers=getAuthHeader())
-    
+    downloadUtils.downloadUrl(url, type="DELETE")
+    downloadUtils.downloadUrl(url, postBody="", type="POST")
+       
 def markUnWatched(url):
     xbmc.log('XBMB3C Service -> Marking watched via: ' + url)
-    resp = requests.delete(url, data='', headers=getAuthHeader())    
+    downloadUtils.downloadUrl(url, type="DELETE")
 
 def setPosition (url, method):
     xbmc.log('XBMB3C Service -> Setting position via: ' + url)
     if method == 'POST':
-        resp = requests.post(url, data='', headers=getAuthHeader())
+        downloadUtils.downloadUrl(url, postBody="", type="POST")
     elif method == 'DELETE':
-        resp = requests.delete(url, data='', headers=getAuthHeader())
+        downloadUtils.downloadUrl(url, type="DELETE")
         
 def stopTranscoding(url):
     xbmc.log('XBMB3C Service -> Stopping transcoding: ' + url)
-    resp = requests.delete(url, data='', headers=getAuthHeader())    
+    downloadUtils.downloadUrl(url, type="DELETE")
 
         
 def hasData(data):

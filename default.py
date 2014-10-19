@@ -43,7 +43,6 @@ import inspect
 import base64
 import random
 import datetime
-import requests
 from urlparse import urlparse
 import cProfile
 import pstats
@@ -308,26 +307,25 @@ def getCollections(detailsString):
     return collections
 
 def markWatched (url):
-    resp = requests.delete(url, data='', headers=getAuthHeader()) # mark unwatched first to reset any play position
-    resp = requests.post(url, data='', headers=getAuthHeader())
+    downloadUtils.downloadUrl(url, postBody="", type="POST")  
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("force_data_reload", "true")  
     xbmc.executebuiltin("Container.Refresh")
-
+    
 def markUnwatched (url):
-    resp = requests.delete(url, data='', headers=getAuthHeader())
+    downloadUtils.downloadUrl(url, type="DELETE")
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("force_data_reload", "true")      
     xbmc.executebuiltin("Container.Refresh")
 
 def markFavorite (url):
-    resp = requests.post(url, data='', headers=getAuthHeader())
+    downloadUtils.downloadUrl(url, postBody="", type="POST")
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("force_data_reload", "true")    
     xbmc.executebuiltin("Container.Refresh")
     
 def unmarkFavorite (url):
-    resp = requests.delete(url, data='', headers=getAuthHeader())
+    downloadUtils.downloadUrl(url, type="DELETE")
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("force_data_reload", "true")    
     xbmc.executebuiltin("Container.Refresh")
@@ -401,7 +399,7 @@ def delete (url):
         printDebug('Deleting via URL: ' + url)
         progress = xbmcgui.DialogProgress()
         progress.create(__language__(30052), __language__(30053))
-        resp = requests.delete(url, data='', headers=getAuthHeader())
+        downloadUtils.downloadUrl(url, type="DELETE")
         deleteSleep=0
         while deleteSleep<10:
             xbmc.sleep(1000)

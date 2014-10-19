@@ -4,7 +4,6 @@ import xbmcaddon
 import urllib
 import urllib2
 import httplib
-import requests
 import hashlib
 import StringIO
 import gzip
@@ -34,6 +33,13 @@ class DownloadUtils():
 
     def getUserId(self):
 
+        WINDOW = xbmcgui.Window( 10000 )
+        userid = WINDOW.getProperty("userid")
+
+        if(userid != None and userid != ""):
+            self.logMsg("DownloadUtils -> Returning saved UserID : " + userid)
+            return userid
+    
         port = self.addonSettings.getSetting('port')
         host = self.addonSettings.getSetting('ipaddress')
         userName = self.addonSettings.getSetting('username')
@@ -42,12 +48,11 @@ class DownloadUtils():
 
         jsonData = None
         try:
-            jsonData = self.downloadUrl(host + ":" + port + "/mediabrowser/Users/Public?format=json")
+            jsonData = self.downloadUrl(host + ":" + port + "/mediabrowser/Users/Public?format=json", authenticate=False)
         except Exception, msg:
             error = "Get User unable to connect to " + host + ":" + port + " : " + str(msg)
             xbmc.log (error)
             return ""
-
 
         self.logMsg("GETUSER_JSONDATA_01:" + str(jsonData))
 
@@ -73,20 +78,35 @@ class DownloadUtils():
                 break
 
         if(secure):
-            self.authenticate('http://' + host + ":" + port + "/mediabrowser/Users/AuthenticateByName?format=json")
+            authOk = self.authenticate()
+            if(authOk == ""):
+                return_value = xbmcgui.Dialog().ok(self.getString(30044), self.getString(30044))
+                return ""
 
         if userid == "":
             return_value = xbmcgui.Dialog().ok(self.getString(30045),self.getString(30045))
-            sys.exit()
 
         self.logMsg("userid : " + userid)
 
-        WINDOW = xbmcgui.Window( 10000 )
         WINDOW.setProperty("userid", userid)
 
         return userid
 
-    def authenticate(self, url):
+    def authenticate(self):    
+        WINDOW = xbmcgui.Window( 10000 )
+
+        token = WINDOW.getProperty("AccessToken")
+        if(token != None and token != ""):
+            self.logMsg("DownloadUtils -> Returning saved AccessToken : " + token)
+            return token
+        
+        port = self.addonSettings.getSetting("port")
+        host = self.addonSettings.getSetting("ipaddress")
+        if(host == None or host == "" or port == None or port == ""):
+            return ""
+            
+        url = "http://" + self.addonSettings.getSetting("ipaddress") + ":" + self.addonSettings.getSetting("port") + "/mediabrowser/Users/AuthenticateByName?format=json"
+    
         clientInfo = ClientInformation()
         txt_mac = clientInfo.getMachineId()
         version = clientInfo.getVersion()
@@ -97,17 +117,26 @@ class DownloadUtils():
         authString = "Mediabrowser Client=\"XBMC\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
         headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}    
         sha1 = hashlib.sha1(self.addonSettings.getSetting('password'))
-        resp = requests.post(url, data={'password':sha1.hexdigest(),'Username':self.addonSettings.getSetting('username')}, headers=headers)
-        code=str(resp.status_code)
-        result = resp.json()
-        if result.get("AccessToken") != self.addonSettings.getSetting('AccessToken'):
-            self.addonSettings.setSetting('AccessToken', result.get("AccessToken"))
-        if int(code) >= 200 and int(code)<300:
-            self.logMsg("User Authenticated")
+        
+        messageData = "username=" + self.addonSettings.getSetting('username') + "&password=" + sha1.hexdigest()
+
+        resp = self.downloadUrl(url, postBody=messageData, type="POST", authenticate=False)
+
+        accessToken = None
+        try:
+            result = json.loads(resp)
+            accessToken = result.get("AccessToken")
+        except:
+            pass
+
+        if(accessToken != None):
+            self.logMsg("User Authenticated : " + accessToken)
+            WINDOW.setProperty("AccessToken", accessToken)
+            return accessToken
         else:
             self.logMsg("User NOT Authenticated")
-            return_value = xbmcgui.Dialog().ok(self.getString(30044), self.getString(30044))
-            sys.exit()            
+            WINDOW.setProperty("AccessToken", "")
+            return ""            
 
     def getArtwork(self, data, type, index = "0", userParentInfo = False):
 
@@ -350,51 +379,79 @@ class DownloadUtils():
         server = host + ":" + port
         
         return "http://" + server + "/mediabrowser/Items/" + str(id) + "/Images/" + type + "/" + str(index) + "/e3ab56fe27d389446754d0fb04910a34/original/" + str(height) + "/" + str(width) + "/0"
+    
+    def getAuthHeader(self, authenticate=True):
+        clientInfo = ClientInformation()
+        txt_mac = clientInfo.getMachineId()
+        version = clientInfo.getVersion()
         
-    def downloadUrl(self, url, suppress=False, type="GET", popup=0 ):
+        deviceName = self.addonSettings.getSetting('deviceName')
+        deviceName = deviceName.replace("\"", "_")
+
+        if(authenticate == False):
+            authString = "MediaBrowser Client=\"XBMC\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+            headers = {"Accept-encoding": "gzip", "Accept-Charset" : "UTF-8,*", "Authorization" : authString}        
+            return headers
+        else:
+            userid = self.getUserId()
+            authString = "MediaBrowser UserId=\"" + userid + "\",Client=\"XBMC\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+            headers = {"Accept-encoding": "gzip", "Accept-Charset" : "UTF-8,*", "Authorization" : authString}        
+                
+            authToken = self.authenticate()
+            if(authToken != ""):
+                headers["X-MediaBrowser-Token"] = authToken
+                    
+            self.logMsg("Authentication Header : " + str(headers))
+            return headers
+        
+    def downloadUrl(self, url, suppress=False, postBody=None, type="GET", popup=0, authenticate=True ):
         self.logMsg("== ENTER: getURL ==")
+        link = ""
         try:
             if url[0:4] == "http":
-                serversplit=2
-                urlsplit=3
+                serversplit = 2
+                urlsplit = 3
             else:
-                serversplit=0
-                urlsplit=1
+                serversplit = 0
+                urlsplit = 1
 
-            server=url.split('/')[serversplit]
-            urlPath="/"+"/".join(url.split('/')[urlsplit:])
+            server = url.split('/')[serversplit]
+            urlPath = "/"+"/".join(url.split('/')[urlsplit:])
 
-            self.logMsg("url = " + url)
+            self.logMsg("DOWNLOAD_URL = " + url)
             self.logMsg("server = "+str(server), level=2)
             self.logMsg("urlPath = "+str(urlPath), level=2)
             conn = httplib.HTTPConnection(server, timeout=20)
-            #head = {"Accept-Encoding" : "gzip,deflate", "Accept-Charset" : "UTF-8,*"} 
-            if self.addonSettings.getSetting('AccessToken')==None:
-                self.addonSettings.setSetting('AccessToken','')
-            head = {"Accept-Encoding" : "gzip", "Accept-Charset" : "UTF-8,*", "X-MediaBrowser-Token" : self.addonSettings.getSetting('AccessToken')} 
-            #head = getAuthHeader()
-            conn.request(method=type, url=urlPath, headers=head)
-            #conn.request(method=type, url=urlPath)
+            
+            head = self.getAuthHeader(authenticate)
+            self.logMsg("HEADERS : " + str(head), level=1)
+
+            if(postBody != None):
+                head["Content-Type"] = "application/x-www-form-urlencoded"
+                self.logMsg("POST DATA : " + postBody)
+                conn.request(method=type, url=urlPath, body=postBody, headers=head)
+            else:
+                conn.request(method=type, url=urlPath, headers=head)
+
             data = conn.getresponse()
             self.logMsg("GET URL HEADERS : " + str(data.getheaders()), level=2)
-            link = ""
+
             contentType = "none"
             if int(data.status) == 200:
                 retData = data.read()
                 contentType = data.getheader('content-encoding')
-                self.logMsg("Data Len Before : " + str(len(retData)))
+                self.logMsg("Data Len Before : " + str(len(retData)), level=2)
                 if(contentType == "gzip"):
                     retData = StringIO.StringIO(retData)
                     gzipper = gzip.GzipFile(fileobj=retData)
                     link = gzipper.read()
                 else:
                     link = retData
-
-                self.logMsg("Data Len After : " + str(len(link)))
-                self.logMsg("====== 200 returned =======")
-                self.logMsg("Content-Type : " + str(contentType))
-                self.logMsg(link)
-                self.logMsg("====== 200 finished ======")
+                self.logMsg("Data Len After : " + str(len(link)), level=2)
+                self.logMsg("====== 200 returned =======", level=2)
+                self.logMsg("Content-Type : " + str(contentType), level=2)
+                self.logMsg(link, level=2)
+                self.logMsg("====== 200 finished ======", level=2)
 
             elif ( int(data.status) == 301 ) or ( int(data.status) == 302 ):
                 try: conn.close()
@@ -403,7 +460,7 @@ class DownloadUtils():
 
             elif int(data.status) >= 400:
                 error = "HTTP response error: " + str(data.status) + " " + str(data.reason)
-                xbmc.log (error)
+                xbmc.log(error)
                 if suppress is False:
                     if popup == 0:
                         xbmc.executebuiltin("XBMC.Notification(URL error: "+ str(data.reason) +",)")
@@ -417,10 +474,13 @@ class DownloadUtils():
                 link = ""
         except Exception, msg:
             error = "Unable to connect to " + str(server) + " : " + str(msg)
-            xbmc.log (error)
-            xbmc.executebuiltin("XBMC.Notification(\"XBMB3C\": URL error: Unable to connect to server,)")
-            xbmcgui.Dialog().ok("",self.getString(30204))
-            raise
+            xbmc.log(error)
+            if suppress is False:
+                if popup == 0:
+                    xbmc.executebuiltin("XBMC.Notification(: URL error: Unable to connect to server,)")
+                else:
+                    xbmcgui.Dialog().ok("",self.getString(30204))
+                raise
         else:
             try: conn.close()
             except: pass
