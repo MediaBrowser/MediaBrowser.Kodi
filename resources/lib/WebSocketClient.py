@@ -12,8 +12,13 @@ import urllib
 import socket
 import websocket
 from ClientInformation import ClientInformation
+from DownloadUtils import DownloadUtils
+
 
 _MODE_BASICPLAY=12
+
+downloadUtils = DownloadUtils()
+
 
 class WebSocketThread(threading.Thread):
 
@@ -184,21 +189,10 @@ class WebSocketThread(threading.Thread):
     def getWebSocketPort(self, host, port):
         
         userUrl = "http://" + host + ":" + port + "/mediabrowser/System/Info?format=json"
+         
+        jsonData = downloadUtils.downloadUrl(userUrl, suppress=False, popup=1 )
+        result = json.loads(jsonData)
         
-        try:
-            requesthandle = urllib.urlopen(userUrl, proxies={})
-            jsonData = requesthandle.read()
-            requesthandle.close()              
-        except Exception, e:
-            self.logMsg("WebSocketThread getWebSocketPort urlopen : " + str(e) + " (" + userUrl + ")", level=0)
-            return -1
-
-        try:
-            result = json.loads(jsonData)
-        except Exception, e:
-            self.logMsg("WebSocketThread getWebSocketPort jsonload : " + str(e) + " (" + jsonData + ")", level=2)
-            return -1
-
         wsPort = result.get("WebSocketPortNumber")
         if(wsPort != None):
             return wsPort

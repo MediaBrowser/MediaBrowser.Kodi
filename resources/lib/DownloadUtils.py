@@ -428,6 +428,7 @@ class DownloadUtils():
 
             if(postBody != None):
                 head["Content-Type"] = "application/x-www-form-urlencoded"
+                head["Content-Length"] = str(len(postBody))
                 self.logMsg("POST DATA : " + postBody)
                 conn.request(method=type, url=urlPath, body=postBody, headers=head)
             else:
