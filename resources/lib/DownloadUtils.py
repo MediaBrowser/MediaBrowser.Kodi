@@ -34,16 +34,19 @@ class DownloadUtils():
     def getUserId(self):
 
         WINDOW = xbmcgui.Window( 10000 )
-        userid = WINDOW.getProperty("userid")
-
-        if(userid != None and userid != ""):
-            self.logMsg("DownloadUtils -> Returning saved UserID : " + userid)
-            return userid
-    
+        
         port = self.addonSettings.getSetting('port')
         host = self.addonSettings.getSetting('ipaddress')
         userName = self.addonSettings.getSetting('username')
+        
+        userid = WINDOW.getProperty("userid")
+        storedUserName = WINDOW.getProperty("username")
 
+        if(userid != None and userid != "" and userName == storedUserName):
+            self.logMsg("DownloadUtils -> Returning saved UserID : " + userid)
+            return userid
+    
+        
         self.logMsg("Looking for user name: " + userName)
 
         jsonData = None
@@ -89,6 +92,7 @@ class DownloadUtils():
         self.logMsg("userid : " + userid)
 
         WINDOW.setProperty("userid", userid)
+        WINDOW.setProperty("username", userName)
 
         return userid
 
