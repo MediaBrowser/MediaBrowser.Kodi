@@ -895,6 +895,22 @@ def PLAY( url, handle ):
         WINDOW.setProperty(playurl+"runtimeticks", str(result.get("RunTimeTicks")))
         WINDOW.setProperty(playurl+"item_id", id)
         
+        if PlayUtils().isDirectPlay(result) == True:
+          if __settings__.getSetting('playFromStream') == "true":
+            playMethod = "DirectStream"
+          else:
+            playMethod = "DirectPlay"
+        else:
+          playMethod = "Transcode"
+        WINDOW.setProperty(playurl+"playmethod", playMethod)
+        
+        mediaSources = result.get("MediaSources")
+        if(mediaSources != None):
+          if mediaSources[0].get('DefaultAudioStreamIndex') != None:
+            WINDOW.setProperty(playurl+"AudioStreamIndex", str(mediaSources[0].get('DefaultAudioStreamIndex')))  
+          if mediaSources[0].get('DefaultSubtitleStreamIndex') != None:
+            WINDOW.setProperty(playurl+"SubtitleStreamIndex", str(mediaSources[0].get('DefaultSubtitleStreamIndex')))
+        
         playlist.add(playurl, listItem)
    
     id = urlParts[1]
@@ -927,6 +943,22 @@ def PLAY( url, handle ):
     
     WINDOW.setProperty(playurl+"runtimeticks", str(result.get("RunTimeTicks")))
     WINDOW.setProperty(playurl+"item_id", id)
+    
+    if PlayUtils().isDirectPlay(result) == True:
+      if __settings__.getSetting('playFromStream') == "true":
+        playMethod = "DirectStream"
+      else:
+        playMethod = "DirectPlay"
+    else:
+      playMethod = "Transcode"
+    WINDOW.setProperty(playurl+"playmethod", playMethod)
+        
+    mediaSources = result.get("MediaSources")
+    if(mediaSources != None):
+      if mediaSources[0].get('DefaultAudioStreamIndex') != None:
+        WINDOW.setProperty(playurl+"AudioStreamIndex", str(mediaSources[0].get('DefaultAudioStreamIndex')))  
+      if mediaSources[0].get('DefaultSubtitleStreamIndex') != None:
+        WINDOW.setProperty(playurl+"SubtitleStreamIndex", str(mediaSources[0].get('DefaultSubtitleStreamIndex')))
     
     playlist.add(playurl, listItem)
 
