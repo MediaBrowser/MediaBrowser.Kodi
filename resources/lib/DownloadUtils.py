@@ -243,7 +243,7 @@ class DownloadUtils():
                     if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                         played = str(PlayedPercentage)
                         
-                    height = "340"
+                    height = "338"
                     width = "226"
                     
             elif originalType =="Primary3" or originalType == "SeriesPrimary":
@@ -264,7 +264,7 @@ class DownloadUtils():
                     if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                         played = str(PlayedPercentage)
                         
-                    height = "800"
+                    height = "830"
                     width = "560"    
                     
             elif type =="Primary" and data.get("Type") == "Episode":
@@ -286,7 +286,8 @@ class DownloadUtils():
                         played = str(PlayedPercentage)
                         
                     height = "410"
-                    width = "770"    
+                    width = "770"
+                                   
                     
             elif originalType =="Backdrop2" or originalType =="Thumb2" and data.get("Type") != "Episode":
                 userData = data.get("UserData")

@@ -15,6 +15,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
 
     id = ""
     playUrl = ""
+    trailerUrl = ""
     
     def __init__(self, *args, **kwargs):
         xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
@@ -37,8 +38,8 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         
         id = item.get("Id")
         name = item.get("Name")
-        image = downloadUtils.getArtwork(item, "Primary")
-        fanArt = downloadUtils.getArtwork(item, "Backdrop")
+        image = downloadUtils.getArtwork(item, "Primary3")
+        fanArt = downloadUtils.getArtwork(item, "BackdropNoIndicators")
         
         # calculate the percentage complete
         userData = item.get("UserData")
@@ -70,6 +71,16 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         self.peopleUrl = "XBMC.Container.Update(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id + ")"
         #self.peopleUrl = "XBMC.RunPlugin(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id + ")"
         
+        if item.get("LocalTrailerCount") != None and item.get("LocalTrailerCount") > 0:
+            itemTrailerUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "/LocalTrailers?format=json"
+            jsonData = downloadUtils.downloadUrl(itemTrailerUrl, suppress=False, popup=1 ) 
+            trailerItem = json.loads(jsonData)
+            trailerUrl = server + ',;' + trailerItem[0].get("Id")
+            trailerUrl = urllib.quote(trailerUrl) 
+            self.trailerUrl = "plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + trailerUrl
+        else:
+            # disable trailer button
+            self.getControl(3102).setEnabled(False)    
         # all all the media stream info
         mediaList = self.getControl(3220)
         
@@ -214,6 +225,13 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
             xbmc.executebuiltin("RunPlugin(" + self.playUrl + ")")
             self.close()
             
+        elif(controlID == 3102):
+           
+            # close all dialogs when playing an item
+            xbmc.executebuiltin("Dialog.Close(all,true)")
+            
+            xbmc.executebuiltin("RunPlugin(" + self.trailerUrl + ")")
+            self.close()
         elif(controlID == 3230):
         
             peopleList = self.getControl(3230)
