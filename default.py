@@ -504,7 +504,7 @@ def addGUIItem( url, details, extraData, folder=True ):
             list.setProperty('TotalTime', str(extraData.get('duration')))
             list.setProperty('ResumeTime', str(extraData.get('resumetime')))
     
-    artTypes=['poster', 'tvshow.poster', 'fanart_image', 'clearlogo', 'discart', 'banner', 'clearart', 'landscape', 'small_poster',  'medium_poster','small_fanartimage', 'medium_fanartimage', 'medium_landscape']
+    artTypes=['poster', 'tvshow.poster', 'fanart_image', 'clearlogo', 'discart', 'banner', 'clearart', 'landscape', 'small_poster', 'tiny_poster', 'medium_poster','small_fanartimage', 'medium_fanartimage', 'medium_landscape', 'fanart_noindicators']
     
     for artType in artTypes:
         imagePath=str(extraData.get(artType,''))
@@ -1678,9 +1678,11 @@ def processDirectory(url, results, progress):
                    'landscape'    : downloadUtils.getArtwork(item, "Thumb") ,
                    'medium_landscape': downloadUtils.getArtwork(item, "Thumb3") ,
                    'small_poster' : downloadUtils.getArtwork(item, "Primary2","0",True) ,
+                   'tiny_poster' : downloadUtils.getArtwork(item, "Primary4","0",True) ,
                    'medium_poster': downloadUtils.getArtwork(item, "Primary3","0",True) ,
                    'small_fanartimage' : downloadUtils.getArtwork(item, "Backdrop2") ,
-                   'medium_fanartimage' : downloadUtils.getArtwork(item, "Backdrop3") ,                   
+                   'medium_fanartimage' : downloadUtils.getArtwork(item, "Backdrop3") ,
+                   'fanart_noindicators' : downloadUtils.getArtwork(item, "BackdropNoIndicators") ,                    
                    'id'           : id ,
                    'guiid'        : guiid ,
                    'mpaa'         : item.get("OfficialRating"),
@@ -2491,7 +2493,7 @@ def getLinkURL( url, pathData, server ):
     return url
 
 def setArt (list,name,path):
-    if name=='thumb' or name=='fanart_image' or name=='small_poster' or name == "medium_landscape" or name=='medium_poster' or name=='small_fanartimage' or name=='medium_fanartimage':
+    if name=='thumb' or name=='fanart_image' or name=='small_poster' or name=='tiny_poster'  or name == "medium_landscape" or name=='medium_poster' or name=='small_fanartimage' or name=='medium_fanartimage' or name=='fanart_noindicators':
         list.setProperty(name, path)
     elif xbmcVersionNum >= 13:
         list.setArt({name:path})

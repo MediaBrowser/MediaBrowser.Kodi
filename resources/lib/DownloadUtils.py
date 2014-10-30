@@ -156,14 +156,14 @@ class DownloadUtils():
         if type == "poster" or type == "tvshow.poster": # Now that the Ids are right, change type to MB3 name
             type="Primary"
         if data.get("Type") == "Season":  # For seasons: primary (poster), thumb and banner get season art, rest series art
-            if type != "Primary" and type != "Primary2" and type != "Primary3" and type != "Thumb" and type != "Banner":
+            if type != "Primary" and type != "Primary2" and type != "Primary3" and type != "Primary4" and type != "Thumb" and type != "Banner":
                 id = data.get("SeriesId")
                 getSeriesData = True
         if data.get("Type") == "Episode":  # For episodes: primary (episode thumb) gets episode art, rest series art. 
-            if type != "Primary" and type != "Primary2" and type != "Primary3":
+            if type != "Primary" and type != "Primary2" and type != "Primary3" and type != "Primary4" :
                 id = data.get("SeriesId")
                 getSeriesData = True
-            if type =="Primary2" or type=="Primary3":
+            if type =="Primary2" or type=="Primary3" or type=="Primary4":
                 id = data.get("SeasonId")
                 getSeriesData = True
         if id == None:
@@ -180,7 +180,7 @@ class DownloadUtils():
                 
         imageTag = "e3ab56fe27d389446754d0fb04910a34" # a place holder tag, needs to be in this format
         originalType = type
-        if type == "Primary2" or type == "Primary3" or type=="SeriesPrimary":
+        if type == "Primary2" or type == "Primary3" or type == "Primary4" or type=="SeriesPrimary":
             type = "Primary"
         if type == "Backdrop2" or type=="Backdrop3" or type=="BackdropNoIndicators":
             type = "Backdrop"
@@ -265,7 +265,28 @@ class DownloadUtils():
                         played = str(PlayedPercentage)
                         
                     height = "830"
-                    width = "560"    
+                    width = "560"
+            
+            elif originalType =="Primary4":
+                userData = data.get("UserData") 
+                if userData != None:
+
+                    UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
+
+                    if UnWatched <> 0 and self.addonSettings.getSetting('showUnplayedIndicators')=='true':
+                        query = query + "&UnplayedCount=" + str(UnWatched)
+
+                    if(userData != None and userData.get("Played") == True and self.addonSettings.getSetting('showWatchedIndicators')=='true'):
+                        query = query + "&AddPlayedIndicator=true"
+
+                    PlayedPercentage = 0 if userData.get("PlayedPercentage")==None else userData.get("PlayedPercentage")
+                    if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
+                        PlayedPercentage = userData.get("PlayedPercentage")
+                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
+                        played = str(PlayedPercentage)
+                        
+                    height = "270"
+                    width = "180"    
                     
             elif type =="Primary" and data.get("Type") == "Episode":
                 userData = data.get("UserData")
@@ -336,8 +357,8 @@ class DownloadUtils():
                     if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                         played = str(PlayedPercentage)
                         
-                    height = "800"
-                    width = "1420"                        
+                    height = "910"
+                    width = "1620"                        
 
         # use the local image proxy server that is made available by this addons service
         
@@ -347,7 +368,7 @@ class DownloadUtils():
         
         if imageTag == None:
             imageTag = "e3ab56fe27d389446754d0fb04910a34"
-        artwork = "http://" + server + "/mediabrowser/Items/" + str(id) + "/Images/" + type + "/" + index + "/" + imageTag + "/original/" + height + "/" + width + "/" + played + "?" + query
+        artwork = "http://" + server + "/mediabrowser/Items/" + str(id) + "/Images/" + type + "/" + index + "/" + imageTag + "/original/" + width + "/" + height + "/" + played + "?" + query
         if self.addonSettings.getSetting('disableCoverArt')=='true':
             artwork = artwork + "&EnableImageEnhancers=false"
         

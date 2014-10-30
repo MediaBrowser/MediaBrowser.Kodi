@@ -228,7 +228,7 @@ def stopAll(played_information):
                         
                     if(gotDeleted == 0):
                         #setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
-                        reportPlayback("0000000")
+                        #reportPlayback("0000000")
                         #if(newWebSocketThread != None):
                             #newWebSocketThread.playbackStopped(item_id, str(0))
                         stopPlayback(currentFile, "0000000")
