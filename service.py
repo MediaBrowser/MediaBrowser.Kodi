@@ -219,25 +219,26 @@ def stopAll(played_information):
                 markPlayedAt = float(addonSettings.getSetting("markPlayedAt")) / 100    
 
                 xbmc.log ("XBMB3C Service -> Percent Complete:" + str(percentComplete) + " Mark Played At:" + str(markPlayedAt))
-                if (percentComplete > markPlayedAt):
+                stopPlayback(currentFile,str(int(currentPossition * 10000000)))
+                #if (percentComplete > markPlayedAt):
                 
-                    gotDeleted = 0
-                    if(deleteurl != None and deleteurl != ""):
-                        xbmc.log ("XBMB3C Service -> Offering Delete:" + str(deleteurl))
-                        gotDeleted = deleteItem(deleteurl)
+                    #gotDeleted = 0
+                    #if(deleteurl != None and deleteurl != ""):
+                     #   xbmc.log ("XBMB3C Service -> Offering Delete:" + str(deleteurl))
+                      #  gotDeleted = deleteItem(deleteurl)
                         
-                    if(gotDeleted == 0):
+                    #if(gotDeleted == 0):
                         #setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
                         #reportPlayback("0000000")
                         #if(newWebSocketThread != None):
                             #newWebSocketThread.playbackStopped(item_id, str(0))
-                        stopPlayback(currentFile, "0000000")
+                     #   stopPlayback(currentFile, "0000000")
                         #markWatched(watchedurl)
-                else:
+                #else:
                     #markUnWatched(watchedurl) # this resets the LastPlayedDate and that causes issues with sortby PlayedDate so I removed it for now
                     #if(newWebSocketThread != None):
                         #newWebSocketThread.playbackStopped(item_id, str(int(currentPossition * 10000000)))
-                    stopPlayback(currentFile,str(int(currentPossition * 10000000)))
+                    #stopPlayback(currentFile,str(int(currentPossition * 10000000)))
                     #setPosition(positionurl + '?PositionTicks=' + str(int(currentPossition * 10000000)), 'DELETE')
                     #reportPlayback(str(int(currentPossition * 10000000)))
                     
