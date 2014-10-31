@@ -220,12 +220,11 @@ def stopAll(played_information):
 
                 xbmc.log ("XBMB3C Service -> Percent Complete:" + str(percentComplete) + " Mark Played At:" + str(markPlayedAt))
                 stopPlayback(currentFile,str(int(currentPossition * 10000000)))
-                #if (percentComplete > markPlayedAt):
-                
-                    #gotDeleted = 0
-                    #if(deleteurl != None and deleteurl != ""):
-                     #   xbmc.log ("XBMB3C Service -> Offering Delete:" + str(deleteurl))
-                      #  gotDeleted = deleteItem(deleteurl)
+                if (percentComplete > markPlayedAt):
+                    gotDeleted = 0
+                    if(deleteurl != None and deleteurl != ""):
+                        xbmc.log ("XBMB3C Service -> Offering Delete:" + str(deleteurl))
+                        gotDeleted = deleteItem(deleteurl)
                         
                     #if(gotDeleted == 0):
                         #setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
