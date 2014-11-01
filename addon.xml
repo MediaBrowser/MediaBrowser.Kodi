@@ -12,6 +12,9 @@
                 library="default.py">
         <provides>executable video audio image</provides>
   </extension>
+  <extension    point="xbmc.python.script"
+                library="default.py">
+  </extension>
   <extension point="xbmc.service" library="service.py" start="startup">
   </extension>
   <extension point="xbmc.addon.metadata">
