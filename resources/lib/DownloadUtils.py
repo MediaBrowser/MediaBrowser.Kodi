@@ -34,7 +34,7 @@ class DownloadUtils():
     def getUserId(self):
 
         WINDOW = xbmcgui.Window( 10000 )
-        
+        self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         port = self.addonSettings.getSetting('port')
         host = self.addonSettings.getSetting('ipaddress')
         userName = self.addonSettings.getSetting('username')
@@ -43,7 +43,7 @@ class DownloadUtils():
         storedUserName = WINDOW.getProperty("username")
 
         if(userid != None and userid != "" and userName == storedUserName):
-            self.logMsg("DownloadUtils -> Returning saved UserID : " + userid)
+            self.logMsg("DownloadUtils -> Returning saved UserID : " + userid + "UserName: " + userName)
             return userid
     
         
@@ -93,8 +93,15 @@ class DownloadUtils():
 
         WINDOW.setProperty("userid", userid)
         WINDOW.setProperty("username", userName)
-
+        
+        self.postcapabilities()
+        
         return userid
+    def postcapabilities(self):
+        url = ("http://%s:%s/mediabrowser/Sessions/Capabilities" % (self.addonSettings.getSetting('ipaddress'), self.addonSettings.getSetting('port')))  
+        url = url + "?PlayableMediaTypes=Audio,Video,Photo"   
+        self.logMsg("DownloadUtils -> postcapabilities :" + url)
+        self.downloadUrl(url, postBody="", type="POST")        
 
     def authenticate(self):    
         WINDOW = xbmcgui.Window( 10000 )
