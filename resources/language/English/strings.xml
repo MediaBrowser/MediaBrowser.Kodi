@@ -10,6 +10,7 @@
     <string id="30008">Samba Password: </string>
     <string id="30009">Transcode: </string>
     <string id="30010">Enable performance profiling</string>
+    <string id="30011">Local caching system</string>
 
     <string id="30014">MediaBrowser</string>
     <string id="30015">Network</string>    

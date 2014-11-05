@@ -68,6 +68,7 @@ from Utils import PlayUtils
 from ClientInformation import ClientInformation
 from PersonInfo import PersonInfo
 from SearchDialog import SearchDialog
+from DataManager import DataManager
 
 XBMB3C_VERSION = ClientInformation().getVersion()
 
@@ -105,6 +106,7 @@ import json as json
 #define our global download utils
 downloadUtils = DownloadUtils()
 clientInfo = ClientInformation()
+dataManager = DataManager()
 
 def printDebug( msg, level = 1):
     if(logLevel >= level):
@@ -1281,51 +1283,28 @@ def getCacheValidatorFromData(result):
     printDebug ("getCacheValidatorFromData : " + validatorString)
     return validatorString
     
-def getContent( url ):
-    '''
-        This function takes the URL, gets the XML and determines what the content is
-        This XML is then redirected to the best processing function.
-        If a search term is detected, then show keyboard and run search query
-        @input: URL of XML page
-        @return: nothing, redirects to another function
-    '''
-    global viewType
-    printDebug("== ENTER: getContent ==")
-    server=getServerFromURL(url)
-    lastbit=url.split('/')[-1]
-    printDebug("URL suffix: " + str(lastbit))
-    printDebug("server: " + str(server))
-    printDebug("URL: " + str(url))    
+def getDataResult(url, progress):
+
+    result = None
+    
+    server = getServerFromURL(url)
+    
     validator='nocache' #Don't cache special queries (recently added etc)
     if "Parent" in url:
         validator = "_" + getCacheValidator(server,url)
     elif "&SortOrder=Ascending&IncludeItemTypes=Movie" in url:
         validator = "_" + getAllMoviesCacheValidator(server,url)
         
-    # ADD VALIDATOR TO FILENAME TO DETERMINE IF CACHE IS FRESH
-    
     m = hashlib.md5()
     m.update(url)
     urlHash = m.hexdigest()
    
     jsonData = ""
-    cacheDataPath = __addondir__ + urlHash + validator
-    
-    if "NextUp" in url and __settings__.getSetting('sortNextUp') == "true":
-        xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_TITLE)
-    else:
-        xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)
-    result = None
+    cacheDataPath = __addondir__ + urlHash + validator        
     
     WINDOW = xbmcgui.Window( 10000 )
     force_data_reload = WINDOW.getProperty("force_data_reload")
-    WINDOW.setProperty("force_data_reload", "false")
-    
-    progress = None
-    if(__settings__.getSetting('showLoadProgress') == "true"):
-        progress = xbmcgui.DialogProgress()
-        progress.create(__language__(30121))
-        progress.update(0, __language__(30122))    
+    WINDOW.setProperty("force_data_reload", "false")    
     
     # if a cached file exists use it
     # if one does not exist then load data from the url
@@ -1382,7 +1361,42 @@ def getContent( url ):
                 cachedfie = open(cacheDataPath, 'w')
                 cachedfie.write(jsonData)
                 cachedfie.close()
-    if jsonData == "":
+                
+    return result            
+
+def getContent( url ):
+    '''
+        This function takes the URL, gets the XML and determines what the content is
+        This XML is then redirected to the best processing function.
+        If a search term is detected, then show keyboard and run search query
+        @input: URL of XML page
+        @return: nothing, redirects to another function
+    '''
+    global viewType
+    printDebug("== ENTER: getContent ==")
+    printDebug("URL: " + str(url))    
+        
+    if "NextUp" in url and __settings__.getSetting('sortNextUp') == "true":
+        xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_TITLE)
+    else:
+        xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)
+    result = None
+    
+    progress = None
+    if(__settings__.getSetting('showLoadProgress') == "true"):
+        progress = xbmcgui.DialogProgress()
+        progress.create(__language__(30121))
+        progress.update(0, __language__(30122))    
+    
+    cacheType = __settings__.getSetting('cacheType')
+    if(cacheType == "1"):
+        printDebug("Using Old Cache System")
+        result = getDataResult(url, progress)
+    else:
+        printDebug("Using New Cache System")
+        result = dataManager.GetContent(url)
+    
+    if(result == None or len(result) == 0):
         if(progress != None):
             progress.close()
         return
@@ -3047,7 +3061,9 @@ else:
 
 WINDOW = xbmcgui.Window( 10000 )
 WINDOW.clearProperty("MB3.Background.Item.FanArt")
+
 xbmc.log ("===== XBMB3C STOP =====")
 
+dataManager.canRefreshNow = True
 #clear done and exit.
-sys.modules.clear()
+#sys.modules.clear()
