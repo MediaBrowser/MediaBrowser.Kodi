@@ -71,17 +71,22 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         self.peopleUrl = "XBMC.Container.Update(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id + ")"
         #self.peopleUrl = "XBMC.RunPlugin(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id + ")"
         
-        if item.get("LocalTrailerCount") != None and item.get("LocalTrailerCount") > 0:
-            itemTrailerUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "/LocalTrailers?format=json"
-            jsonData = downloadUtils.downloadUrl(itemTrailerUrl, suppress=False, popup=1 ) 
-            trailerItem = json.loads(jsonData)
-            trailerUrl = server + ',;' + trailerItem[0].get("Id")
-            trailerUrl = urllib.quote(trailerUrl) 
-            self.trailerUrl = "plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + trailerUrl
-        else:
-            # disable trailer button
-            self.getControl(3102).setEnabled(False)    
-        # all all the media stream info
+        try:
+            trailerButton = self.getControl(3102)
+            if(trailerButton != None):
+                if item.get("LocalTrailerCount") != None and item.get("LocalTrailerCount") > 0:
+                    itemTrailerUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "/LocalTrailers?format=json"
+                    jsonData = downloadUtils.downloadUrl(itemTrailerUrl, suppress=False, popup=1 ) 
+                    trailerItem = json.loads(jsonData)
+                    trailerUrl = server + ',;' + trailerItem[0].get("Id")
+                    trailerUrl = urllib.quote(trailerUrl) 
+                    self.trailerUrl = "plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + trailerUrl
+                else:
+                    trailerButton.setEnabled(False)
+        except:
+            pass
+
+        # all the media stream info
         mediaList = self.getControl(3220)
         
         mediaStreams = item.get("MediaStreams")
