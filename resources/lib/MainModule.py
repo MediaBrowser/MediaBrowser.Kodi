@@ -302,6 +302,12 @@ def getCollections(detailsString):
     collections.append({'title':__language__(30195), 'sectype' : 'std.tvshows', 'section' : 'tvshows'  , 'address' : MB_server , 'path' : '/mediabrowser/Studios?Userid=' + userid + '&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&Recursive=true&IncludeItemTypes=Series&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':__language__(30196), 'sectype' : 'std.tvshows', 'section' : 'tvshows'  , 'address' : MB_server , 'path' : '/mediabrowser/Persons?Userid=' + userid + '&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&Recursive=true&IncludeItemTypes=Series&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':__language__(30197), 'sectype' : 'std.playlists', 'section' : 'playlists'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Playlist&mediatype=video&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    collections.append({'title':__language__(30207), 'sectype' : 'std.music', 'section' : 'music'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=Album,SortName&Fields=AudioInfo&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Audio&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })
+    collections.append({'title':__language__(30208), 'sectype' : 'std.music', 'section' : 'music'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=AlbumArtist,SortName&Fields=AudioInfo&Recursive=true&SortOrder=Ascending&IncludeItemTypes=MusicAlbum&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })
+    collections.append({'title':__language__(30209), 'sectype' : 'std.music', 'section' : 'music'  , 'address' : MB_server , 'path' : '/mediabrowser/Artists/AlbumArtists?SortBy=SortName&Fields=AudioInfo&Recursive=true&SortOrder=Ascending&userid=' + userid + '&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })
+    collections.append({'title':__language__(30210), 'sectype' : 'std.music', 'section' : 'music'  , 'address' : MB_server , 'path' : '/mediabrowser/Artists?SortBy=SortName&Fields=AudioInfo&Recursive=true&SortOrder=Ascending&userid=' + userid + '&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })
+    collections.append({'title':__language__(30211), 'sectype' : 'std.music', 'section' : 'music'  , 'address' : MB_server , 'path' : '/mediabrowser/MusicGenres?SortBy=SortName&Fields=AudioInfo&Recursive=true&IncludeItemTypes=Audio,MusicVideo&SortOrder=Ascending&userid=' + userid + '&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })
+    
     
     collections.append({'title':__language__(30198)                 , 'sectype' : 'std.search', 'section' : 'search'  , 'address' : MB_server , 'path' : '/mediabrowser/Search/Hints?' + userid,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':__language__(30199)                 , 'sectype' : 'std.setviews', 'section' : 'setviews'  , 'address' : 'SETVIEWS', 'path': 'SETVIEWS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
@@ -1415,6 +1421,10 @@ def getContent( url, pluginhandle ):
         dirItems = processGenres(url, result, progress, "Series", pluginhandle)
     elif "/mediabrowser/Genres?" in url and "&parentId" in url:
         dirItems = processGenres(url, result, progress, "Movie", pluginhandle)
+    elif "/mediabrowser/MusicGenres?" in url:
+        dirItems = processGenres(url, result, progress, "MusicAlbum", pluginhandle)
+    elif "/mediabrowser/Artists?SortBy" in url:
+        dirItems = processArtists(url,result,progress,pluginhandle)
     elif "/mediabrowser/Studios?" in url and "&IncludeItemTypes=Movie" in url:
         dirItems = processStudios(url, result, progress, "Movie", pluginhandle)
     elif "/mediabrowser/Studios?" in url and "&IncludeItemTypes=Series" in url:
@@ -1536,10 +1546,10 @@ def processDirectory(url, results, progress, pluginhandle):
             viewType="_EPISODES"
             guiid = item.get("SeriesId")
         elif item.get("Type") == "MusicArtist":
-            xbmcplugin.setContent(pluginhandle, 'songs')
+            xbmcplugin.setContent(pluginhandle, 'artists')
             viewType='_MUSICARTISTS'
         elif item.get("Type") == "MusicAlbum":
-            xbmcplugin.setContent(pluginhandle, 'songs')
+            xbmcplugin.setContent(pluginhandle, 'albums')
             viewType='_MUSICTALBUMS'
         elif item.get("Type") == "Audio":
             xbmcplugin.setContent(pluginhandle, 'songs')
@@ -2272,6 +2282,97 @@ def processGenres(url, results, progress, content, pluginhandle):
         extraData['mode'] = _MODE_GETCONTENT
                                  
         u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=' + content + '&Genres=' + item.get("Name") + '&format=json'
+        dirItems.append(addGUIItem(u, details, extraData))
+      
+    return dirItems
+
+def processArtists(url, results, progress, pluginhandle):
+    global viewType
+    printDebug("== ENTER: processArtists ==")
+    parsed = urlparse(url)
+    parsedserver,parsedport=parsed.netloc.split(':')
+    userid = downloadUtils.getUserId()
+    xbmcplugin.setContent(pluginhandle, 'movies')
+    detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
+    if(__settings__.getSetting('includeStreamInfo') == "true"):
+        detailsString += ",MediaStreams"
+    if(__settings__.getSetting('includePeople') == "true"):
+        detailsString += ",People"
+    if(__settings__.getSetting('includeOverview') == "true"):
+        detailsString += ",Overview"            
+    server = getServerFromURL(url)
+    dirItems = []
+    result = results.get("Items")
+    if(result == None):
+        result = []
+
+    item_count = len(result)
+    current_item = 1;
+        
+    for item in result:
+        id=str(item.get("Id")).encode('utf-8')
+        type=item.get("Type").encode('utf-8')
+        item_type = str(type).encode('utf-8')
+        if(progress != None):
+            percentDone = (float(current_item) / float(item_count)) * 100
+            progress.update(int(percentDone), __language__(30126) + str(current_item))
+            current_item = current_item + 1
+        
+        if(item.get("Name") != None):
+            tempTitle = item.get("Name")
+            tempTitle=tempTitle.encode('utf-8')
+        else:
+            tempTitle = "Missing Title"
+            
+       
+        isFolder = True
+   
+      
+        # Populate the details list
+        details={'title'        : tempTitle}
+        
+        viewType="_MUSICARTISTS"
+                 
+        try:
+            tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
+            RunTimeTicks = str(item.get("RunTimeTicks", "0"))
+        except TypeError:
+            try:
+                tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
+                RunTimeTicks = str(item.get("CumulativeRunTimeTicks"))
+            except TypeError:
+                tempDuration = "0"
+                RunTimeTicks = "0"
+
+        # Populate the extraData list
+        extraData={'thumb'        : downloadUtils.getArtwork(item, "Primary") ,
+                   'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
+                   'poster'       : downloadUtils.getArtwork(item, "poster") , 
+                   'tvshow.poster': downloadUtils.getArtwork(item, "tvshow.poster") ,
+                   'banner'       : downloadUtils.getArtwork(item, "Banner") ,
+                   'clearlogo'    : downloadUtils.getArtwork(item, "Logo") ,
+                   'discart'      : downloadUtils.getArtwork(item, "Disc") ,
+                   'clearart'     : downloadUtils.getArtwork(item, "Art") ,
+                   'landscape'    : downloadUtils.getArtwork(item, "Thumb") ,
+                   'id'           : id ,
+                   'year'         : item.get("ProductionYear"),
+                   'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
+                   'favoriteurl'  : 'http://' + server + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id,
+                   'deleteurl'    : 'http://' + server + '/mediabrowser/Items/' + id,                   
+                   'parenturl'    : url,
+                   'totaltime'    : tempDuration,
+                   'duration'     : tempDuration,
+                   'itemtype'     : item_type}
+                   
+        if extraData['thumb'] == '':
+            extraData['thumb'] = extraData['fanart_image']
+
+        extraData['mode'] = _MODE_GETCONTENT
+        
+        # Somehow need to handle foreign characters .. 
+        title = item.get("Name").replace(" ", "+")
+                            
+        u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?SortBy=SortName&Fields=AudioInfo&Recursive=true&SortOrder=Ascending&IncludeItemTypes=MusicAlbum&Artists=' + title + '&format=json'
         dirItems.append(addGUIItem(u, details, extraData))
       
     return dirItems

@@ -198,7 +198,12 @@
     
     <string id="30206">Enable Playlists Loader (Requires Restart)</string>   
     
-	<!-- Default views -->
+    <string id="30207">Songs</string>
+    <string id="30208">Albums</string>
+    <string id="30209">Album Artists</string>
+    <string id="30210">Artists</string>
+    <string id="30211">Music Genres</string>
+    <!-- Default views -->
     <string id="30300">Active</string>              
     <string id="30301">Clear Settings</string>              
     <string id="30302">Movies</string>              
