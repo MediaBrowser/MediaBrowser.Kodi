@@ -176,7 +176,7 @@ class DownloadUtils():
         if id == None:
             id=data.get("Id")
         # if requested get parent info
-        if getSeriesData == True and userParentInfo == True:
+        if getSeriesData == True and userParentInfo == True and self.addonSettings.getSetting('showIndicators')=='true':
             self.logMsg("Using Parent Info for image link", level=1)
             mb3Host = self.addonSettings.getSetting('ipaddress')
             mb3Port = self.addonSettings.getSetting('port')
