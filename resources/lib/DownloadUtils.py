@@ -8,6 +8,7 @@ import hashlib
 import StringIO
 import gzip
 import sys
+import inspect
 import json as json
 from random import randrange
 from uuid import uuid4 as uuid4
@@ -18,6 +19,9 @@ class DownloadUtils():
     logLevel = 0
     addonSettings = None
     getString = None
+    LogCalls = False
+    TrackLog = ""
+    TotalUrlCalls = 0
 
     def __init__(self, *args):
         self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -439,6 +443,14 @@ class DownloadUtils():
         
     def downloadUrl(self, url, suppress=False, postBody=None, type="GET", popup=0, authenticate=True ):
         self.logMsg("== ENTER: getURL ==")
+        
+        if(self.LogCalls):
+            stackString = ""
+            for f in inspect.stack():
+                stackString = stackString + "\r - " + str(f)
+            self.TrackLog = self.TrackLog + "HTTP_API_CALL : " + url + stackString + "\r"
+            self.TotalUrlCalls = self.TotalUrlCalls + 1
+        
         link = ""
         try:
             if url[0:4] == "http":

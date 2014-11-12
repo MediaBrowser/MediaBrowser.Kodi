@@ -101,13 +101,16 @@ try:
     logLevel = int(__settings__.getSetting('logLevel'))   
 except:
     pass
-
+      
 import json as json
    
 #define our global download utils
 downloadUtils = DownloadUtils()
 clientInfo = ClientInformation()
 dataManager = DataManager()
+
+if(logLevel == 2):
+    downloadUtils.LogCalls = True
 
 def printDebug( msg, level = 1):
     if(logLevel >= level):
@@ -3167,6 +3170,8 @@ def MainEntryPoint():
     WINDOW.clearProperty("MB3.Background.Item.FanArt")
 
     dataManager.canRefreshNow = True
+    
+    xbmc.log("\rURL_REQUEST_REPORT : Total Calls : " + str(downloadUtils.TotalUrlCalls) + "\r" + downloadUtils.TrackLog)
     
     xbmc.log ("===== XBMB3C STOP =====")
 
