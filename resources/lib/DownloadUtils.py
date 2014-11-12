@@ -30,6 +30,8 @@ class DownloadUtils():
         self.logLevel = 0
         if(level != None):
             self.logLevel = int(level)
+        if(self.logLevel == 1):
+            self.LogCalls = True
 
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
@@ -532,3 +534,10 @@ class DownloadUtils():
             except: pass
 
         return link
+        
+        
+    def __del__(self):
+
+        xbmc.log("\rURL_REQUEST_REPORT : Total Calls : " + str(self.TotalUrlCalls) + "\r" + self.TrackLog)
+        
+        

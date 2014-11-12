@@ -109,9 +109,6 @@ downloadUtils = DownloadUtils()
 clientInfo = ClientInformation()
 dataManager = DataManager()
 
-if(logLevel == 2):
-    downloadUtils.LogCalls = True
-
 def printDebug( msg, level = 1):
     if(logLevel >= level):
         if(logLevel == 2):
@@ -3170,8 +3167,6 @@ def MainEntryPoint():
     WINDOW.clearProperty("MB3.Background.Item.FanArt")
 
     dataManager.canRefreshNow = True
-    
-    xbmc.log("\rURL_REQUEST_REPORT : Total Calls : " + str(downloadUtils.TotalUrlCalls) + "\r" + downloadUtils.TrackLog)
-    
+
     xbmc.log ("===== XBMB3C STOP =====")
 
