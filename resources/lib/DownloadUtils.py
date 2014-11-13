@@ -30,7 +30,7 @@ class DownloadUtils():
         self.logLevel = 0
         if(level != None):
             self.logLevel = int(level)
-        if(self.logLevel == 1):
+        if(self.logLevel == 2):
             self.LogCalls = True
 
     def logMsg(self, msg, level = 1):
@@ -446,13 +446,13 @@ class DownloadUtils():
     def downloadUrl(self, url, suppress=False, postBody=None, type="GET", popup=0, authenticate=True ):
         self.logMsg("== ENTER: getURL ==")
         
+        self.TotalUrlCalls = self.TotalUrlCalls + 1
         if(self.LogCalls):
             stackString = ""
             for f in inspect.stack():
                 stackString = stackString + "\r - " + str(f)
             self.TrackLog = self.TrackLog + "HTTP_API_CALL : " + url + stackString + "\r"
-            self.TotalUrlCalls = self.TotalUrlCalls + 1
-        
+            
         link = ""
         try:
             if url[0:4] == "http":
