@@ -85,27 +85,33 @@ class DataManager():
         force_data_reload = WINDOW.getProperty("force_data_reload")
         WINDOW.setProperty("force_data_reload", "false")
     
-        if(os.path.exists(cacheDataPath)) and force_data_reload != "true":
-            # load data from cache if it is available and trigger a background
-            # verification process to test cache validity        
-            xbmc.log("Cache_Data_Manager: Loading Cached File")
-            cachedfie = open(cacheDataPath, 'r')
-            jsonData = cachedfie.read()
-            cachedfie.close()
-            result = self.loadJasonData(jsonData)
-            
-            # start a worker thread to process the cache validity
-            self.cacheDataResult = result
-            self.dataUrl = url
-            self.cacheDataPath = cacheDataPath
-            actionThread = CacheManagerThread()
-            actionThread.setCacheData(self)
-            actionThread.start()
+        result = None
+        
+        # load data from cache if it is available and trigger a background
+        # verification process to test cache validity          
+        if((os.path.exists(cacheDataPath)) and force_data_reload != "true"):
+            try:
+                xbmc.log("Cache_Data_Manager: Loading Cached File")
+                cachedfie = open(cacheDataPath, 'r')
+                jsonData = cachedfie.read()
+                cachedfie.close()            
+                result = self.loadJasonData(jsonData)
 
-            xbmc.log("Cache_Data_Manager: Returning Cached Result")
-            return result
-        else:
-            # no cache data so load the url and save it
+                # start a worker thread to process the cache validity
+                self.cacheDataResult = result
+                self.dataUrl = url
+                self.cacheDataPath = cacheDataPath
+                actionThread = CacheManagerThread()
+                actionThread.setCacheData(self)
+                actionThread.start()
+
+                xbmc.log("Cache_Data_Manager: Returning Cached Result")
+            except:
+                xbmc.log("Cache_Data_Manager: Error in Cached Data")
+                result = None
+             
+        # no cache data or cache data not valid
+        if(result == None):
             jsonData = DownloadUtils().downloadUrl(url, suppress=False, popup=1)
             xbmc.log("Cache_Data_Manager: Loading URL and saving to cache")
             cachedfie = open(cacheDataPath, 'w')
@@ -114,8 +120,8 @@ class DataManager():
             result = self.loadJasonData(jsonData)
             self.cacheManagerFinished = True
             xbmc.log("Cache_Data_Manager: Returning Loaded Result")        
-            return result
         
+        return result
         
 class CacheManagerThread(threading.Thread):
 
