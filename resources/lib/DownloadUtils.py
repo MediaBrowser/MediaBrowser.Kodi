@@ -182,7 +182,7 @@ class DownloadUtils():
         if id == None:
             id=data.get("Id")
         # if requested get parent info
-        if getSeriesData == True and userParentInfo == True and self.addonSettings.getSetting('showIndicators')=='true':
+        if getSeriesData == True and userParentInfo == True and self.addonSettings.getSetting('showArtIndicators')=='true':
             self.logMsg("Using Parent Info for image link", level=1)
             mb3Host = self.addonSettings.getSetting('ipaddress')
             mb3Port = self.addonSettings.getSetting('port')
@@ -213,7 +213,7 @@ class DownloadUtils():
         played = "0"
         totalbackdrops = 0
 
-        if self.addonSettings.getSetting('showIndicators')=='true': # add watched, unplayedcount and percentage played indicators to posters
+        if self.addonSettings.getSetting('showArtIndicators')=='true': # add watched, unplayedcount and percentage played indicators to posters
 
             if (originalType =="Primary" or  originalType =="Backdrop" or  originalType =="Banner") and data.get("Type") != "Episode":
                 userData = data.get("UserData")
@@ -277,8 +277,7 @@ class DownloadUtils():
                     if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                         played = str(PlayedPercentage)
                         
-                    height = "830"
-                    width = "560"
+                   
             
             elif originalType =="Primary4":
                 userData = data.get("UserData") 
