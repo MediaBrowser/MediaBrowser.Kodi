@@ -1619,14 +1619,20 @@ def processDirectory(url, results, progress, pluginhandle):
                         Role = ''
                     cast.append(Name)
 
-        # Process Studios
-        studio = ""
-        studios = item.get("Studios")
-        if(studios != None):
+        # Process Studio
+        studio = "" 
+        if item.get("SeriesStudio") != None and item.get("SeriesStudio") != '':
+            studio = item.get("SeriesStudio")
+        # Process Studios old way
+        if studio == "":        
+          studios = item.get("Studios")
+          if(studios != None):
             for studio_string in studios:
                 if studio=="": #Just take the first one
                     temp=studio_string.get("Name")
                     studio=temp.encode('utf-8')
+                    
+            
         # Process Genres
         genre = ""
         genres = item.get("Genres")

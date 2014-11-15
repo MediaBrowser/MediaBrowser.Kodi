@@ -16,6 +16,10 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
     id = ""
     playUrl = ""
     trailerUrl = ""
+    userid = ""
+    server = ""
+    downloadUtils = DownloadUtils()
+    item= []
     
     def __init__(self, *args, **kwargs):
         xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
@@ -27,20 +31,24 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         port = __settings__.getSetting('port')
         host = __settings__.getSetting('ipaddress')
-        server = host + ":" + port         
+        server = host + ":" + port
+        self.server = server         
         
-        downloadUtils = DownloadUtils()
-        
-        userid = downloadUtils.getUserId()
+        userid = self.downloadUtils.getUserId()
+        self.userid = userid
        
-        jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + self.id + "?format=json", suppress=False, popup=1 )     
+        jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + self.id + "?format=json", suppress=False, popup=1 )     
         item = json.loads(jsonData)
+        self.item = item
         
         id = item.get("Id")
-        name = item.get("Name")
-        image = downloadUtils.getArtwork(item, "Primary3")
-        fanArt = downloadUtils.getArtwork(item, "BackdropNoIndicators")
+        WINDOW = xbmcgui.Window( 10025 )
+        WINDOW.setProperty('ItemGUID', id)
         
+        name = item.get("Name")
+        image = self.downloadUtils.getArtwork(item, "Primary3","0",True)
+        fanArt = self.downloadUtils.getArtwork(item, "BackdropNoIndicators")
+        discart = self.downloadUtils.getArtwork(item, "Disc")
         # calculate the percentage complete
         userData = item.get("UserData")
         cappedPercentage = None
@@ -54,15 +62,49 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
                     if(cappedPercentage == 0):
                         cappedPercentage = 10
                     if(cappedPercentage == 100):
-                        cappedPercentage = 90        
+                        cappedPercentage = 90
+            try:
+                watchedButton = self.getControl(3192)
+                if(watchedButton != None):
+                    if userData.get("Played") == True:
+                        watchedButton.setSelected(True)
+                    else:
+                        watchedButton.setSelected(False)
+                
+                dislikeButton = self.getControl(3193)
+                if(dislikeButton != None):
+                    if userData.get("Likes") != None and userData.get("Likes") == False:
+                        dislikeButton.setSelected(True)
+                    else:
+                        dislikeButton.setSelected(False)
+                        
+                likeButton = self.getControl(3194)
+                if(likeButton != None):
+                    if userData.get("Likes") != None and userData.get("Likes") == True:
+                        likeButton.setSelected(True)
+                    else:
+                        likeButton.setSelected(False)
+                        
+                favouriteButton = self.getControl(3195)
+                if(favouriteButton != None):
+                    if userData.get("IsFavorite") == True:
+                        favouriteButton.setSelected(True)
+                    else:
+                        favouriteButton.setSelected(False)
+            except:
+                pass            
         
         episodeInfo = ""
         type = item.get("Type")
         if(type == "Episode" or type == "Season"):
+            WINDOW.setProperty('ItemGUID', item.get("SeriesId"))
             name = item.get("SeriesName") + ": " + name
             season = str(item.get("ParentIndexNumber")).zfill(2)
             episodeNum = str(item.get("IndexNumber")).zfill(2)
             episodeInfo = "S" + season + "xE" + episodeNum
+        elif type == "Movie":
+            if item.get("Taglines") != None and item.get("Taglines") != [] and item.get("Taglines")[0] != None:
+                episodeInfo = item.get("Taglines")[0]
             
         url =  server + ',;' + id
         url = urllib.quote(url)
@@ -76,7 +118,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
             if(trailerButton != None):
                 if item.get("LocalTrailerCount") != None and item.get("LocalTrailerCount") > 0:
                     itemTrailerUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "/LocalTrailers?format=json"
-                    jsonData = downloadUtils.downloadUrl(itemTrailerUrl, suppress=False, popup=1 ) 
+                    jsonData = self.downloadUtils.downloadUrl(itemTrailerUrl, suppress=False, popup=1 ) 
                     trailerItem = json.loads(jsonData)
                     trailerUrl = server + ',;' + trailerItem[0].get("Id")
                     trailerUrl = urllib.quote(trailerUrl) 
@@ -133,10 +175,14 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         # add people
         peopleList = self.getControl(3230)
         people = item.get("People")
-
+        director=''
+        writer=''
         for person in people:
             displayName = person.get("Name")
-            role = person.get("Role")
+            if person.get("Role") != None and person.get("Role") != '':
+               role = "as " + person.get("Role")
+            else:
+               role = ''
             id = person.get("Id")
             tag = person.get("PrimaryImageTag")
             
@@ -149,42 +195,110 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
             actionUrl = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_PERSON_DETAILS) +"&name=" + baseName
             
             if(tag != None and len(tag) > 0):
-                thumbPath = downloadUtils.imageUrl(id, "Primary", 0, 400, 400)
+                thumbPath = self.downloadUtils.imageUrl(id, "Primary", 0, 400, 400)
                 listItem = xbmcgui.ListItem(label=displayName, label2=role, iconImage=thumbPath, thumbnailImage=thumbPath)
             else:
                 listItem = xbmcgui.ListItem(label=displayName, label2=role)
                 
             listItem.setProperty("ActionUrl", actionUrl)
             peopleList.addItem(listItem)
-        
+            if(person.get("Type") == "Director") and director =='':
+                director = displayName
+                if(tag != None and len(tag) > 0):
+                  thumbPath = self.downloadUtils.imageUrl(id, "Primary", 0, 580, 860)
+                  directorlistItem = xbmcgui.ListItem("Director:", label2=displayName, iconImage=thumbPath, thumbnailImage=thumbPath)
+                else:
+                  directorlistItem = xbmcgui.ListItem("Director:", label2=displayName)
+                directorlistItem.setProperty("ActionUrl", actionUrl)  
+            if(person.get("Type") == "Writing") and writer == '':
+                writer = person.get("Name")
+                if(tag != None and len(tag) > 0):
+                  thumbPath = self.downloadUtils.imageUrl(id, "Primary", 0, 580, 860)
+                  writerlistItem = xbmcgui.ListItem("Writer:", label2=displayName, iconImage=thumbPath, thumbnailImage=thumbPath)
+                else:
+                  writerlistItem = xbmcgui.ListItem("Writer:", label2=displayName)
+                writerlistItem.setProperty("ActionUrl", actionUrl) 
+            if(person.get("Type") == "Writer") and writer == '':
+                writer = person.get("Name")    
+                if(tag != None and len(tag) > 0):
+                  thumbPath = self.downloadUtils.imageUrl(id, "Primary", 0, 580, 860)
+                  writerlistItem = xbmcgui.ListItem("Writer:", label2=displayName, iconImage=thumbPath, thumbnailImage=thumbPath)
+                else:
+                  writerlistItem = xbmcgui.ListItem("Writer:", label2=displayName)
+                writerlistItem.setProperty("ActionUrl", actionUrl)
         # add general info
         infoList = self.getControl(3226)
         listItem = xbmcgui.ListItem("Year:", str(item.get("ProductionYear")))
         infoList.addItem(listItem)
         listItem = xbmcgui.ListItem("Rating:", str(item.get("CommunityRating")))
-        infoList.addItem(listItem)        
+        infoList.addItem(listItem)          
         listItem = xbmcgui.ListItem("MPAA:", str(item.get("OfficialRating")))
         infoList.addItem(listItem)   
         duration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
         listItem = xbmcgui.ListItem("RunTime:", str(duration) + " Minutes")
         infoList.addItem(listItem) 
-        
+         
         genre = ""
         genres = item.get("Genres")
-        if(genres != None):
+        if genres != None and genres != []:
             for genre_string in genres:
                 if genre == "": #Just take the first genre
                     genre = genre_string
                 else:
                     genre = genre + " / " + genre_string
+        else:
+            jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + item.get("SeriesId") + "?format=json", suppress=False, popup=1 )     
+            item2 = json.loads(jsonData)
+            genres = item2.get("Genres")
+            if genres != None and genres != []:
+              for genre_string in genres:
+                if genre == "": #Just take the first genre
+                    genre = genre_string
+                else:
+                    genre = genre + " / " + genre_string     
 
-        listItem = xbmcgui.ListItem("Genre:", genre)
-        infoList.addItem(listItem) 
+        genrelistItem = xbmcgui.ListItem("Genre:", genre)
+        genrelistItem2 = xbmcgui.ListItem("Genre:", genre)
+        infoList.addItem(genrelistItem) 
         
         path = item.get('Path')
-        listItem = xbmcgui.ListItem("Path:", path)
-        infoList.addItem(listItem)
-        
+        pathlistItem = xbmcgui.ListItem("Path:", path)
+        pathlistItem2 = xbmcgui.ListItem("Path:", path)  
+        infoList.addItem(pathlistItem)
+       
+        if item.get("CriticRating") != None:
+            listItem = xbmcgui.ListItem("CriticRating:", str(item.get("CriticRating")))
+            infoList.addItem(listItem)
+            
+        # Process Studio 
+        if item.get("SeriesStudio") != None and item.get("SeriesStudio") != '':
+            listItem = xbmcgui.ListItem("Studio:", item.get("SeriesStudio"))
+            infoList.addItem(listItem)
+            
+        # alternate list 
+        try:
+            alternateList = self.getControl(3291)
+            if alternateList != None:
+                if directorlistItem != None:
+                   alternateList.addItem(directorlistItem)
+                if writerlistItem != None:
+                   alternateList.addItem(writerlistItem)
+                alternateList.addItem(genrelistItem2)
+                if item.get("ProductionLocations") !=None and item.get("ProductionLocations") != []:
+                   listItem = xbmcgui.ListItem("Country:", item.get("ProductionLocations")[0])
+                   alternateList.addItem(listItem)
+                elif item.get("AirTime") !=None:
+                   listItem = xbmcgui.ListItem("Air Time:", item.get("AirTime"))
+                   alternateList.addItem(listItem)
+                if(item.get("PremiereDate") != None):
+                   premieredatelist = (item.get("PremiereDate")).split("T")
+                   premieredate = premieredatelist[0]
+                   listItem = xbmcgui.ListItem("Premiered Date:", premieredate)
+                   alternateList.addItem(listItem)
+                alternateList.addItem(pathlistItem2)
+        except:
+            pass     
+     
         # add resume percentage text to name
         addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
         if (addResumePercent and cappedPercentage != None):
@@ -193,6 +307,26 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         self.getControl(3000).setLabel(name)
         self.getControl(3003).setLabel(episodeInfo)
         self.getControl(3001).setImage(fanArt)
+        
+        try:
+            discartImageControl = self.getControl(3091)
+            artImageControl = self.getControl(3092)
+            if discartImageControl != None and artImageControl != None:
+                xbmc.log("XBMB3C - DiscArt: " + discart)
+                if discart != '':
+                  self.getControl(3091).setImage(discart)
+                  self.getControl(3092).setVisible(False)
+                else:
+                  self.getControl(3091).setVisible(False)
+                  art = self.downloadUtils.getArtwork(item, "Art")
+                  if (artImageControl != None):
+                      if art != '':
+                          self.getControl(3092).setImage(art)
+                      else:
+                          self.getControl(3092).setVisible(False)
+                  
+        except:
+            pass 
         
         if(type == "Episode"):
             self.getControl(3009).setImage(image)
@@ -245,6 +379,63 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
             
             xbmc.log(action)
             xbmc.executebuiltin("RunPlugin(" + action + ")")
+        elif(controlID == 3291):
         
+            list = self.getControl(3291)
+            item = list.getSelectedItem()
+            action = item.getProperty("ActionUrl")
+            
+            xbmc.log(action)
+            xbmc.executebuiltin("RunPlugin(" + action + ")")
+        elif(controlID == 3192):
+            url =  'http://' + self.server + '/mediabrowser/Users/'+ self.userid + '/PlayedItems/' + self.id           
+            button = self.getControl(3192)
+            watched = button.isSelected()
+            if watched == True:
+                self.postUrl(url)
+            else:
+                self.deleteUrl(url)
+            self.onInit()
+        elif(controlID == 3193):
+            url =     'http://' + self.server + '/mediabrowser/Users/'+ self.userid + '/Items/' + self.id + '/Rating'        
+            dislikebutton = self.getControl(3193)
+            dislike = dislikebutton.isSelected()
+            if dislike == True:
+                url = url + '?likes=false'
+                self.postUrl(url)
+            else:
+                self.deleteUrl(url)
+            self.onInit()
+        elif(controlID == 3194):
+            url =     'http://' + self.server + '/mediabrowser/Users/'+ self.userid + '/Items/' + self.id + '/Rating'        
+            likebutton = self.getControl(3194)
+            like = likebutton.isSelected()
+            if like == True:
+                url = url + '?likes=true'
+                self.postUrl(url)
+            else:
+                self.deleteUrl(url)
+            self.onInit()
+        elif(controlID == 3195):
+            url = 'http://' + self.server + '/mediabrowser/Users/'+ self.userid + '/FavoriteItems/' + self.id           
+            button = self.getControl(3195)
+            favourite = button.isSelected()
+            if favourite == True:
+                self.postUrl(url)
+            else:
+                self.deleteUrl(url)
+            self.onInit()
         pass
+    
+    def postUrl (self,url):
+        self.downloadUtils.downloadUrl(url, postBody="", type="POST")  
+        WINDOW = xbmcgui.Window( 10000 )
+        WINDOW.setProperty("force_data_reload", "true")  
+        xbmc.executebuiltin("Container.Refresh")
+    
+    def deleteUrl (self,url):
+        self.downloadUtils.downloadUrl(url, type="DELETE")
+        WINDOW = xbmcgui.Window( 10000 )
+        WINDOW.setProperty("force_data_reload", "true")      
+        xbmc.executebuiltin("Container.Refresh")
         

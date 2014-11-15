@@ -416,7 +416,7 @@ class DownloadUtils():
         host = self.addonSettings.getSetting('ipaddress')
         server = host + ":" + port
         
-        return "http://" + server + "/mediabrowser/Items/" + str(id) + "/Images/" + type + "/" + str(index) + "/e3ab56fe27d389446754d0fb04910a34/original/" + str(height) + "/" + str(width) + "/0"
+        return "http://" + server + "/mediabrowser/Items/" + str(id) + "/Images/" + type + "/" + str(index) + "/e3ab56fe27d389446754d0fb04910a34/original/" + str(width) + "/" + str(height) + "/0"
     
     def getAuthHeader(self, authenticate=True):
         clientInfo = ClientInformation()

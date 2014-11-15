@@ -69,14 +69,19 @@ class ThemeMusicThread(threading.Thread):
         
         mb3Host = addonSettings.getSetting('ipaddress')
         mb3Port = addonSettings.getSetting('port')    
-         
+        WINDOW = xbmcgui.Window( 10025 ) 
         newid = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
+        if newid == '':      
+           newid =  WINDOW.getProperty("ItemGUID")
+        
         if newid != self.themeId:
             if self.isPlayingZone() and self.playingTheme == True:
               if  xbmc.Player().isPlayingAudio():
                 self.stop()
         xbmc.sleep(1500)
         id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
+        if id == '':      
+           id =  WINDOW.getProperty("ItemGUID")
         if id != newid:
             return
         self.logMsg("updateThemeMusic itemGUID : " + id)
@@ -136,15 +141,22 @@ class ThemeMusicThread(threading.Thread):
     # that is deemed a zone where themes should be played
     def isPlayingZone(self):
         
-        if "plugin://plugin.video.xbmb3c" in xbmc.getInfoLabel( "ListItem.Path" ):
+        if "plugin://plugin.video.xbmb3c" in xbmc.getInfoLabel( "ListItem.Path" ) or xbmcgui.getCurrentWindowId() == 10025:
+            xbmc.log("in playing zone window id: "+ str(xbmcgui.getCurrentWindowId()))
             return True
         
         # Any other area is deemed to be a non play area
+        xbmc.log("not in playing zone window id: "+ str(xbmcgui.getCurrentWindowId()))
+        xbmc.log("not in playing zone window infolabel: "+xbmc.getInfoLabel( "ListItem.Path" ))
+        
         return False 
     
     # Works out if we should change/start a theme
     def isChangeTheme(self):
         id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
+        WINDOW = xbmcgui.Window( 10025 )
+        if id == '':      
+           id =  WINDOW.getProperty("ItemGUID")
         if id != "":
             if self.volume == '':
                 self.volume = self.getVolume()
