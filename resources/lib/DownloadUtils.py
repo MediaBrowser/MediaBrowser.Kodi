@@ -371,7 +371,11 @@ class DownloadUtils():
                         
                     height = "910"
                     width = "1620"                        
-
+        
+        if originalType =="BackdropNoIndicators" and index == "0" and data.get("BackdropImageTags") != None:
+            totalbackdrops = len(data.get("BackdropImageTags"))
+            if totalbackdrops != 0:
+                index = str(randrange(0,totalbackdrops))
         # use the local image proxy server that is made available by this addons service
         
         port = self.addonSettings.getSetting('port')
