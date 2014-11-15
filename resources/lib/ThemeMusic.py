@@ -142,13 +142,9 @@ class ThemeMusicThread(threading.Thread):
     def isPlayingZone(self):
         
         if "plugin://plugin.video.xbmb3c" in xbmc.getInfoLabel( "ListItem.Path" ) or xbmcgui.getCurrentWindowId() == 10025:
-            xbmc.log("in playing zone window id: "+ str(xbmcgui.getCurrentWindowId()))
             return True
         
-        # Any other area is deemed to be a non play area
-        xbmc.log("not in playing zone window id: "+ str(xbmcgui.getCurrentWindowId()))
-        xbmc.log("not in playing zone window infolabel: "+xbmc.getInfoLabel( "ListItem.Path" ))
-        
+        # Any other area is deemed to be a non play area  
         return False 
     
     # Works out if we should change/start a theme
