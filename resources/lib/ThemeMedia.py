@@ -1,5 +1,5 @@
 #################################################################################################
-# Start of ThemeMusic Thread
+# Start of ThemeMedia Thread
 # plays theme music when applicable
 #################################################################################################
 
@@ -20,12 +20,13 @@ from DownloadUtils import DownloadUtils
 #define our global download utils
 downloadUtils = DownloadUtils()
 
-class ThemeMusicThread(threading.Thread):
+class ThemeMediaThread(threading.Thread):
 
     playingTheme = False
     themeId = ''
     volume = ''
-    themeMap = {}
+    themeMusicMap = {}
+    themeMoviesMap = {}
     
     def __init__(self, *args):
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -34,17 +35,17 @@ class ThemeMusicThread(threading.Thread):
         if(level != None):
             self.logLevel = int(level)           
     
-        xbmc.log("XBMB3C ThemeMusicThread -> Log Level:" +  str(self.logLevel))
+        xbmc.log("XBMB3C ThemeMediaThread -> Log Level:" +  str(self.logLevel))
         
         threading.Thread.__init__(self, *args)    
     
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
-            xbmc.log("XBMB3C ThemeMusicThread -> " + msg)
+            xbmc.log("XBMB3C ThemeMediaThread -> " + msg)
     
     def run(self):
         self.logMsg("Started")
-        self.updateThemeMusic()
+        self.updateThemeMedia()
         lastRun = datetime.today()
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         themeRefresh = 2
@@ -54,7 +55,7 @@ class ThemeMusicThread(threading.Thread):
             secTotal = td.seconds
             
             if (secTotal > themeRefresh):
-                self.updateThemeMusic()
+                self.updateThemeMedia()
                 lastRun = datetime.today()    
                 
             xbmc.sleep(2000)
@@ -62,8 +63,8 @@ class ThemeMusicThread(threading.Thread):
         self.logMsg("Exited")
 
       
-    def updateThemeMusic(self):
-        self.logMsg("updateThemeMusic Called")
+    def updateThemeMedia(self):
+        self.logMsg("updateThemeMedia Called")
         
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         
@@ -76,7 +77,7 @@ class ThemeMusicThread(threading.Thread):
         
         if newid != self.themeId:
             if self.isPlayingZone() and self.playingTheme == True:
-              if  xbmc.Player().isPlayingAudio():
+              if  xbmc.Player().isPlaying():
                 self.stop()
         xbmc.sleep(1500)
         id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
@@ -84,43 +85,70 @@ class ThemeMusicThread(threading.Thread):
            id =  WINDOW.getProperty("ItemGUID")
         if id != newid:
             return
-        self.logMsg("updateThemeMusic itemGUID : " + id)
+        self.logMsg("updateThemeMedia itemGUID : " + id)
         if self.isPlayingZone() and self.isChangeTheme():
             self.themeId = id 
-            themeUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + id + "/ThemeSongs?format=json"
-            self.logMsg("updateThemeMusic themeUrl : " + themeUrl)
-            if themeUrl not in self.themeMap:
-                jsonData = downloadUtils.downloadUrl(themeUrl, suppress=False, popup=1 )
-                theme = json.loads(jsonData)     
+            themeMusicUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + id + "/ThemeSongs?format=json"
+            self.logMsg("updateThemeMedia themeUrl : " + themeMusicUrl)
+            if themeMusicUrl not in self.themeMusicMap:
+                jsonData = downloadUtils.downloadUrl(themeMusicUrl, suppress=False, popup=1 )
+                themeMusic = json.loads(jsonData)     
                
-                if(theme == None):
-                    theme = []
-                self.logMsg("updateThemeMusic added theme to map : " + themeUrl)    
-                self.themeMap[themeUrl] = theme
-            elif themeUrl in self.themeMap:
-                theme = self.themeMap.get(themeUrl)
-                self.logMsg("updateThemeMusic retrieved theme from map : " + themeUrl)
+                if(themeMusic == None):
+                    themeMusic = []
+                self.logMsg("updateThemeMedia added music theme to map : " + themeMusicUrl)    
+                self.themeMusicMap[themeMusicUrl] = themeMusic
+            elif themeMusicUrl in self.themeMusicMap:
+                themeMusic = self.themeMusicMap.get(themeMusicUrl)
+                self.logMsg("updateThemeMedia retrieved music theme from map : " + themeMusicUrl)
+                
+                
+            themeMoviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + id + "/ThemeVideos?format=json"
+            if themeMoviesUrl not in self.themeMoviesMap:
+                jsonData = downloadUtils.downloadUrl(themeMoviesUrl, suppress=False, popup=1 )
+                themeMovies = json.loads(jsonData)  
+               
+                if(themeMovies == None):
+                    themeMovies = []
+                self.logMsg("updateThemeMovie added movies theme to map : " + themeMoviesUrl)    
+                self.themeMoviesMap[themeMoviesUrl] = themeMovies
+            elif themeMoviesUrl in self.themeMoviesMap:
+                themeMovies = self.themeMoviesMap.get(themeMoviesUrl)
+                self.logMsg("updateThemeMovie retrieved movies theme from map : " + themeMoviesUrl)
             
-            themeItems = theme.get("Items")
+            
+            if addonSettings.getSetting('useThemeMovies') == "true" :
+               themeItems = themeMovies.get("Items")
+               playMovie = True
+               if themeItems == [] and addonSettings.getSetting('useThemeMusic') == "true" :
+                   themeItems = themeMusic.get("Items")
+                   playMovie = False
+            elif addonSettings.getSetting('useThemeMusic') == "true" :
+               themeItems = themeMusic.get("Items")
+               playMovie = False
+               
             if themeItems != []:
                 themePlayUrl = PlayUtils().getPlayUrl(mb3Host + ":" + mb3Port,themeItems[0].get("Id"),themeItems[0])
-                self.logMsg("updateThemeMusic themeMusicPath : " + str(themePlayUrl))
+                self.logMsg("updateThemeMedia themePath : " + str(themePlayUrl))
                 self.playingTheme = True
                 self.setVolume(60)
-                xbmc.Player().play(themePlayUrl)
+                if playMovie == True:
+                    xbmc.Player().play(themePlayUrl,windowed=True)
+                else:
+                    xbmc.Player().play(themePlayUrl)
                 
             elif themeItems == [] and self.playingTheme == True:
                 self.stop(True)
         
         if not self.isPlayingZone() and self.playingTheme == True:
             # stop
-            if  xbmc.Player().isPlayingAudio():
+            if  xbmc.Player().isPlaying():
                 self.stop()
             self.setVolume(self.volume)    
                 
     def stop(self, forceStop = False):
-        # Only stop if playing audio
-        if xbmc.Player().isPlayingAudio() or forceStop == True:
+        # Only stop if playing 
+        if xbmc.Player().isPlaying() or forceStop == True:
             self.playingTheme = False
             cur_vol = self.getVolume()
             
@@ -135,7 +163,7 @@ class ThemeMusicThread(threading.Thread):
                 cur_vol = vol
                 xbmc.sleep(200)
             xbmc.Player().stop()
-            self.setVolume(self.volume)  
+            self.setVolume(self.volume)
         
     # Works out if the currently displayed area on the screen is something
     # that is deemed a zone where themes should be played
@@ -144,7 +172,7 @@ class ThemeMusicThread(threading.Thread):
         if "plugin://plugin.video.xbmb3c" in xbmc.getInfoLabel( "ListItem.Path" ) or xbmcgui.getCurrentWindowId() == 10025:
             return True
         
-        # Any other area is deemed to be a non play area  
+        # Any other area is deemed to be a non play area
         return False 
     
     # Works out if we should change/start a theme
@@ -158,17 +186,20 @@ class ThemeMusicThread(threading.Thread):
                 self.volume = self.getVolume()
             # we have something to start with
             addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c') 
-            if addonSettings.getSetting('useThemeMusic') == "true":
+            if addonSettings.getSetting('useThemeMusic') == "true" or addonSettings.getSetting('useThemeMovies') == "true" :
               # cool theme music is on continue
               if id == self.themeId:
                   # same as before now do we need to restart 
-                  if addonSettings.getSetting('loopThemeMusic') == "true" and xbmc.Player().isPlayingAudio() == False:
+                  if (addonSettings.getSetting('loopThemeMusic') == "true" or addonSettings.getSetting('loopThemeMovies') == "true")  and xbmc.Player().isPlaying() == False:
+                      self.logMsg("isChangeTheme restart true")
                       return True
               if id != self.themeId:
                   # new id return true
+                  self.logMsg("isChangeTheme new id restart true")
                   return True  
               
-        # still here return False 
+        # still here return False
+        xbmc.log("isChangeTheme restart false") 
         return False 
     
     # This will return the volume in a range of 0-100
@@ -186,6 +217,7 @@ class ThemeMusicThread(threading.Thread):
     def setVolume(self, newvolume):
         # Can't use the RPC version as that will display the volume dialog
         # '{"jsonrpc": "2.0", "method": "Application.SetVolume", "params": { "volume": %d }, "id": 1}'
-        xbmc.executebuiltin('XBMC.SetVolume(%d)' % newvolume, True)
+        # xbmc.executebuiltin('XBMC.SetVolume(%d)' % newvolume, True)
+        return
      
  

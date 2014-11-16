@@ -33,7 +33,7 @@ from NextUpItems import NextUpUpdaterThread
 from SuggestedItems import SuggestedUpdaterThread
 from RandomItems import RandomInfoUpdaterThread
 from ArtworkLoader import ArtworkRotationThread
-from ThemeMusic import ThemeMusicThread
+from ThemeMedia import ThemeMediaThread
 from RecentItems import RecentInfoUpdaterThread
 from InProgressItems import InProgressUpdaterThread
 from WebSocketClient import WebSocketThread
@@ -114,12 +114,13 @@ if __addon__.getSetting('useBackgroundLoader') == "true":
 else:
     xbmc.log("XBMB3C Service BackgroundLoader Disabled")
     
-newThemeMusicThread = None    
-if __addon__.getSetting('useThemeMusic') == "true":
-    newThemeMusicThread = ThemeMusicThread()
-    newThemeMusicThread.start()
+newThemeMediaThread = None    
+if __addon__.getSetting('useThemeMovies') == "true" or __addon__.getSetting('useThemeMusic') == "true":
+    newThemeMediaThread = ThemeMediaThread()
+    newThemeMediaThread.start()
 else:
-    xbmc.log("XBMB3C Service ThemeMusic Disabled")
+    xbmc.log("XBMB3C Service ThemeMedia Disabled")
+
 
 newInfoThread = None    
 if __addon__.getSetting('useInfoLoader') == "true":

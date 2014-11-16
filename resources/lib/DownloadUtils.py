@@ -540,7 +540,7 @@ class DownloadUtils():
         
         
     def __del__(self):
-
-        xbmc.log("\rURL_REQUEST_REPORT : Total Calls : " + str(self.TotalUrlCalls) + "\r" + self.TrackLog)
+        return
+        # xbmc.log("\rURL_REQUEST_REPORT : Total Calls : " + str(self.TotalUrlCalls) + "\r" + self.TrackLog)
         
         
