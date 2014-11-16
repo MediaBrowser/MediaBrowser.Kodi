@@ -23,6 +23,7 @@ downloadUtils = DownloadUtils()
 class ThemeMediaThread(threading.Thread):
 
     playingTheme = False
+    playingMovie = False
     themeId = ''
     volume = ''
     themeMusicMap = {}
@@ -119,20 +120,20 @@ class ThemeMediaThread(threading.Thread):
             
             if addonSettings.getSetting('useThemeMovies') == "true" :
                themeItems = themeMovies.get("Items")
-               playMovie = True
+               self.playingMovie = True
                if themeItems == [] and addonSettings.getSetting('useThemeMusic') == "true" :
                    themeItems = themeMusic.get("Items")
-                   playMovie = False
+                   self.playingMovie = False
             elif addonSettings.getSetting('useThemeMusic') == "true" :
                themeItems = themeMusic.get("Items")
-               playMovie = False
+               self.playingMovie = False
                
             if themeItems != []:
                 themePlayUrl = PlayUtils().getPlayUrl(mb3Host + ":" + mb3Port,themeItems[0].get("Id"),themeItems[0])
                 self.logMsg("updateThemeMedia themePath : " + str(themePlayUrl))
                 self.playingTheme = True
                 self.setVolume(60)
-                if playMovie == True:
+                if self.playingMovie == True:
                     xbmc.Player().play(themePlayUrl,windowed=True)
                 else:
                     xbmc.Player().play(themePlayUrl)
@@ -190,7 +191,7 @@ class ThemeMediaThread(threading.Thread):
               # cool theme music is on continue
               if id == self.themeId:
                   # same as before now do we need to restart 
-                  if (addonSettings.getSetting('loopThemeMusic') == "true" or addonSettings.getSetting('loopThemeMovies') == "true")  and xbmc.Player().isPlaying() == False:
+                  if ((addonSettings.getSetting('loopThemeMusic') == "true"  and self.playingMovie == False) or (addonSettings.getSetting('loopThemeMovies') == "true" and self.playingMovie == True))  and xbmc.Player().isPlaying() == False:
                       self.logMsg("isChangeTheme restart true")
                       return True
               if id != self.themeId:
