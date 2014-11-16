@@ -46,8 +46,8 @@
 		<setting id="showPlayedPrecentageIndicators" type="bool" label="30155" default="true" visible="eq(-3,true)" enable="eq(-3,true)" />
 		<setting id="useThemeMusic" type="bool" label="30139" default="true" visible="true" enable="true" />
 		<setting id="loopThemeMusic" type="bool" label="30140" default="true" visible="eq(-1,true)" enable="true" />
-		<setting id="useThemeMovies" type="bool" label="30212" default="false" visible="true" enable="true"/>
-		<setting id="loopThemeMovies" type="bool" label="30213" default="false" visible="eq(-1,true)" enable="true" />
+		<setting id="useThemeMovies" type="bool" label="30212" default="true" visible="true" enable="true"/>
+		<setting id="loopThemeMovies" type="bool" label="30213" default="true" visible="eq(-1,true)" enable="true" />
 	</category>
 	<category label="30142"> <!-- Services -->
 		<setting id="useBackgroundLoader" type="bool" label="30141" default="true" visible="true" enable="true" />
