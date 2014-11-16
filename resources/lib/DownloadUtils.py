@@ -471,7 +471,16 @@ class DownloadUtils():
             self.logMsg("DOWNLOAD_URL = " + url)
             self.logMsg("server = "+str(server), level=2)
             self.logMsg("urlPath = "+str(urlPath), level=2)
-            conn = httplib.HTTPConnection(server, timeout=20)
+            
+            tries=0
+            while tries<=10:
+                try:
+                    conn = httplib.HTTPConnection(server, timeout=20)
+                    break
+                except:
+                    success=False
+                    xbmc.sleep(1000)
+                    tries+=1
             
             head = self.getAuthHeader(authenticate)
             self.logMsg("HEADERS : " + str(head), level=1)
