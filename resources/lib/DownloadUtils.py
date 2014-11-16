@@ -483,16 +483,7 @@ class DownloadUtils():
                 self.logMsg("POST DATA : " + postBody)
                 conn.request(method=type, url=urlPath, body=postBody, headers=head)
             else:
-                tries=0
-                while tries<=10:
-                    try:
-                        conn.request(method=type, url=urlPath, headers=head)
-                        break
-                    except:
-                        success=False
-                        xbmc.sleep(1000)
-                        tries+=1
-                
+                conn.request(method=type, url=urlPath, headers=head)
 
             tries=0
             while tries<=10:
@@ -500,10 +491,11 @@ class DownloadUtils():
                     data = conn.getresponse()
                     break
                 except:
-                    success=False
                     xbmc.sleep(1000)
                     tries+=1
-                    
+            if tries==11:
+                data = conn.getresponse()
+            
             self.logMsg("GET URL HEADERS : " + str(data.getheaders()), level=2)
 
             contentType = "none"
