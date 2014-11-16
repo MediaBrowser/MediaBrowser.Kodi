@@ -472,15 +472,7 @@ class DownloadUtils():
             self.logMsg("server = "+str(server), level=2)
             self.logMsg("urlPath = "+str(urlPath), level=2)
             
-            tries=0
-            while tries<=10:
-                try:
-                    conn = httplib.HTTPConnection(server, timeout=20)
-                    break
-                except:
-                    success=False
-                    xbmc.sleep(1000)
-                    tries+=1
+            conn = httplib.HTTPConnection(server, timeout=20)
             
             head = self.getAuthHeader(authenticate)
             self.logMsg("HEADERS : " + str(head), level=1)
@@ -491,7 +483,16 @@ class DownloadUtils():
                 self.logMsg("POST DATA : " + postBody)
                 conn.request(method=type, url=urlPath, body=postBody, headers=head)
             else:
-                conn.request(method=type, url=urlPath, headers=head)
+                tries=0
+                while tries<=10:
+                    try:
+                        conn.request(method=type, url=urlPath, headers=head)
+                        break
+                    except:
+                        success=False
+                        xbmc.sleep(1000)
+                        tries+=1
+                
 
             data = conn.getresponse()
             self.logMsg("GET URL HEADERS : " + str(data.getheaders()), level=2)
