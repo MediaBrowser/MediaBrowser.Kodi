@@ -494,7 +494,16 @@ class DownloadUtils():
                         tries+=1
                 
 
-            data = conn.getresponse()
+            tries=0
+            while tries<=10:
+                try:
+                    data = conn.getresponse()
+                    break
+                except:
+                    success=False
+                    xbmc.sleep(1000)
+                    tries+=1
+                    
             self.logMsg("GET URL HEADERS : " + str(data.getheaders()), level=2)
 
             contentType = "none"
