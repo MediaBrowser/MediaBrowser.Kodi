@@ -350,6 +350,7 @@ def sortby ():
     xbmc.executebuiltin("Container.Update(plugin://plugin.video.xbmb3c/?url="+u+",\"replace\")")#, WINDOW.getProperty('currenturl')
 
 def genrefilter ():
+    WINDOW = xbmcgui.Window( 10000 )
     genreFilters=["","Action","Adventure","Animation","Crime","Comedy","Documentary","Drama","Fantasy","Foreign","History","Horror","Music","Musical","Mystery","Romance","Science%20Fiction","Short","Suspense","Thriller","Western"]
     genreFiltersText=genreList#["None","Action","Adventure","Animation","Crime","Comedy","Documentary","Drama","Fantasy","Foreign","History","Horror","Music","Musical","Mystery","Romance","Science Fiction","Short","Suspense","Thriller","Western"]
     return_value=xbmcgui.Dialog().select(__language__(30090),genreFiltersText)
@@ -359,6 +360,7 @@ def genrefilter ():
     xbmc.executebuiltin("Container.Update(plugin://plugin.video.xbmb3c/?url="+u+",\"replace\")")#, WINDOW.getProperty('currenturl')
 
 def playall (startId):
+    WINDOW = xbmcgui.Window( 10000 )
     temp_list = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     temp_list.clear()
     jsonData = downloadUtils.downloadUrl(WINDOW.getProperty("currenturl"))

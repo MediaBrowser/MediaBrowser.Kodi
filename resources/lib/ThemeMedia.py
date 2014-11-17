@@ -137,6 +137,7 @@ class ThemeMediaThread(threading.Thread):
                     xbmc.Player().play(themePlayUrl,windowed=True)
                 else:
                     xbmc.Player().play(themePlayUrl)
+                ThemeTunesStatus.setAliveState(True)
                 
             elif themeItems == [] and self.playingTheme == True:
                 self.stop(True)
@@ -145,7 +146,10 @@ class ThemeMediaThread(threading.Thread):
             # stop
             if  xbmc.Player().isPlaying():
                 self.stop()
-            self.setVolume(self.volume)    
+            self.setVolume(self.volume) 
+            
+        if not self.isPlayingZone() and self.playingTheme == False:
+            ThemeTunesStatus.setAliveState(False)   
                 
     def stop(self, forceStop = False):
         # Only stop if playing 
@@ -155,15 +159,17 @@ class ThemeMediaThread(threading.Thread):
             
             # Calculate how fast to fade the theme, this determines
             # the number of step to drop the volume in
-            numSteps = 15
-            vol_step = cur_vol / numSteps
+            #numSteps = 15
+            #vol_step = cur_vol / numSteps
             # do not mute completely else the mute icon shows up
-            for step in range (0,(numSteps-1)):
-                vol = cur_vol - vol_step
-                self.setVolume(vol)
-                cur_vol = vol
-                xbmc.sleep(200)
+            #for step in range (0,(numSteps-1)):
+             #   vol = cur_vol - vol_step
+              #  self.setVolume(vol)
+               # cur_vol = vol
+                #xbmc.sleep(200)
             xbmc.Player().stop()
+            ThemeTunesStatus.setAliveState(False)
+        
             self.setVolume(self.volume)
         
     # Works out if the currently displayed area on the screen is something
@@ -200,7 +206,7 @@ class ThemeMediaThread(threading.Thread):
                   return True  
               
         # still here return False
-        xbmc.log("isChangeTheme restart false") 
+        self.logMsg("isChangeTheme restart false") 
         return False 
     
     # This will return the volume in a range of 0-100
@@ -221,4 +227,19 @@ class ThemeMediaThread(threading.Thread):
         # xbmc.executebuiltin('XBMC.SetVolume(%d)' % newvolume, True)
         return
      
+###############################################################
+# Class to make it easier to see the current state of ThemeMedia
+###############################################################
+class ThemeTunesStatus():
+    @staticmethod
+    def isAlive():
+        return xbmcgui.Window(10000).getProperty("ThemeMediaMB3IsAlive") == "true"
+
+    @staticmethod
+    def setAliveState(state):
+        if state:
+            xbmcgui.Window(10000).setProperty("ThemeMediaMB3IsAlive", "true")
+        else:
+            xbmcgui.Window(10000).clearProperty('ThemeMediaMB3IsAlive')
+
  
