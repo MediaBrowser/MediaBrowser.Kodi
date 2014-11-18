@@ -1465,7 +1465,6 @@ def processDirectory(url, results, progress, pluginhandle):
     xbmcplugin.setContent(pluginhandle, 'movies')
 
     server = getServerFromURL(url)
-    setWindowHeading(url, pluginhandle)
     
     detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
     if(__settings__.getSetting('includeStreamInfo') == "true"):
@@ -1474,18 +1473,20 @@ def processDirectory(url, results, progress, pluginhandle):
         detailsString += ",People"
     if(__settings__.getSetting('includeOverview') == "true"):
         detailsString += ",Overview"            
-    
+
     dirItems = []
     result = results.get("Items")
     if(result == None):
         result = []
     if len(result) == 1 and __settings__.getSetting('autoEnterSingle') == "true":
         if result[0].get("Type") == "Season":
-            jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + result[0].get("Id") + '&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName&format=json', suppress=False, popup=1 )
+            url="http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + result[0].get("Id") + '&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName&format=json'
+            jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 )
             results = json.loads(jsonData)
             result=results.get("Items")
     item_count = len(result)
     current_item = 1;
+    setWindowHeading(url, pluginhandle)
         
     for item in result:
     
