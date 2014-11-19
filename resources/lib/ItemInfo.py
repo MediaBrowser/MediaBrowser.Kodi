@@ -274,6 +274,10 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         if item.get("SeriesStudio") != None and item.get("SeriesStudio") != '':
             listItem = xbmcgui.ListItem("Studio:", item.get("SeriesStudio"))
             infoList.addItem(listItem)
+        
+        if item.get("Metascore") != None:
+          listItem = xbmcgui.ListItem("Metascore:", str(item.get("Metascore")))
+          infoList.addItem(listItem) 
             
         # alternate list 
         try:
