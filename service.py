@@ -323,67 +323,74 @@ class Service( xbmc.Player ):
         # Will be called when xbmc starts playing a file
         stopAll(self.played_information)
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        currentFile = xbmc.Player().getPlayingFile()
-        xbmc.log("XBMB3C Service -> onPlayBackStarted" + currentFile)
         
-        WINDOW = xbmcgui.Window( 10000 )
-        watchedurl = WINDOW.getProperty(currentFile+"watchedurl")
-        deleteurl = WINDOW.getProperty(currentFile+"deleteurl")
-        positionurl = WINDOW.getProperty(currentFile+"positionurl")
-        runtime = WINDOW.getProperty(currentFile+"runtimeticks")
-        item_id = WINDOW.getProperty(currentFile+"item_id")
-        audioindex = WINDOW.getProperty(currentFile+"AudioStreamIndex")
-        subtitleindex = WINDOW.getProperty(currentFile+"SubtitleStreamIndex")
-        playMethod = WINDOW.getProperty(currentFile+"playmethod")
-        
-        # reset all these so they dont get used is xbmc plays a none 
-        # xbmb3c MB item
-        # WINDOW.setProperty(currentFile+"watchedurl", "")
-        # WINDOW.setProperty(currentFile+"deleteurl", "")
-        # WINDOW.setProperty(currentFile+"positionurl", "")
-        # WINDOW.setProperty(currentFile+"runtimeticks", "")
-        # WINDOW.setProperty(currentFile+"item_id", "")
-        
-        if(item_id == None or len(item_id) == 0):
-            return
-        
-        
-        url = ("http://%s:%s/mediabrowser/Sessions/Playing" % (addonSettings.getSetting('ipaddress'), addonSettings.getSetting('port')))  
-        
-        url = url + "?itemId=" + item_id
-
-        url = url + "&canSeek=true"
-        url = url + "&PlayMethod=" + playMethod
-        url = url + "&QueueableMediaTypes=Video"
-        url = url + "&MediaSourceId=" + item_id
-        
-        if(audioindex != None and audioindex!=""):
-          url = url + "&AudioStreamIndex=" + audioindex
-        
-        if(subtitleindex != None and subtitleindex!=""):
-          url = url + "&SubtitleStreamIndex=" + subtitleindex
-        
-        downloadUtils.downloadUrl(url, postBody="", type="POST")
-        # if(newWebSocketThread != None):
-          #   newWebSocketThread.playbackStarted(item_id)
-        
-        if (watchedurl != "" and positionurl != ""):
-        
-            data = {}
-            data["watchedurl"] = watchedurl
-            data["deleteurl"] = deleteurl
-            data["positionurl"] = positionurl
-            data["runtime"] = runtime
-            data["item_id"] = item_id
-            data['currentfile'] = currentFile
-            self.played_information[currentFile] = data
+        #failsafe to prevent crashes
+        try:
+            currentFile = xbmc.Player().getPlayingFile()
+            xbmc.log("XBMB3C Service -> onPlayBackStarted" + currentFile)
+            WINDOW = xbmcgui.Window( 10000 )
+            watchedurl = WINDOW.getProperty(currentFile+"watchedurl")
+            deleteurl = WINDOW.getProperty(currentFile+"deleteurl")
+            positionurl = WINDOW.getProperty(currentFile+"positionurl")
+            runtime = WINDOW.getProperty(currentFile+"runtimeticks")
+            item_id = WINDOW.getProperty(currentFile+"item_id")
+            audioindex = WINDOW.getProperty(currentFile+"AudioStreamIndex")
+            subtitleindex = WINDOW.getProperty(currentFile+"SubtitleStreamIndex")
+            playMethod = WINDOW.getProperty(currentFile+"playmethod")
             
-            xbmc.log("XBMB3C Service -> ADDING_FILE : " + currentFile)
-            xbmc.log("XBMB3C Service -> ADDING_FILE : " + str(self.played_information))
+            # reset all these so they dont get used is xbmc plays a none 
+            # xbmb3c MB item
+            # WINDOW.setProperty(currentFile+"watchedurl", "")
+            # WINDOW.setProperty(currentFile+"deleteurl", "")
+            # WINDOW.setProperty(currentFile+"positionurl", "")
+            # WINDOW.setProperty(currentFile+"runtimeticks", "")
+            # WINDOW.setProperty(currentFile+"item_id", "")
+            
+            if(item_id == None or len(item_id) == 0):
+                return
+            
+            
+            url = ("http://%s:%s/mediabrowser/Sessions/Playing" % (addonSettings.getSetting('ipaddress'), addonSettings.getSetting('port')))  
+            
+            url = url + "?itemId=" + item_id
 
-            # reset in progress possition
-            #setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
-            reportPlayback("0000000")
+            url = url + "&canSeek=true"
+            url = url + "&PlayMethod=" + playMethod
+            url = url + "&QueueableMediaTypes=Video"
+            url = url + "&MediaSourceId=" + item_id
+            
+            if(audioindex != None and audioindex!=""):
+              url = url + "&AudioStreamIndex=" + audioindex
+            
+            if(subtitleindex != None and subtitleindex!=""):
+              url = url + "&SubtitleStreamIndex=" + subtitleindex
+            
+            downloadUtils.downloadUrl(url, postBody="", type="POST")
+            # if(newWebSocketThread != None):
+              #   newWebSocketThread.playbackStarted(item_id)
+            
+            if (watchedurl != "" and positionurl != ""):
+            
+                data = {}
+                data["watchedurl"] = watchedurl
+                data["deleteurl"] = deleteurl
+                data["positionurl"] = positionurl
+                data["runtime"] = runtime
+                data["item_id"] = item_id
+                data['currentfile'] = currentFile
+                self.played_information[currentFile] = data
+                
+                xbmc.log("XBMB3C Service -> ADDING_FILE : " + currentFile)
+                xbmc.log("XBMB3C Service -> ADDING_FILE : " + str(self.played_information))
+
+                # reset in progress possition
+                #setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
+                reportPlayback("0000000")
+        except:
+            pass
+        
+        
+        
 
     def onPlayBackEnded( self ):
         # Will be called when xbmc stops playing a file
