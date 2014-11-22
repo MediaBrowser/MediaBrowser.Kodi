@@ -308,9 +308,10 @@ def getCollections(detailsString):
     collections.append({'title':__language__(30210), 'sectype' : 'std.music', 'section' : 'music'  , 'address' : MB_server , 'path' : '/mediabrowser/Artists?SortBy=SortName&Fields=AudioInfo&Recursive=true&SortOrder=Ascending&userid=' + userid + '&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })
     collections.append({'title':__language__(30211), 'sectype' : 'std.music', 'section' : 'music'  , 'address' : MB_server , 'path' : '/mediabrowser/MusicGenres?SortBy=SortName&Fields=AudioInfo&Recursive=true&IncludeItemTypes=Audio,MusicVideo&SortOrder=Ascending&userid=' + userid + '&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })
     
-    
     collections.append({'title':__language__(30198)                 , 'sectype' : 'std.search', 'section' : 'search'  , 'address' : MB_server , 'path' : '/mediabrowser/Search/Hints?' + userid,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
-    collections.append({'title':__language__(30199)                 , 'sectype' : 'std.setviews', 'section' : 'setviews'  , 'address' : 'SETVIEWS', 'path': 'SETVIEWS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    
+    if __settings__.getSetting("disableForcedViews") != "true":
+        collections.append({'title':__language__(30199)                 , 'sectype' : 'std.setviews', 'section' : 'setviews'  , 'address' : 'SETVIEWS', 'path': 'SETVIEWS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
         
     return collections
 
@@ -1440,7 +1441,7 @@ def getContent( url, pluginhandle ):
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
     
     if("viewType" in globals()):
-        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType) != "":
+        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType) != "" and __settings__.getSetting("disableForcedViews") != "true":
             xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType)))
             
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
@@ -2914,6 +2915,9 @@ def showViewList(url, pluginhandle):
     else:
         
         skin_view_file = os.path.join(xbmc.translatePath('special://skin'), "views.xml")
+        skin_view_file_alt = os.path.join(xbmc.translatePath('special://skin/extras'), "views.xml")
+        if xbmcvfs.exists(skin_view_file_alt):
+            skin_view_file = skin_view_file_alt
         try:
             tree = etree.parse(skin_view_file)
         except:

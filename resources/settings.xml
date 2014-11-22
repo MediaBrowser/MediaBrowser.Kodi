@@ -27,6 +27,7 @@
 		<setting id="sortNextUp" type="bool" label="30156" default="false" visible="true" enable="true" />
 		<setting id="offerDelete" type="bool" label="30127" default="false" visible="true" enable="true" />
 		<setting id="showLoadProgress" type="bool" label="30120" default="false" visible="true" enable="true" />
+		<setting id="disableForcedViews" type="bool" label="30214" default="false" visible="true" enable="true" />
 	</category>
 	<category label="30158"> <!-- Metadata -->
 		<setting id="includeStreamInfo" type="bool" label="30111" default="true" visible="true" enable="true" />

@@ -206,6 +206,8 @@
     
     <string id="30212">Enable Theme Videos (Requires Restart)</string>
     <string id="30213"> - Loop Theme Videos</string>
+	
+	<string id="30214">Disable forcing views</string>
     
     <!-- Default views -->
     <string id="30300">Active</string>              
