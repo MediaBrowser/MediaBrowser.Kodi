@@ -35,6 +35,7 @@ import xbmc
 import xbmcplugin
 import xbmcgui
 import xbmcaddon
+import xbmcvfs
 import httplib
 import socket
 import sys
@@ -310,8 +311,7 @@ def getCollections(detailsString):
     
     collections.append({'title':__language__(30198)                 , 'sectype' : 'std.search', 'section' : 'search'  , 'address' : MB_server , 'path' : '/mediabrowser/Search/Hints?' + userid,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     
-    if __settings__.getSetting("disableForcedViews") != "true":
-        collections.append({'title':__language__(30199)                 , 'sectype' : 'std.setviews', 'section' : 'setviews'  , 'address' : 'SETVIEWS', 'path': 'SETVIEWS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    collections.append({'title':__language__(30199)                 , 'sectype' : 'std.setviews', 'section' : 'setviews'  , 'address' : 'SETVIEWS', 'path': 'SETVIEWS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
         
     return collections
 
@@ -1441,7 +1441,7 @@ def getContent( url, pluginhandle ):
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
     
     if("viewType" in globals()):
-        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType) != "" and __settings__.getSetting("disableForcedViews") != "true":
+        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType) != "" and __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType) != "disabled":
             xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType)))
             
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
@@ -2925,12 +2925,20 @@ def showViewList(url, pluginhandle):
             sys.exit()
         root = tree.getroot()
         xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c?url=_SETVIEW_'+ url.split('_')[2] + '_' + '' + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem(__language__(30301), 'test'))
+        
+        #disable forced view
+        disableForcedViewLabel = __language__(30214)
+        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_'+ url.split('_')[2]) == "disabled":
+            disableForcedViewLabel = disableForcedViewLabel + " (" + __language__(30300) + ")"
+        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c?url=_SETVIEW_'+ url.split('_')[2] + '_' + 'disabled' + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem(disableForcedViewLabel, 'test'))
+
         for view in root.findall('view'):
             if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_'+ url.split('_')[2]) == view.attrib['value']:
                 name=view.attrib['id'] + " (" + __language__(30300) + ")"
             else:
                 name=view.attrib['id']
             xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c?url=_SETVIEW_'+ url.split('_')[2] + '_' + view.attrib['value'] + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem(name, 'test'))
+    
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
     
 def checkService():
