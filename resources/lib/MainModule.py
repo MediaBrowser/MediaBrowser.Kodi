@@ -849,34 +849,39 @@ def PLAY( url, handle ):
     jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
     result = json.loads(jsonData)
     
-    if(autoResume != 0):
-      if(autoResume == -1):
-        resume_result = 1
-      else:
-        resume_result = 0
-        seekTime = (autoResume / 1000) / 10000
-    else:
-      userData = result.get("UserData")
-      resume_result = 0
-        
-      if userData.get("PlaybackPositionTicks") != 0:
-        reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
-        seekTime = reasonableTicks / 10000
-        displayTime = str(datetime.timedelta(seconds=seekTime))
-        display_list = [ __language__(30106) + ' ' + displayTime, __language__(30107)]
-        resumeScreen = xbmcgui.Dialog()
-        resume_result = resumeScreen.select(__language__(30105), display_list)
-        if resume_result == -1:
-          return
+    # Is this a strm placeholder ?
+    IsStrmPlaceholder = False    
+    if result.get("Path").endswith(".strm"):
+        IsStrmPlaceholder = True
     
-    
+    if IsStrmPlaceholder == False:
+        if(autoResume != 0):
+          if(autoResume == -1):
+            resume_result = 1
+          else:
+            resume_result = 0
+            seekTime = (autoResume / 1000) / 10000
+        else:
+          userData = result.get("UserData")
+          resume_result = 0
+            
+          if userData.get("PlaybackPositionTicks") != 0:
+            reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
+            seekTime = reasonableTicks / 10000
+            displayTime = str(datetime.timedelta(seconds=seekTime))
+            display_list = [ __language__(30106) + ' ' + displayTime, __language__(30107)]
+            resumeScreen = xbmcgui.Dialog()
+            resume_result = resumeScreen.select(__language__(30105), display_list)
+            if resume_result == -1:
+              return
+
     playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     playlist.clear()
     # check for any intros first
     jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "/Intros?format=json", suppress=False, popup=1 )     
     printDebug("Intros jsonData: " + jsonData)
     result = json.loads(jsonData)
-        
+               
      # do not add intros when resume is invoked
     if result.get("Items") != None and (seekTime == 0 or resume_result == 1):
       for item in result.get("Items"):
@@ -963,6 +968,9 @@ def PLAY( url, handle ):
         playMethod = "DirectPlay"
     else:
       playMethod = "Transcode"
+    if IsStrmPlaceholder == True:
+        playMethod = "DirectStream"
+      
     WINDOW.setProperty(playurl+"playmethod", playMethod)
         
     mediaSources = result.get("MediaSources")
@@ -973,7 +981,6 @@ def PLAY( url, handle ):
         WINDOW.setProperty(playurl+"SubtitleStreamIndex", str(mediaSources[0].get('DefaultSubtitleStreamIndex')))
     
     playlist.add(playurl, listItem)
-
     xbmc.Player().play(playlist)
     #Set a loop to wait for positive confirmation of playback
     count = 0
