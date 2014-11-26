@@ -87,6 +87,7 @@ class DownloadUtils():
                 break
 
         if(secure):
+            WINDOW.setProperty("AccessToken", "")
             authOk = self.authenticate()
             if(authOk == ""):
                 return_value = xbmcgui.Dialog().ok(self.getString(30044), self.getString(30044))
