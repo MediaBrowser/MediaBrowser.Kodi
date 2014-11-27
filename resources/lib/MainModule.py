@@ -2742,6 +2742,8 @@ def showItemInfo(pluginName, handle, params):
     
     infoPage.setId(params.get("id"))
     infoPage.doModal()
+    WINDOW = xbmcgui.Window( 10025 )
+    WINDOW.clearProperty('ItemGUID')
     
     del infoPage
     
