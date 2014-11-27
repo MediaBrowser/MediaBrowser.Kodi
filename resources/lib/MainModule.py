@@ -828,6 +828,7 @@ def remove_html_tags( data ):
 
 def PLAY( url, handle ):
     printDebug("== ENTER: PLAY ==")
+    xbmcgui.Window(10000).setProperty("ThemeMediaMB3Disable", "true")
     url=urllib.unquote(url)
     
     #server,id=url.split(',;')

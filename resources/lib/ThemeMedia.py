@@ -55,9 +55,13 @@ class ThemeMediaThread(threading.Thread):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             
-            if (secTotal > themeRefresh):
+            if (secTotal > themeRefresh) and xbmcgui.Window(10000).getProperty("ThemeMediaMB3Disable") != "true":
                 self.updateThemeMedia()
-                lastRun = datetime.today()    
+                lastRun = datetime.today()
+            elif xbmcgui.Window(10000).getProperty("ThemeMediaMB3Disable") == "true":
+                if not xbmc.Player().isPlaying():
+                    xbmc.log("ThemeThread playback complete restarting thread")
+                    xbmcgui.Window(10000).clearProperty('ThemeMediaMB3Disable')
                 
             xbmc.sleep(2000)
             
