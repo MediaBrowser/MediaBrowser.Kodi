@@ -13,6 +13,7 @@ import json as json
 from random import randrange
 from uuid import uuid4 as uuid4
 from ClientInformation import ClientInformation
+import encodings
 
 class DownloadUtils():
 
