@@ -65,6 +65,7 @@ sys.path.append(BASE_RESOURCE_PATH)
 PLUGINPATH = xbmc.translatePath( os.path.join( __cwd__) )
 
 from DownloadUtils import DownloadUtils
+from Database import Database
 from ItemInfo import ItemInfo
 from Utils import PlayUtils
 from ClientInformation import ClientInformation
@@ -107,6 +108,7 @@ import json as json
    
 #define our global download utils
 downloadUtils = DownloadUtils()
+db=Database()
 clientInfo = ClientInformation()
 dataManager = DataManager()
 
@@ -277,6 +279,10 @@ def getCollections(detailsString):
     
     # Add standard nodes
     collections.append({'title':__language__(30170), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Movie&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    # EXPERIMENTAL	
+    collections.append({'title':'Fast ' + __language__(30170), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Movie&IsFast=true&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    collections.append({'title':"Fast All Movies 2"                 , 'sectype' : 'std.movies', 'section' : 'fastmovies'  , 'address' : 'FastMovies', 'path': 'FastMovies', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    # /EXPERIMENTAL
     collections.append({'title':__language__(30171), 'sectype' : 'std.tvshows', 'section' : 'tvshows' , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Series&format=json','thumb':'', 'poster':'', 'fanart_image':'' , 'guiid':''})
     collections.append({'title':__language__(30172), 'sectype' : 'std.music', 'section' : 'music' , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=MusicArtist&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })   
     collections.append({'title':__language__(30173), 'sectype' : 'std.channels', 'section' : 'channels' , 'address' : MB_server , 'path' : '/mediabrowser/Channels?' + userid +'&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })   
@@ -446,6 +452,10 @@ def addGUIItem( url, details, extraData, folder=True ):
             u = sys.argv[0] + "?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
     elif 'mediabrowser/Search' in url:
         u = sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_SEARCH)
+    #EXPERIMENTAL
+    elif 'FastMovies' in url:
+        u = sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_GETCONTENT)        
+    #/EXPERIMENTAL
     elif 'SETVIEWS' in url:
         u = sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_SETVIEWS)     
     elif url.startswith('http') or url.startswith('file'):
@@ -1405,20 +1415,21 @@ def getContent( url, pluginhandle ):
         progress = xbmcgui.DialogProgress()
         progress.create(__language__(30121))
         progress.update(0, __language__(30122))    
+    # EXPERIMENTAL
+    if not "FastMovies" in url:
+        cacheType = __settings__.getSetting('cacheType')
+        if(cacheType == "1"):
+            printDebug("Using Old Cache System")
+            result = getDataResult(url, progress)
+        else:
+            printDebug("Using New Cache System")
+            result = dataManager.GetContent(url)
     
-    cacheType = __settings__.getSetting('cacheType')
-    if(cacheType == "1"):
-        printDebug("Using Old Cache System")
-        result = getDataResult(url, progress)
-    else:
-        printDebug("Using New Cache System")
-        result = dataManager.GetContent(url)
-    
-    if(result == None or len(result) == 0):
-        if(progress != None):
-            progress.close()
-        return
-    
+        if(result == None or len(result) == 0):
+            if(progress != None):
+                progress.close()
+            return
+    # /EXPERIMENTAL
     printDebug("JSON DATA: " + str(result), level=2)
     if "Search" in url:
         dirItems = processSearch(url, result, progress, pluginhandle)
@@ -1444,6 +1455,13 @@ def getContent( url, pluginhandle ):
         dirItems = processPeople(url, result, progress, "Movie", pluginhandle)
     elif "/mediabrowser/Persons?" in url and "&IncludeItemTypes=Series" in url:
         dirItems = processPeople(url, result, progress, "Series", pluginhandle)
+    #EXPERIMENTAL
+    elif "IsFast" in url:
+
+        dirItems=processFast2(url,result,progress,pluginhandle)
+    elif "FastMovies" in url:
+        dirItems = processFast(url, pluginhandle)        
+    #/EXPERIMENTAL
     else:
         dirItems = processDirectory(url, result, progress, pluginhandle)
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
@@ -1462,7 +1480,191 @@ def getContent( url, pluginhandle ):
 
 def loadJasonData(jsonData):
     return json.loads(jsonData)
+
+# EXPERIMENTAL    
+def processFast(url, pluginhandle):
+    global viewType
+    cast=['None']
+    printDebug("== ENTER: processFast ==")
+    parsed = urlparse(url)
+    #parsedserver,parsedport=parsed.netloc.split(':')
+    userid = downloadUtils.getUserId()
+    printDebug("Processing secondary menus")
+    xbmcplugin.setContent(pluginhandle, 'movies')
+
+    server = getServerFromURL(url)
     
+    detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
+    if(__settings__.getSetting('includeStreamInfo') == "true"):
+        detailsString += ",MediaStreams"
+    if(__settings__.getSetting('includePeople') == "true"):
+        detailsString += ",People"
+    if(__settings__.getSetting('includeOverview') == "true"):
+        detailsString += ",Overview"            
+
+    dirItems = []
+    WINDOW = xbmcgui.Window( 10000 )   
+    item_count = WINDOW.getProperty("MB3TotalMovies")
+    current_item = 1;
+    setWindowHeading(url, pluginhandle)
+ 
+    for item in db.get("itemString").split(','):
+        id = item
+        guiid = id
+        isFolder = "false" #fix
+       
+        item_type = "Movie"
+     
+        viewType=""
+        xbmcplugin.setContent(pluginhandle, 'movies')
+        viewType="_MOVIES"
+        
+        premieredate = ""
+        
+        # Process MediaStreams
+        channels = ''
+        videocodec = ''
+        audiocodec = ''
+        height = ''
+        width = ''
+        aspectratio = '1:1'
+        aspectfloat = 1.85
+        tempTitle="Paco"
+        temp = db.get(id + ".Name")
+        tempTitle=temp
+        if tempTitle == None or tempTitle == '':
+            tempTitle = "Missing"
+        details={'title'        : tempTitle, #db.get(id + ".Name"),
+                 'plot'         : db.get(id + ".Overview"),
+                 }
+        # Populate the extraData list
+        extraData={'thumb'        : db.get(id + ".Primary") ,
+                   'fanart_image' : db.get(id + ".Backdrop") ,
+                   'poster'       : db.get(id + ".poster") , 
+                   'tvshow.poster': db.get(id + ".tvshow.poster") ,
+                   'banner'       : db.get(id + ".Banner") ,
+                   'clearlogo'    : db.get(id + ".Logo") ,
+                   'discart'      : db.get(id + ".Disc") ,
+                   'clearart'     : db.get(id + ".Art") ,
+                   'landscape'    : db.get(id + ".Thumb") ,
+                   'medium_landscape': db.get(id + ".Thumb3") ,
+                   'small_poster' : db.get(id + ".Primary2") ,
+                   'tiny_poster' : db.get(id + ".Primary4") ,
+                   'medium_poster': db.get(id + ".Primary3") ,
+                   'small_fanartimage' : db.get(id + ".Backdrop2") ,
+                   'medium_fanartimage' : db.get(id + ".Backdrop3") ,
+                   'fanart_noindicators' : db.get(id + ".BackdropNoIndicators") ,                    
+                   'id'           : id ,
+                   'guiid'        : id ,
+                   'mpaa'         : db.get(id + ".OfficialRating"),
+                   'rating'       : db.get(id + ".CommunityRating"),
+                   'criticrating' : db.get(id + ".CriticRating"), 
+                   'year'         : db.get(id + ".ProductionYear"),
+                   'locationtype' : db.get(id + ".LocationType"),
+                   #'totaltime'    : db.get("LatestMovieMB3." + str(i) + ".Runtime"),
+                   #'duration'     : db.get("LatestMovieMB3." + str(i) + ".Runtime"),
+                   'itemtype'     : item_type}
+                   
+
+        extraData['mode'] = _MODE_GETCONTENT
+        
+        u = server+',;'+id
+        dirItems.append(addGUIItem(u, details, extraData, folder=False))
+
+    return dirItems
+def processFast2(url, results, progress, pluginhandle):
+    global viewType
+    cast=['None']
+    printDebug("== ENTER: processFast ==")
+    parsed = urlparse(url)
+    parsedserver,parsedport=parsed.netloc.split(':')
+    userid = downloadUtils.getUserId()
+    printDebug("Processing secondary menus")
+    xbmcplugin.setContent(pluginhandle, 'movies')
+    server = getServerFromURL(url)
+    
+    detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
+    if(__settings__.getSetting('includeStreamInfo') == "true"):
+        detailsString += ",MediaStreams"
+    if(__settings__.getSetting('includePeople') == "true"):
+        detailsString += ",People"
+    if(__settings__.getSetting('includeOverview') == "true"):
+        detailsString += ",Overview"            
+
+    dirItems = []
+    result = results.get("Items")
+
+    item_count = db.get("MB3TotalMovies")
+    current_item = 1;
+    setWindowHeading(url, pluginhandle)
+    
+    for item in result:
+        id = str(item.get("Id")).encode('utf-8')
+        guiid = id
+        isFolder = "false" #fix
+       
+        item_type = "Movie"
+     
+        viewType=""
+        xbmcplugin.setContent(pluginhandle, 'movies')
+        viewType="_MOVIES"
+        
+        premieredate = ""
+        
+        # Process MediaStreams
+        channels = ''
+        videocodec = ''
+        audiocodec = ''
+        height = ''
+        width = ''
+        aspectratio = '1:1'
+        aspectfloat = 1.85
+        tempTitle="Paco"
+        if(item.get("Name") != None):
+            temp = item.get("Name")
+            tempTitle=temp.encode('utf-8')
+        else:
+            tempTitle = "Missing Title"
+        details={'title'        : tempTitle, #db.get(id + ".Name"),
+                 'plot'         : db.get(id + ".Overview"),
+                 }
+        # Populate the extraData list
+        extraData={'thumb'        : db.get(id + ".Primary") ,
+                   'fanart_image' : db.get(id + ".Backdrop") ,
+                   'poster'       : db.get(id + ".poster") , 
+                   'tvshow.poster': db.get(id + ".tvshow.poster") ,
+                   'banner'       : db.get(id + ".Banner") ,
+                   'clearlogo'    : db.get(id + ".Logo") ,
+                   'discart'      : db.get(id + ".Disc") ,
+                   'clearart'     : db.get(id + ".Art") ,
+                   'landscape'    : db.get(id + ".Thumb") ,
+                   'medium_landscape': db.get(id + ".Thumb3") ,
+                   'small_poster' : db.get(id + ".Primary2") ,
+                   'tiny_poster' : db.get(id + ".Primary4") ,
+                   'medium_poster': db.get(id + ".Primary3") ,
+                   'small_fanartimage' : db.get(id + ".Backdrop2") ,
+                   'medium_fanartimage' : db.get(id + ".Backdrop3") ,
+                   'fanart_noindicators' : db.get(id + ".BackdropNoIndicators") ,                    
+                   'id'           : id ,
+                   'guiid'        : id ,
+                   'mpaa'         : db.get(id + ".OfficialRating"),
+                   'rating'       : db.get(id + ".CommunityRating"),
+                   'criticrating' : db.get(id + ".CriticRating"), 
+                   'year'         : db.get(id + ".ProductionYear"),
+                   'locationtype' : db.get(id + ".LocationType"),
+                   #'totaltime'    : db.get("LatestMovieMB3." + str(i) + ".Runtime"),
+                   #'duration'     : db.get("LatestMovieMB3." + str(i) + ".Runtime"),
+                   'itemtype'     : item_type}
+                   
+
+        extraData['mode'] = _MODE_GETCONTENT
+        
+        u = server+',;'+id
+        dirItems.append(addGUIItem(u, details, extraData, folder=False))
+
+    return dirItems
+# /EXPERIMENTAL
+
 def processDirectory(url, results, progress, pluginhandle):
     global viewType
     cast=['None']

@@ -44,6 +44,7 @@ from ImageProxy import MyHandler
 from ImageProxy import ThreadingHTTPServer
 from PlaylistItems import PlaylistItemUpdaterThread
 from DownloadUtils import DownloadUtils
+from BackgroundData import BackgroundDataUpdaterThread
 from Utils import PlayUtils
 
 
@@ -159,6 +160,9 @@ if __addon__.getSetting('usePlaylistsUpdater') == "true":
 else:
     printDebug("XBMB3C Service PlaylistsUpdater Disabled")
     
+newBackgroundDataThread = None
+newBackgroundDataThread = BackgroundDataUpdaterThread()
+newBackgroundDataThread.start()    
 ###############################################
 # start the image proxy server
 ###############################################

@@ -79,7 +79,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         
         self.logMsg("Updating BackgroundData Movie List")
         WINDOW = xbmcgui.Window( 10000 )
-        dataUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&SortBy=SortName&Fields=Path,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary&SortOrder=Ascending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
+        dataUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&SortBy=SortName&Fields=Path,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary&SortOrder=Ascending&Filters=IsNotFolder&ExcludeLocationTypes=Virtual&IncludeItemTypes=Movie&format=json"
          
         jsonData = downloadUtils.downloadUrl(dataUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
