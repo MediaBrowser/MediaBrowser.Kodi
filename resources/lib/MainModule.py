@@ -279,10 +279,6 @@ def getCollections(detailsString):
     
     # Add standard nodes
     collections.append({'title':__language__(30170), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Movie&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
-    # EXPERIMENTAL	
-    collections.append({'title':'Fast ' + __language__(30170), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Movie&IsFast=true&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
-    collections.append({'title':"Fast All Movies 2"                 , 'sectype' : 'std.movies', 'section' : 'fastmovies'  , 'address' : 'FastMovies', 'path': 'FastMovies', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
-    # /EXPERIMENTAL
     collections.append({'title':__language__(30171), 'sectype' : 'std.tvshows', 'section' : 'tvshows' , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Series&format=json','thumb':'', 'poster':'', 'fanart_image':'' , 'guiid':''})
     collections.append({'title':__language__(30172), 'sectype' : 'std.music', 'section' : 'music' , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=MusicArtist&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })   
     collections.append({'title':__language__(30173), 'sectype' : 'std.channels', 'section' : 'channels' , 'address' : MB_server , 'path' : '/mediabrowser/Channels?' + userid +'&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })   
@@ -318,6 +314,10 @@ def getCollections(detailsString):
     collections.append({'title':__language__(30198)                 , 'sectype' : 'std.search', 'section' : 'search'  , 'address' : MB_server , 'path' : '/mediabrowser/Search/Hints?' + userid,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     
     collections.append({'title':__language__(30199)                 , 'sectype' : 'std.setviews', 'section' : 'setviews'  , 'address' : 'SETVIEWS', 'path': 'SETVIEWS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    # EXPERIMENTAL	
+    collections.append({'title':'Fast ' + __language__(30170), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Movie&IsFast=true&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    collections.append({'title':"Fast All Movies 2"                 , 'sectype' : 'std.movies', 'section' : 'fastmovies'  , 'address' : 'FastMovies', 'path': 'FastMovies', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    # /EXPERIMENTAL
         
     return collections
 
