@@ -13,6 +13,7 @@ import json as json
 from random import randrange
 from uuid import uuid4 as uuid4
 from ClientInformation import ClientInformation
+import encodings
 
 class DownloadUtils():
 
@@ -112,9 +113,9 @@ class DownloadUtils():
     def authenticate(self):    
         WINDOW = xbmcgui.Window( 10000 )
 
-        token = WINDOW.getProperty("AccessToken")
+        token = WINDOW.getProperty("AccessToken"+self.addonSettings.getSetting('username'))
         if(token != None and token != ""):
-            self.logMsg("DownloadUtils -> Returning saved AccessToken : " + token)
+            self.logMsg("DownloadUtils -> Returning saved AccessToken for user : " + self.addonSettings.getSetting('username') + " token: "+ token)
             return token
         
         port = self.addonSettings.getSetting("port")
@@ -148,11 +149,11 @@ class DownloadUtils():
 
         if(accessToken != None):
             self.logMsg("User Authenticated : " + accessToken)
-            WINDOW.setProperty("AccessToken", accessToken)
+            WINDOW.setProperty("AccessToken"+self.addonSettings.getSetting('username'), accessToken)
             return accessToken
         else:
             self.logMsg("User NOT Authenticated")
-            WINDOW.setProperty("AccessToken", "")
+            WINDOW.setProperty("AccessToken"+self.addonSettings.getSetting('username'), "")
             return ""            
 
     def getArtwork(self, data, type, index = "0", userParentInfo = False):

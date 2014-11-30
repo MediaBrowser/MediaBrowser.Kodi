@@ -187,5 +187,36 @@
     <string id="30202">Svp onthouden om weer uit te schakelen na het testen.</string>              
     <string id="30203">Error in ArtworkRotationThread</string>              
     <string id="30204">Kan niet verbinden met server</string>         
-    <string id="30205">Error in LoadMenuOptionsThread</string>       	
+    <string id="30205">Error in LoadMenuOptionsThread</string>       
+	
+	<string id="30206">Activeer Playlists Loader (vereist herstart)</string>   
+    
+    <string id="30207">Liedjes</string>
+    <string id="30208">Albums</string>
+    <string id="30209">Album artiesten</string>
+    <string id="30210">Artiesten</string>
+    <string id="30211">Muziek Genres</string>
+    
+    <string id="30212">Schakel Themavideos in (vereist herstart)</string>
+    <string id="30213"> - Herhalen van themavideos</string>
+	
+	<string id="30214">Schakel het forceren van view uit</string>
+    
+    <!-- Default views -->
+    <string id="30300">Actief</string>              
+    <string id="30301">Herstel standaard</string>              
+    <string id="30302">Films</string>              
+    <string id="30303">BoxSets</string>              
+    <string id="30304">Trailers</string>              
+    <string id="30305">Series</string>              
+    <string id="30306">Seizoenen</string>              
+    <string id="30307">Afleveringen</string>              
+    <string id="30308">Muziek - artiesten</string>              
+    <string id="30309">Muziek - albums</string>              
+    <string id="30310">Muziekvideos</string>              
+    <string id="30311">Muziek - liedjes</string>
+    <string id="30312">Kanalen</string>               
+
+
+	
 </strings>

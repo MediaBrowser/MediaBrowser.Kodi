@@ -35,6 +35,7 @@ import xbmc
 import xbmcplugin
 import xbmcgui
 import xbmcaddon
+import xbmcvfs
 import httplib
 import socket
 import sys
@@ -308,8 +309,8 @@ def getCollections(detailsString):
     collections.append({'title':__language__(30210), 'sectype' : 'std.music', 'section' : 'music'  , 'address' : MB_server , 'path' : '/mediabrowser/Artists?SortBy=SortName&Fields=AudioInfo&Recursive=true&SortOrder=Ascending&userid=' + userid + '&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })
     collections.append({'title':__language__(30211), 'sectype' : 'std.music', 'section' : 'music'  , 'address' : MB_server , 'path' : '/mediabrowser/MusicGenres?SortBy=SortName&Fields=AudioInfo&Recursive=true&IncludeItemTypes=Audio,MusicVideo&SortOrder=Ascending&userid=' + userid + '&format=json','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })
     
-    
     collections.append({'title':__language__(30198)                 , 'sectype' : 'std.search', 'section' : 'search'  , 'address' : MB_server , 'path' : '/mediabrowser/Search/Hints?' + userid,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    
     collections.append({'title':__language__(30199)                 , 'sectype' : 'std.setviews', 'section' : 'setviews'  , 'address' : 'SETVIEWS', 'path': 'SETVIEWS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
         
     return collections
@@ -827,6 +828,7 @@ def remove_html_tags( data ):
 
 def PLAY( url, handle ):
     printDebug("== ENTER: PLAY ==")
+    xbmcgui.Window(10000).setProperty("ThemeMediaMB3Disable", "true")
     url=urllib.unquote(url)
     
     #server,id=url.split(',;')
@@ -848,34 +850,39 @@ def PLAY( url, handle ):
     jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
     result = json.loads(jsonData)
     
-    if(autoResume != 0):
-      if(autoResume == -1):
-        resume_result = 1
-      else:
-        resume_result = 0
-        seekTime = (autoResume / 1000) / 10000
-    else:
-      userData = result.get("UserData")
-      resume_result = 0
-        
-      if userData.get("PlaybackPositionTicks") != 0:
-        reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
-        seekTime = reasonableTicks / 10000
-        displayTime = str(datetime.timedelta(seconds=seekTime))
-        display_list = [ __language__(30106) + ' ' + displayTime, __language__(30107)]
-        resumeScreen = xbmcgui.Dialog()
-        resume_result = resumeScreen.select(__language__(30105), display_list)
-        if resume_result == -1:
-          return
+    # Is this a strm placeholder ?
+    IsStrmPlaceholder = False    
+    if result.get("Path").endswith(".strm"):
+        IsStrmPlaceholder = True
     
-    
+    if IsStrmPlaceholder == False:
+        if(autoResume != 0):
+          if(autoResume == -1):
+            resume_result = 1
+          else:
+            resume_result = 0
+            seekTime = (autoResume / 1000) / 10000
+        else:
+          userData = result.get("UserData")
+          resume_result = 0
+            
+          if userData.get("PlaybackPositionTicks") != 0:
+            reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
+            seekTime = reasonableTicks / 10000
+            displayTime = str(datetime.timedelta(seconds=seekTime))
+            display_list = [ __language__(30106) + ' ' + displayTime, __language__(30107)]
+            resumeScreen = xbmcgui.Dialog()
+            resume_result = resumeScreen.select(__language__(30105), display_list)
+            if resume_result == -1:
+              return
+
     playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     playlist.clear()
     # check for any intros first
     jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "/Intros?format=json", suppress=False, popup=1 )     
     printDebug("Intros jsonData: " + jsonData)
     result = json.loads(jsonData)
-        
+               
      # do not add intros when resume is invoked
     if result.get("Items") != None and (seekTime == 0 or resume_result == 1):
       for item in result.get("Items"):
@@ -962,6 +969,9 @@ def PLAY( url, handle ):
         playMethod = "DirectPlay"
     else:
       playMethod = "Transcode"
+    if IsStrmPlaceholder == True:
+        playMethod = "DirectStream"
+      
     WINDOW.setProperty(playurl+"playmethod", playMethod)
         
     mediaSources = result.get("MediaSources")
@@ -972,7 +982,6 @@ def PLAY( url, handle ):
         WINDOW.setProperty(playurl+"SubtitleStreamIndex", str(mediaSources[0].get('DefaultSubtitleStreamIndex')))
     
     playlist.add(playurl, listItem)
-
     xbmc.Player().play(playlist)
     #Set a loop to wait for positive confirmation of playback
     count = 0
@@ -1440,7 +1449,7 @@ def getContent( url, pluginhandle ):
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
     
     if("viewType" in globals()):
-        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType) != "":
+        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType) != "" and __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType) != "disabled":
             xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType)))
             
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
@@ -2733,6 +2742,8 @@ def showItemInfo(pluginName, handle, params):
     
     infoPage.setId(params.get("id"))
     infoPage.doModal()
+    WINDOW = xbmcgui.Window( 10025 )
+    WINDOW.clearProperty('ItemGUID')
     
     del infoPage
     
@@ -2914,6 +2925,9 @@ def showViewList(url, pluginhandle):
     else:
         
         skin_view_file = os.path.join(xbmc.translatePath('special://skin'), "views.xml")
+        skin_view_file_alt = os.path.join(xbmc.translatePath('special://skin/extras'), "views.xml")
+        if xbmcvfs.exists(skin_view_file_alt):
+            skin_view_file = skin_view_file_alt
         try:
             tree = etree.parse(skin_view_file)
         except:
@@ -2921,12 +2935,20 @@ def showViewList(url, pluginhandle):
             sys.exit()
         root = tree.getroot()
         xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c?url=_SETVIEW_'+ url.split('_')[2] + '_' + '' + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem(__language__(30301), 'test'))
+        
+        #disable forced view
+        disableForcedViewLabel = __language__(30214)
+        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_'+ url.split('_')[2]) == "disabled":
+            disableForcedViewLabel = disableForcedViewLabel + " (" + __language__(30300) + ")"
+        xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c?url=_SETVIEW_'+ url.split('_')[2] + '_' + 'disabled' + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem(disableForcedViewLabel, 'test'))
+
         for view in root.findall('view'):
             if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_'+ url.split('_')[2]) == view.attrib['value']:
                 name=view.attrib['id'] + " (" + __language__(30300) + ")"
             else:
                 name=view.attrib['id']
             xbmcplugin.addDirectoryItem(pluginhandle, 'plugin://plugin.video.xbmb3c?url=_SETVIEW_'+ url.split('_')[2] + '_' + view.attrib['value'] + '&mode=' + str(_MODE_SETVIEWS), xbmcgui.ListItem(name, 'test'))
+    
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
     
 def checkService():
