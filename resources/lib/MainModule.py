@@ -72,6 +72,7 @@ from ClientInformation import ClientInformation
 from PersonInfo import PersonInfo
 from SearchDialog import SearchDialog
 from DataManager import DataManager
+from ConnectionManager import ConnectionManager
 
 XBMB3C_VERSION = ClientInformation().getVersion()
 
@@ -177,42 +178,6 @@ g_sessionID=None
 
 genreList=[__language__(30069),__language__(30070),__language__(30071),__language__(30072),__language__(30073),__language__(30074),__language__(30075),__language__(30076),__language__(30077),__language__(30078),__language__(30079),__language__(30080),__language__(30081),__language__(30082),__language__(30083),__language__(30084),__language__(30085),__language__(30086),__language__(30087),__language__(30088),__language__(30089)]
 sortbyList=[__language__(30059),__language__(30060),__language__(30061),__language__(30062),__language__(30063),__language__(30064),__language__(30065),__language__(30066),__language__(30067)]
-
-def getServerDetails():
-
-    printDebug("Getting Server Details from Network")
-
-    MESSAGE = "who is MediaBrowserServer?"
-    #MULTI_GROUP = ("224.3.29.71", 7359)
-    #MULTI_GROUP = ("127.0.0.1", 7359)
-    MULTI_GROUP = ("<broadcast>", 7359)
-    
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(6.0)
-    
-    #ttl = struct.pack('b', 20)
-    #sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
-    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 20)
-    
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    sock.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_LOOP, 1)
-    sock.setsockopt(socket.IPPROTO_IP, socket.SO_REUSEADDR, 1)
-    
-    xbmc.log("MutliGroup       : " + str(MULTI_GROUP));
-    xbmc.log("Sending UDP Data : " + MESSAGE);
-    sock.sendto(MESSAGE, MULTI_GROUP)
-
-    try:
-        data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
-        xbmc.log("Received Response : " + data)
-        if(data[0:18] == "MediaBrowserServer"):
-            xbmc.log("Found Server : " + data[19:])
-            return data[19:]
-    except:
-        xbmc.log("No UDP Response")
-        pass
-    
-    return None
    
 def getCollections(detailsString):
     printDebug("== ENTER: getCollections ==")
@@ -687,7 +652,7 @@ def displaySections(pluginhandle):
 def skin( filter=None, shared=False ):
     printDebug("== ENTER: skin() ==")
     
-    checkServer()
+    ConnectionManager().checkServer()
     
     #Get the global host variable set in settings
     WINDOW = xbmcgui.Window( 10000 )
@@ -3174,75 +3139,6 @@ def checkService():
         xbmcgui.Dialog().ok(__language__(30135), __language__(30136), __language__(30137))
         sys.exit()
         
-def checkServer():
-    printDebug ("XBMB3C checkServer Called")
-    
-    port = __settings__.getSetting('port')
-    host = __settings__.getSetting('ipaddress')
-    
-    if(len(host) != 0 and host != "<none>"):
-        printDebug ("XBMB3C server already set")
-        return
-    
-    serverInfo = getServerDetails()
-    
-    if(serverInfo == None):
-        printDebug ("XBMB3C getServerDetails failed")
-        return
-        
-    index = serverInfo.find(":")
-    
-    if(index <= 0):
-        printDebug ("XBMB3C getServerDetails data not correct : " + serverInfo)
-        return
-    
-    server_address = serverInfo[:index]
-    server_port = serverInfo[index+1:]
-    printDebug ("XBMB3C detected server info " + server_address + " : " + server_port)
-    
-    xbmcgui.Dialog().ok(__language__(30167), __language__(30168), __language__(30169) + server_address, __language__(30030) + server_port)
-
-    # get a list of users
-    printDebug ("Getting user list")
-    jsonData = None
-    try:
-        jsonData = downloadUtils.downloadUrl(server_address + ":" + server_port + "/mediabrowser/Users?format=json")
-    except Exception, msg:
-        error = "Get User unable to connect to " + server_address + ":" + server_port + " : " + str(msg)
-        xbmc.log (error)
-        return ""
-    
-    if(jsonData == False):
-        return
-
-    printDebug("jsonData : " + str(jsonData), level=2)
-    result = json.loads(jsonData)
-    
-    names = []
-    userList = []
-    for user in result:
-        config = user.get("Configuration")
-        if(config != None):
-            if(config.get("IsHidden") == False):
-                name = user.get("Name")
-                userList.append(name)
-                if(user.get("HasPassword") == True):
-                    name = name + " (Secure)"
-                names.append(name)
-
-    printDebug ("User List : " + str(names))
-    printDebug ("User List : " + str(userList))
-    return_value = xbmcgui.Dialog().select(__language__(30200), names)
-    
-    if(return_value > -1):
-        selected_user = userList[return_value]
-        printDebug("Setting Selected User : " + selected_user)
-        if __settings__.getSetting("port") != server_port:
-            __settings__.setSetting("port", server_port)
-        if __settings__.getSetting("ipaddress") != server_address:        
-            __settings__.setSetting("ipaddress", server_address)        
-        if __settings__.getSetting("username") != selected_user:          
-            __settings__.setSetting("username", selected_user)
 
     ###########################################################################  
     ##Start of Main
@@ -3281,7 +3177,7 @@ def MainEntryPoint():
     if str(sys.argv[1]) == "skin":
          skin()
     elif sys.argv[1] == "check_server":
-         checkServer()
+         ConnectionManager().checkServer()
     elif sys.argv[1] == "update":
         url=sys.argv[2]
         libraryRefresh(url)
@@ -3331,13 +3227,13 @@ def MainEntryPoint():
         showSearch(sys.argv[0], int(sys.argv[1]), params)        
     elif mode == _MODE_SHOW_PARENT_CONTENT:
         checkService()
-        checkServer()
+        ConnectionManager().checkServer()
         pluginhandle = int(sys.argv[1])
         showParentContent(sys.argv[0], int(sys.argv[1]), params)
     else:
         
         checkService()
-        checkServer()
+        ConnectionManager().checkServer()
         
         pluginhandle = int(sys.argv[1])
 
