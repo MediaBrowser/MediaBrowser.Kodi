@@ -117,8 +117,10 @@ class PersonInfo(xbmcgui.WindowXMLDialog):
                     type_info = "S" + str(season).zfill(2) + "E" + str(eppNum).zfill(2)
                 
                 thumbPath = downloadUtils.imageUrl(image_id, "Primary", 0, 200, 200)
-                
+    
+                fanArt =  downloadUtils.imageUrl(image_id, "Backdrop",0,10000,10000)
                 listItem = xbmcgui.ListItem(label=item_name, label2=type_info, iconImage=thumbPath, thumbnailImage=thumbPath)
+                listItem.setArt({"fanart":fanArt})
                 
                 actionUrl = "plugin://plugin.video.xbmb3c?id=" + item_id + "&mode=" + str(_MODE_ITEM_DETAILS)
                 listItem.setProperty("ActionUrl", actionUrl)
