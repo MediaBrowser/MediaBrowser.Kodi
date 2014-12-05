@@ -13,6 +13,7 @@ import urllib
 from DownloadUtils import DownloadUtils
 
 _MODE_BASICPLAY = 12
+_MODE_ITEM_DETAILS=17
 
 # define our global download utils
 downloadUtils = DownloadUtils()
@@ -117,7 +118,13 @@ class RandomInfoUpdaterThread(threading.Thread):
               realthumb = fanart  
             
             url = mb3Host + ":" + mb3Port + ',;' + item_id
-            playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+            # play or show info
+            selectAction = addonSettings.getSetting('selectAction')
+            if(selectAction == "1"):
+                playUrl = "plugin://plugin.video.xbmb3c/?id=" + item_id + '&mode=' + str(_MODE_ITEM_DETAILS)
+            else:
+                playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+                      
             playUrl = playUrl.replace("\\\\", "smb://")
             playUrl = playUrl.replace("\\", "/")    
 
@@ -221,7 +228,11 @@ class RandomInfoUpdaterThread(threading.Thread):
 			
               
             url = mb3Host + ":" + mb3Port + ',;' + item_id
-            playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+            selectAction = addonSettings.getSetting('selectAction')
+            if(selectAction == "1"):
+                playUrl = "plugin://plugin.video.xbmb3c/?id=" + item_id + '&mode=' + str(_MODE_ITEM_DETAILS)
+            else:
+                playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
             playUrl = playUrl.replace("\\\\", "smb://")
             playUrl = playUrl.replace("\\", "/")    
 
