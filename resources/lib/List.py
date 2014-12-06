@@ -56,14 +56,11 @@ class List():
         global viewType
         cast=['None']
         self.printDebug("== ENTER: processFast ==")
-        parsed = urlparse(url)
-        parsedserver,parsedport=parsed.netloc.split(':')
-        userid = downloadUtils.getUserId()
         self.printDebug("Processing secondary menus")
         xbmcplugin.setContent(pluginhandle, 'movies')
         server = self.getServerFromURL(url)
         
-        detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
+        detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio"
         if(__settings__.getSetting('includeStreamInfo') == "true"):
             detailsString += ",MediaStreams"
         if(__settings__.getSetting('includePeople') == "true"):
@@ -114,7 +111,7 @@ class List():
 
             extraData['mode'] = _MODE_GETCONTENT
             
-            u = server+',;'+id
+            playDetails = server+',;'+id
             folder=False
 
 
@@ -129,19 +126,19 @@ class List():
             selectAction = __settings__.getSetting('selectAction')
             
             #Create the URL to pass to the item
-            if 'mediabrowser/Videos' in url:
+            if 'mediabrowser/Videos' in playDetails:
                 if(selectAction == "1"):
-                    u = sys.argv[0] + "?id=" + id + "&mode=" + str(_MODE_ITEM_DETAILS)
+                    u = sys.argv[0] + "?id=" + playDetails + "&mode=" + str(_MODE_ITEM_DETAILS)
                 else:
-                    u = sys.argv[0] + "?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-            elif url.startswith('http') or url.startswith('file'):
-                u = sys.argv[0]+"?url="+urllib.quote(url)+mode
+                    u = sys.argv[0] + "?url=" + playDetails + '&mode=' + str(_MODE_BASICPLAY)
+            elif playDetails.startswith('http') or playDetails.startswith('file'):
+                u = sys.argv[0]+"?url="+urllib.quote(u)+mode
             else:
                 if(selectAction == "1"):
                     u = sys.argv[0] + "?id=" + id + "&mode=" + str(_MODE_ITEM_DETAILS)
                 else:
-                    u = sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-            
+                    u = sys.argv[0]+"?url=" + playDetails + '&mode=' + str(_MODE_BASICPLAY)
+
             #Create the ListItem that will be displayed
             thumbPath=db.get(id + ".Primary")
             
@@ -190,9 +187,7 @@ class List():
                 details['title'] = details.get('title') + " (" + str(cappedPercentage) + "%)"
             
             #Set the properties of the item, such as summary, name, season, etc
-            #list.setInfo( type=extraData.get('type','Video'), infoLabels=details )
             if ( not folder):
-                #list.setProperty('IsPlayable', 'true')
                 if extraData.get('type','video').lower() == "video":
                     list.setProperty('TotalTime', str(extraData.get('duration')))
                     list.setProperty('ResumeTime', str(extraData.get('resumetime')))
@@ -264,8 +259,6 @@ class List():
                 list.setProperty('UnWatchedEpisodes',extraData.get('UnWatchedEpisodes'))
             if extraData.get('NumEpisodes')!=None:
                 list.setProperty('NumEpisodes',extraData.get('NumEpisodes'))
-            
-
             
             pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id
             list.setProperty('CastPluginLink', pluginCastLink)
