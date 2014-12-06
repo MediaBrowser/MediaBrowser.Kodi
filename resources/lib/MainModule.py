@@ -1012,10 +1012,7 @@ def getContent( url, pluginhandle ):
         dirItems = List().processPeople(url, result, progress, "Series", pluginhandle)
     #EXPERIMENTAL
     elif "IsFast" in url:
-
-        dirItems=List().processFast2(url,result,progress,pluginhandle)
-    elif "FastMovies" in url:
-        dirItems = List().processFast(url, pluginhandle)        
+        dirItems=List().processFast(url,result,progress,pluginhandle)
     #/EXPERIMENTAL
     else:
         dirItems = List().processDirectory(url, result, progress, pluginhandle)

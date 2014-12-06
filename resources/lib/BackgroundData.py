@@ -21,15 +21,16 @@ db = Database()
 
 class BackgroundDataUpdaterThread(threading.Thread):
 
-    logLevel = 2
+    logLevel = 0
     
     def __init__(self, *args):
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        level = addonSettings.getSetting('logLevel')        
-        self.logLevel = 2
+        level = addonSettings.getSetting('logLevel')   
+        self.logLevel = 0
         if(level != None):
-            self.logLevel = int(level)           
-        self.logLevel = 2
+            self.logLevel = int(level)
+        if(self.logLevel == 2):
+            self.LogCalls = True
         xbmc.log("XBMB3C BackgroundDataUpdaterThread -> Log Level:" +  str(self.logLevel))
         
         threading.Thread.__init__(self, *args)    

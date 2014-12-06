@@ -52,16 +52,15 @@ class List():
                 except UnicodeEncodeError:
                     xbmc.log("XBMB3C " + str(level) + " -> " + str(msg.encode('utf-8')))
                     
-    def processFast(self, url, pluginhandle):
+    def processFast(self, url, results, progress, pluginhandle):
         global viewType
         cast=['None']
         self.printDebug("== ENTER: processFast ==")
         parsed = urlparse(url)
-        #parsedserver,parsedport=parsed.netloc.split(':')
+        parsedserver,parsedport=parsed.netloc.split(':')
         userid = downloadUtils.getUserId()
         self.printDebug("Processing secondary menus")
         xbmcplugin.setContent(pluginhandle, 'movies')
-
         server = self.getServerFromURL(url)
         
         detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
@@ -73,13 +72,14 @@ class List():
             detailsString += ",Overview"            
 
         dirItems = []
-        WINDOW = xbmcgui.Window( 10000 )   
-        item_count = WINDOW.getProperty("MB3TotalMovies")
+        result = results.get("Items")
+
+        item_count = db.get("MB3TotalMovies")
         current_item = 1;
         self.setWindowHeading(url, pluginhandle)
-     
-        for item in db.get("itemString").split(','):
-            id = item
+        
+        for item in result:
+            id = str(item.get("Id")).encode('utf-8')
             guiid = id
             isFolder = "false" #fix
            
@@ -100,50 +100,184 @@ class List():
             aspectratio = '1:1'
             aspectfloat = 1.85
             tempTitle="Paco"
-            temp = db.get(id + ".Name")
-            tempTitle=temp
-            if tempTitle == None or tempTitle == '':
-                tempTitle = "Missing"
+            if(item.get("Name") != None):
+                temp = item.get("Name")
+                tempTitle=temp.encode('utf-8')
+            else:
+                tempTitle = "Missing Title"
             details={'title'        : tempTitle, #db.get(id + ".Name"),
                      'plot'         : db.get(id + ".Overview"),
                      }
             # Populate the extraData list
-            extraData={'thumb'        : db.get(id + ".Primary") ,
-                       'fanart_image' : db.get(id + ".Backdrop") ,
-                       'poster'       : db.get(id + ".poster") , 
-                       'tvshow.poster': db.get(id + ".tvshow.poster") ,
-                       'banner'       : db.get(id + ".Banner") ,
-                       'clearlogo'    : db.get(id + ".Logo") ,
-                       'discart'      : db.get(id + ".Disc") ,
-                       'clearart'     : db.get(id + ".Art") ,
-                       'landscape'    : db.get(id + ".Thumb") ,
-                       'medium_landscape': db.get(id + ".Thumb3") ,
-                       'small_poster' : db.get(id + ".Primary2") ,
-                       'tiny_poster' : db.get(id + ".Primary4") ,
-                       'medium_poster': db.get(id + ".Primary3") ,
-                       'small_fanartimage' : db.get(id + ".Backdrop2") ,
-                       'medium_fanartimage' : db.get(id + ".Backdrop3") ,
-                       'fanart_noindicators' : db.get(id + ".BackdropNoIndicators") ,                    
-                       'id'           : id ,
-                       'guiid'        : id ,
-                       'mpaa'         : db.get(id + ".OfficialRating"),
-                       'rating'       : db.get(id + ".CommunityRating"),
-                       'criticrating' : db.get(id + ".CriticRating"), 
-                       'year'         : db.get(id + ".ProductionYear"),
-                       'locationtype' : db.get(id + ".LocationType"),
-                       #'totaltime'    : db.get("LatestMovieMB3." + str(i) + ".Runtime"),
-                       #'duration'     : db.get("LatestMovieMB3." + str(i) + ".Runtime"),
-                       'itemtype'     : item_type}
+            extraData={'itemtype'     : item_type}
                        
 
             extraData['mode'] = _MODE_GETCONTENT
             
             u = server+',;'+id
-            dirItems.append(self.addGUIItem(u, details, extraData, folder=False))
+            folder=False
 
+
+
+            
+            if extraData.get('mode',None) is None:
+                mode="&mode=0"
+            else:
+                mode="&mode=%s" % extraData['mode']
+            
+            # play or show info
+            selectAction = __settings__.getSetting('selectAction')
+            
+            #Create the URL to pass to the item
+            if 'mediabrowser/Videos' in url:
+                if(selectAction == "1"):
+                    u = sys.argv[0] + "?id=" + id + "&mode=" + str(_MODE_ITEM_DETAILS)
+                else:
+                    u = sys.argv[0] + "?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+            elif url.startswith('http') or url.startswith('file'):
+                u = sys.argv[0]+"?url="+urllib.quote(url)+mode
+            else:
+                if(selectAction == "1"):
+                    u = sys.argv[0] + "?id=" + id + "&mode=" + str(_MODE_ITEM_DETAILS)
+                else:
+                    u = sys.argv[0]+"?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+            
+            #Create the ListItem that will be displayed
+            thumbPath=db.get(id + ".Primary")
+            
+            addCounts = __settings__.getSetting('addCounts') == 'true'
+            
+            WINDOW = xbmcgui.Window( 10000 )
+            if WINDOW.getProperty("addshowname") == "true":
+                if db.get(id + ".LocationType") == "Virtual":
+                    listItemName = extraData.get('premieredate').decode("utf-8") + u" - " + details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + details.get('season').decode("utf-8") + u"E" + details.get('title','Unknown').decode("utf-8")
+                    if(addCounts and extraData.get("RecursiveItemCount") != None and extraData.get("RecursiveUnplayedItemCount") != None):
+                        listItemName = listItemName + " (" + str(extraData.get("RecursiveItemCount") - extraData.get("RecursiveUnplayedItemCount")) + "/" + str(extraData.get("RecursiveItemCount")) + ")"
+                    list = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
+                else:
+                    if details.get('season') == None:
+                        season = '0'
+                    else:
+                        season = details.get('season')
+                    listItemName = details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + season + u"E" + details.get('title','Unknown').decode("utf-8")
+                    if(addCounts and extraData.get("RecursiveItemCount") != None and extraData.get("RecursiveUnplayedItemCount") != None):
+                        listItemName = listItemName + " (" + str(extraData.get("RecursiveItemCount") - extraData.get("RecursiveUnplayedItemCount")) + "/" + str(extraData.get("RecursiveItemCount")) + ")"
+                    list = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
+            else:
+                listItemName = details.get('title','Unknown')
+                if(addCounts and extraData.get("RecursiveItemCount") != None and extraData.get("RecursiveUnplayedItemCount") != None):
+                    listItemName = listItemName + " (" + str(extraData.get("RecursiveItemCount") - extraData.get("RecursiveUnplayedItemCount")) + "/" + str(extraData.get("RecursiveItemCount")) + ")"
+                list = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
+            self.printDebug("Setting thumbnail as " + thumbPath, level=2)
+            
+            # calculate percentage
+            cappedPercentage = None
+            if (extraData.get('resumetime') != None and int(extraData.get('resumetime')) > 0):
+                duration = float(extraData.get('duration'))
+                if(duration > 0):
+                    resume = float(extraData.get('resumetime')) / 60.0
+                    percentage = int((resume / duration) * 100.0)
+                    cappedPercentage = percentage - (percentage % 10)
+                    if(cappedPercentage == 0):
+                        cappedPercentage = 10
+                    if(cappedPercentage == 100):
+                        cappedPercentage = 90
+                    list.setProperty("complete_percentage", str(cappedPercentage))          
+            
+            # add resume percentage text to titles
+            addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
+            if (addResumePercent and details.get('title') != None and cappedPercentage != None):
+                details['title'] = details.get('title') + " (" + str(cappedPercentage) + "%)"
+            
+            #Set the properties of the item, such as summary, name, season, etc
+            #list.setInfo( type=extraData.get('type','Video'), infoLabels=details )
+            if ( not folder):
+                #list.setProperty('IsPlayable', 'true')
+                if extraData.get('type','video').lower() == "video":
+                    list.setProperty('TotalTime', str(extraData.get('duration')))
+                    list.setProperty('ResumeTime', str(extraData.get('resumetime')))
+            
+            list.setArt({'poster':db.get(id + ".poster")})
+            list.setArt({'tvshow.poster':db.get(id + ".tvshow.poster")})
+            list.setArt({'clearlogo':db.get(id + ".Logo")})
+            list.setArt({'discart':db.get(id + ".Disc")})
+            list.setArt({'banner':db.get(id + ".Banner")})
+            list.setArt({'clearart':db.get(id + ".Art")})
+            list.setArt({'landscape':db.get(id + ".Thumb")})
+            
+            list.setProperty('fanart_image', db.get(id + ".Backdrop"))
+            list.setProperty('small_poster', db.get(id + ".Primary2"))
+            list.setProperty('tiny_poster', db.get(id + ".Primary4"))
+            list.setProperty('medium_poster', db.get(id + ".Primary3"))
+            list.setProperty('small_fanartimage', db.get(id + ".Backdrop2"))
+            list.setProperty('medium_fanartimage', db.get(id + ".Backdrop3"))
+            list.setProperty('medium_landscape', db.get(id + ".Thumb3"))
+            list.setProperty('fanart_noindicators', db.get(id + ".BackdropNoIndicators"))
+           
+            menuItems = self.addContextMenu(details, extraData, folder)
+            if(len(menuItems) > 0):
+                list.addContextMenuItems( menuItems, True )
+            videoInfoLabels = {}
+
+
+            
+            if(extraData.get('type') == None or extraData.get('type') == "Video"):
+                videoInfoLabels.update(details)
+            else:
+                list.setInfo( type = extraData.get('type','Video'), infoLabels = details )
+            
+            videoInfoLabels["duration"] = extraData.get("duration")
+            videoInfoLabels["playcount"] = extraData.get("playcount")
+            if (extraData.get('favorite') == 'true'):
+                videoInfoLabels["top250"] = "1"    
+                
+            videoInfoLabels["mpaa"] = db.get(id + ".OfficialRating")
+            videoInfoLabels["rating"] = db.get(id + ".CommunityRating")
+            videoInfoLabels["year"] = db.get(id + ".ProductionYear")
+            list.setProperty('CriticRating', db.get(id + ".CriticRating"))
+            list.setProperty('ItemType', item_type)
+
+
+            videoInfoLabels["director"] = extraData.get('director')
+            videoInfoLabels["writer"] = extraData.get('writer')
+            videoInfoLabels["studio"] = extraData.get('studio')
+            videoInfoLabels["genre"] = extraData.get('genre')
+
+            if extraData.get('premieredate') != None:
+                videoInfoLabels["premiered"] = extraData.get('premieredate').decode("utf-8")
+            
+            videoInfoLabels["episode"] = details.get('episode')
+            videoInfoLabels["season"] = details.get('season') 
+            list.setInfo('video', videoInfoLabels)
+            list.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
+            list.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
+
+            if extraData.get('totaltime') != None:
+                list.setProperty('TotalTime', extraData.get('totaltime'))
+            if extraData.get('TotalSeasons')!=None:
+                list.setProperty('TotalSeasons',extraData.get('TotalSeasons'))
+            if extraData.get('TotalEpisodes')!=None:  
+                list.setProperty('TotalEpisodes',extraData.get('TotalEpisodes'))
+            if extraData.get('WatchedEpisodes')!=None:
+                list.setProperty('WatchedEpisodes',extraData.get('WatchedEpisodes'))
+            if extraData.get('UnWatchedEpisodes')!=None:
+                list.setProperty('UnWatchedEpisodes',extraData.get('UnWatchedEpisodes'))
+            if extraData.get('NumEpisodes')!=None:
+                list.setProperty('NumEpisodes',extraData.get('NumEpisodes'))
+            
+
+            
+            pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id
+            list.setProperty('CastPluginLink', pluginCastLink)
+            list.setProperty('ItemGUID', id)
+            list.setProperty('id', id)
+            list.setProperty('Video3DFormat', details.get('Video3DFormat'))
+
+            dirItems.append((u, list, False))
+        
         return dirItems
     # /EXPERIMENTAL
-
+        
     def processDirectory(self, url, results, progress, pluginhandle):
         global viewType
         cast=['None']
