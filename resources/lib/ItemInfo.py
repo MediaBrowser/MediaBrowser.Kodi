@@ -315,19 +315,28 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         try:
             discartImageControl = self.getControl(3091)
             artImageControl = self.getControl(3092)
-            if discartImageControl != None and artImageControl != None:
-                xbmc.log("XBMB3C - DiscArt: " + discart)
+            thumbImageControl = self.getControl(3093)
+            if discartImageControl != None and artImageControl != None and thumbImageControl != None:
                 if discart != '':
                   self.getControl(3091).setImage(discart)
                   self.getControl(3092).setVisible(False)
+                  self.getControl(3093).setVisible(False)
                 else:
                   self.getControl(3091).setVisible(False)
                   art = self.downloadUtils.getArtwork(item, "Art")
                   if (artImageControl != None):
                       if art != '':
                           self.getControl(3092).setImage(art)
+                          self.getControl(3093).setVisible(False)
                       else:
                           self.getControl(3092).setVisible(False)
+                          thumb = self.downloadUtils.getArtwork(item2, "Thumb")
+                          if (thumbImageControl != None):
+                              if thumb != '':
+                                  self.getControl(3093).setImage(thumb)
+                              else:
+                                  self.getControl(3093).setVisible(False)
+                          
                   
         except:
             pass 
