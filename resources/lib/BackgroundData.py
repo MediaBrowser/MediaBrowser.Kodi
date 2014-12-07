@@ -62,7 +62,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
 
             lastProfilePath = profilePath
             
-            xbmc.sleep(3000)
+            xbmc.sleep(30000)
                         
         self.logMsg("Exited")
         
@@ -80,7 +80,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         
         self.logMsg("Updating BackgroundData Movie List")
         WINDOW = xbmcgui.Window( 10000 )
-        dataUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&SortBy=SortName&Fields=Path,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary&SortOrder=Ascending&Filters=IsNotFolder&ExcludeLocationTypes=Virtual&IncludeItemTypes=Movie&format=json"
+        dataUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&SortBy=SortName&Fields=Path,People,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary,EpisodeCount,SeasonCount,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio&SortOrder=Ascending&Filters=IsNotFolder&ExcludeLocationTypes=Virtual&IncludeItemTypes=Movie&format=json"
          
         jsonData = downloadUtils.downloadUrl(dataUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
@@ -146,19 +146,103 @@ class BackgroundDataUpdaterThread(threading.Thread):
         db.set(id+".CriticRating",              str(item.get("CriticRating")))
         db.set(id+".ProductionYear",            str(item.get("ProductionYear")))
         db.set(id+".LocationType",              item.get("LocationType"))
-        db.set(id+".Primary",                   downloadUtils.getArtwork(item, "Primary")) ,
-        db.set(id+".Backdrop",                  downloadUtils.getArtwork(item, "Backdrop")) ,
-        db.set(id+".poster",                    downloadUtils.getArtwork(item, "poster")) , 
-        db.set(id+".tvshow.poster",             downloadUtils.getArtwork(item, "tvshow.poster")) ,
-        db.set(id+".Banner",                    downloadUtils.getArtwork(item, "Banner")) ,
-        db.set(id+".Logo",                      downloadUtils.getArtwork(item, "Logo")) ,
-        db.set(id+".Disc",                      downloadUtils.getArtwork(item, "Disc")) ,
-        db.set(id+".Art",                       downloadUtils.getArtwork(item, "Art")) ,
-        db.set(id+".Thumb",                     downloadUtils.getArtwork(item, "Thumb")) ,
-        db.set(id+".Thumb3",                    downloadUtils.getArtwork(item, "Thumb3")) ,
-        db.set(id+".Primary2",                  downloadUtils.getArtwork(item, "Primary2")) ,
-        db.set(id+".Primary4",                  downloadUtils.getArtwork(item, "Primary4")) ,
-        db.set(id+".Primary3",                  downloadUtils.getArtwork(item, "Primary3")) ,
-        db.set(id+".Backdrop2",                 downloadUtils.getArtwork(item, "Backdrop2")) ,
-        db.set(id+".Backdrop3",                 downloadUtils.getArtwork(item, "Backdrop3")) ,
+        db.set(id+".Primary",                   downloadUtils.getArtwork(item, "Primary")) 
+        db.set(id+".Backdrop",                  downloadUtils.getArtwork(item, "Backdrop"))
+        db.set(id+".poster",                    downloadUtils.getArtwork(item, "poster")) 
+        db.set(id+".tvshow.poster",             downloadUtils.getArtwork(item, "tvshow.poster")) 
+        db.set(id+".Banner",                    downloadUtils.getArtwork(item, "Banner")) 
+        db.set(id+".Logo",                      downloadUtils.getArtwork(item, "Logo")) 
+        db.set(id+".Disc",                      downloadUtils.getArtwork(item, "Disc")) 
+        db.set(id+".Art",                       downloadUtils.getArtwork(item, "Art")) 
+        db.set(id+".Thumb",                     downloadUtils.getArtwork(item, "Thumb")) 
+        db.set(id+".Thumb3",                    downloadUtils.getArtwork(item, "Thumb3")) 
+        db.set(id+".Primary2",                  downloadUtils.getArtwork(item, "Primary2")) 
+        db.set(id+".Primary4",                  downloadUtils.getArtwork(item, "Primary4")) 
+        db.set(id+".Primary3",                  downloadUtils.getArtwork(item, "Primary3")) 
+        db.set(id+".Backdrop2",                 downloadUtils.getArtwork(item, "Backdrop2")) 
+        db.set(id+".Backdrop3",                 downloadUtils.getArtwork(item, "Backdrop3")) 
         db.set(id+".BackdropNoIndicators",      downloadUtils.getArtwork(item, "BackdropNoIndicators"))                  
+        db.set(id+".ItemType",                  item.get("Type"))
+        if(item.get("PremiereDate") != None):
+            premieredatelist = (item.get("PremiereDate")).split("T")
+            db.set(id+".PremiereDate",              premieredatelist[0])
+        else:
+            premieredate = ""
+
+        # Process Genres
+        genre = ""
+        genres = item.get("Genres")
+        if(genres != None and genres != []):
+            for genre_string in genres:
+                if genre == "": 
+                    genre = genre_string
+                elif genre_string != None:
+                    genre = genre + " / " + genre_string   
+        db.set(id+".Genre",                     genre)
+        
+        #Process Duration
+        try:
+            tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
+        except TypeError:
+            try:
+                tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
+            except TypeError:
+                tempDuration = "0"
+        db.set(id+".Duration",                  tempDuration)
+
+        # Process Studio
+        studio = "" 
+        if item.get("SeriesStudio") != None and item.get("SeriesStudio") != '':
+            studio = item.get("SeriesStudio")
+        if studio == "":        
+            studios = item.get("Studios")
+            if(studios != None):
+                for studio_string in studios:
+                    if studio=="": #Just take the first one
+                        temp=studio_string.get("Name")
+                        studio=temp.encode('utf-8')
+        db.set(id+".Studio",                    studio)
+
+        # Process People
+        director=''
+        writer=''
+        cast=''
+        people = item.get("People")
+        if(people != None):
+            for person in people:
+                if(person.get("Type") == "Director"):
+                    director = director + person.get("Name") + ' ' 
+                if(person.get("Type") == "Writing"):
+                    writer = person.get("Name")
+                if(person.get("Type") == "Writer"):
+                    writer = person.get("Name")                 
+                if(person.get("Type") == "Actor"):
+                    Name = person.get("Name")
+                    Role = person.get("Role")
+                    if Role == None:
+                        Role = ''
+                    if cast == '': #If we ever use this, split on ',' to make into list
+                        cast=Name
+                    else:
+                        cast=cast + ',' + Name
+        db.set(id+".Director",              director)
+        db.set(id+".Writer",                writer)
+        #db.set(id+".Cast",                  cast)
+                        
+        
+        #Process User Data
+        userData = item.get("UserData")
+        if(userData != None):
+            if userData.get("Played") != True:
+                db.set(id+".Watched",           "True")
+            else:
+                db.set(id+".Watched",           "False")
+            if userData.get("IsFavorite") == True:
+                db.set(id+".Favorite",          "True")
+            else:
+                db.set(id+".Favorite",          "False")
+            if userData.get("PlaybackPositionTicks") != None:
+                PlaybackPositionTicks = str(userData.get("PlaybackPositionTicks"))
+                reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
+                db.set(id+".ResumeTime",        str(reasonableTicks / 10000))
+                
