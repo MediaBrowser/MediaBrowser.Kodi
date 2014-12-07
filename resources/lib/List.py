@@ -13,7 +13,7 @@ from DownloadUtils import DownloadUtils
 from Database import Database
 from urlparse import urlparse
 
-_MODE_BASICPLAY=12
+
 logLevel = 1
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -22,6 +22,8 @@ _MODE_SEARCH=2
 _MODE_SETVIEWS=3
 _MODE_CAST_LIST=14
 _MODE_SHOW_SEARCH=18
+_MODE_BASICPLAY=12
+_MODE_ITEM_DETAILS=17
 
 __cwd__ = __settings__.getAddonInfo('path')
 PLUGINPATH = xbmc.translatePath( os.path.join( __cwd__) )
