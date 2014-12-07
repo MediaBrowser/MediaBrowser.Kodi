@@ -55,7 +55,6 @@ class List():
                     xbmc.log("XBMB3C " + str(level) + " -> " + str(msg.encode('utf-8')))
                     
     def processFast(self, url, results, progress, pluginhandle):
-        global viewType
         cast=['None']
         self.printDebug("== ENTER: processFast ==")
         self.printDebug("Processing secondary menus")
@@ -76,6 +75,7 @@ class List():
         item_count = db.get("MB3TotalMovies")
         current_item = 1;
         self.setWindowHeading(url, pluginhandle)
+        viewType=""
         
         for item in result:
             id = str(item.get("Id")).encode('utf-8')
@@ -84,9 +84,9 @@ class List():
            
             item_type = "Movie"
          
-            viewType=""
+            db.set("viewType", "_MOVIES")
             xbmcplugin.setContent(pluginhandle, 'movies')
-            viewType="_MOVIES"
+            db.set("viewType", "_MOVIES")
             
             premieredate = ""
             
@@ -109,15 +109,11 @@ class List():
                      }
             # Populate the extraData list
             extraData={'itemtype'     : item_type}
-                       
 
             mode = _MODE_GETCONTENT
             
             playDetails = server+',;'+id
             folder=False
-
-
-
             
             # play or show info
             selectAction = __settings__.getSetting('selectAction')
@@ -164,7 +160,7 @@ class List():
                 listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
             self.printDebug("Setting thumbnail as " + thumbPath, level=2)
             
-            # calculate percentage
+            # calculate percentage MOVE THIS TO BACKGROUND
             cappedPercentage = None
             if (db.get(id + ".ResumeTime") != "" and int(db.get(id + ".ResumeTime")) > 0):
                 duration = float(db.get(id + ".Duration"))
@@ -186,8 +182,8 @@ class List():
             #Set the properties of the item, such as summary, name, season, etc
             if ( not folder):
                 if extraData.get('type','video').lower() == "video":
-                    listItem.setProperty('TotalTime', str(extraData.get('duration')))
-                    listItem.setProperty('ResumeTime', str(extraData.get('resumetime')))
+                    listItem.setProperty('TotalTime', str(db.get(id + ".Duration")))
+                    listItem.setProperty('ResumeTime', str(db.get(id + ".ResumeTime")))
             
             listItem.setArt({'poster':db.get(id + ".poster")})
             listItem.setArt({'tvshow.poster':db.get(id + ".tvshow.poster")})
@@ -217,7 +213,7 @@ class List():
                 listItem.setInfo( type = extraData.get('type','Video'), infoLabels = details )
             
             videoInfoLabels["duration"] = db.get(id + ".Duration")
-            videoInfoLabels["playcount"] = extraData.get("playcount")
+            videoInfoLabels["playcount"] = db.get(id + ".PlayCount")
             if (db.get(id + "Favorite") == 'True'):
                 videoInfoLabels["top250"] = "1"    
                 
@@ -267,7 +263,6 @@ class List():
     # /EXPERIMENTAL
         
     def processDirectory(self, url, results, progress, pluginhandle):
-        global viewType
         cast=['None']
         self.printDebug("== ENTER: processDirectory ==")
         parsed = urlparse(url)
@@ -299,7 +294,8 @@ class List():
         item_count = len(result)
         current_item = 1;
         self.setWindowHeading(url, pluginhandle)
-            
+        viewTypeSet=False
+    
         for item in result:
         
             if(progress != None):
@@ -332,44 +328,51 @@ class List():
                 if item.get("ParentIndexNumber") < 10:
                     tempSeason = "0" + tempSeason
           
-            viewType=""
-            if item.get("Type") == "Movie":
-                xbmcplugin.setContent(pluginhandle, 'movies')
-                viewType="_MOVIES"
-            elif item.get("Type") == "BoxSet":
-                xbmcplugin.setContent(pluginhandle, 'movies')
-                viewType="_BOXSETS"          
-            elif item.get("Type") == "Series":
-                xbmcplugin.setContent(pluginhandle, 'tvshows')
-                viewType="_SERIES"
-            elif item.get("Type") == "Season":
-                xbmcplugin.setContent(pluginhandle, 'seasons')
-                viewType="_SEASONS"
-                guiid = item.get("SeriesId")
-            elif item.get("Type") == "Episode":
+            
+            if viewTypeSet==False:
+                if item.get("Type") == "Movie":
+                    xbmcplugin.setContent(pluginhandle, 'movies')
+                    db.set("viewType", "_MOVIES")
+                elif item.get("Type") == "BoxSet":
+                    xbmcplugin.setContent(pluginhandle, 'movies')
+                    db.set("viewType", "_BOXSETS")
+                elif item.get("Type") == "Series":
+                    xbmcplugin.setContent(pluginhandle, 'tvshows')
+                    db.set("viewType", "_SERIES")
+                elif item.get("Type") == "Season":
+                    xbmcplugin.setContent(pluginhandle, 'seasons')
+                    db.set("viewType", "_SEASONS")
+                    guiid = item.get("SeriesId")
+                elif item.get("Type") == "Episode":
+                    xbmcplugin.setContent(pluginhandle, 'episodes')
+                    db.set("viewType", "_EPISODES")
+                    guiid = item.get("SeriesId")
+                elif item.get("Type") == "MusicArtist":
+                    xbmcplugin.setContent(pluginhandle, 'artists')
+                    db.set("viewType", "_MUSICARTISTS")
+                elif item.get("Type") == "MusicAlbum":
+                    xbmcplugin.setContent(pluginhandle, 'albums')
+                    db.set("viewType", "_MUSICTALBUMS")
+                elif item.get("Type") == "Audio":
+                    xbmcplugin.setContent(pluginhandle, 'songs')
+                    db.set("viewType", "_MUSICTRACKS")
+                else:
+                    db.set("viewType", "_MOVIES")
+                viewTypeSet=True
+                
+            if item.get("Type") == "Episode":
                 prefix=''
                 if __settings__.getSetting('addSeasonNumber') == 'true':
                     prefix = "S" + str(tempSeason)
                     if __settings__.getSetting('addEpisodeNumber') == 'true':
                         prefix = prefix + "E"
-                    #prefix = str(tempEpisode)
                 if __settings__.getSetting('addEpisodeNumber') == 'true':
                     prefix = prefix + str(tempEpisode)
                 if prefix != '':
                     tempTitle = prefix + ' - ' + tempTitle
-                xbmcplugin.setContent(pluginhandle, 'episodes')
-                viewType="_EPISODES"
-                guiid = item.get("SeriesId")
-            elif item.get("Type") == "MusicArtist":
-                xbmcplugin.setContent(pluginhandle, 'artists')
-                viewType='_MUSICARTISTS'
-            elif item.get("Type") == "MusicAlbum":
-                xbmcplugin.setContent(pluginhandle, 'albums')
-                viewType='_MUSICTALBUMS'
-            elif item.get("Type") == "Audio":
-                xbmcplugin.setContent(pluginhandle, 'songs')
-                viewType='_MUSICTRACKS'
-            
+                guiid = item.get("SeriesId")                
+
+                
             if(item.get("PremiereDate") != None):
                 premieredatelist = (item.get("PremiereDate")).split("T")
                 premieredate = premieredatelist[0]
@@ -710,7 +713,6 @@ class List():
         return dirItems
 
     def processChannels(self, url, results, progress, pluginhandle):
-        global viewType
         self.printDebug("== ENTER: processChannels ==")
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
@@ -866,13 +868,13 @@ class List():
                      'Overlay'      : overlay,
                      'playcount'    : str(playCount)}
             
-            viewType=""
+            db.set("viewType", "")
             if item.get("Type") == "ChannelVideoItem":
                 xbmcplugin.setContent(pluginhandle, 'movies')
-                viewType="_CHANNELS"
+                db.set("viewType", "_CHANNELS")
             elif item.get("Type") == "ChannelAudioItem":
                 xbmcplugin.setContent(pluginhandle, 'songs')
-                viewType='_MUSICTRACKS'
+                db.set("viewType", "_MUSICTRACKS")
                      
             try:
                 tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
@@ -937,7 +939,6 @@ class List():
         return dirItems
 
     def processPlaylists(self, url, results, progress, pluginhandle):
-        global viewType
         self.printDebug("== ENTER: processPlaylists ==")
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
@@ -977,7 +978,7 @@ class List():
             details={'title'        : tempTitle}
             
             xbmcplugin.setContent(pluginhandle, 'movies')
-            viewType="_MOVIES"
+            db.set("viewType", "_MOVIES")
                      
             try:
                 tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
@@ -1020,7 +1021,6 @@ class List():
         return dirItems
 
     def processGenres(self, url, results, progress, content, pluginhandle):
-        global viewType
         self.printDebug("== ENTER: processGenres ==")
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
@@ -1064,7 +1064,7 @@ class List():
             # Populate the details list
             details={'title'        : tempTitle}
             
-            viewType="_MOVIES"
+            db.set("viewType", "_MOVIES")
                      
             try:
                 tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
@@ -1108,7 +1108,6 @@ class List():
         return dirItems
 
     def processArtists(self, url, results, progress, pluginhandle):
-        global viewType
         self.printDebug("== ENTER: processArtists ==")
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
@@ -1152,7 +1151,7 @@ class List():
             # Populate the details list
             details={'title'        : tempTitle}
             
-            viewType="_MUSICARTISTS"
+            db.set("viewType", "_MUSICARTISTS")
                      
             try:
                 tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
@@ -1199,7 +1198,6 @@ class List():
         return dirItems
 
     def processStudios(self, url, results, progress, content, pluginhandle):
-        global viewType
         self.printDebug("== ENTER: processStudios ==")
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
@@ -1243,7 +1241,7 @@ class List():
             # Populate the details list
             details={'title'        : tempTitle}
             
-            viewType="_MOVIES"
+            db.set("viewType", "_MOVIES")
                      
             try:
                 tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
@@ -1291,7 +1289,6 @@ class List():
         return dirItems
 
     def processPeople(self, url, results, progress, content, pluginhandle):
-        global viewType
         self.printDebug("== ENTER: processPeople ==")
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
@@ -1335,7 +1332,7 @@ class List():
             # Populate the details list
             details={'title'        : tempTitle}
             
-            viewType="_MOVIES"
+            db.set("viewType", "_MOVIES")
                      
             try:
                 tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))

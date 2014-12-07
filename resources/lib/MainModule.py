@@ -1018,9 +1018,9 @@ def getContent( url, pluginhandle ):
         dirItems = List().processDirectory(url, result, progress, pluginhandle)
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
     
-    if("viewType" in globals()):
-        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType) != "" and __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType) != "disabled":
-            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + viewType)))
+    if(db.get("viewType") != ''):
+        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + db.get("viewType")) != "" and __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + db.get("viewType")) != "disabled":
+            xbmc.executebuiltin("Container.SetViewMode(%s)" % int(__settings__.getSetting(xbmc.getSkinDir()+ '_VIEW' + db.get("viewType"))))
             
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
     

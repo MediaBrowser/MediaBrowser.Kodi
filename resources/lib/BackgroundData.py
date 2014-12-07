@@ -245,4 +245,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
                 PlaybackPositionTicks = str(userData.get("PlaybackPositionTicks"))
                 reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
                 db.set(id+".ResumeTime",        str(reasonableTicks / 10000))
-                
+            if(userData.get("Played") == True):
+                db.set(id+".PlayCount",            "1")
+            else:
+                db.set(id+".PlayCount",            "0")
