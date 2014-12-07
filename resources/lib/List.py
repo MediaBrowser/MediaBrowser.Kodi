@@ -102,7 +102,7 @@ class List():
                 tempTitle=temp.encode('utf-8')
             else:
                 tempTitle = "Missing Title"
-            details={'title'        : tempTitle, #db.get(id + ".Name"),
+            details={'title'        : db.get(id + ".Name"),
                      'plot'         : db.get(id + ".Overview"),
                      }
             # Populate the extraData list
@@ -158,25 +158,8 @@ class List():
                 listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
             self.printDebug("Setting thumbnail as " + thumbPath, level=2)
             
-            # calculate percentage MOVE THIS TO BACKGROUND
-            cappedPercentage = None
-            if (db.get(id + ".ResumeTime") != "" and int(db.get(id + ".ResumeTime")) > 0):
-                duration = float(db.get(id + ".Duration"))
-                if(duration > 0):
-                    resume = float(db.get(id + ".ResumeTime")) / 60.0
-                    percentage = int((resume / duration) * 100.0)
-                    cappedPercentage = percentage - (percentage % 10)
-                    if(cappedPercentage == 0):
-                        cappedPercentage = 10
-                    if(cappedPercentage == 100):
-                        cappedPercentage = 90
-                    listItem.setProperty("complete_percentage", str(cappedPercentage))          
-            
-            # add resume percentage text to titles
-            addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
-            if (addResumePercent and details.get('title') != None and cappedPercentage != None):
-                details['title'] = details.get('title') + " (" + str(cappedPercentage) + "%)"
-            
+            listItem.setProperty("complete_percentage", db.get(id + "CompletePercentage"))          
+           
             #Set the properties of the item, such as summary, name, season, etc
             if ( not folder):
                 if extraData.get('type','video').lower() == "video":

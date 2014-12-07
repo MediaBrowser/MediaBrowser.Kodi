@@ -14,6 +14,7 @@ from DownloadUtils import DownloadUtils
 from Database import Database
 
 _MODE_BASICPLAY=12
+__settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 
 #define our global download utils
 downloadUtils = DownloadUtils()
@@ -180,16 +181,6 @@ class BackgroundDataUpdaterThread(threading.Thread):
                     genre = genre + " / " + genre_string   
         db.set(id+".Genre",                     genre)
         
-        #Process Duration
-        try:
-            tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
-        except TypeError:
-            try:
-                tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
-            except TypeError:
-                tempDuration = "0"
-        db.set(id+".Duration",                  tempDuration)
-
         # Process Studio
         studio = "" 
         if item.get("SeriesStudio") != None and item.get("SeriesStudio") != '':
@@ -202,6 +193,53 @@ class BackgroundDataUpdaterThread(threading.Thread):
                         temp=studio_string.get("Name")
                         studio=temp.encode('utf-8')
         db.set(id+".Studio",                    studio)
+
+        #Process User Data
+        userData = item.get("UserData")
+        if(userData != None):
+            if userData.get("Played") != True:
+                db.set(id+".Watched",           "True")
+            else:
+                db.set(id+".Watched",           "False")
+            if userData.get("IsFavorite") == True:
+                db.set(id+".Favorite",          "True")
+            else:
+                db.set(id+".Favorite",          "False")
+            if userData.get("PlaybackPositionTicks") != None:
+                PlaybackPositionTicks = str(userData.get("PlaybackPositionTicks"))
+                reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
+                resumeTime = str(reasonableTicks / 10000)
+                db.set(id+".ResumeTime",        resumeTime)
+            if(userData.get("Played") == True):
+                db.set(id+".PlayCount",            "1")
+            else:
+                db.set(id+".PlayCount",            "0")
+                
+        #Process Duration
+        try:
+            tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
+        except TypeError:
+            try:
+                tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
+            except TypeError:
+                tempDuration = "0"
+        db.set(id+".Duration",                  tempDuration)
+        cappedPercentage = None
+        if (resumeTime != "" and int(resumeTime) > 0):
+            duration = float(tempDuration)
+            if(duration > 0):
+                resume = float(resumeTime) / 60.0
+                percentage = int((resume / duration) * 100.0)
+                cappedPercentage = percentage - (percentage % 10)
+                if(cappedPercentage == 0):
+                    cappedPercentage = 10
+                if(cappedPercentage == 100):
+                    cappedPercentage = 90
+                db.set(id + ".CompletePercentage", str(cappedPercentage))
+            # add resume percentage text to titles
+        addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
+        if (addResumePercent and Name != '' and cappedPercentage != None):
+            db.set(id+".Name", Name + " (" + str(cappedPercentage) + "%)")               
 
         # Process People
         director=''
@@ -227,25 +265,4 @@ class BackgroundDataUpdaterThread(threading.Thread):
                         cast=cast + ',' + Name
         db.set(id+".Director",              director)
         db.set(id+".Writer",                writer)
-        #db.set(id+".Cast",                  cast)
-                        
-        
-        #Process User Data
-        userData = item.get("UserData")
-        if(userData != None):
-            if userData.get("Played") != True:
-                db.set(id+".Watched",           "True")
-            else:
-                db.set(id+".Watched",           "False")
-            if userData.get("IsFavorite") == True:
-                db.set(id+".Favorite",          "True")
-            else:
-                db.set(id+".Favorite",          "False")
-            if userData.get("PlaybackPositionTicks") != None:
-                PlaybackPositionTicks = str(userData.get("PlaybackPositionTicks"))
-                reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
-                db.set(id+".ResumeTime",        str(reasonableTicks / 10000))
-            if(userData.get("Played") == True):
-                db.set(id+".PlayCount",            "1")
-            else:
-                db.set(id+".PlayCount",            "0")
+        #db.set(id+".Cast",                  cast)            
