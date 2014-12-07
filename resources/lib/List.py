@@ -76,6 +76,8 @@ class List():
         current_item = 1;
         self.setWindowHeading(url, pluginhandle)
         viewType=""
+        db.set("viewType", "_MOVIES") #Fix this
+        xbmcplugin.setContent(pluginhandle, 'movies') #This too
         
         for item in result:
             id = str(item.get("Id")).encode('utf-8')
@@ -83,10 +85,6 @@ class List():
             isFolder = "false" #fix
            
             item_type = "Movie"
-         
-            db.set("viewType", "_MOVIES")
-            xbmcplugin.setContent(pluginhandle, 'movies')
-            db.set("viewType", "_MOVIES")
             
             premieredate = ""
             
@@ -953,7 +951,9 @@ class List():
 
         item_count = len(result)
         current_item = 1;
-            
+        xbmcplugin.setContent(pluginhandle, 'movies')
+        db.set("viewType", "_MOVIES")            
+
         for item in result:
             id=str(item.get("Id")).encode('utf-8')
             type=item.get("Type").encode('utf-8')
@@ -976,10 +976,7 @@ class List():
           
             # Populate the details list
             details={'title'        : tempTitle}
-            
-            xbmcplugin.setContent(pluginhandle, 'movies')
-            db.set("viewType", "_MOVIES")
-                     
+                    
             try:
                 tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
                 RunTimeTicks = str(item.get("RunTimeTicks", "0"))
@@ -1041,7 +1038,8 @@ class List():
 
         item_count = len(result)
         current_item = 1;
-            
+        db.set("viewType", "_MOVIES")            
+        
         for item in result:
             id=str(item.get("Id")).encode('utf-8')
             type=item.get("Type").encode('utf-8')
@@ -1059,13 +1057,10 @@ class List():
                 
            
             isFolder = True
-       
           
             # Populate the details list
             details={'title'        : tempTitle}
-            
-            db.set("viewType", "_MOVIES")
-                     
+                      
             try:
                 tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
                 RunTimeTicks = str(item.get("RunTimeTicks", "0"))
@@ -1128,7 +1123,7 @@ class List():
 
         item_count = len(result)
         current_item = 1;
-            
+        db.set("viewType", "_MUSICARTISTS")            
         for item in result:
             id=str(item.get("Id")).encode('utf-8')
             type=item.get("Type").encode('utf-8')
@@ -1151,8 +1146,6 @@ class List():
             # Populate the details list
             details={'title'        : tempTitle}
             
-            db.set("viewType", "_MUSICARTISTS")
-                     
             try:
                 tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
                 RunTimeTicks = str(item.get("RunTimeTicks", "0"))
@@ -1218,7 +1211,7 @@ class List():
 
         item_count = len(result)
         current_item = 1;
-            
+        db.set("viewType", "_MOVIES")            
         for item in result:
             id=str(item.get("Id")).encode('utf-8')
             type=item.get("Type").encode('utf-8')
@@ -1236,12 +1229,11 @@ class List():
                 
            
             isFolder = True
-       
           
             # Populate the details list
             details={'title'        : tempTitle}
             
-            db.set("viewType", "_MOVIES")
+
                      
             try:
                 tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
@@ -1309,7 +1301,7 @@ class List():
 
         item_count = len(result)
         current_item = 1;
-            
+        db.set("viewType", "_MOVIES")
         for item in result:
             id=str(item.get("Id")).encode('utf-8')
             type=item.get("Type").encode('utf-8')
@@ -1331,8 +1323,6 @@ class List():
           
             # Populate the details list
             details={'title'        : tempTitle}
-            
-            db.set("viewType", "_MOVIES")
                      
             try:
                 tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
