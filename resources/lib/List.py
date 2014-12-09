@@ -88,14 +88,6 @@ class List():
             
             premieredate = ""
             
-            # Process MediaStreams
-            channels = ''
-            videocodec = ''
-            audiocodec = ''
-            height = ''
-            width = ''
-            aspectratio = '1:1'
-            aspectfloat = 1.85
             tempTitle="Missing Title"
             if(item.get("Name") != None):
                 temp = item.get("Name")

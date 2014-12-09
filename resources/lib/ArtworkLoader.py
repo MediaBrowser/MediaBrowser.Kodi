@@ -397,7 +397,7 @@ class ArtworkRotationThread(threading.Thread):
 
             #####################################################################################################
             # Process collection item backgrounds
-            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=Movie,Series,Episode,MusicArtist,MusicVideo,Video&Fields=ParentId,Overview&Recursive=true&CollapseBoxSetItems=false&format=json"
+            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=Movie,Series,MusicArtist,MusicVideo&Fields=ParentId,Overview&Recursive=true&CollapseBoxSetItems=false&format=json"
    
             jsonData = downloadUtils.downloadUrl(collectionUrl, suppress=False, popup=1 ) 
             collectionResult = json.loads(jsonData)

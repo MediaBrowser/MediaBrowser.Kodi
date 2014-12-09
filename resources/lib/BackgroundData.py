@@ -265,4 +265,13 @@ class BackgroundDataUpdaterThread(threading.Thread):
                         cast=cast + ',' + Name
         db.set(id+".Director",              director)
         db.set(id+".Writer",                writer)
-        #db.set(id+".Cast",                  cast)            
+        #db.set(id+".Cast",                  cast)        
+
+        # Process MediaStreams
+        channels = ''
+        videocodec = ''
+        audiocodec = ''
+        height = ''
+        width = ''
+        aspectratio = '1:1'
+        aspectfloat = 1.85        
