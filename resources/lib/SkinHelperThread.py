@@ -64,23 +64,18 @@ class SkinHelperThread(threading.Thread):
 
         self.SetMB3WindowProperties()
         self.getImagesFromCache()
-        self.updateTypeArtLinks()
-        self.updateCollectionArtLinks()
+        #self.updateCollectionArtLinks()
         lastRun = datetime.today()
         
         while (xbmc.abortRequested == False):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             
-            updateInterval = 60
-            if (xbmc.Player().isPlaying()):
-                updateInterval = 300
-                
-            if(secTotal > updateInterval):
+            updateInterval = 600
+            if(secTotal > updateInterval and not xbmc.Player().isPlaying()):
                 self.SetMB3WindowProperties()
                 self.getImagesFromCache()
-                self.updateTypeArtLinks()
-                self.updateCollectionArtLinks()
+                #self.updateCollectionArtLinks()
                 lastRun = datetime.today()
                 
                 if xbmc.getCondVisibility("Player.HasVideo"):
@@ -89,14 +84,6 @@ class SkinHelperThread(threading.Thread):
                     WINDOW = xbmcgui.Window( 10000 )
                     userId = WINDOW.getProperty("userid")                   
                     if userId != "":
-                        
-                        # set some extra global backgrounds
-                        self.setBackgroundLink("MB3.Background.FavouriteMovies.FanArt", "favoritemovies")
-                        self.setBackgroundLink("MB3.Background.FavouriteShows.FanArt", "favoriteshows")
-                        self.setBackgroundLink("MB3.Background.Channels.FanArt", "channels")
-                        self.setBackgroundLink("MB3.Background.MusicVideos.FanArt", "musicvideos")
-                        self.setBackgroundLink("MB3.Background.Photos.FanArt", "photos")
-    
                         # set MB3 user collection backgrounds
                         self.updateGlobalBackgrounds()                    
                         totalUserLinks = int(WINDOW.getProperty("MediaBrowser.usr.Count"))
@@ -414,260 +401,6 @@ class SkinHelperThread(threading.Thread):
         random.shuffle(self.global_art_links)
 
         return True        
-
-
-    # set a new background image on a item
-    def setBackgroundLink(self, windowPropertyName, filterOnCollectionName):
-
-        WINDOW = xbmcgui.Window( 10000 )
-        backGroundUrl = ""
-
-        if (filterOnCollectionName == "favoritemovies"):
-            if(len(self.favorites_art_links) > 0):
-                next, nextItem = self.findNextLink(self.favorites_art_links, self.current_fav_art, "")
-                self.current_fav_art = next
-                backGroundUrl = nextItem["url"]
-        elif (filterOnCollectionName == "favoriteshows"):
-            if(len(self.favoriteshows_art_links) > 0):
-                next, nextItem = self.findNextLink(self.favoriteshows_art_links, self.current_favshow_art, "")
-                self.current_favshow_art = next
-                backGroundUrl = nextItem["url"]
-        elif (filterOnCollectionName == "channels"):
-            if(len(self.channels_art_links) > 0):
-                next, nextItem = self.findNextLink(self.channels_art_links, self.current_channel_art, "")
-                self.current_channel_art = next
-                backGroundUrl = nextItem["url"]
-        elif (filterOnCollectionName == "musicvideos"):
-            if(len(self.musicvideo_art_links) > 0):
-                next, nextItem = self.findNextLink(self.musicvideo_art_links, self.current_musicvideo_art, "")
-                self.current_musicvideo_art = next
-                backGroundUrl = nextItem["url"]
-        elif (filterOnCollectionName == "photos"):
-            if(len(self.photo_art_links) > 0):
-                next, nextItem = self.findNextLink(self.photo_art_links, self.current_photo_art, "")
-                self.current_photo_art = next
-                backGroundUrl = nextItem["url"]
-        else:
-            if(len(self.global_art_links) > 0):
-                next, nextItem = self.findNextLink(self.global_art_links, self.current_global_art, filterOnCollectionName)
-                self.current_global_art = next
-                backGroundUrl = nextItem["url"]
-                
-        if "/10000/10000/" in backGroundUrl:        
-            backGroundUrl = backGroundUrl.split("/10000/10000/",1)[0]
-            backGroundUrl_small = backGroundUrl
-            backGroundUrl = backGroundUrl + "/1920/1080/0?"
-            backGroundUrl_small = backGroundUrl_small + "/620/350/0?"
-        else:
-            backGroundUrl_small = backGroundUrl
-        
-        WINDOW.setProperty(windowPropertyName, backGroundUrl)
-        WINDOW.setProperty(windowPropertyName + ".small", backGroundUrl_small)
-
-    
-    #get background images for specific content types
-    def updateTypeArtLinks(self):
-
-        from DownloadUtils import DownloadUtils
-        downloadUtils = DownloadUtils()        
-        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-
-        mb3Host = addonSettings.getSetting('ipaddress')
-        mb3Port = addonSettings.getSetting('port')    
-        userName = addonSettings.getSetting('username')
-        WINDOW = xbmcgui.Window( 10000 )
-        userid = WINDOW.getProperty("userid")                               
-
-        if userName == "":
-            self.logMsg("[MB3 SkinHelper] -- xbmb3c username empty, skipping task")
-            return False
-        else:
-            self.logMsg("[MB3 SkinHelper] updateTypeArtLinks-- xbmb3c username: " + userName)
-
-        # load Favorite Movie BG's
-        favMoviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=20&Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=Movie&Filters=IsFavorite&format=json"
-        xbmc.log("fav mov:"+favMoviesUrl)
-        jsonData = downloadUtils.downloadUrl(favMoviesUrl, suppress=True, popup=0 )
-        result = json.loads(jsonData)
-
-        result = result.get("Items")
-        if(result == None):
-            result = []   
-
-        for item in result:
-            images = item.get("BackdropImageTags")
-            id = item.get("Id")
-            parentID = item.get("ParentId")
-            name = item.get("Name")
-            if (images == None):
-                images = []
-            index = 0
-            count = 0
-            for backdrop in images:
-                while not count == 1:
-                    try:                
-                        info = {}
-                        info["url"] = downloadUtils.getArtwork(item, "Backdrop", index=str(index))
-                        info["index"] = index
-                        info["id"] = id
-                        info["parent"] = parentID
-                        info["name"] = name
-                        self.logMsg("BG Favorite Movie Image Info : " + str(info), level=0)
-        
-                        if (info not in self.favorites_art_links):
-                            self.favorites_art_links.append(info)
-                        index = index + 1
-                    except Exception, e:
-                        self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))
-                    count += 1                    
-
-        random.shuffle(self.favorites_art_links)       
-
-        # load Favorite TV Show BG's
-        favShowsUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=20&Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=Series&Filters=IsFavorite&format=json"
-        jsonData = downloadUtils.downloadUrl(favShowsUrl, suppress=True, popup=0 )
-        result = json.loads(jsonData)
-
-        result = result.get("Items")
-        if(result == None):
-            result = []   
-
-        for item in result:
-            images = item.get("BackdropImageTags")
-            id = item.get("Id")
-            parentID = item.get("ParentId")
-            name = item.get("Name")
-            if (images == None):
-                images = []
-            index = 0
-            count = 0
-            for backdrop in images:
-                while not count == 1:
-                    try:                
-                        info = {}
-                        info["url"] = downloadUtils.getArtwork(item, "Backdrop", index=str(index))
-                        info["index"] = index
-                        info["id"] = id
-                        info["parent"] = parentID
-                        info["name"] = name
-                        self.logMsg("BG Favorite Shows Image Info : " + str(info), level=0)
-        
-                        if (info not in self.favoriteshows_art_links):
-                            self.favoriteshows_art_links.append(info)
-                        index = index + 1
-                    except Exception, e:
-                        self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))
-                    count += 1                    
-
-        random.shuffle(self.favoriteshows_art_links)    
-
-        # load Music Video BG's
-        musicMoviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=40&SortOrder=Descending&Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=MusicVideo&format=json"
-        jsonData = downloadUtils.downloadUrl(musicMoviesUrl, suppress=True, popup=0 )
-        result = json.loads(jsonData)
-
-        result = result.get("Items")
-        if(result == None):
-            result = []   
-
-        for item in result:
-            images = item.get("BackdropImageTags")
-            id = item.get("Id")
-            parentID = item.get("ParentId")
-            name = item.get("Name")
-            if (images == None):
-                images = []
-            index = 0
-            count = 0
-            for backdrop in images:
-                while not count == 1:
-                    try:                
-                        info = {}
-                        info["url"] = downloadUtils.getArtwork(item, "Backdrop", index=str(index))
-                        info["index"] = index
-                        info["id"] = id
-                        info["parent"] = parentID
-                        info["name"] = name
-                        self.logMsg("BG MusicVideo Image Info : " + str(info), level=0)
-        
-                        if (info not in self.musicvideo_art_links):
-                            self.musicvideo_art_links.append(info)
-                        index = index + 1
-                    except Exception, e:
-                            self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))
-                    count += 1                    
-
-        random.shuffle(self.musicvideo_art_links)
-
-        # load Photo BG's
-        photosUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=20&SortOrder=Descending&Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=Photo&format=json"
-        jsonData = downloadUtils.downloadUrl(photosUrl, suppress=True, popup=0 )
-        result = json.loads(jsonData)
-
-        result = result.get("Items")
-        if(result == None):
-            result = []   
-
-        for item in result:
-            id = item.get("Id")
-            parentID = item.get("ParentId")
-            name = item.get("Name")
-            index = 0
-            
-            try: 
-                info = {}
-                info["url"] = downloadUtils.getArtwork(item, "Primary", index=str(index))
-                info["index"] = index
-                info["id"] = id
-                info["parent"] = parentID
-                info["name"] = name
-    
-                if (info not in self.photo_art_links):
-                    self.photo_art_links.append(info)
-                index = index + 1
-            except Exception, e:
-                    self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))         
-
-        random.shuffle(self.photo_art_links)       
-
-        # load Channels BG links
-        channelsUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Channels?&SortOrder=Descending&format=json"
-        jsonData = downloadUtils.downloadUrl(channelsUrl, suppress=True, popup=0 )
-        result = json.loads(jsonData)        
-
-        result = result.get("Items")
-        if(result == None):
-            result = []   
-
-        for item in result:
-            images = item.get("BackdropImageTags")
-            id = item.get("Id")
-            parentID = item.get("ParentId")
-            name = item.get("Name")
-            plot = item.get("Overview")
-            if (images == None):
-                images = []
-            index = 0
-            for backdrop in images:
-                try:
-                    info = {}
-                    info["url"] = downloadUtils.getArtwork(item, "Backdrop", index=str(index))
-                    info["index"] = index
-                    info["id"] = id
-                    info["plot"] = plot
-                    info["parent"] = parentID
-                    info["name"] = name
-                    self.logMsg("BG Channel Image Info : " + str(info), level=0)
-                except Exception, e:
-                        self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))             
-
-            if (info not in self.channels_art_links):
-                self.channels_art_links.append(info)    
-            index = index + 1
-
-        random.shuffle(self.channels_art_links)
-
-        return True
     
     # primitive cache by getting last known images from skin-settings           
     def getImagesFromCache(self):

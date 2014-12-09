@@ -27,12 +27,22 @@ class ArtworkRotationThread(threading.Thread):
     tv_art_links = []
     music_art_links = []
     global_art_links = []
+    favorites_art_links = []
+    favoriteshows_art_links = []
+    channels_art_links = []
+    musicvideo_art_links = []
+    photo_art_links = []
     item_art_links = {}
     current_movie_art = 0
     current_tv_art = 0
     current_music_art = 0
     current_global_art = 0
     current_item_art = 0
+    current_fav_art = 0
+    current_favshow_art = 0
+    current_channel_art = 0
+    current_musicvideo_art = 0
+    current_photo_art = 0
     linksLoaded = False
     logLevel = 0
     currentFilteredIndex = {}
@@ -166,7 +176,28 @@ class ArtworkRotationThread(threading.Thread):
 
         if(result.get("music") != None):
             self.logMsg("Setting Music Last : " + str(result.get("music")), level=2)
-            WINDOW.setProperty("MB3.Background.Music.FanArt", result.get("music")["url"])   
+            WINDOW.setProperty("MB3.Background.Music.FanArt", result.get("music")["url"])
+            
+        if(result.get("favoritemovies") != None):
+            self.logMsg("Setting favoritemovies Last : " + str(result.get("favoritemovies")), level=2)
+            WINDOW.setProperty("MB3.Background.FavouriteMovies.FanArt", result.get("favoritemovies")["url"])
+            
+        if(result.get("favoriteshows") != None):
+            self.logMsg("Setting favoriteshows Last : " + str(result.get("favoriteshows")), level=2)
+            WINDOW.setProperty("MB3.Background.FavouriteShows.FanArt", result.get("favoriteshows")["url"])
+            
+        if(result.get("channels") != None):
+            self.logMsg("Setting channels Last : " + str(result.get("channels")), level=2)
+            WINDOW.setProperty("MB3.Background.Channels.FanArt", result.get("channels")["url"])
+            
+        if(result.get("musicvideos") != None):
+            self.logMsg("Setting musicvideos Last : " + str(result.get("musicvideos")), level=2)
+            WINDOW.setProperty("MB3.Background.MusicVideos.FanArt", result.get("musicvideos")["url"])
+            
+        if(result.get("photos") != None):
+            self.logMsg("Setting Photos Last : " + str(result.get("photos")), level=2)
+            WINDOW.setProperty("MB3.Background.Photos.FanArt", result.get("photos")["url"])
+              
 
     def saveLastBackground(self):
     
@@ -179,6 +210,16 @@ class ArtworkRotationThread(threading.Thread):
             data["tv"] = self.tv_art_links[self.current_tv_art]
         if(len(self.music_art_links) > 0):
             data["music"] = self.music_art_links[self.current_music_art]
+        if(len(self.favorites_art_links) > 0):
+            data["favoritemovies"] = self.favorites_art_links[self.current_fav_art]
+        if(len(self.favoriteshows_art_links) > 0):
+            data["favoriteshows"] = self.favoriteshows_art_links[self.current_favshow_art]
+        if(len(self.channels_art_links) > 0):
+            data["channels"] = self.channels_art_links[self.current_channel_art]
+        if(len(self.musicvideo_art_links) > 0):
+            data["musicvideos"] = self.musicvideo_art_links[self.current_musicvideo_art]
+        if(len(self.photo_art_links) > 0):
+            data["photos"] = self.photo_art_links[self.current_photo_art]
 
         __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') )            
@@ -220,6 +261,51 @@ class ArtworkRotationThread(threading.Thread):
             self.current_music_art = self.current_music_art + 1
             if(self.current_music_art == len(self.music_art_links)):
                 self.current_music_art = 0
+                
+        if(len(self.favorites_art_links) > 0):
+            self.logMsg("setBackgroundLink index favorites_art_links " + str(self.current_fav_art + 1) + " of " + str(len(self.favorites_art_links)), level=2)
+            artUrl =  self.favorites_art_links[self.current_fav_art]["url"] 
+            WINDOW.setProperty("MB3.Background.FavouriteMovies.FanArt", artUrl)
+            self.logMsg("MB3.Background.FavouriteMovies.FanArt=" + artUrl)
+            self.current_fav_art = self.current_fav_art + 1
+            if(self.current_fav_art == len(self.favorites_art_links)):
+                self.current_fav_art = 0
+                
+        if(len(self.favoriteshows_art_links) > 0):
+            self.logMsg("setBackgroundLink index favoriteshows_art_links " + str(self.current_favshow_art + 1) + " of " + str(len(self.favoriteshows_art_links)), level=2)
+            artUrl =  self.favoriteshows_art_links[self.current_favshow_art]["url"] 
+            WINDOW.setProperty("MB3.Background.FavouriteShows.FanArt", artUrl)
+            self.logMsg("MB3.Background.FavouriteShows.FanArt=" + artUrl)
+            self.current_favshow_art = self.current_favshow_art + 1
+            if(self.current_favshow_art == len(self.favoriteshows_art_links)):
+                self.current_favshow_art = 0
+                
+        if(len(self.channels_art_links) > 0):
+            self.logMsg("setBackgroundLink index channels_art_links " + str(self.current_channel_art + 1) + " of " + str(len(self.channels_art_links)), level=2)
+            artUrl =  self.channels_art_links[self.current_channel_art]["url"] 
+            WINDOW.setProperty("MB3.Background.Channels.FanArt", artUrl)
+            self.logMsg("MB3.Background.Channels.FanArt=" + artUrl)
+            self.current_channel_art = self.current_channel_art + 1
+            if(self.current_channel_art == len(self.channels_art_links)):
+                self.current_channel_art = 0
+                
+        if(len(self.musicvideo_art_links) > 0):
+            self.logMsg("setBackgroundLink index musicvideo_art_links " + str(self.current_musicvideo_art + 1) + " of " + str(len(self.musicvideo_art_links)), level=2)
+            artUrl =  self.musicvideo_art_links[self.current_musicvideo_art]["url"] 
+            WINDOW.setProperty("MB3.Background.MusicVideos.FanArt", artUrl)
+            self.logMsg("MB3.Background.MusicVideos.FanArt=" + artUrl)
+            self.current_musicvideo_art = self.current_musicvideo_art + 1
+            if(self.current_musicvideo_art == len(self.musicvideo_art_links)):
+                self.current_musicvideo_art = 0
+                
+        if(len(self.photo_art_links) > 0):
+            self.logMsg("setBackgroundLink index photo_art_links " + str(self.current_photo_art + 1) + " of " + str(len(self.photo_art_links)), level=2)
+            artUrl =  self.photo_art_links[self.current_photo_art]["url"] 
+            WINDOW.setProperty("MB3.Background.Photos.FanArt", artUrl)
+            self.logMsg("MB3.Background.Photos.FanArt=" + artUrl)
+            self.current_photo_art = self.current_photo_art + 1
+            if(self.current_photo_art == len(self.photo_art_links)):
+                self.current_photo_art = 0
             
         if(len(self.global_art_links) > 0):
             self.logMsg("setBackgroundLink index global_art_links " + str(self.current_global_art + 1) + " of " + str(len(self.global_art_links)), level=2)
@@ -627,6 +713,188 @@ class ArtworkRotationThread(threading.Thread):
               
         random.shuffle(self.music_art_links)
         self.logMsg("Background Music Art Links : " + str(len(self.music_art_links)))
+        
+        # load Favorite Movie BG's
+        favMoviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=20&Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=Movie&Filters=IsFavorite&format=json"
+        jsonData = downloadUtils.downloadUrl(favMoviesUrl, suppress=True, popup=0 )
+        result = json.loads(jsonData)
+
+        result = result.get("Items")
+        if(result == None):
+            result = []   
+
+        for item in result:
+            images = item.get("BackdropImageTags")
+            id = item.get("Id")
+            parentID = item.get("ParentId")
+            name = item.get("Name")
+            if (images == None):
+                images = []
+            index = 0
+            count = 0
+            for backdrop in images:
+                while not count == 1:
+                    try:                
+                        info = {}
+                        info["url"] = downloadUtils.getArtwork(item, "Backdrop", index=str(index))
+                        info["index"] = index
+                        info["id"] = id
+                        info["parent"] = parentID
+                        info["name"] = name
+                        self.logMsg("BG Favorite Movie Image Info : " + str(info), level=0)
+        
+                        if (info not in self.favorites_art_links):
+                            self.favorites_art_links.append(info)
+                        index = index + 1
+                    except Exception, e:
+                        self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))
+                    count += 1                    
+
+        random.shuffle(self.favorites_art_links)       
+
+        # load Favorite TV Show BG's
+        favShowsUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=20&Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=Series&Filters=IsFavorite&format=json"
+        jsonData = downloadUtils.downloadUrl(favShowsUrl, suppress=True, popup=0 )
+        result = json.loads(jsonData)
+
+        result = result.get("Items")
+        if(result == None):
+            result = []   
+
+        for item in result:
+            images = item.get("BackdropImageTags")
+            id = item.get("Id")
+            parentID = item.get("ParentId")
+            name = item.get("Name")
+            if (images == None):
+                images = []
+            index = 0
+            count = 0
+            for backdrop in images:
+                while not count == 1:
+                    try:                
+                        info = {}
+                        info["url"] = downloadUtils.getArtwork(item, "Backdrop", index=str(index))
+                        info["index"] = index
+                        info["id"] = id
+                        info["parent"] = parentID
+                        info["name"] = name
+                        self.logMsg("BG Favorite Shows Image Info : " + str(info), level=0)
+        
+                        if (info not in self.favoriteshows_art_links):
+                            self.favoriteshows_art_links.append(info)
+                        index = index + 1
+                    except Exception, e:
+                        self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))
+                    count += 1                    
+
+        random.shuffle(self.favoriteshows_art_links)    
+
+        # load Music Video BG's
+        musicMoviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=40&SortOrder=Descending&Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=MusicVideo&format=json"
+        jsonData = downloadUtils.downloadUrl(musicMoviesUrl, suppress=True, popup=0 )
+        result = json.loads(jsonData)
+
+        result = result.get("Items")
+        if(result == None):
+            result = []   
+
+        for item in result:
+            images = item.get("BackdropImageTags")
+            id = item.get("Id")
+            parentID = item.get("ParentId")
+            name = item.get("Name")
+            if (images == None):
+                images = []
+            index = 0
+            count = 0
+            for backdrop in images:
+                while not count == 1:
+                    try:                
+                        info = {}
+                        info["url"] = downloadUtils.getArtwork(item, "Backdrop", index=str(index))
+                        info["index"] = index
+                        info["id"] = id
+                        info["parent"] = parentID
+                        info["name"] = name
+                        self.logMsg("BG MusicVideo Image Info : " + str(info), level=0)
+        
+                        if (info not in self.musicvideo_art_links):
+                            self.musicvideo_art_links.append(info)
+                        index = index + 1
+                    except Exception, e:
+                            self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))
+                    count += 1                    
+
+        random.shuffle(self.musicvideo_art_links)
+
+        # load Photo BG's
+        photosUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=20&SortOrder=Descending&Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=Photo&format=json"
+        jsonData = downloadUtils.downloadUrl(photosUrl, suppress=True, popup=0 )
+        result = json.loads(jsonData)
+
+        result = result.get("Items")
+        if(result == None):
+            result = []   
+
+        for item in result:
+            id = item.get("Id")
+            parentID = item.get("ParentId")
+            name = item.get("Name")
+            index = 0
+            
+            try: 
+                info = {}
+                info["url"] = downloadUtils.getArtwork(item, "Primary", index=str(index))
+                info["index"] = index
+                info["id"] = id
+                info["parent"] = parentID
+                info["name"] = name
+    
+                if (info not in self.photo_art_links):
+                    self.photo_art_links.append(info)
+                index = index + 1
+            except Exception, e:
+                    self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))         
+
+        random.shuffle(self.photo_art_links)       
+
+        # load Channels BG links
+        channelsUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Channels?&SortOrder=Descending&format=json"
+        jsonData = downloadUtils.downloadUrl(channelsUrl, suppress=True, popup=0 )
+        result = json.loads(jsonData)        
+
+        result = result.get("Items")
+        if(result == None):
+            result = []   
+
+        for item in result:
+            images = item.get("BackdropImageTags")
+            id = item.get("Id")
+            parentID = item.get("ParentId")
+            name = item.get("Name")
+            plot = item.get("Overview")
+            if (images == None):
+                images = []
+            index = 0
+            for backdrop in images:
+                try:
+                    info = {}
+                    info["url"] = downloadUtils.getArtwork(item, "Backdrop", index=str(index))
+                    info["index"] = index
+                    info["id"] = id
+                    info["plot"] = plot
+                    info["parent"] = parentID
+                    info["name"] = name
+                    self.logMsg("BG Channel Image Info : " + str(info), level=0)
+                except Exception, e:
+                        self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))             
+
+            if (info not in self.channels_art_links):
+                self.channels_art_links.append(info)    
+            index = index + 1
+
+        random.shuffle(self.channels_art_links)
         
         #
         # build a map indexed by id that contains a list of BG art for each item
