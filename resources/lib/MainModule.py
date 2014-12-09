@@ -428,6 +428,53 @@ def displaySections(pluginhandle):
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
     xbmcplugin.endOfDirectory(pluginhandle,cacheToDisc=False)
         
+
+# function to set the current view permanent in the xbmb3c addon
+def setView(containerType,viewId):
+
+    if viewId=="00":
+        win = xbmcgui.Window( 10000 )
+        curView = xbmc.getInfoLabel("Container.Viewmode")
+        
+        # get all views from views-file
+        skin_view_file = os.path.join(xbmc.translatePath('special://skin'), "views.xml")
+        skin_view_file_alt = os.path.join(xbmc.translatePath('special://skin/extras'), "views.xml")
+        if xbmcvfs.exists(skin_view_file_alt):
+            skin_view_file = skin_view_file_alt
+        try:
+            tree = etree.parse(skin_view_file)
+        except:           
+            sys.exit()
+        
+        root = tree.getroot()
+        
+        for view in root.findall('view'):
+            if curView == view.attrib['id']:
+                viewId=view.attrib['value']
+    else:
+        viewId=viewId    
+
+    if xbmc.getCondVisibility("System.HasAddon(plugin.video.xbmb3c)"):
+        __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        if __settings__.getSetting(xbmc.getSkinDir()+ '_VIEW_' + containerType) != "disabled":
+            __settings__.setSetting(xbmc.getSkinDir()+ '_VIEW_' + containerType, viewId)
+        
+def setRecommendedMBSettings(skin):
+    if xbmc.getCondVisibility("System.HasAddon(plugin.video.xbmb3c)"):
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        
+        if skin == "titan":
+            addonSettings.setSetting('includePeople', 'false')
+            addonSettings.setSetting('showIndicators', 'false')
+            addonSettings.setSetting('showArtIndicators', 'false')
+            addonSettings.setSetting('useMenuLoader', 'false')       
+            addonSettings.setSetting('selectAction', '0')
+        elif skin == "1080XF":
+            addonSettings.setSetting('includePeople', 'false')
+            addonSettings.setSetting('showArtIndicators', 'true')
+            addonSettings.setSetting('includeOverview', 'true')
+            addonSettings.setSetting('selectAction', '1') 
+
 def skin( filter=None, shared=False ):
     printDebug("== ENTER: skin() ==")
     
@@ -1444,9 +1491,23 @@ def MainEntryPoint():
     force = params.get('force')
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("addshowname","false")
-
+    
+    try:
+        argument1 = str(sys.argv[2])
+    except: 
+        pass
+    
+    try:
+        argument2 = str(sys.argv[3])
+    except: 
+        pass
+    
     if str(sys.argv[1]) == "skin":
          skin()
+    elif sys.argv[1] == "SETVIEW":
+         setView(argument1, argument2)
+    elif sys.argv[1] == "SETRECOMMENDEDMB3SETTINGS":
+         setRecommendedMBSettings(argument1)
     elif sys.argv[1] == "check_server":
          ConnectionManager().checkServer()
     elif sys.argv[1] == "update":
