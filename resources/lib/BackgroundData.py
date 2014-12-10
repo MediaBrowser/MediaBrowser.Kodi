@@ -53,11 +53,9 @@ class BackgroundDataUpdaterThread(threading.Thread):
             
             profilePath = xbmc.translatePath('special://profile')
             
-            updateInterval = 60
-            if (xbmc.Player().isPlaying()):
-                updateInterval = 300
+            updateInterval = 600
                 
-            if(secTotal > updateInterval or lastProfilePath != profilePath):
+            if((secTotal > updateInterval or lastProfilePath != profilePath) and not xbmc.Player().isPlaying()):
                 self.updateBackgroundData()
                 lastRun = datetime.today()
 
