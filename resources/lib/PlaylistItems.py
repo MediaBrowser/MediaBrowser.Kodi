@@ -49,7 +49,7 @@ class PlaylistItemUpdaterThread(threading.Thread):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             
-            if(secTotal > updateInterval):
+            if(secTotal > updateInterval and not xbmc.Player().isPlaying()):
                 self.updatePlaylistItems()
                 lastRun = datetime.today()
             

@@ -47,7 +47,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             
-            if(secTotal > 300):
+            if(secTotal > 300 and not xbmc.Player().isPlaying()):
                 self.updateRandom()
                 lastRun = datetime.today()
 
@@ -111,7 +111,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             logo = downloadUtils.getArtwork(item, "Logo")
             fanart = downloadUtils.getArtwork(item, "Backdrop")
             landscape = downloadUtils.getArtwork(item, "Thumb3")
-            medium_fanart = downloadUtils.getArtwork(item, "Thumb3")
+            medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
             if (item.get("ImageTags") != None and item.get("ImageTags").get("Thumb") != None):
               realthumb = downloadUtils.getArtwork(item, "Thumb3")
             else:
