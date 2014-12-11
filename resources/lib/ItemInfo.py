@@ -10,16 +10,21 @@ from DownloadUtils import DownloadUtils
 _MODE_BASICPLAY=12
 _MODE_CAST_LIST=14
 _MODE_PERSON_DETAILS=15
+CP_ADD_URL = 'plugin://plugin.video.couchpotato_manager/movies/add?title='
+CP_ADD_VIA_IMDB = 'plugin://plugin.video.couchpotato_manager/movies/add?imdb_id='
+
 
 class ItemInfo(xbmcgui.WindowXMLDialog):
 
     id = ""
     playUrl = ""
     trailerUrl = ""
+    couchPotatoUrl = ""
     userid = ""
     server = ""
     downloadUtils = DownloadUtils()
     item= []
+    isTrailer = False
     
     def __init__(self, *args, **kwargs):
         xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
@@ -105,6 +110,11 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         elif type == "Movie":
             if item.get("Taglines") != None and item.get("Taglines") != [] and item.get("Taglines")[0] != None:
                 episodeInfo = item.get("Taglines")[0]
+        elif type == "ChannelVideoItem":
+            if item.get("ExtraType") != None:
+                if item.get('ExtraType') == "Trailer":
+                    self.isTrailer = True
+                
             
         url =  server + ',;' + id
         url = urllib.quote(url)
@@ -116,7 +126,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         try:
             trailerButton = self.getControl(3102)
             if(trailerButton != None):
-                if item.get("LocalTrailerCount") != None and item.get("LocalTrailerCount") > 0:
+                if not self.isTrailer and item.get("LocalTrailerCount") != None and item.get("LocalTrailerCount") > 0:
                     itemTrailerUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "/LocalTrailers?format=json"
                     jsonData = self.downloadUtils.downloadUrl(itemTrailerUrl, suppress=False, popup=1 ) 
                     trailerItem = json.loads(jsonData)
@@ -125,6 +135,18 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
                     self.trailerUrl = "plugin://plugin.video.xbmb3c/?mode=" + str(_MODE_BASICPLAY) + "&url=" + trailerUrl
                 else:
                     trailerButton.setEnabled(False)
+        except:
+            pass
+        
+        try:
+            couchPotatoButton = self.getControl(3103)
+            if(couchPotatoButton != None):
+                if self.isTrailer and item.get("ProviderIds") != None and item.get("ProviderIds").get("Imdb") != None:
+                    self.couchPotatoUrl = CP_ADD_VIA_IMDB + item.get("ProviderIds").get("Imdb")
+                elif self.isTrailer:
+                    self.couchPotatoUrl = CP_ADD_URL + name
+                elif not self.isTrailer:
+                    couchPotatoButton.setEnabled(False)
         except:
             pass
 
@@ -384,6 +406,13 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
             
             xbmc.executebuiltin("RunPlugin(" + self.trailerUrl + ")")
             self.close()
+            
+        elif(controlID == 3103):
+           
+            # close all dialogs when playing an item
+            xbmc.executebuiltin("Dialog.Close(all,true)")
+            xbmc.executebuiltin("RunPlugin(" + self.couchPotatoUrl + ")")
+            
         elif(controlID == 3230):
         
             peopleList = self.getControl(3230)
