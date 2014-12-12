@@ -42,7 +42,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         userid = self.downloadUtils.getUserId()
         self.userid = userid
        
-        jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + self.id + "?format=json", suppress=False, popup=1 )     
+        jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + self.id + "?Fields=SeriesGenres&format=json", suppress=False, popup=1 )     
         item = json.loads(jsonData)
         self.item = item
         
@@ -268,10 +268,8 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
                     genre = genre_string
                 else:
                     genre = genre + " / " + genre_string
-        else:
-            jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + item.get("SeriesId") + "?format=json", suppress=False, popup=1 )     
-            item2 = json.loads(jsonData)
-            genres = item2.get("Genres")
+        elif item.get("SeriesGenres") != None and item.get("SeriesGenres") != '':
+            genres = item.get("SeriesGenres")
             if genres != None and genres != []:
               for genre_string in genres:
                 if genre == "": #Just take the first genre
