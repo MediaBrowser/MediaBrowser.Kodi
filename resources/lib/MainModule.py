@@ -948,7 +948,7 @@ def setListItemProps(server, id, listItem, result):
     
     listItem.setInfo( "Video", infoLabels=details )
 
-    director, writer, cast = API().getPeople()
+    people = API().getPeople(result)
 
      # Process Genres
     genre = ""
@@ -960,8 +960,8 @@ def setListItemProps(server, id, listItem, result):
             else:
                 genre = genre + " / " + genre_string
 
-    listItem.setInfo('video', {'director' : director})
-    listItem.setInfo('video', {'writer' : writer})
+    listItem.setInfo('video', {'director' : people.get('Director')})
+    listItem.setInfo('video', {'writer' : people.get('Writer')})
     listItem.setInfo('video', {'mpaa': resultForType.get("OfficialRating")})
     listItem.setInfo('video', {'genre': genre})
 

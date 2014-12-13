@@ -107,6 +107,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         Overview=str(Overview1)
         timeInfo = API().getTimeInfo(item)
         mediaStreams=API().getMediaStreams(item)
+        userData=API().getUserData(item)
         people = API().getPeople(item)
         db.set(id+".Overview",Overview)
         db.set(id+".OfficialRating",item.get("OfficialRating"))
@@ -132,9 +133,9 @@ class BackgroundDataUpdaterThread(threading.Thread):
         db.set(id+".Backdrop2",                 downloadUtils.getArtwork(item, "Backdrop2")) 
         db.set(id+".Backdrop3",                 downloadUtils.getArtwork(item, "Backdrop3")) 
         db.set(id+".BackdropNoIndicators",      downloadUtils.getArtwork(item, "BackdropNoIndicators"))         
-        db.set(id + ".Duration",                timeInfo.get('Duration'))
-        db.set(id + ".CompletePercentage",      timeInfo.get('Percent'))
-        db.set(id + ".ResumeTime",              timeInfo.get('ResumeTime'))
+        db.set(id+".Duration",                  timeInfo.get('Duration'))
+        db.set(id+".CompletePercentage",        timeInfo.get('Percent'))
+        db.set(id+".ResumeTime",                timeInfo.get('ResumeTime'))
         db.set(id+".Channels",                  mediaStreams.get('channels'))
         db.set(id+".VideoCodec",                mediaStreams.get('videocodec'))
         db.set(id+".AspectRatio",               mediaStreams.get('aspectratio'))
@@ -144,43 +145,17 @@ class BackgroundDataUpdaterThread(threading.Thread):
         db.set(id+".Director",                  people.get('Director'))
         db.set(id+".Writer",                    people.get('Writer'))
         db.set(id+".ItemType",                  item.get("Type"))
+        db.set(id+".Watched",                   userData.get('Watched'))
+        db.set(id+".Favorite",                  userData.get('Favorite'))
+        db.set(id+".PlayCount",                 userData.get('PlayCount'))
+        db.set(id+".Studio",                    API().getStudio(item))
+        db.set(id+".Gtudio",                    API().getGenre(item))
         
         if(item.get("PremiereDate") != None):
             premieredatelist = (item.get("PremiereDate")).split("T")
             db.set(id+".PremiereDate",              premieredatelist[0])
         else:
             premieredate = ""
-
-        # Process Genres
-        genre = ""
-        genres = item.get("Genres")
-        if(genres != None and genres != []):
-            for genre_string in genres:
-                if genre == "": 
-                    genre = genre_string
-                elif genre_string != None:
-                    genre = genre + " / " + genre_string   
-        db.set(id+".Genre",                     genre)
-        
-
-        db.set(id+".Studio",                    API().getStudio(item))
-
-        #Process User Data
-        userData = item.get("UserData")
-        resumeTime = 0
-        if(userData != None):
-            if userData.get("Played") != True:
-                db.set(id+".Watched",           "True")
-            else:
-                db.set(id+".Watched",           "False")
-            if userData.get("IsFavorite") == True:
-                db.set(id+".Favorite",          "True")
-            else:
-                db.set(id+".Favorite",          "False")
-            if(userData.get("Played") == True):
-                db.set(id+".PlayCount",            "1")
-            else:
-                db.set(id+".PlayCount",            "0")
 
         # add resume percentage text to titles
         if (__settings__.getSetting('addResumePercent') == 'true' and Name != '' and timeInfo.get('Percent') != 'None'):

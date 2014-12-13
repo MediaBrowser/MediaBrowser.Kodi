@@ -143,3 +143,35 @@ class API():
                 'width'         : width,
                 'aspectratio'   : str(aspectfloat)
                 }
+                
+    def getUserData(self, item):
+        userData = item.get("UserData")
+        resumeTime = 0
+        if(userData != None):
+            if userData.get("Played") != True:
+                watched="True"
+            else:
+                watched="False"
+            if userData.get("IsFavorite") == True:
+                favorite="True"
+            else:
+                favorite="False"
+            if(userData.get("Played") == True):
+                playcount="1"
+            else:
+                playcount="0"
+        return  {'Watched'  :   watched,
+                 'Favorite' :   favorite,
+                 'PlayCount':   playcount
+                }
+    
+    def getGenre(self,item):
+        genre = ""
+        genres = item.get("Genres")
+        if(genres != None and genres != []):
+            for genre_string in genres:
+                if genre == "": 
+                    genre = genre_string
+                elif genre_string != None:
+                    genre = genre + " / " + genre_string   
+        return genre

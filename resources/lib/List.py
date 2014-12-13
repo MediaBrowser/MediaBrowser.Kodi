@@ -189,7 +189,7 @@ class List():
             
             videoInfoLabels["duration"] = db.get(id + ".Duration")
             videoInfoLabels["playcount"] = db.get(id + ".PlayCount")
-            if (db.get(id + "Favorite") == 'True'):
+            if (db.get(id + ".Favorite") == 'True'):
                 videoInfoLabels["top250"] = "1"    
                 
             videoInfoLabels["mpaa"] = db.get(id + ".OfficialRating")
@@ -376,54 +376,17 @@ class List():
 
             mediaStreams = API().getMediaStreams(item)
             people = API().getPeople(item)
-
-            studio=API().getStudio(item)
                         
-                
-            # Process Genres
-            genre = ""
-            genres = item.get("Genres")
-            if(genres != None and genres != []):
-                for genre_string in genres:
-                    if genre == "": #Just take the first genre
-                        genre = genre_string
-                    elif genre_string != None:
-                        genre = genre + " / " + genre_string
-                    
-            # Process UserData
-            userData = item.get("UserData")
+            timeInfo = API().getTimeInfo(item)
+            userData = API().getUserData(item)
             PlaybackPositionTicks = '100'
-            overlay = "0"
             favorite = "false"
-            seekTime = 0
-            if(userData != None):
-                if userData.get("Played") != True:
-                    overlay = "7"
-                    watched = "true"
-                else:
-                    overlay = "6"
-                    watched = "false"
-                if userData.get("IsFavorite") == True:
-                    overlay = "5"
-                    favorite = "true"
-                else:
-                    favorite = "false"
-                if userData.get("PlaybackPositionTicks") != None:
-                    PlaybackPositionTicks = str(userData.get("PlaybackPositionTicks"))
-                    reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
-                    seekTime = reasonableTicks / 10000
-            
-            playCount = 0
-            if(userData != None and userData.get("Played") == True):
-                playCount = 1
+
             # Populate the details list
             details={'title'        : tempTitle,
                      'plot'         : item.get("Overview"),
                      'episode'      : tempEpisode,
-                     #'watched'      : watched,
-                     'Overlay'      : overlay,
-                     'playcount'    : str(playCount),
-                     #'aired'       : episode.get('originallyAvailableAt','') ,
+                     'playcount'    : userData.get('PlayCount'),
                      'TVShowTitle'  :  item.get("SeriesName"),
                      'season'       : tempSeason,
                      'Video3DFormat' : item.get("Video3DFormat"),
@@ -469,9 +432,9 @@ class List():
                        'year'         : item.get("ProductionYear"),
                        'locationtype' : item.get("LocationType"),
                        'premieredate' : premieredate,
-                       'studio'       : studio,
-                       'genre'        : genre,
-                       'playcount'    : str(playCount),
+                       'studio'       : API().getStudio(item),
+                       'genre'        : API().getGenre(item),
+                       'playcount'    : userData.get('PlayCount'),
                        'director'     : people.get('Director'),
                        'writer'       : people.get('Writer'),
                        'channels'     : mediaStreams.get('channels'),
@@ -481,14 +444,14 @@ class List():
                        'height'       : mediaStreams.get('height'),
                        'width'        : mediaStreams.get('width'),
                        'cast'         : people.get('Cast'),
-                       'favorite'     : favorite,
+                       'favorite'     : userData.get('Favorite'),
                        'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
                        'favoriteurl'  : 'http://' + server + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id,
                        'deleteurl'    : 'http://' + server + '/mediabrowser/Items/' + id,                   
                        'parenturl'    : url,
-                       'resumetime'   : str(seekTime),
-                       'totaltime'    : tempDuration,
-                       'duration'     : tempDuration,
+                       'resumetime'   : timeInfo.get('ResumeTime'),
+                       'totaltime'    : timeInfo.get('Duration'),
+                       'duration'     : timeInfo.get('Duration'),
                        'RecursiveItemCount' : item.get("RecursiveItemCount"),
                        'UnplayedItemCount' : userData.get("UnplayedItemCount"),
                        'TotalSeasons' : str(TotalSeasons),
