@@ -95,12 +95,6 @@ class BackgroundDataUpdaterThread(threading.Thread):
             
     def updateDB(self, item):
         id=item.get("Id")
-        itemString=db.get("itemString")
-        if itemString=='':
-            itemString=id
-        else:
-            itemString=itemString + "," +id
-        db.set("itemString", itemString)
         Temp = item.get("Name")
         if Temp == None:
             Temp = ""
@@ -111,7 +105,9 @@ class BackgroundDataUpdaterThread(threading.Thread):
             Temp=''
         Overview1=Temp.encode('utf-8')
         Overview=str(Overview1)
+        timeInfo = API().getTimeInfo(item)
         mediaStreams=API().getMediaStreams(item)
+        people = API().getPeople(item)
         db.set(id+".Overview",Overview)
         db.set(id+".OfficialRating",item.get("OfficialRating"))
         CommunityRating=item.get("CommunityRating")
@@ -135,14 +131,20 @@ class BackgroundDataUpdaterThread(threading.Thread):
         db.set(id+".Primary3",                  downloadUtils.getArtwork(item, "Primary3")) 
         db.set(id+".Backdrop2",                 downloadUtils.getArtwork(item, "Backdrop2")) 
         db.set(id+".Backdrop3",                 downloadUtils.getArtwork(item, "Backdrop3")) 
-        db.set(id+".BackdropNoIndicators",      downloadUtils.getArtwork(item, "BackdropNoIndicators"))                
+        db.set(id+".BackdropNoIndicators",      downloadUtils.getArtwork(item, "BackdropNoIndicators"))         
+        db.set(id + ".Duration",                timeInfo.get('Duration'))
+        db.set(id + ".CompletePercentage",      timeInfo.get('Percent'))
+        db.set(id + ".ResumeTime",              timeInfo.get('ResumeTime'))
         db.set(id+".Channels",                  mediaStreams.get('channels'))
         db.set(id+".VideoCodec",                mediaStreams.get('videocodec'))
         db.set(id+".AspectRatio",               mediaStreams.get('aspectratio'))
         db.set(id+".AudioCodec",                mediaStreams.get('audiocodec'))
         db.set(id+".Height",                    mediaStreams.get('height'))
         db.set(id+".Width",                     mediaStreams.get('width'))       
+        db.set(id+".Director",                  people.get('Director'))
+        db.set(id+".Writer",                    people.get('Writer'))
         db.set(id+".ItemType",                  item.get("Type"))
+        
         if(item.get("PremiereDate") != None):
             premieredatelist = (item.get("PremiereDate")).split("T")
             db.set(id+".PremiereDate",              premieredatelist[0])
@@ -175,25 +177,15 @@ class BackgroundDataUpdaterThread(threading.Thread):
                 db.set(id+".Favorite",          "True")
             else:
                 db.set(id+".Favorite",          "False")
-            if userData.get("PlaybackPositionTicks") != None:
-                PlaybackPositionTicks = str(userData.get("PlaybackPositionTicks"))
-                reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
-                resumeTime = str(reasonableTicks / 10000)
-                db.set(id+".ResumeTime",        resumeTime)
             if(userData.get("Played") == True):
                 db.set(id+".PlayCount",            "1")
             else:
                 db.set(id+".PlayCount",            "0")
-                
-        duration, percent = API().getDuration(item)#Process Duration
-        db.set(id + ".Duration",                duration)
-        db.set(id + ".CompletePercentage",      percent)
-        # add resume percentage text to titles
-        if (__settings__.getSetting('addResumePercent') == 'true' and Name != '' and percent != None):
-            db.set(id+".Name", Name + " (" + percent + "%)")
 
-        director, writer, cast = API().getPeople(item)
-        db.set(id+".Director",              director)
-        db.set(id+".Writer",                writer)
+        # add resume percentage text to titles
+        if (__settings__.getSetting('addResumePercent') == 'true' and Name != '' and timeInfo.get('Percent') != 'None'):
+            db.set(id+".Name", Name + " (" + timeInfo.get('Percent') + "%)")
+
+
         #db.set(id+".Cast",                  cast)        
  

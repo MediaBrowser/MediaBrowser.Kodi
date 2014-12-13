@@ -375,7 +375,7 @@ class List():
                 tempTitle=tempTitle
 
             mediaStreams = API().getMediaStreams(item)
-            director, writer, caststring = API().getPeople(item)
+            people = API().getPeople(item)
 
             studio=API().getStudio(item)
                         
@@ -472,15 +472,15 @@ class List():
                        'studio'       : studio,
                        'genre'        : genre,
                        'playcount'    : str(playCount),
-                       'director'     : director,
-                       'writer'       : writer,
+                       'director'     : people.get('Director'),
+                       'writer'       : people.get('Writer'),
                        'channels'     : mediaStreams.get('channels'),
                        'videocodec'   : mediaStreams.get('videocodec'),
                        'aspectratio'  : mediaStreams.get('aspectratio'),
                        'audiocodec'   : mediaStreams.get('audiocodec'),
                        'height'       : mediaStreams.get('height'),
                        'width'        : mediaStreams.get('width'),
-                       'cast'         : cast,
+                       'cast'         : people.get('Cast'),
                        'favorite'     : favorite,
                        'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
                        'favoriteurl'  : 'http://' + server + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id,
@@ -699,8 +699,7 @@ class List():
             
             mediaStreams=API().getMediaStreams(item, True)
                     
-            # Process People
-            director, writer, cast = API().getPeople(item)
+            people = API().getPeople(item)
 
             # Process Studios
             studio = API().getStudio(item)
@@ -784,15 +783,15 @@ class List():
                        'studio'       : studio,
                        'genre'        : genre,
                        'playcount'    : str(playCount),
-                       'director'     : director,
-                       'writer'       : writer,
+                       'director'     : people.get('Director'),
+                       'writer'       : people.get('Writer'),
                        'channels'     : mediaStreams.get('channels'),
                        'videocodec'   : mediaStreams.get('videocodec'),
                        'aspectratio'  : mediaStreams.get('aspectratio'),
                        'audiocodec'   : mediaStreams.get('audiocodec'),
                        'height'       : mediaStreams.get('height'),
                        'width'        : mediaStreams.get('width'),
-                       'cast'         : cast,
+                       'cast'         : people.get('Cast'),
                        'favorite'     : favorite,   
                        'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
                        'favoriteurl'  : 'http://' + server + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id,

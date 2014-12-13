@@ -49,10 +49,13 @@ class API():
                         if Role == None:
                             Role = ''
                         cast.append(Name)
-        return director, writer, cast
+        return  {'Director'  : director, 
+                'Writer'    : writer,
+                'Cast'      : cast
+                }
 
-    def getDuration(self, item):
-        resumeTime = 0
+    def getTimeInfo(self, item):
+        resumeTime = ''
         userData = item.get("UserData")
         PlaybackPositionTicks = '100'
         if userData.get("PlaybackPositionTicks") != None:
@@ -78,7 +81,10 @@ class API():
                     cappedPercentage = 10
                 if(cappedPercentage == 100):
                     cappedPercentage = 90
-        return tempDuration, str(cappedPercentage)
+        return {'Duration'      : tempDuration, 
+                'Percent'       : str(cappedPercentage),
+                'ResumeTime'    : str(resumeTime)
+               }
 
     def getStudio(self, item):
         # Process Studio
