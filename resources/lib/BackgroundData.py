@@ -12,6 +12,7 @@ from datetime import datetime
 import urllib
 from DownloadUtils import DownloadUtils
 from Database import Database
+from API import API
 
 _MODE_BASICPLAY=12
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -90,33 +91,6 @@ class BackgroundDataUpdaterThread(threading.Thread):
             result = []
         item_count = 1
         for item in result:
-            title = "Missing Title"
-            if(item.get("Name") != None):
-                title = item.get("Name").encode('utf-8')
-            
-            rating = item.get("CommunityRating")
-            criticrating = item.get("CriticRating")
-            officialrating = item.get("OfficialRating")
-            criticratingsummary = ""
-            if(item.get("CriticRatingSummary") != None):
-                criticratingsummary = item.get("CriticRatingSummary").encode('utf-8')
-            plot = item.get("Overview")
-            if plot == None:
-                plot=''
-            plot=plot.encode('utf-8')
-            shortplot = item.get("ShortOverview")
-            if shortplot == None:
-                shortplot = ''
-            shortplot = shortplot.encode('utf-8')
-            if(item.get("RunTimeTicks") != None):
-                runtime = str(int(item.get("RunTimeTicks"))/(10000000*60))
-            else:
-                runtime = "0"
-
-            url =  mb3Host + ":" + mb3Port + ',;' + item.get("Id")
-            playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-            playUrl = playUrl.replace("\\\\","smb://")
-            playUrl = playUrl.replace("\\","/")    
             self.updateDB(item)
             
     def updateDB(self, item):
@@ -137,6 +111,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
             Temp=''
         Overview1=Temp.encode('utf-8')
         Overview=str(Overview1)
+        mediaStreams=API().getMediaStreams(item)
         db.set(id+".Overview",Overview)
         db.set(id+".OfficialRating",item.get("OfficialRating"))
         CommunityRating=item.get("CommunityRating")
@@ -160,7 +135,13 @@ class BackgroundDataUpdaterThread(threading.Thread):
         db.set(id+".Primary3",                  downloadUtils.getArtwork(item, "Primary3")) 
         db.set(id+".Backdrop2",                 downloadUtils.getArtwork(item, "Backdrop2")) 
         db.set(id+".Backdrop3",                 downloadUtils.getArtwork(item, "Backdrop3")) 
-        db.set(id+".BackdropNoIndicators",      downloadUtils.getArtwork(item, "BackdropNoIndicators"))                  
+        db.set(id+".BackdropNoIndicators",      downloadUtils.getArtwork(item, "BackdropNoIndicators"))                
+        db.set(id+".Channels",                  mediaStreams.get('channels'))
+        db.set(id+".VideoCodec",                mediaStreams.get('videocodec'))
+        db.set(id+".AspectRatio",               mediaStreams.get('aspectratio'))
+        db.set(id+".AudioCodec",                mediaStreams.get('audiocodec'))
+        db.set(id+".Height",                    mediaStreams.get('height'))
+        db.set(id+".Width",                     mediaStreams.get('width'))       
         db.set(id+".ItemType",                  item.get("Type"))
         if(item.get("PremiereDate") != None):
             premieredatelist = (item.get("PremiereDate")).split("T")
@@ -179,21 +160,12 @@ class BackgroundDataUpdaterThread(threading.Thread):
                     genre = genre + " / " + genre_string   
         db.set(id+".Genre",                     genre)
         
-        # Process Studio
-        studio = "" 
-        if item.get("SeriesStudio") != None and item.get("SeriesStudio") != '':
-            studio = item.get("SeriesStudio")
-        if studio == "":        
-            studios = item.get("Studios")
-            if(studios != None):
-                for studio_string in studios:
-                    if studio=="": #Just take the first one
-                        temp=studio_string.get("Name")
-                        studio=temp.encode('utf-8')
-        db.set(id+".Studio",                    studio)
+
+        db.set(id+".Studio",                    API().getStudio(item))
 
         #Process User Data
         userData = item.get("UserData")
+        resumeTime = 0
         if(userData != None):
             if userData.get("Played") != True:
                 db.set(id+".Watched",           "True")
@@ -213,63 +185,15 @@ class BackgroundDataUpdaterThread(threading.Thread):
             else:
                 db.set(id+".PlayCount",            "0")
                 
-        #Process Duration
-        try:
-            tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
-        except TypeError:
-            try:
-                tempDuration = str(int(item.get("CumulativeRunTimeTicks"))/(10000000*60))
-            except TypeError:
-                tempDuration = "0"
-        db.set(id+".Duration",                  tempDuration)
-        cappedPercentage = None
-        if (resumeTime != "" and int(resumeTime) > 0):
-            duration = float(tempDuration)
-            if(duration > 0):
-                resume = float(resumeTime) / 60.0
-                percentage = int((resume / duration) * 100.0)
-                cappedPercentage = percentage - (percentage % 10)
-                if(cappedPercentage == 0):
-                    cappedPercentage = 10
-                if(cappedPercentage == 100):
-                    cappedPercentage = 90
-                db.set(id + ".CompletePercentage", str(cappedPercentage))
-            # add resume percentage text to titles
-        addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
-        if (addResumePercent and Name != '' and cappedPercentage != None):
-            db.set(id+".Name", Name + " (" + str(cappedPercentage) + "%)")               
+        duration, percent = API().getDuration(item)#Process Duration
+        db.set(id + ".Duration",                duration)
+        db.set(id + ".CompletePercentage",      percent)
+        # add resume percentage text to titles
+        if (__settings__.getSetting('addResumePercent') == 'true' and Name != '' and percent != None):
+            db.set(id+".Name", Name + " (" + percent + "%)")
 
-        # Process People
-        director=''
-        writer=''
-        cast=''
-        people = item.get("People")
-        if(people != None):
-            for person in people:
-                if(person.get("Type") == "Director"):
-                    director = director + person.get("Name") + ' ' 
-                if(person.get("Type") == "Writing"):
-                    writer = person.get("Name")
-                if(person.get("Type") == "Writer"):
-                    writer = person.get("Name")                 
-                if(person.get("Type") == "Actor"):
-                    Name = person.get("Name")
-                    Role = person.get("Role")
-                    if Role == None:
-                        Role = ''
-                    if cast == '': #If we ever use this, split on ',' to make into list
-                        cast=Name
-                    else:
-                        cast=cast + ',' + Name
+        director, writer, cast = API().getPeople(item)
         db.set(id+".Director",              director)
         db.set(id+".Writer",                writer)
         #db.set(id+".Cast",                  cast)        
-
-        # Process MediaStreams
-        channels = ''
-        videocodec = ''
-        audiocodec = ''
-        height = ''
-        width = ''
-        aspectratio = '1:1'
-        aspectfloat = 1.85        
+ 

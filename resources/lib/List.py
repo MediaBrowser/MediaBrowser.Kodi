@@ -12,6 +12,7 @@ import urllib
 from DownloadUtils import DownloadUtils
 from Database import Database
 from urlparse import urlparse
+from API import API
 
 
 logLevel = 1
@@ -209,8 +210,6 @@ class List():
             videoInfoLabels["episode"] = details.get('episode')
             videoInfoLabels["season"] = details.get('season') 
             listItem.setInfo('video', videoInfoLabels)
-            listItem.addStreamInfo('video', {'duration': extraData.get('duration'), 'aspect': extraData.get('aspectratio'),'codec': extraData.get('videocodec'), 'width' : extraData.get('width'), 'height' : extraData.get('height')})
-            listItem.addStreamInfo('audio', {'codec': extraData.get('audiocodec'),'channels': extraData.get('channels')})
 
             if extraData.get('totaltime') != None:
                 listItem.setProperty('TotalTime', extraData.get('totaltime'))
@@ -231,6 +230,16 @@ class List():
             listItem.setProperty('id', id)
             listItem.setProperty('Video3DFormat', details.get('Video3DFormat'))
 
+            listItem.addStreamInfo('video', 
+                                        {'duration' : db.get(id + '.Duration'), 
+                                         'aspect'   : db.get(id + '.AspectRatio'),
+                                         'codec'    : db.get(id + '.VideoCodec'), 
+                                         'width'    : db.get(id + '.Width'), 
+                                         'height'   : db.get(id + '.Height')})
+            listItem.addStreamInfo('audio', 
+                                        {'codec'    : db.get(id + '.AudioCodec'),
+                                         'channels' : db.get(id + '.Channels')})            
+            
             dirItems.append((u, listItem, False))
         
         return dirItems
@@ -365,64 +374,10 @@ class List():
             else:
                 tempTitle=tempTitle
 
-            # Process MediaStreams
-            channels = ''
-            videocodec = ''
-            audiocodec = ''
-            height = ''
-            width = ''
-            aspectratio = '1:1'
-            aspectfloat = 1.85
-            mediaStreams = item.get("MediaStreams")
-            if(mediaStreams != None):
-                for mediaStream in mediaStreams:
-                    if(mediaStream.get("Type") == "Video"):
-                        videocodec = mediaStream.get("Codec")
-                        height = str(mediaStream.get("Height"))
-                        width = str(mediaStream.get("Width"))
-                        aspectratio = mediaStream.get("AspectRatio")
-                        if aspectratio != None and len(aspectratio) >= 3:
-                            try:
-                                aspectwidth,aspectheight = aspectratio.split(':')
-                                aspectfloat = float(aspectwidth) / float(aspectheight)
-                            except:
-                                aspectfloat = 1.85
-                    if(mediaStream.get("Type") == "Audio"):
-                        audiocodec = mediaStream.get("Codec")
-                        channels = mediaStream.get("Channels")
-                    
-            # Process People
-            director=''
-            writer=''
-            cast=[]
-            people = item.get("People")
-            if(people != None):
-                for person in people:
-                    if(person.get("Type") == "Director"):
-                        director = director + person.get("Name") + ' ' 
-                    if(person.get("Type") == "Writing"):
-                        writer = person.get("Name")
-                    if(person.get("Type") == "Writer"):
-                        writer = person.get("Name")                 
-                    if(person.get("Type") == "Actor"):
-                        Name = person.get("Name")
-                        Role = person.get("Role")
-                        if Role == None:
-                            Role = ''
-                        cast.append(Name)
+            mediaStreams = API().getMediaStreams(item)
+            director, writer, caststring = API().getPeople(item)
 
-            # Process Studio
-            studio = "" 
-            if item.get("SeriesStudio") != None and item.get("SeriesStudio") != '':
-                studio = item.get("SeriesStudio")
-            # Process Studios old way
-            if studio == "":        
-              studios = item.get("Studios")
-              if(studios != None):
-                for studio_string in studios:
-                    if studio=="": #Just take the first one
-                        temp=studio_string.get("Name")
-                        studio=temp.encode('utf-8')
+            studio=API().getStudio(item)
                         
                 
             # Process Genres
@@ -519,12 +474,12 @@ class List():
                        'playcount'    : str(playCount),
                        'director'     : director,
                        'writer'       : writer,
-                       'channels'     : channels,
-                       'videocodec'   : videocodec,
-                       'aspectratio'  : str(aspectfloat),
-                       'audiocodec'   : audiocodec,
-                       'height'       : height,
-                       'width'        : width,
+                       'channels'     : mediaStreams.get('channels'),
+                       'videocodec'   : mediaStreams.get('videocodec'),
+                       'aspectratio'  : mediaStreams.get('aspectratio'),
+                       'audiocodec'   : mediaStreams.get('audiocodec'),
+                       'height'       : mediaStreams.get('height'),
+                       'width'        : mediaStreams.get('width'),
                        'cast'         : cast,
                        'favorite'     : favorite,
                        'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,
@@ -742,63 +697,14 @@ class List():
             else:
                 premieredate = ""
             
-            # Process MediaStreams
-            channels = ''
-            videocodec = ''
-            audiocodec = ''
-            height = ''
-            width = ''
-            aspectratio = '1:1'
-            aspectfloat = 1.85
-            
-            mediaSources = item.get("MediaSources")
-            if(mediaSources != None):
-                mediaStreams = mediaSources[0].get("MediaStreams")
-                if(mediaStreams != None):
-                    for mediaStream in mediaStreams:
-                        if(mediaStream.get("Type") == "Video"):
-                            videocodec = mediaStream.get("Codec")
-                            height = str(mediaStream.get("Height"))
-                            width = str(mediaStream.get("Width"))
-                            aspectratio = mediaStream.get("AspectRatio")
-                            if aspectratio != None and len(aspectratio) >= 3:
-                                try:
-                                    aspectwidth,aspectheight = aspectratio.split(':')
-                                    aspectfloat = float(aspectwidth) / float(aspectheight)
-                                except:
-                                    aspectfloat = 1.85
-                        if(mediaStream.get("Type") == "Audio"):
-                            audiocodec = mediaStream.get("Codec")
-                            channels = mediaStream.get("Channels")
+            mediaStreams=API().getMediaStreams(item, True)
                     
             # Process People
-            director=''
-            writer=''
-            cast=[]
-            people = item.get("People")
-            if(people != None):
-                for person in people:
-                    if(person.get("Type") == "Director"):
-                        director = director + person.get("Name") + ' ' 
-                    if(person.get("Type") == "Writing"):
-                        writer = person.get("Name")
-                    if(person.get("Type") == "Writer"):
-                        writer = person.get("Name")                 
-                    if(person.get("Type") == "Actor"):
-                        Name = person.get("Name")
-                        Role = person.get("Role")
-                        if Role == None:
-                            Role = ''
-                        cast.append(Name)
+            director, writer, cast = API().getPeople(item)
 
             # Process Studios
-            studio = ""
-            studios = item.get("Studios")
-            if(studios != None):
-                for studio_string in studios:
-                    if studio=="": #Just take the first one
-                        temp=studio_string.get("Name")
-                        studio=temp.encode('utf-8')
+            studio = API().getStudio(item)
+            
             # Process Genres
             genre = ""
             genres = item.get("Genres")
@@ -880,12 +786,12 @@ class List():
                        'playcount'    : str(playCount),
                        'director'     : director,
                        'writer'       : writer,
-                       'channels'     : channels,
-                       'videocodec'   : videocodec,
-                       'aspectratio'  : str(aspectfloat),
-                       'audiocodec'   : audiocodec,
-                       'height'       : height,
-                       'width'        : width,
+                       'channels'     : mediaStreams.get('channels'),
+                       'videocodec'   : mediaStreams.get('videocodec'),
+                       'aspectratio'  : mediaStreams.get('aspectratio'),
+                       'audiocodec'   : mediaStreams.get('audiocodec'),
+                       'height'       : mediaStreams.get('height'),
+                       'width'        : mediaStreams.get('width'),
                        'cast'         : cast,
                        'favorite'     : favorite,   
                        'watchedurl'   : 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id,

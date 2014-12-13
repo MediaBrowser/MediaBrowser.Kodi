@@ -73,6 +73,7 @@ from SearchDialog import SearchDialog
 from DataManager import DataManager
 from ConnectionManager import ConnectionManager
 from List import List
+from API import API
 
 XBMB3C_VERSION = ClientInformation().getVersion()
 
@@ -947,18 +948,7 @@ def setListItemProps(server, id, listItem, result):
     
     listItem.setInfo( "Video", infoLabels=details )
 
-    # Process People
-    director=''
-    writer=''
-    people = result.get("People")
-    if(people != None):
-        for person in people:
-            if(person.get("Type") == "Director"):
-                director = director + person.get("Name") + ' ' 
-            if(person.get("Type") == "Writing"):
-                writer = person.get("Name")
-            if(person.get("Type") == "Writer"):
-                writer = person.get("Name")                
+    director, writer, cast = API().getPeople()
 
      # Process Genres
     genre = ""
