@@ -51,7 +51,7 @@ class ArtworkRotationThread(threading.Thread):
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         self.getString = self.addonSettings.getLocalizedString
-        level = addonSettings.getSetting('logLevel')        
+        level = addonSettings.getSetting('logLevel')
         self.logLevel = 0
         if(level != None):
             self.logLevel = int(level)           
@@ -240,6 +240,10 @@ class ArtworkRotationThread(threading.Thread):
             artUrl =  self.movie_art_links[self.current_movie_art]["url"]
             WINDOW.setProperty("MB3.Background.Movie.FanArt", artUrl)
             self.logMsg("MB3.Background.Movie.FanArt=" + artUrl)
+            if "/10000/10000/" in artUrl:
+                artUrl = artUrl.split("/10000/10000/",1)[0]
+                artUrl = artUrl + "/620/350/0"
+                WINDOW.setProperty("MB3.Background.Movie.FanArt.small", artUrl)
             self.current_movie_art = self.current_movie_art + 1
             if(self.current_movie_art == len(self.movie_art_links)):
                 self.current_movie_art = 0         
@@ -249,6 +253,10 @@ class ArtworkRotationThread(threading.Thread):
             artUrl =  self.tv_art_links[self.current_tv_art]["url"]
             WINDOW.setProperty("MB3.Background.TV.FanArt", artUrl)
             self.logMsg("MB3.Background.TV.FanArt=" + artUrl)
+            if "/10000/10000/" in artUrl:
+                artUrl = artUrl.split("/10000/10000/",1)[0]
+                artUrl = artUrl + "/620/350/0"
+                WINDOW.setProperty("MB3.Background.TV.FanArt.small", artUrl)
             self.current_tv_art = self.current_tv_art + 1
             if(self.current_tv_art == len(self.tv_art_links)):
                 self.current_tv_art = 0
@@ -258,6 +266,10 @@ class ArtworkRotationThread(threading.Thread):
             artUrl =  self.music_art_links[self.current_music_art]["url"] 
             WINDOW.setProperty("MB3.Background.Music.FanArt", artUrl)
             self.logMsg("MB3.Background.Music.FanArt=" + artUrl)
+            if "/10000/10000/" in artUrl:
+                artUrl = artUrl.split("/10000/10000/",1)[0]
+                artUrl = artUrl + "/620/350/0"
+                WINDOW.setProperty("MB3.Background.Music.FanArt.small", artUrl)
             self.current_music_art = self.current_music_art + 1
             if(self.current_music_art == len(self.music_art_links)):
                 self.current_music_art = 0
@@ -267,6 +279,10 @@ class ArtworkRotationThread(threading.Thread):
             artUrl =  self.favorites_art_links[self.current_fav_art]["url"] 
             WINDOW.setProperty("MB3.Background.FavouriteMovies.FanArt", artUrl)
             self.logMsg("MB3.Background.FavouriteMovies.FanArt=" + artUrl)
+            if "/10000/10000/" in artUrl:
+                artUrl = artUrl.split("/10000/10000/",1)[0]
+                artUrl = artUrl + "/620/350/0"
+                WINDOW.setProperty("MB3.Background.FavouriteMovies.FanArt.small", artUrl)
             self.current_fav_art = self.current_fav_art + 1
             if(self.current_fav_art == len(self.favorites_art_links)):
                 self.current_fav_art = 0
@@ -276,6 +292,10 @@ class ArtworkRotationThread(threading.Thread):
             artUrl =  self.favoriteshows_art_links[self.current_favshow_art]["url"] 
             WINDOW.setProperty("MB3.Background.FavouriteShows.FanArt", artUrl)
             self.logMsg("MB3.Background.FavouriteShows.FanArt=" + artUrl)
+            if "/10000/10000/" in artUrl:
+                artUrl = artUrl.split("/10000/10000/",1)[0]
+                artUrl = artUrl + "/620/350/0"
+                WINDOW.setProperty("MB3.Background.FavouriteShows.FanArt.small", artUrl)
             self.current_favshow_art = self.current_favshow_art + 1
             if(self.current_favshow_art == len(self.favoriteshows_art_links)):
                 self.current_favshow_art = 0
@@ -285,6 +305,10 @@ class ArtworkRotationThread(threading.Thread):
             artUrl =  self.channels_art_links[self.current_channel_art]["url"] 
             WINDOW.setProperty("MB3.Background.Channels.FanArt", artUrl)
             self.logMsg("MB3.Background.Channels.FanArt=" + artUrl)
+            if "/10000/10000/" in artUrl:
+                artUrl = artUrl.split("/10000/10000/",1)[0]
+                artUrl = artUrl + "/620/350/0"
+                WINDOW.setProperty("MB3.Background.Channels.FanArt.small", artUrl)
             self.current_channel_art = self.current_channel_art + 1
             if(self.current_channel_art == len(self.channels_art_links)):
                 self.current_channel_art = 0
@@ -294,6 +318,10 @@ class ArtworkRotationThread(threading.Thread):
             artUrl =  self.musicvideo_art_links[self.current_musicvideo_art]["url"] 
             WINDOW.setProperty("MB3.Background.MusicVideos.FanArt", artUrl)
             self.logMsg("MB3.Background.MusicVideos.FanArt=" + artUrl)
+            if "/10000/10000/" in artUrl:
+                artUrl = artUrl.split("/10000/10000/",1)[0]
+                artUrl = artUrl + "/620/350/0"
+                WINDOW.setProperty("MB3.Background.MusicVideos.FanArt.small", artUrl)
             self.current_musicvideo_art = self.current_musicvideo_art + 1
             if(self.current_musicvideo_art == len(self.musicvideo_art_links)):
                 self.current_musicvideo_art = 0
@@ -303,10 +331,40 @@ class ArtworkRotationThread(threading.Thread):
             artUrl =  self.photo_art_links[self.current_photo_art]["url"] 
             WINDOW.setProperty("MB3.Background.Photos.FanArt", artUrl)
             self.logMsg("MB3.Background.Photos.FanArt=" + artUrl)
+            if "/10000/10000/" in artUrl:
+                artUrl = artUrl.split("/10000/10000/",1)[0]
+                artUrl = artUrl + "/620/350/0"
+                WINDOW.setProperty("MB3.Background.Photos.FanArt.small", artUrl)
             self.current_photo_art = self.current_photo_art + 1
             if(self.current_photo_art == len(self.photo_art_links)):
                 self.current_photo_art = 0
-            
+        
+        # set MB3 user collection backgrounds
+        totalUserLinks = 0
+        totalUserLinks = int(WINDOW.getProperty("MediaBrowser.usr.Count"))
+        linkCount = 0
+        while linkCount != totalUserLinks:
+            mbstring = "MediaBrowser.usr." + str(linkCount)
+            self.logMsg("set backgroundlink for: " + WINDOW.getProperty(mbstring + ".title"), level=2)
+            filterName = WINDOW.getProperty(mbstring + ".title")
+            backGroundUrl = ""
+            if(len(self.global_art_links) > 0):
+                next, nextItem = self.findNextLink(self.global_art_links, self.current_global_art, filterName)
+                self.current_user_art = next
+                backGroundUrl = nextItem["url"]
+                    
+            if "/10000/10000/" in backGroundUrl:        
+                backGroundUrl = backGroundUrl.split("/10000/10000/",1)[0]
+                backGroundUrl_small = backGroundUrl
+                backGroundUrl = backGroundUrl + "/1920/1080/0?"
+                backGroundUrl_small = backGroundUrl_small + "/620/350/0?"
+            else:
+                backGroundUrl_small = backGroundUrl
+            WINDOW.setProperty(mbstring + ".background", backGroundUrl)
+            WINDOW.setProperty(mbstring + ".background.small", backGroundUrl_small)
+            linkCount += 1
+        
+        
         if(len(self.global_art_links) > 0):
             self.logMsg("setBackgroundLink index global_art_links " + str(self.current_global_art + 1) + " of " + str(len(self.global_art_links)), level=2)
             
@@ -324,13 +382,14 @@ class ArtworkRotationThread(threading.Thread):
                 actionUrl = "RunPlugin(plugin://plugin.video.xbmb3c/?id=" + nextItem["id"] + "&mode=17)"     
             else:
                 actionUrl = nextItem["action"]
-                
-            WINDOW.setProperty("MB3.Background.Global.FanArt", backGroundUrl)
-            self.logMsg("MB3.Background.Global.FanArt=" + backGroundUrl)
-            WINDOW.setProperty("MB3.Background.Global.FanArt.Poster", posterUrl)
-            self.logMsg("MB3.Background.Global.FanArt.Poster=" + posterUrl)    
-            WINDOW.setProperty("MB3.Background.Global.FanArt.Action", actionUrl)
-            self.logMsg("MB3.Background.Global.FanArt.Action=" + actionUrl) 
+            
+            if actionUrl != "":
+                WINDOW.setProperty("MB3.Background.Global.FanArt", backGroundUrl)
+                self.logMsg("MB3.Background.Global.FanArt=" + backGroundUrl)
+                WINDOW.setProperty("MB3.Background.Global.FanArt.Poster", posterUrl)
+                self.logMsg("MB3.Background.Global.FanArt.Poster=" + posterUrl)    
+                WINDOW.setProperty("MB3.Background.Global.FanArt.Action", actionUrl)
+                self.logMsg("MB3.Background.Global.FanArt.Action=" + actionUrl) 
 
             
     def findNextLink(self, linkList, startIndex, filterOnParent):
@@ -483,21 +542,29 @@ class ArtworkRotationThread(threading.Thread):
 
             #####################################################################################################
             # Process collection item backgrounds
-            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + item.get("Id") + "&IncludeItemTypes=Movie,Series,MusicArtist,MusicVideo&Fields=ParentId,Overview&Recursive=true&CollapseBoxSetItems=false&format=json"
-   
-            jsonData = downloadUtils.downloadUrl(collectionUrl, suppress=False, popup=1 ) 
+
+            # Process movies and series
+            self.logMsg("[XBMB3C ArtworkLoader get Collection Images Movies and Series]")
+            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?&SortOrder=Descending&ParentId=" + item.get("Id") + "&IncludeItemTypes=Movie,Series,MusicVideo&Fields=ParentId,Overview&SortOrder=Descending&Recursive=true&CollapseBoxSetItems=false&format=json"
+            jsonData = downloadUtils.downloadUrl(collectionUrl, suppress=True, popup=0 )  
             collectionResult = json.loads(jsonData)
+
+            self.logMsg("[XBMB3C ArtworkLoader COLLECTION] -- " + item.get("Name") + " -- " + collectionUrl)
 
             collectionResult = collectionResult.get("Items")
             if(collectionResult == None):
                 collectionResult = []   
-        
+
             for col_item in collectionResult:
-                
+
                 id = col_item.get("Id")
                 name = col_item.get("Name")
+                MB3type = col_item.get("Type")
                 images = col_item.get("BackdropImageTags")
-                
+
+
+                stored_item = artLinks.get(id)
+
                 if(images != None and len(images) > 0):
                     stored_item = artLinks.get(id)
                     
@@ -548,10 +615,156 @@ class ArtworkRotationThread(threading.Thread):
                         artLinks[id] = stored_item
                     else:
                         stored_item["collections"].append(item.get("Name"))
-            #####################################################################################################
+
+
+            # Process collection item Photos
+            self.logMsg("[XBMB3C ArtworkLoader get Collection Images Photos]")
+            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?Limit=20&SortOrder=Descending&ParentId=" + item.get("Id") + "&IncludeItemTypes=Photo&Fields=ParentId,Overview&SortOrder=Descending&Recursive=true&CollapseBoxSetItems=false&format=json"
+            jsonData = downloadUtils.downloadUrl(collectionUrl, suppress=True, popup=0 )  
+            collectionResult = json.loads(jsonData)
+
+            self.logMsg("[XBMB3C ArtworkLoader COLLECTION] -- " + item.get("Name") + " -- " + collectionUrl)
+
+            collectionResult = collectionResult.get("Items")
+            if(collectionResult == None):
+                collectionResult = []   
+
+            for col_item in collectionResult:
+
+                id = col_item.get("Id")
+                name = col_item.get("Name")
+                MB3type = col_item.get("Type")
+                images = col_item.get("ImageTags")
+
+                stored_item = artLinks.get(id)
+
+                if(stored_item == None):
+
+                    stored_item = {}
+                    collections = []
+                    collections.append(item.get("Name"))
+                    stored_item["collections"] = collections
+                    links = []
+                    images = col_item.get("ImageTags")
+                    parentID = col_item.get("ParentId")
+                    name = col_item.get("Name")
+                    if (images == None):
+                        images = []
+
+                    index = 0
+
+                    if(col_item.get("Type") == "Photo"):
+                        for imagetag in images:
+                            try:
+                                info = {}
+                                info["url"] = downloadUtils.getArtwork(col_item, "Primary")
+                                info["type"] = MB3type
+                                info["index"] = index
+                                info["id"] = id
+                                info["action"] = "None"
+                                info["plot"] = ""
+                                info["poster"] = ""
+                                info["parent"] = parentID
+                                info["name"] = name
+                                links.append(info)
+                                index = index + 1
+                                stored_item["links"] = links
+                                artLinks[id] = stored_item
+                            except Exception, e:
+                                self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))
+
+
+                        stored_item["links"] = links
+                        artLinks[id] = stored_item
+                else:
+                    stored_item["collections"].append(item.get("Name"))
+                    
             
-            collection_count = collection_count + 1
-            
+            # Process collection item Music and all Other
+            self.logMsg("[XBMB3C ArtworkLoader get Collection Images Other]")
+            collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?&SortOrder=Descending&ParentId=" + item.get("Id") + "&IncludeItemTypes=MusicArtist,MusicAlbum,Audio&Fields=ParentId,Overview&SortOrder=Descending&Recursive=true&CollapseBoxSetItems=false&format=json"
+            jsonData = downloadUtils.downloadUrl(collectionUrl, suppress=True, popup=0 )  
+            collectionResult = json.loads(jsonData)
+
+            self.logMsg("[XBMB3C ArtworkLoader COLLECTION] -- " + item.get("Name") + " -- " + collectionUrl)
+
+            collectionResult = collectionResult.get("Items")
+            if(collectionResult == None):
+                collectionResult = []   
+
+            for col_item in collectionResult:
+
+                id = col_item.get("Id")
+                name = col_item.get("Name")
+                MB3type = col_item.get("Type")
+                images = col_item.get("ImageTags")
+                
+                stored_item = artLinks.get(id)
+                
+                if(stored_item == None):
+                    stored_item = {}
+                    collections = []
+                    collections.append(item.get("Name"))
+                    stored_item["collections"] = collections
+                    links = []
+                    images2 = col_item.get("ImageTags")
+                    images = col_item.get("BackdropImageTags")
+                    parentID = col_item.get("ParentId")
+                    name = col_item.get("Name")
+                    if (images == None):
+                        images = []
+                    if (images == None):
+                        images2 = []                    
+
+                    index = 0
+                    
+                    for imagetag in images:
+                        try:
+                            info = {}
+                            info["url"] = downloadUtils.getArtwork(col_item, "Backdrop", index=str(index))
+                            info["type"] = MB3type
+                            info["index"] = index
+                            info["id"] = id
+                            info["action"] = "None"
+                            info["plot"] = ""
+                            info["poster"] = ""
+                            info["parent"] = parentID
+                            info["name"] = name
+                            links.append(info)
+                            index = index + 1
+                            stored_item["links"] = links
+                            artLinks[id] = stored_item
+                        except Exception, e:
+                            self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))                    
+                    
+                    if images == []:
+                        for imagetag in images2:
+                            try:
+                                info = {}
+                                info["url"] = downloadUtils.getArtwork(col_item, "Primary", index=str(index))
+                                info["type"] = MB3type
+                                info["index"] = index
+                                info["id"] = id
+                                info["action"] = "None"
+                                info["plot"] = ""
+                                info["poster"] = ""
+                                info["parent"] = parentID
+                                info["name"] = name
+                                links.append(info)
+                                index = index + 1
+                                stored_item["links"] = links
+                                artLinks[id] = stored_item
+                            except Exception, e:
+                                self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))
+                                              
+
+                        stored_item["links"] = links
+                        artLinks[id] = stored_item
+                else:
+                    stored_item["collections"].append(item.get("Name"))            
+
+        collection_count = collection_count + 1
+
         # build global link list
         final_global_art = []
         
@@ -747,7 +960,7 @@ class ArtworkRotationThread(threading.Thread):
                             self.favorites_art_links.append(info)
                         index = index + 1
                     except Exception, e:
-                        self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))
+                        self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))
                     count += 1                    
 
         random.shuffle(self.favorites_art_links)       
@@ -785,13 +998,13 @@ class ArtworkRotationThread(threading.Thread):
                             self.favoriteshows_art_links.append(info)
                         index = index + 1
                     except Exception, e:
-                        self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))
+                        self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))
                     count += 1                    
 
         random.shuffle(self.favoriteshows_art_links)    
 
         # load Music Video BG's
-        musicMoviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=40&SortOrder=Descending&Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=MusicVideo&format=json"
+        musicMoviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=100&SortOrder=Descending&Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=MusicVideo&format=json"
         jsonData = downloadUtils.downloadUrl(musicMoviesUrl, suppress=True, popup=0 )
         result = json.loads(jsonData)
 
@@ -823,7 +1036,7 @@ class ArtworkRotationThread(threading.Thread):
                             self.musicvideo_art_links.append(info)
                         index = index + 1
                     except Exception, e:
-                            self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))
+                            self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))
                     count += 1                    
 
         random.shuffle(self.musicvideo_art_links)
@@ -855,7 +1068,7 @@ class ArtworkRotationThread(threading.Thread):
                     self.photo_art_links.append(info)
                 index = index + 1
             except Exception, e:
-                    self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))         
+                    self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))         
 
         random.shuffle(self.photo_art_links)       
 
@@ -888,7 +1101,7 @@ class ArtworkRotationThread(threading.Thread):
                     info["name"] = name
                     self.logMsg("BG Channel Image Info : " + str(info), level=0)
                 except Exception, e:
-                        self.logMsg("[MB3 SkinHelper] error occurred: " + str(e))             
+                        self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))             
 
             if (info not in self.channels_art_links):
                 self.channels_art_links.append(info)    
