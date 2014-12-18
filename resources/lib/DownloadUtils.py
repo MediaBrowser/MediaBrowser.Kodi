@@ -56,43 +56,12 @@ class DownloadUtils():
         
         self.logMsg("Looking for user name: " + userName)
 
-        jsonData = None
-        try:
-            jsonData = self.downloadUrl(host + ":" + port + "/mediabrowser/Users/Public?format=json", authenticate=False)
-        except Exception, msg:
-            error = "Get User unable to connect to " + host + ":" + port + " : " + str(msg)
-            xbmc.log (error)
+        authOk = self.authenticate()
+        if(authOk == ""):
+            return_value = xbmcgui.Dialog().ok(self.getString(30044), self.getString(30044))
             return ""
 
-        self.logMsg("GETUSER_JSONDATA_01:" + str(jsonData))
-
-        result = []
-
-        try:
-            result = json.loads(jsonData)
-        except Exception, e:
-            self.logMsg("jsonload : " + str(e) + " (" + jsonData + ")", level=1)
-            return ""           
-
-        self.logMsg("GETUSER_JSONDATA_02:" + str(result))
-
-        userid = ""
-        secure = False
-        for user in result:
-            if(user.get("Name") == userName):
-                userid = user.get("Id")
-                self.logMsg("Username Found:" + user.get("Name"))
-                if(user.get("HasPassword") == True):
-                    secure = True
-                    self.logMsg("Username Is Secure (HasPassword=True)")
-                break
-
-        if(secure):
-            authOk = self.authenticate()
-            if(authOk == ""):
-                return_value = xbmcgui.Dialog().ok(self.getString(30044), self.getString(30044))
-                return ""
-
+        userid = WINDOW.getProperty("userid")
         if userid == "":
             return_value = xbmcgui.Dialog().ok(self.getString(30045),self.getString(30045))
 
@@ -133,8 +102,12 @@ class DownloadUtils():
         deviceName = deviceName.replace("\"", "_")
 
         authString = "Mediabrowser Client=\"XBMC\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
-        headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}    
-        sha1 = hashlib.sha1(self.addonSettings.getSetting('password'))
+        headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}
+        
+        if self.addonSettings.getSetting('password') !=None and  self.addonSettings.getSetting('password') !='':   
+            sha1 = hashlib.sha1(self.addonSettings.getSetting('password'))
+        else:
+            sha1 = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
         
         messageData = "username=" + self.addonSettings.getSetting('username') + "&password=" + sha1.hexdigest()
 
@@ -150,6 +123,7 @@ class DownloadUtils():
         if(accessToken != None):
             self.logMsg("User Authenticated : " + accessToken)
             WINDOW.setProperty("AccessToken"+self.addonSettings.getSetting('username'), accessToken)
+            WINDOW.setProperty("userid", result.get("User").get("Id"))
             return accessToken
         else:
             self.logMsg("User NOT Authenticated")
