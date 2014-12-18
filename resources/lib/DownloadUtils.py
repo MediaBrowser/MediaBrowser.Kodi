@@ -106,10 +106,11 @@ class DownloadUtils():
         
         if self.addonSettings.getSetting('password') !=None and  self.addonSettings.getSetting('password') !='':   
             sha1 = hashlib.sha1(self.addonSettings.getSetting('password'))
+            sha1 = sha1.hexdigest()
         else:
             sha1 = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
         
-        messageData = "username=" + self.addonSettings.getSetting('username') + "&password=" + sha1.hexdigest()
+        messageData = "username=" + self.addonSettings.getSetting('username') + "&password=" + sha1
 
         resp = self.downloadUrl(url, postBody=messageData, type="POST", authenticate=False)
 
