@@ -182,7 +182,7 @@ sortbyList=[__language__(30059),__language__(30060),__language__(30061),__langua
    
 def getCollections(detailsString):
     printDebug("== ENTER: getCollections ==")
-    
+    __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
     MB_server = __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port')
 
     userid = downloadUtils.getUserId()
