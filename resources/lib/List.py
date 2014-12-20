@@ -74,7 +74,7 @@ class List():
         dirItems = []
         result = results.get("Items")
 
-        item_count = db.get("MB3TotalMovies")
+        item_count = len(result)
         current_item = 1;
         self.setWindowHeading(url, pluginhandle)
         viewType=""
@@ -82,6 +82,12 @@ class List():
         xbmcplugin.setContent(pluginhandle, 'movies') #This too
         
         for item in result:
+        
+            if(progress != None):
+                percentDone = (float(current_item) / float(item_count)) * 100
+                progress.update(int(percentDone), __language__(30126) + str(current_item))
+                current_item = current_item + 1
+                
             id = str(item.get("Id")).encode('utf-8')
             guiid = id
             isFolder = "false" #fix
