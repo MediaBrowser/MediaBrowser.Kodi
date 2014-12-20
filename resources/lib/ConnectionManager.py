@@ -70,7 +70,7 @@ class ConnectionManager():
         self.printDebug ("Getting user list")
         jsonData = None
         try:
-            jsonData = downloadUtils.downloadUrl(server_address + ":" + server_port + "/mediabrowser/Users?format=json")
+            jsonData = downloadUtils.downloadUrl(server_address + ":" + server_port + "/mediabrowser/Users/Public?format=json")
         except Exception, msg:
             error = "Get User unable to connect to " + server_address + ":" + server_port + " : " + str(msg)
             xbmc.log (error)
@@ -85,14 +85,11 @@ class ConnectionManager():
         names = []
         userList = []
         for user in result:
-            config = user.get("Configuration")
-            if(config != None):
-                if(config.get("IsHidden") == False):
-                    name = user.get("Name")
-                    userList.append(name)
-                    if(user.get("HasPassword") == True):
-                        name = name + " (Secure)"
-                    names.append(name)
+            name = user.get("Name")
+            userList.append(name)
+            if(user.get("HasPassword") == True):
+                name = name + " (Secure)"
+            names.append(name)
     
         self.printDebug ("User List : " + str(names))
         self.printDebug ("User List : " + str(userList))
