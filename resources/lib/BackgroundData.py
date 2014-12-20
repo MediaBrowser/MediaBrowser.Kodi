@@ -95,6 +95,9 @@ class BackgroundDataUpdaterThread(threading.Thread):
             
     def updateDB(self, item):
         id=item.get("Id")
+        userid = downloadUtils.getUserId()
+        mb3Host = __settings__.getSetting('ipaddress')
+        mb3Port = __settings__.getSetting('port')    
         Temp = item.get("Name")
         if Temp == None:
             Temp = ""
@@ -149,7 +152,10 @@ class BackgroundDataUpdaterThread(threading.Thread):
         db.set(id+".Favorite",                  userData.get('Favorite'))
         db.set(id+".PlayCount",                 userData.get('PlayCount'))
         db.set(id+".Studio",                    API().getStudio(item))
-        db.set(id+".Gtudio",                    API().getGenre(item))
+        db.set(id+".Genre",                     API().getGenre(item))
+        db.set(id+".WatchedURL",                'http://' + mb3Host + ':' + mb3Port + '/mediabrowser/Users/' + userid + '/PlayedItems/' + id)
+        db.set(id+".FavoriteURL",               'http://' + mb3Host + ':' + mb3Port + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id)
+        db.set(id+".DeleteURL",                 'http://' + mb3Host + ':' + mb3Port + '/mediabrowser/Items/' + id)
         
         if(item.get("PremiereDate") != None):
             premieredatelist = (item.get("PremiereDate")).split("T")
@@ -160,7 +166,3 @@ class BackgroundDataUpdaterThread(threading.Thread):
         # add resume percentage text to titles
         if (__settings__.getSetting('addResumePercent') == 'true' and Name != '' and timeInfo.get('Percent') != 'None'):
             db.set(id+".Name", Name + " (" + timeInfo.get('Percent') + "%)")
-
-
-        #db.set(id+".Cast",                  cast)        
- 

@@ -239,15 +239,18 @@ class List():
             listItem.addStreamInfo('audio', 
                                         {'codec'    : db.get(id + '.AudioCodec'),
                                          'channels' : db.get(id + '.Channels')})            
-            
+            menuItems = self.addContextMenu(details, extraData, folder, id=id)
+            if(len(menuItems) > 0):
+                listItem.addContextMenuItems( menuItems, True )
+
             dirItems.append((u, listItem, False))
         
         return dirItems
     # /EXPERIMENTAL
         
     def processDirectory(self, url, results, progress, pluginhandle):
-        cast=['None']
         self.printDebug("== ENTER: processDirectory ==")
+        parsed = urlparse(url)
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
         userid = downloadUtils.getUserId()
@@ -380,7 +383,7 @@ class List():
             timeInfo = API().getTimeInfo(item)
             userData = API().getUserData(item)
             PlaybackPositionTicks = '100'
-            favorite = "false"
+            favorite = "False"
 
             # Populate the details list
             details={'title'        : tempTitle,
@@ -681,7 +684,7 @@ class List():
             userData = item.get("UserData")
             PlaybackPositionTicks = '100'
             overlay = "0"
-            favorite = "false"
+            favorite = "False"
             seekTime = 0
             if(userData != None):
                 if userData.get("Played") != True:
@@ -692,9 +695,9 @@ class List():
                     watched = "false"
                 if userData.get("IsFavorite") == True:
                     overlay = "5"
-                    favorite = "true"
+                    favorite = "True"
                 else:
-                    favorite = "false"
+                    favorite = "False"
                 if userData.get("PlaybackPositionTicks") != None:
                     PlaybackPositionTicks = str(userData.get("PlaybackPositionTicks"))
                     reasonableTicks = int(userData.get("PlaybackPositionTicks")) / 1000
@@ -1334,7 +1337,7 @@ class List():
         
         videoInfoLabels["duration"] = extraData.get("duration")
         videoInfoLabels["playcount"] = extraData.get("playcount")
-        if (extraData.get('favorite') == 'true'):
+        if (extraData.get('favorite') == 'True'):
             videoInfoLabels["top250"] = "1"    
             
         videoInfoLabels["mpaa"] = extraData.get('mpaa')
@@ -1381,28 +1384,43 @@ class List():
             
         return (u, list, folder)
 
-    def addContextMenu(self, details, extraData, folder):
+    def addContextMenu(self, details, extraData, folder, id=''):
         self.printDebug("Building Context Menus", level=2)
         commands = []
-        watched = extraData.get('watchedurl')
+        if id=='':
+            id = extraData.get('id')
+            watchedurl=extraData.get('watchedurl')
+            favoriteurl=extraData.get('favoriteurl')
+            deleteurl=extraData.get('deleteurl')
+            title=details.get('title')
+            playcount=extraData.get("playcount")
+            favorite=extraData.get('favorite')
+        else:
+            watchedurl=db.get(id + '.WatchedURL')
+            favoriteurl=db.get(id + '.FavoriteURL')
+            deleteurl=db.get(id + '.DeleteURL')
+            title=db.get(id + '.Name')       
+            playcount=db.get(id + '.PlayCount')
+            favorite=db.get(id + '.Favorite')
+            
         WINDOW = xbmcgui.Window( 10000 )
-        if watched != None:
+        if watchedurl != None:
             scriptToRun = PLUGINPATH + "/default.py"
             
-            pluginCastLink = "XBMC.Container.Update(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + str(extraData.get('id')) + ")"
+            pluginCastLink = "XBMC.Container.Update(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + str(id) + ")"
             commands.append(( __language__(30100), pluginCastLink))
             
-            if extraData.get("playcount") == "0":
-                argsToPass = 'markWatched,' + extraData.get('watchedurl')
+            if playcount == "0":
+                argsToPass = 'markWatched,' + watchedurl
                 commands.append(( __language__(30093), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
             else:
-                argsToPass = 'markUnwatched,' + extraData.get('watchedurl')
+                argsToPass = 'markUnwatched,' + watchedurl
                 commands.append(( __language__(30094), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
-            if extraData.get('favorite') != 'true':
-                argsToPass = 'markFavorite,' + extraData.get('favoriteurl')
+            if favorite != 'True':
+                argsToPass = 'markFavorite,' + favoriteurl
                 commands.append(( __language__(30095), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
             else:
-                argsToPass = 'unmarkFavorite,' + extraData.get('favoriteurl')
+                argsToPass = 'unmarkFavorite,' + favoriteurl
                 commands.append(( __language__(30096), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
                 
             argsToPass = 'sortby'
@@ -1419,17 +1437,17 @@ class List():
             commands.append(( __language__(30040), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
             
             if not folder:
-                argsToPass = 'playall,' + extraData.get('id')
+                argsToPass = 'playall,' + id
                 commands.append(( __language__(30041), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))  
                 
             argsToPass = 'refresh'
             commands.append(( __language__(30042), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
             
-            argsToPass = 'delete,' + extraData.get('deleteurl')
+            argsToPass = 'delete,' + deleteurl
             commands.append(( __language__(30043), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
             
             if details.get('channelname') == 'Trailers':
-                commands.append(( __language__(30046),"XBMC.RunPlugin(%s)" % CP_ADD_URL % details.get('title')))
+                commands.append(( __language__(30046),"XBMC.RunPlugin(%s)" % CP_ADD_URL % title))
                 
         return(commands)
 
