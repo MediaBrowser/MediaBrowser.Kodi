@@ -194,8 +194,10 @@ class List():
                 listItem.setInfo( type = extraData.get('type','Video'), infoLabels = details )
             
             videoInfoLabels["duration"] = db.get(id + ".Duration")
-            videoInfoLabels["playcount"] = db.get(id + ".PlayCount")
-            if (db.get(id + ".Favorite") == 'True'):
+
+            userData=API().getUserData(item)
+            videoInfoLabels["playcount"] = userData.get("PlayCount")
+            if (userData.get("Favorite") == 'True'):
                 videoInfoLabels["top250"] = "1"    
                 
             videoInfoLabels["mpaa"] = db.get(id + ".OfficialRating")
@@ -245,7 +247,7 @@ class List():
             listItem.addStreamInfo('audio', 
                                         {'codec'    : db.get(id + '.AudioCodec'),
                                          'channels' : db.get(id + '.Channels')})            
-            menuItems = self.addContextMenu(details, extraData, folder, id=id)
+            menuItems = self.addContextMenu(details, userData, folder, id=id)
             if(len(menuItems) > 0):
                 listItem.addContextMenuItems( menuItems, True )
 
@@ -1390,27 +1392,28 @@ class List():
             
         return (u, list, folder)
 
-    def addContextMenu(self, details, extraData, folder, id=''):
+    def addContextMenu(self, details, userData, folder, id=''):
         self.printDebug("Building Context Menus", level=2)
         commands = []
-        if id=='':
-            id = extraData.get('id')
-            watchedurl=extraData.get('watchedurl')
-            favoriteurl=extraData.get('favoriteurl')
-            deleteurl=extraData.get('deleteurl')
+        if id == '':
+            id = userData.get('id')
             title=details.get('title')
-            playcount=extraData.get("playcount")
-            favorite=extraData.get('favorite')
+            playcount=userData.get("playcount")
+            favorite=userData.get('favorite')
         else:
-            watchedurl=db.get(id + '.WatchedURL')
-            favoriteurl=db.get(id + '.FavoriteURL')
-            deleteurl=db.get(id + '.DeleteURL')
             title=db.get(id + '.Name')       
-            playcount=db.get(id + '.PlayCount')
-            favorite=db.get(id + '.Favorite')
-            
-        WINDOW = xbmcgui.Window( 10000 )
-        if watchedurl != None:
+            playcount=userData.get('PlayCount')
+            favorite=userData.get('Favorite')
+
+        WINDOW = xbmcgui.Window( 10000 )        
+        userid = WINDOW.getProperty("userid")
+        mb3Host = __settings__.getSetting('ipaddress')
+        mb3Port = __settings__.getSetting('port')
+        
+        if id != None:
+            watchedurl = 'http://' + mb3Host + ':' + mb3Port + '/mediabrowser/Users/' + userid + '/PlayedItems/' + id
+            favoriteurl = 'http://' + mb3Host + ':' + mb3Port + '/mediabrowser/Users/'+ userid + '/FavoriteItems/' + id
+            deleteurl = 'http://' + mb3Host + ':' + mb3Port + '/mediabrowser/Items/' + id
             scriptToRun = PLUGINPATH + "/default.py"
             
             pluginCastLink = "XBMC.Container.Update(plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + str(id) + ")"
