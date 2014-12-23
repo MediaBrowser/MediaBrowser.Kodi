@@ -81,7 +81,8 @@ class SkinHelperThread(threading.Thread):
         
         # user collections
         totalUserLinks = 0
-        totalUserLinks = int(WINDOW.getProperty("MediaBrowser.usr.Count"))
+        if WINDOW.getProperty("MediaBrowser.usr.Count") != '':
+            totalUserLinks = int(WINDOW.getProperty("MediaBrowser.usr.Count"))
         linkCount = 0
         while linkCount !=totalUserLinks:
             mbstring = "MediaBrowser.usr." + str(linkCount)
@@ -122,7 +123,10 @@ class SkinHelperThread(threading.Thread):
         
         #user collections
         totalUserLinks = 10
-        totalUserLinks = int(WINDOW.getProperty("MediaBrowser.usr.Count"))
+        if WINDOW.getProperty("MediaBrowser.usr.Count") != '':
+            totalUserLinks = int(WINDOW.getProperty("MediaBrowser.usr.Count"))
+        else:
+            totalUserLinks = 0
         linkCount = 0
         while linkCount !=totalUserLinks:
             mbstring = "MediaBrowser.usr." + str(linkCount)

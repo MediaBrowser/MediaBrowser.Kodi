@@ -112,7 +112,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         db.set(id+".CriticRating",              str(item.get("CriticRating")))
         db.set(id+".ProductionYear",            str(item.get("ProductionYear")))
         db.set(id+".LocationType",              item.get("LocationType"))
-        db.set(id+".IsFolder",                  item.get("IsFolder"))
+        db.set(id+".IsFolder",                  str(item.get("IsFolder")))
         db.set(id+".Primary",                   downloadUtils.getArtwork(item, "Primary")) 
         db.set(id+".Backdrop",                  downloadUtils.getArtwork(item, "Backdrop"))
         db.set(id+".poster",                    downloadUtils.getArtwork(item, "poster")) 
