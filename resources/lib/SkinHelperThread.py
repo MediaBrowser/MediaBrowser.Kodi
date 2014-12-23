@@ -162,7 +162,6 @@ class SkinHelperThread(threading.Thread):
         
     def SetMB3WindowProperties(self, filter=None, shared=False ):
         self.logMsg("[MB3 SkinHelper] setting skin properties...")
-        
         try:
             #Get the global host variable set in settings
             WINDOW = xbmcgui.Window( 10000 )
@@ -183,12 +182,10 @@ class SkinHelperThread(threading.Thread):
             collapseBoxSets = True #todo: get this from (skin)settings
             useNextUpforInProgressTvShowsWidget = True #todo: get this from (skin)settings
             
-            allSections = MainModule.getCollections(MainModule.getDetailsString())
+            allSections = MainModule.getCollections()
             collectionCount = 0
             mode=0
-            
             for section in allSections:
-            
                 details={'title' : section.get('title', 'Unknown') }
 
                 extraData={ 'fanart_image' : '' ,
