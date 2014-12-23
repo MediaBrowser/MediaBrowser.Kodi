@@ -341,7 +341,8 @@ class ArtworkRotationThread(threading.Thread):
         
         # set MB3 user collection backgrounds
         totalUserLinks = 0
-        totalUserLinks = int(WINDOW.getProperty("MediaBrowser.usr.Count"))
+        if WINDOW.getProperty("MediaBrowser.usr.Count") != '':
+            totalUserLinks = int(WINDOW.getProperty("MediaBrowser.usr.Count"))
         linkCount = 0
         while linkCount != totalUserLinks:
             mbstring = "MediaBrowser.usr." + str(linkCount)
