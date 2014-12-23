@@ -171,8 +171,13 @@ def ServiceEntryPoint():
     else:
         printDebug("XBMB3C Service PlaylistsUpdater Disabled")
         
-    newBackgroundDataThread = BackgroundDataUpdaterThread()
-    newBackgroundDataThread.start()    
+    if __addon__.getSetting('useBackgroundData') == "true":
+        newBackgroundDataThread = BackgroundDataUpdaterThread()
+        newBackgroundDataThread.start()
+    else:
+        printDebug("XBMB3C BackgroundDataUpdater Disabled")
+
+    
     ###############################################
     # start the image proxy server
     ###############################################
