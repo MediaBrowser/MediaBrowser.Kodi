@@ -55,17 +55,19 @@ class SkinHelperThread(threading.Thread):
         self.getImagesFromCache()
 
         lastRun = datetime.today()
+        lastProfilePath = xbmc.translatePath('special://profile')
         
         while (xbmc.abortRequested == False):
             td = datetime.today() - lastRun
             secTotal = td.seconds
+            profilePath = xbmc.translatePath('special://profile')
             
             updateInterval = 600
-            if(secTotal > updateInterval and not xbmc.Player().isPlaying()):
+            if((secTotal > updateInterval or lastProfilePath != profilePath) and not xbmc.Player().isPlaying()):
                 
                 self.SetMB3WindowProperties()
                 self.setImagesInCache()
-                    
+                lastProfilePath = profilePath    
                 lastRun = datetime.today()
             
             xbmc.sleep(500)
