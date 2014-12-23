@@ -180,11 +180,10 @@ g_sessionID=None
 genreList=[__language__(30069),__language__(30070),__language__(30071),__language__(30072),__language__(30073),__language__(30074),__language__(30075),__language__(30076),__language__(30077),__language__(30078),__language__(30079),__language__(30080),__language__(30081),__language__(30082),__language__(30083),__language__(30084),__language__(30085),__language__(30086),__language__(30087),__language__(30088),__language__(30089)]
 sortbyList=[__language__(30059),__language__(30060),__language__(30061),__language__(30062),__language__(30063),__language__(30064),__language__(30065),__language__(30066),__language__(30067)]
    
-def getCollections(detailsString):
+def getCollections():
     printDebug("== ENTER: getCollections ==")
     __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
     MB_server = __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port')
-
     userid = downloadUtils.getUserId()
     
     if(userid == None or len(userid) == 0):
@@ -223,8 +222,15 @@ def getCollections(detailsString):
             
             total = str(item.get("RecursiveItemCount"))
             section = item.get("CollectionType")
+
             if (section == None):
-              section = "movies"
+                section = "movies"
+            if (section) == "movies":
+                detailsString=getDetailsString(fast=True)
+            else:
+                detailsString=getDetailsString(fast=False)
+            
+            
             collections.append( {'title'      : Name,
                     'address'           : MB_server ,
                     'thumb'             : downloadUtils.getArtwork(item,"Primary") ,
@@ -244,7 +250,8 @@ def getCollections(detailsString):
             printDebug("Title " + Name)    
     
     # Add standard nodes
-    collections.append({'title':__language__(30170), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Movie&format=json&ImageTypeLimit=1' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    detailsString=getDetailsString()
+    collections.append({'title':__language__(30170), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + getDetailsString(fast=True) + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Movie&format=json&ImageTypeLimit=1' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     collections.append({'title':__language__(30171), 'sectype' : 'std.tvshows', 'section' : 'tvshows' , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Series&format=json&ImageTypeLimit=1','thumb':'', 'poster':'', 'fanart_image':'' , 'guiid':''})
     collections.append({'title':__language__(30172), 'sectype' : 'std.music', 'section' : 'music' , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=MusicArtist&format=json&ImageTypeLimit=1','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })   
     collections.append({'title':__language__(30173), 'sectype' : 'std.channels', 'section' : 'channels' , 'address' : MB_server , 'path' : '/mediabrowser/Channels?' + userid +'&format=json&ImageTypeLimit=1','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })   
@@ -280,8 +287,6 @@ def getCollections(detailsString):
     collections.append({'title':__language__(30198)                 , 'sectype' : 'std.search', 'section' : 'search'  , 'address' : MB_server , 'path' : '/mediabrowser/Search/Hints?' + userid,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     
     collections.append({'title':__language__(30199)                 , 'sectype' : 'std.setviews', 'section' : 'setviews'  , 'address' : 'SETVIEWS', 'path': 'SETVIEWS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
-    # EXPERIMENTAL	
-    collections.append({'title':'Fast ' + __language__(30170), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Movie&EnableImages=false&IsFast=true&format=json' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
         
     return collections
 
@@ -390,14 +395,17 @@ def delete (url):
         xbmc.executebuiltin("Container.Refresh")
                
     
-def getDetailsString():
-    detailsString = "EpisodeCount,SeasonCount,Path,Genres,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio"
-    if(__settings__.getSetting('includeStreamInfo') == "true"):
-        detailsString += ",MediaStreams"
-    if(__settings__.getSetting('includePeople') == "true"):
-        detailsString += ",People"
-    if(__settings__.getSetting('includeOverview') == "true"):
-        detailsString += ",Overview"       
+def getDetailsString(fast=False):
+    if fast==False or __settings__.getSetting('useBackgroundData') != 'true':
+        detailsString = "EpisodeCount,SeasonCount,Path,Genres,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio"
+        if(__settings__.getSetting('includeStreamInfo') == "true"):
+            detailsString += ",MediaStreams"
+        if(__settings__.getSetting('includePeople') == "true"):
+            detailsString += ",People"
+        if(__settings__.getSetting('includeOverview') == "true"):
+            detailsString += ",Overview"       
+    else:
+        detailsString = "&IncludeItemTypes=Movie&EnableImages=false&IsFast=true"
     return (detailsString)
     
 def displaySections(pluginhandle):
@@ -411,8 +419,7 @@ def displaySections(pluginhandle):
                   'thumb'        : '' }
     
     # Add collections
-    detailsString=getDetailsString()
-    collections = getCollections(detailsString)
+    collections = getCollections()
     for collection in collections:
         details = {'title' : collection.get('title', 'Unknown') }
         path = collection['path']
@@ -496,7 +503,7 @@ def skin( filter=None, shared=False ):
     stdSearchCount=0
     dirItems = []
     
-    allSections = getCollections(getDetailsString())
+    allSections = getCollections()
     
     for section in allSections:
     
@@ -1047,10 +1054,8 @@ def getContent( url, pluginhandle ):
         dirItems = List().processPeople(url, result, progress, "Movie", pluginhandle)
     elif "/mediabrowser/Persons?" in url and "&IncludeItemTypes=Series" in url:
         dirItems = List().processPeople(url, result, progress, "Series", pluginhandle)
-    #EXPERIMENTAL
-    elif "IsFast" in url:
+    elif __settings__.getSetting('useBackgroundData')=='true':
         dirItems=List().processFast(url,result,progress,pluginhandle)
-    #/EXPERIMENTAL
     else:
         dirItems = List().processDirectory(url, result, progress, pluginhandle)
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)

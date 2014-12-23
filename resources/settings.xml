@@ -60,6 +60,7 @@
 		<setting id="useThemeMovies" type="bool" label="30212" default="true" visible="true" enable="true" />
 		<setting id="loopThemeMovies" type="bool" label="30213" default="true" visible="eq(-1,true)" enable="true" />
 		<setting id="usePlaylistsUpdater" type="bool" label="30206" default="true" visible="true" enable="true" />
+		<setting id="useBackgroundData" type="bool" label="30215" default="false" visible="true" enable="true" />        
 	</category>
 	<category label="30022"> <!-- Advanced -->
 		<setting id="logLevel" type="enum" label="30004" values="None(0)|Info(1)|Debug(2)" default="0" />

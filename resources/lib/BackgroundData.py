@@ -98,21 +98,13 @@ class BackgroundDataUpdaterThread(threading.Thread):
         userid = downloadUtils.getUserId()
         mb3Host = __settings__.getSetting('ipaddress')
         mb3Port = __settings__.getSetting('port')    
-        Temp = item.get("Name")
-        if Temp == None:
-            Temp = ""
-        Name=Temp.encode('utf-8')
+        Name=API().getName(item)
         db.set(id+".Name",Name)
-        Temp = item.get("Overview")
-        if Temp == None:
-            Temp=''
-        Overview1=Temp.encode('utf-8')
-        Overview=str(Overview1)
         timeInfo = API().getTimeInfo(item)
         mediaStreams=API().getMediaStreams(item)
         userData=API().getUserData(item)
         people = API().getPeople(item)
-        db.set(id+".Overview",Overview)
+        db.set(id+".Overview",API().getOverview(item))
         db.set(id+".OfficialRating",item.get("OfficialRating"))
         CommunityRating=item.get("CommunityRating")
         if CommunityRating != None:

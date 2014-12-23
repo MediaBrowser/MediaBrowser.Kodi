@@ -175,3 +175,40 @@ class API():
                 elif genre_string != None:
                     genre = genre + " / " + genre_string   
         return genre
+        
+    def getName(self, item):
+        Temp = item.get("Name")
+        if Temp == None:
+            Temp = ""
+        Name=Temp.encode('utf-8')
+        return Name
+        
+    def getOverview(self, item):
+        Temp = item.get("Overview")
+        if Temp == None:
+            Temp=''
+        Overview1=Temp.encode('utf-8')
+        Overview=str(Overview1)
+        return Overview
+        
+    def getPremiereDate(self, item):
+        if(item.get("PremiereDate") != None):
+            premieredatelist = (item.get("PremiereDate")).split("T")
+            premieredate = premieredatelist[0]
+        else:
+            premieredate = ""
+        return premieredate.decode("utf-8")
+        
+    def getTVInfo(self, item, userData):
+        TotalSeasons     = 0 if item.get("ChildCount")==None else item.get("ChildCount")
+        TotalEpisodes    = 0 if item.get("RecursiveItemCount")==None else item.get("RecursiveItemCount")
+        WatchedEpisodes  = 0 if userData.get("UnplayedItemCount")==None else TotalEpisodes-userData.get("UnplayedItemCount")
+        UnWatchedEpisodes = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")
+        NumEpisodes      = TotalEpisodes
+        return  {'TotalSeasons'     :   str(TotalSeasons),
+                 'TotalEpisodes'    :   str(TotalEpisodes),
+                 'WatchedEpisodes'  :   str(WatchedEpisodes),
+                 'UnWatchedEpisodes':   str(UnWatchedEpisodes),
+                 'NumEpisodes'      :   str(NumEpisodes)
+                 }
+                 
