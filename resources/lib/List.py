@@ -62,6 +62,7 @@ class List():
         self.printDebug("Processing secondary menus")
         xbmcplugin.setContent(pluginhandle, 'movies')
         server = self.getServerFromURL(url)
+        userid = downloadUtils.getUserId()
         
         detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio"
         if(__settings__.getSetting('includeStreamInfo') == "true"):
@@ -93,22 +94,34 @@ class List():
             
             #Create the URL to pass to the item
             selectAction = __settings__.getSetting('selectAction') #Play or show item
-            playDetails = server+',;'+id
-            if 'mediabrowser/Videos' in playDetails:
-                if(selectAction == "1"):
-                    u = sys.argv[0] + "?id=" + playDetails + "&mode=" + str(_MODE_ITEM_DETAILS)
+            isFolder = item.get('IsFolder')
+            if isFolder == True:
+                SortByTemp = __settings__.getSetting('sortby')
+                item_type=str(item.get("Type")).encode('utf-8')
+                if SortByTemp == '' and not (item_type == 'Series' or item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist'):
+                    SortByTemp = 'SortName'
+                if item_type=='Series' and __settings__.getSetting('flattenSeasons')=='true':
+                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IncludeItemTypes=Episode&Recursive=true&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName'+'&format=json'
                 else:
-                    u = sys.argv[0] + "?url=" + playDetails + '&mode=' + str(_MODE_BASICPLAY)
-            elif playDetails.startswith('http') or playDetails.startswith('file'):
-                u = sys.argv[0]+"?url="+urllib.quote(u)+mode
+                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
+                if (item.get("RecursiveItemCount") != 0):
+                    dirItems.append((u, listItem, True))
             else:
-                if(selectAction == "1"):
-                    u = sys.argv[0] + "?id=" + id + "&mode=" + str(_MODE_ITEM_DETAILS)
+                playDetails = server+',;'+id
+                if 'mediabrowser/Videos' in playDetails:
+                    if(selectAction == "1"):
+                        u = sys.argv[0] + "?id=" + playDetails + "&mode=" + str(_MODE_ITEM_DETAILS)
+                    else:
+                        u = sys.argv[0] + "?url=" + playDetails + '&mode=' + str(_MODE_BASICPLAY)
+                elif playDetails.startswith('http') or playDetails.startswith('file'):
+                    u = sys.argv[0]+"?url="+urllib.quote(u)+mode
                 else:
-                    u = sys.argv[0]+"?url=" + playDetails + '&mode=' + str(_MODE_BASICPLAY)                
-            dirItems.append((u, listItem, False))
+                    if(selectAction == "1"):
+                        u = sys.argv[0] + "?id=" + id + "&mode=" + str(_MODE_ITEM_DETAILS)
+                    else:
+                        u = sys.argv[0]+"?url=" + playDetails + '&mode=' + str(_MODE_BASICPLAY)                
+                dirItems.append((u, listItem, False))
         return dirItems
-    # /EXPERIMENTAL
 
     def fastItem(self, item, pluginhandle):            
         isFolder = "false" #fix
@@ -321,7 +334,7 @@ class List():
                 db.set("viewType", "_MUSICTRACKS")
             else:
                 db.set("viewType", "_MOVIES")
-        folder=False
+        folder=item.get("IsFolder")
  
         #Create the ListItem that will be displayed
         thumbPath=downloadUtils.getArtwork(item, "Primary")
@@ -608,7 +621,7 @@ class List():
             TotalEpisodes    = 0 if item.get("RecursiveItemCount")==None else item.get("RecursiveItemCount")
             WatchedEpisodes  = 0 if userData.get("UnplayedItemCount")==None else TotalEpisodes-userData.get("UnplayedItemCount")
             UnWatchedEpisodes = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")
-            NumEpisodes      = TotalEpisodesz
+            NumEpisodes      = TotalEpisodes
             # Populate the extraData list
             extraData={'thumb'        : downloadUtils.getArtwork(item, "Primary") ,
                        'fanart_image' : downloadUtils.getArtwork(item, "Backdrop") ,
