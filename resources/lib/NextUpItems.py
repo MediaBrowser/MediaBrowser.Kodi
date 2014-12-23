@@ -113,11 +113,12 @@ class NextUpUpdaterThread(threading.Thread):
             if shortplot == None:
                 shortplot = ''
             shortplot = shortplot.encode('utf-8')
+            year = item.get("ProductionYear")
             item_id = item.get("Id")
             seriesId = item.get("SeriesId")          
             seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=False, popup=1 )
             seriesResult = json.loads(seriesJsonData)      
-                      
+            officialrating = seriesResult.get("OfficialRating")        
             poster = downloadUtils.getArtwork(seriesResult, "Primary3")
             small_poster = downloadUtils.getArtwork(seriesResult, "Primary2")
             thumbnail = downloadUtils.getArtwork(item, "Primary")
@@ -125,10 +126,15 @@ class NextUpUpdaterThread(threading.Thread):
             fanart = downloadUtils.getArtwork(item, "Backdrop")
             medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
             banner = downloadUtils.getArtwork(item, "Banner")
-            if item.get("SeriesThumbImageTag") != None:
-              seriesthumbnail = downloadUtils.getArtwork(item, "Thumb3")
+            #if item.get("SeriesThumbImageTag") != None:
+            #  seriesthumbnail = downloadUtils.getArtwork(seriesResult, "Thumb3")
+            # else:
+            #   seriesthumbnail = fanart
+              
+            if (seriesResult.get("ImageTags") != None and seriesResult.get("ImageTags").get("Thumb") != None):
+              seriesthumbnail = downloadUtils.getArtwork(seriesResult, "Thumb3")
             else:
-              seriesthumbnail = fanart
+              seriesthumbnail = fanart 
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
@@ -175,6 +181,10 @@ class NextUpUpdaterThread(threading.Thread):
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Art(tvshow.small_poster)", small_poster)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Plot", plot)
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".ShortPlot", shortplot)
+            WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Year", str(year))
+            WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".MPAA", str(officialrating))
+            WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".ItemGUID", seriesId)
+            WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".id", item_id)
             
             WINDOW.setProperty("NextUpEpisodeMB3." + str(item_count) + ".Resume", resume)
             

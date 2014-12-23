@@ -222,7 +222,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             if (item.get("ImageTags") != None and item.get("ImageTags").get("Thumb") != None):
               realthumb = downloadUtils.getArtwork(item, "Thumb3")
             else:
-              realthumb = fanart
+              realthumb = medium_fanart
             
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             selectAction = addonSettings.getSetting('selectAction')
@@ -234,7 +234,7 @@ class RecentInfoUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\","/")    
 
             self.logMsg("LatestUnplayedMovieMB3." + str(item_count) + ".Title = " + title, level=2)
-            self.logMsg("LatestUnplayedMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, level=2)
+            self.logMsg("LatestUnplayedMovieMB3." + str(item_count) + ".Thumb = " + realthumb, level=2)
             self.logMsg("LatestUnplayedMovieMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
             self.logMsg("LatestUnplayedMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=2)
             self.logMsg("LatestUnplayedMovieMB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=2)
@@ -247,14 +247,13 @@ class RecentInfoUpdaterThread(threading.Thread):
             self.logMsg("LatestUnplayedMovieMB3." + str(item_count) + ".Runtime  = " + str(runtime), level=2)
             
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Title", title)
-            WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Thumb", thumbnail)
+            WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Thumb", realthumb)
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Path", playUrl)
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Art(fanart)", fanart)
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Art(landscape)", landscape)
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Art(medium_fanart)", medium_fanart)
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Art(clearlogo)", logo)
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Art(poster)", thumbnail)
-            WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".RealThumb", realthumb)
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Rating", str(rating))
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Mpaa", str(officialrating))
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".CriticRating", str(criticrating))
@@ -264,6 +263,9 @@ class RecentInfoUpdaterThread(threading.Thread):
             
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Year", str(year))
             WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".Runtime", str(runtime))
+            WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".ItemGUID", item_id)
+            WINDOW.setProperty("LatestUnplayedMovieMB3." + str(item_count) + ".id", item_id)
+            
             
             WINDOW.setProperty("LatestUnplayedMovieMB3.Enabled", "true")
             
@@ -473,6 +475,9 @@ class RecentInfoUpdaterThread(threading.Thread):
             WINDOW.setProperty("LatestUnplayedEpisodeMB3." + str(item_count) + ".Art(tvshow.poster)", poster)
             WINDOW.setProperty("LatestUnplayedEpisodeMB3." + str(item_count) + ".Plot", plot)
             WINDOW.setProperty("LatestUnplayedEpisodeMB3." + str(item_count) + ".ShortPlot", shortplot)
+            WINDOW.setProperty("LatestUnplayedEpisodeMB3." + str(item_count) + ".ItemGUID", seriesId)
+            WINDOW.setProperty("LatestUnplayedEpisodeMB3." + str(item_count) + ".id", item_id)
+            
             
             WINDOW.setProperty("LatestUnplayedEpisodeMB3.Enabled", "true")
             

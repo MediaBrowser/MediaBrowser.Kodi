@@ -149,7 +149,7 @@ class DownloadUtils():
                 id = data.get("SeriesId")
                 getSeriesData = True
         if data.get("Type") == "Episode":  # For episodes: primary (episode thumb) gets episode art, rest series art. 
-            if type != "Primary" and type != "Primary2" and type != "Primary3" and type != "Primary4" :
+            if type != "Primary" and type != "Primary2" and type != "Primary3" and type != "Primary4":
                 id = data.get("SeriesId")
                 getSeriesData = True
             if type =="Primary2" or type=="Primary3" or type=="Primary4":
@@ -182,6 +182,8 @@ class DownloadUtils():
             imageTag = data.get("ParentLogoImageTag")
         if (data.get("Type") == "Episode" or data.get("Type") == "Season") and type=="Art":
             imageTag = data.get("ParentArtImageTag")
+        if (data.get("Type") == "Episode") and originalType=="Thumb3":
+            imageTag = data.get("SeriesThumbImageTag")
 
         query = ""
         height = "10000"

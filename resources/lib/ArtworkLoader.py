@@ -1153,22 +1153,27 @@ class ArtworkRotationThread(threading.Thread):
     
         id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
         self.logMsg("setItemBackgroundLink ItemGUID : " + id, 1)
+        if id == '' and xbmcgui.getCurrentWindowId() == 10000:
+           id =  xbmcgui.Window( 10000 ) .getProperty("ItemGUID")
+           realid = xbmcgui.Window( 10000 ) .getProperty("id")
+        else:
+           realid = xbmc.getInfoLabel('ListItem.Property(id)')
     
         WINDOW = xbmcgui.Window( 10000 )
         if id != None and id != "":    
     
             listOfBackgrounds = self.item_art_links.get(id)
-            listOfData = self.item_art_links.get(xbmc.getInfoLabel('ListItem.Property(id)'))
+            listOfData = self.item_art_links.get(realid)
             
             # if for some reson the item is not in the cache try to load it now
             if(listOfBackgrounds == None or len(listOfBackgrounds) == 0):
                 self.loadItemBackgroundLinks(id)
             if(listOfData == None or len(listOfData) == 0):
-                self.loadItemBackgroundLinks(xbmc.getInfoLabel('ListItem.Property(id)'))
+                self.loadItemBackgroundLinks(realid)
                 
             
             listOfBackgrounds = self.item_art_links.get(id)
-            listOfData = self.item_art_links.get(xbmc.getInfoLabel('ListItem.Property(id)'))
+            listOfData = self.item_art_links.get(realid)
             
             if listOfBackgrounds != None:
                 if listOfData != None:

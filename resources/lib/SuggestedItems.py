@@ -69,19 +69,19 @@ class SuggestedUpdaterThread(threading.Thread):
         
         self.logMsg("Updating Suggested List")
         
-        suggestedUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Movies/Recommendations?UserId=" + userid + "&categoryLimit=1&ItemLimit=6&Fields=Overview,ShortOverview,CriticRatingSummary&format=json" 
+        suggestedUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Movies/Recommendations?UserId=" + userid + "&categoryLimit=2&ItemLimit=20&Fields=Overview,ShortOverview,CriticRatingSummary&format=json" 
         jsonData = downloadUtils.downloadUrl(suggestedUrl, suppress=False, popup=1 )
-        result = json.loads(jsonData)
-        self.logMsg("Suggested Movie Json Data : " + str(result), level=2)
+        allresult = json.loads(jsonData)
+        self.logMsg("Suggested Movie Json Data : " + str(allresult), level=2)
         basemovie = "Missing Base Title"
         
-        if(result == None or len(result) == 0):
+        if(allresult == None or len(allresult) == 0):
             return
         
-        if (result[0].get("BaselineItemName") != None):
-            basemovie = result[0].get("BaselineItemName").encode('utf-8')
+        if (allresult[0].get("BaselineItemName") != None):
+            basemovie = allresult[0].get("BaselineItemName").encode('utf-8')
             
-        result = result[0].get("Items")
+        result = allresult[0].get("Items")
         WINDOW = xbmcgui.Window( 10000 )
         if(result == None):
             result = []   
@@ -124,7 +124,7 @@ class SuggestedUpdaterThread(threading.Thread):
                 if item.get("ImageTags").get("Thumb") != None:
                   realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
                 else:
-                  realthumbnail = fanart
+                  realthumbnail = medium_fanart
                 
                 url =  mb3Host + ":" + mb3Port + ',;' + item_id
                 # play or show info
@@ -170,9 +170,109 @@ class SuggestedUpdaterThread(threading.Thread):
                 WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Year", str(year))
                 WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".Runtime", str(runtime))
                 WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".SuggestedMovieTitle", basemovie)
-                
+                WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".ItemGUID", item_id)
+                WINDOW.setProperty("SuggestedMovieMB3." + str(item_count) + ".id", item_id)
                 
                 WINDOW.setProperty("SuggestedMovieMB3.Enabled", "true")
+                
+                item_count = item_count + 1
+                
+        if (allresult[1].get("BaselineItemName") != None):
+            basemovie = allresult[1].get("BaselineItemName").encode('utf-8')
+            
+        result = allresult[1].get("Items")
+        if(result == None):
+            result = []   
+
+        item_count = 1
+        for item in result:
+            
+            if item.get("Type") == "Movie":  
+                title = "Missing Title"
+                if(item.get("Name") != None):
+                    title = item.get("Name").encode('utf-8')
+                
+                rating = item.get("CommunityRating")
+                criticrating = item.get("CriticRating")
+                officialrating = item.get("OfficialRating")
+                criticratingsummary = ""
+                if(item.get("CriticRatingSummary") != None):
+                    criticratingsummary = item.get("CriticRatingSummary").encode('utf-8')
+                plot = item.get("Overview")
+                if plot == None:
+                    plot=''
+                plot=plot.encode('utf-8')
+                shortplot = item.get("ShortOverview")
+                if shortplot == None:
+                    shortplot = ''
+                shortplot = shortplot.encode('utf-8')
+                year = item.get("ProductionYear")
+                if(item.get("RunTimeTicks") != None):
+                    runtime = str(int(item.get("RunTimeTicks"))/(10000000*60))
+                else:
+                    runtime = "0"
+    
+                item_id = item.get("Id")
+                thumbnail = downloadUtils.getArtwork(item, "Primary")
+                logo = downloadUtils.getArtwork(item, "Logo")
+                fanart = downloadUtils.getArtwork(item, "Backdrop")
+                landscape = downloadUtils.getArtwork(item, "Thumb3")
+                medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
+                
+                if item.get("ImageTags").get("Thumb") != None:
+                  realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
+                else:
+                  realthumbnail = medium_fanart
+                
+                url =  mb3Host + ":" + mb3Port + ',;' + item_id
+                # play or show info
+                selectAction = addonSettings.getSetting('selectAction')
+                if(selectAction == "1"):
+                    playUrl = "plugin://plugin.video.xbmb3c/?id=" + item_id + '&mode=' + str(_MODE_ITEM_DETAILS)
+                else:
+                    playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+                          
+                playUrl = playUrl.replace("\\\\","smb://")
+                playUrl = playUrl.replace("\\","/")    
+    
+                self.logMsg("SuggestedMovie2MB3." + str(item_count) + ".Title = " + title, level=2)
+                self.logMsg("SuggestedMovie2MB3." + str(item_count) + ".Thumb = " + realthumbnail, level=2)
+                self.logMsg("SuggestedMovie2MB3." + str(item_count) + ".Path  = " + playUrl, level=2)
+                self.logMsg("SuggestedMovie2MB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=2)
+                self.logMsg("SuggestedMovie2MB3." + str(item_count) + ".Art(clearlogo)  = " + logo, level=2)
+                self.logMsg("SuggestedMovie2MB3." + str(item_count) + ".Art(poster)  = " + thumbnail, level=2)
+                self.logMsg("SuggestedMovie2MB3." + str(item_count) + ".Rating  = " + str(rating), level=2)
+                self.logMsg("SuggestedMovie2MB3." + str(item_count) + ".CriticRating  = " + str(criticrating), level=2)
+                self.logMsg("SuggestedMovie2MB3." + str(item_count) + ".CriticRatingSummary  = " + criticratingsummary, level=2)
+                self.logMsg("SuggestedMovie2MB3." + str(item_count) + ".Plot  = " + plot, level=2)
+                self.logMsg("SuggestedMovie2MB3." + str(item_count) + ".Year  = " + str(year), level=2)
+                self.logMsg("SuggestedMovie2MB3." + str(item_count) + ".Runtime  = " + str(runtime), level=2)
+                self.logMsg("SuggestedMovie2MB3." + str(item_count) + ".SuggestedMovieTitle  = " + basemovie, level=2)
+                
+                
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".Title", title)
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".Thumb", realthumbnail)
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".Path", playUrl)
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".Art(fanart)", fanart)
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".Art(landscape)", landscape)
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".Art(medium_fanart)", medium_fanart)
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".Art(clearlogo)", logo)
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".Art(poster)", thumbnail)
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".Rating", str(rating))
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".Mpaa", str(officialrating))
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".CriticRating", str(criticrating))
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".CriticRatingSummary", criticratingsummary)
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".Plot", plot)
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".ShortPlot", shortplot)
+                
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".Year", str(year))
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".Runtime", str(runtime))
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".SuggestedMovieTitle", basemovie)
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".ItemGUID", item_id)
+                WINDOW.setProperty("SuggestedMovie2MB3." + str(item_count) + ".id", item_id)
+                
+                
+                WINDOW.setProperty("SuggestedMovie2MB3.Enabled", "true")
                 
                 item_count = item_count + 1
             

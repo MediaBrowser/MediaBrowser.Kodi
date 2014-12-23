@@ -80,6 +80,8 @@ class ThemeMediaThread(threading.Thread):
         if newid == '' and xbmcgui.getCurrentWindowId() == 10025:
            self.logMsg("updateThemeMedia Called using 10025 id"+ xbmc.getInfoLabel( "ListItem.Path" ))       
            newid =  WINDOW.getProperty("ItemGUID")
+        if newid == '' and xbmcgui.getCurrentWindowId() == 10000:
+           newid =  xbmcgui.Window( 10000 ) .getProperty("ItemGUID")
         
         if newid != self.themeId:
             if self.playingTheme == True:
@@ -90,6 +92,9 @@ class ThemeMediaThread(threading.Thread):
         if id == '' and xbmcgui.getCurrentWindowId() == 10025:
            self.logMsg("updateThemeMedia Called had a sleep using 10025 id")      
            id =  WINDOW.getProperty("ItemGUID")
+        if id == '' and xbmcgui.getCurrentWindowId() == 10000:
+           self.logMsg("updateThemeMedia Called had a sleep using 10000 id")      
+           id =  xbmcgui.Window( 10000 ).getProperty("ItemGUID")
         if id != newid:
             return
         self.logMsg("updateThemeMedia itemGUID : " + id)
@@ -181,10 +186,9 @@ class ThemeMediaThread(threading.Thread):
     # Works out if the currently displayed area on the screen is something
     # that is deemed a zone where themes should be played
     def isPlayingZone(self):
-        
         if "plugin://plugin.video.xbmb3c" in xbmc.getInfoLabel( "ListItem.Path" ):
             return True
-        if xbmcgui.getCurrentWindowId() == 10025:
+        if xbmcgui.getCurrentWindowId() == 10025 or xbmcgui.getCurrentWindowId() == 10000:
             return True 
         
         # Any other area is deemed to be a non play area
@@ -196,6 +200,8 @@ class ThemeMediaThread(threading.Thread):
         WINDOW = xbmcgui.Window( 10025 )
         if id == '' and xbmcgui.getCurrentWindowId() == 10025:    
            id =  WINDOW.getProperty("ItemGUID")
+        if id == '' and xbmcgui.getCurrentWindowId() == 10000:    
+           id =  xbmcgui.Window( 10000 ).getProperty("ItemGUID")
         if id != "":
             if self.volume == '':
                 self.volume = self.getVolume()

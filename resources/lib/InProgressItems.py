@@ -126,6 +126,11 @@ class InProgressUpdaterThread(threading.Thread):
             landscape = downloadUtils.getArtwork(item, "Thumb3")
             discart = downloadUtils.getArtwork(item, "Disc")
             medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
+            
+            if item.get("ImageTags").get("Thumb") != None:
+                realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
+            else:
+                realthumbnail = medium_fanart
 			          
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
@@ -133,7 +138,7 @@ class InProgressUpdaterThread(threading.Thread):
             playUrl = playUrl.replace("\\","/")    
 
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Title = " + title, level=2)
-            self.logMsg("InProgressMovieMB3." + str(item_count) + ".Thumb = " + thumbnail, level=2)
+            self.logMsg("InProgressMovieMB3." + str(item_count) + ".Thumb = " + realthumbnail, level=2)
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Path  = " + playUrl, level=2)
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Art(fanart)  = " + fanart, level=2)
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Art(discart)  = " + discart, level=2)
@@ -147,7 +152,7 @@ class InProgressUpdaterThread(threading.Thread):
             self.logMsg("InProgressMovieMB3." + str(item_count) + ".Runtime  = " + str(runtime), level=2)
             
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Title", title)
-            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Thumb", thumbnail)
+            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Thumb", realthumbnail)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Path", playUrl)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(fanart)", fanart)
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Art(landscape)", landscape)
@@ -164,6 +169,8 @@ class InProgressUpdaterThread(threading.Thread):
             
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Year", str(year))
             WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".Runtime", str(runtime))
+            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".ItemGUID", item_id)
+            WINDOW.setProperty("InProgressMovieMB3." + str(item_count) + ".id", item_id)
             
             WINDOW.setProperty("InProgressMovieMB3.Enabled", "true")
             
