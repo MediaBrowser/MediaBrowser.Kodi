@@ -1054,8 +1054,8 @@ def getContent( url, pluginhandle ):
         dirItems = List().processPeople(url, result, progress, "Movie", pluginhandle)
     elif "/mediabrowser/Persons?" in url and "&IncludeItemTypes=Series" in url:
         dirItems = List().processPeople(url, result, progress, "Series", pluginhandle)
-    elif __settings__.getSetting('useBackgroundData')=='true' and "IsFast" in url:
-        dirItems=List().processFast(url,result,progress,pluginhandle)
+    elif __settings__.getSetting('useBackgroundData')=='true': # and "IsFast" in url:
+        dirItems = List().processFast(url, result, progress, pluginhandle)
     else:
         dirItems = List().processDirectory(url, result, progress, pluginhandle)
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)

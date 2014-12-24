@@ -74,7 +74,14 @@ class List():
 
         dirItems = []
         result = results.get("Items")
-
+        if(result == None):
+            result = []
+        if len(result) == 1 and __settings__.getSetting('autoEnterSingle') == "true":
+            if result[0].get("Type") == "Season":
+                url="http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + result[0].get("Id") + '&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName&format=json'
+                jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 )
+                results = json.loads(jsonData)
+                result=results.get("Items")
         item_count = len(result)
         current_item = 1;
         self.setWindowHeading(url, pluginhandle)
@@ -94,6 +101,7 @@ class List():
             
             #Create the URL to pass to the item
             selectAction = __settings__.getSetting('selectAction') #Play or show item
+            
             isFolder = item.get('IsFolder')
             if isFolder == True:
                 SortByTemp = __settings__.getSetting('sortby')
@@ -101,11 +109,12 @@ class List():
                 if SortByTemp == '' and not (item_type == 'Series' or item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist'):
                     SortByTemp = 'SortName'
                 if item_type=='Series' and __settings__.getSetting('flattenSeasons')=='true':
-                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IncludeItemTypes=Episode&Recursive=true&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName'+'&format=json'
+                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IncludeItemTypes=Episode&Recursive=true&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName' + '&format=json'
                 else:
-                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
+                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp + '&format=json'
                 if (item.get("RecursiveItemCount") != 0):
-                    dirItems.append((u, listItem, True))
+                    u = sys.argv[0] + "?url=" + urllib.quote(u) + '&mode=' + str(_MODE_GETCONTENT)
+                    dirItems.append([u, listItem, isFolder])
             else:
                 playDetails = server+',;'+id
                 if 'mediabrowser/Videos' in playDetails:
@@ -120,7 +129,7 @@ class List():
                         u = sys.argv[0] + "?id=" + id + "&mode=" + str(_MODE_ITEM_DETAILS)
                     else:
                         u = sys.argv[0]+"?url=" + playDetails + '&mode=' + str(_MODE_BASICPLAY)                
-                dirItems.append((u, listItem, False))
+                dirItems.append([u, listItem, False])
         return dirItems
 
     def fastItem(self, item, pluginhandle):            
@@ -696,7 +705,6 @@ class List():
             else:
                 u = server+',;'+id
                 dirItems.append(self.addGUIItem(u, details, extraData, folder=False))
-
         return dirItems
 
     def processSearch(self, url, results, progress, pluginhandle):
@@ -1594,7 +1602,7 @@ class List():
         list.setProperty('id', extraData.get('id'))
         list.setProperty('Video3DFormat', details.get('Video3DFormat'))
             
-        return (u, list, folder)
+        return [u, list, folder]
 
     def addContextMenu(self, details, userData, folder, id=''):
         self.printDebug("Building Context Menus", level=2)
