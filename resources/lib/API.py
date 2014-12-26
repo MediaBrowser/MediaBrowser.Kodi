@@ -71,10 +71,11 @@ class API():
             except TypeError:
                 tempDuration = "0"
         cappedPercentage = None
+        resume=0
         if (resumeTime != "" and int(resumeTime) > 0):
             duration = float(tempDuration)
             if(duration > 0):
-                resume = float(resumeTime) / 60.0
+                resume = float(resumeTime) / 60
                 percentage = int((resume / duration) * 100.0)
                 cappedPercentage = percentage - (percentage % 10)
                 if(cappedPercentage == 0):
@@ -84,7 +85,7 @@ class API():
         return {'Duration'      : tempDuration, 
                 'TotalTime'     : tempDuration,
                 'Percent'       : str(cappedPercentage),
-                'ResumeTime'    : str(resumeTime)
+                'ResumeTime'    : str(resume)
                }
 
     def getStudio(self, item):

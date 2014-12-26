@@ -136,7 +136,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         db.set(id+".Duration",                  timeInfo.get('Duration'))
         db.set(id+".CompletePercentage",        timeInfo.get('Percent'))
         db.set(id+".ResumeTime",                timeInfo.get('ResumeTime'))
-        db.set(id+".TotalTime",                 timeInfo.get('totaltime'))
+        db.set(id+".TotalTime",                 timeInfo.get('TotalTime'))
         db.set(id+".Channels",                  mediaStreams.get('channels'))
         db.set(id+".VideoCodec",                mediaStreams.get('videocodec'))
         db.set(id+".AspectRatio",               mediaStreams.get('aspectratio'))
