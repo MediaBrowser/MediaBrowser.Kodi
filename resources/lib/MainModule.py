@@ -222,10 +222,9 @@ def getCollections():
             
             total = str(item.get("RecursiveItemCount"))
             section = item.get("CollectionType")
-
-            if (section == None):
+            if section == None:
                 section = "movies"
-            if (section) == "movies":
+            if section == "movies" or section == "tvshows":
                 detailsString=getDetailsString(fast=True)
             else:
                 detailsString=getDetailsString(fast=False)
@@ -252,7 +251,7 @@ def getCollections():
     # Add standard nodes
     detailsString=getDetailsString()
     collections.append({'title':__language__(30170), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + getDetailsString(fast=True) + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Movie&format=json&ImageTypeLimit=1' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
-    collections.append({'title':__language__(30171), 'sectype' : 'std.tvshows', 'section' : 'tvshows' , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Series&format=json&ImageTypeLimit=1','thumb':'', 'poster':'', 'fanart_image':'' , 'guiid':''})
+    collections.append({'title':__language__(30171), 'sectype' : 'std.tvshows', 'section' : 'tvshows' , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + getDetailsString(fast=True) + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Series&format=json&ImageTypeLimit=1','thumb':'', 'poster':'', 'fanart_image':'' , 'guiid':''})
     collections.append({'title':__language__(30172), 'sectype' : 'std.music', 'section' : 'music' , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=MusicArtist&format=json&ImageTypeLimit=1','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })   
     collections.append({'title':__language__(30173), 'sectype' : 'std.channels', 'section' : 'channels' , 'address' : MB_server , 'path' : '/mediabrowser/Channels?' + userid +'&format=json&ImageTypeLimit=1','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })   
     collections.append({'title':__language__(30174), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json&ImageTypeLimit=1','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
