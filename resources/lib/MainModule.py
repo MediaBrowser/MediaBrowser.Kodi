@@ -190,7 +190,7 @@ def getCollections():
         return {}
     
     try:
-        jsonData = downloadUtils.downloadUrl(MB_server + "/mediabrowser/Users/" + userid + "/Items/Root?format=json")
+        jsonData = downloadUtils.downloadUrl("http://" + MB_server + "/mediabrowser/Users/" + userid + "/Items/Root?format=json")
     except Exception, msg:
         error = "Get connect : " + str(msg)
         xbmc.log (error)

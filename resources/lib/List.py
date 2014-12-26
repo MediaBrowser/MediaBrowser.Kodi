@@ -184,7 +184,6 @@ class List():
                 listItemName = db.get(id + ".PremiereDate").decode("utf-8") + u" - " + db.get(id + '.SeriesName','').decode("utf-8") + u" - " + u"S" + db.get(id + 'Season').decode("utf-8") + u"E" + db.get(id + ".Name").decode("utf-8")
                 if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + "UnplayedItemCount") != ''):
                     listItemName = listItemName + " (" + str(int(db.get(id + ".RecursiveItemCount")) - int(db.get(id + ".UnplayedItemCount"))) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
-                listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
             else:
                 if db.get(id + '.Season') == '':
                     season = '0'
@@ -193,12 +192,12 @@ class List():
                 listItemName = db.get(id + 'SeriesName').decode("utf-8") + u" - " + u"S" + season + u"E" + db.get(id + '.Name').decode("utf-8")
                 if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + ".UnplayedItemCount") != ''):
                     listItemName = listItemName + " (" + str(int(db.get(id + ".RecursiveItemCount")) - int(db.get(id + ".UnplayedItemCount"))) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
-                listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
             listItemName = db.get(id + '.Name')
             if(addCounts and db.get(id + ".RecursiveItemCount") != 'None' and db.get(id + ".UnplayedItemCount") != ''):
                 listItemName = listItemName + " (" + str(int(db.get(id + ".RecursiveItemCount")) - int(db.get(id + ".UnplayedItemCount"))) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
-            listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
+        listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
+        details['title'] =  listItemName
         self.printDebug("Setting thumbnail as " + thumbPath, level=2)
         
         listItem.setProperty("complete_percentage", db.get(id + "CompletePercentage"))          
@@ -371,6 +370,7 @@ class List():
             if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != ''):
                 listItemName = listItemName + " (" + str(item.get("RecursiveItemCount") - userData.get("UnplayedItemCount")) + "/" + str(item.get("RecursiveItemCount")) + ")"
         listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
+        details['title'] =  listItemName
         self.printDebug("Setting thumbnail as " + thumbPath, level=2)
         
         listItem.setProperty("complete_percentage", timeInfo.get("Percent"))          
