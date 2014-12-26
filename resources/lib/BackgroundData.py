@@ -80,7 +80,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         
         self.logMsg("Updating BackgroundData Movie List")
         WINDOW = xbmcgui.Window( 10000 )
-        dataUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&SortBy=SortName&Fields=Path,People,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary,EpisodeCount,SeasonCount,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio&SortOrder=Ascending&Filters=IsNotFolder&ExcludeLocationTypes=Virtual&IncludeItemTypes=Series,BoxSetmMovie&format=json"
+        dataUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&SortBy=SortName&Fields=Path,People,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary,EpisodeCount,SeasonCount,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio&SortOrder=Ascending&ExcludeLocationTypes=Virtual&IncludeItemTypes=Series,BoxSet,Movie&format=json"
          
         jsonData = downloadUtils.downloadUrl(dataUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
@@ -114,11 +114,9 @@ class BackgroundDataUpdaterThread(threading.Thread):
         db.set(id+".ProductionYear",            str(item.get("ProductionYear")))
         db.set(id+".LocationType",              item.get("LocationType"))
         db.set(id+".PremiereDate",              str(item.get("PremiereDate")))
-        db.set(id+".SeriesName",                item.get("SeriesName").decode("utf-8"))
-        db.set(id+".PremiereDate",              str(item.get("PremiereDate")))
         db.set(id+".Video3DFormat",             item.get("Video3DFormat"))
         db.set(id+".IsFolder",                  str(item.get("IsFolder")))
-        db.set(id+".RecursiveItemCount",        item.get("RecursiveItemCount"))
+        db.set(id+".RecursiveItemCount",        str(item.get("RecursiveItemCount")))
         db.set(id+".Primary",                   downloadUtils.getArtwork(item, "Primary")) 
         db.set(id+".Backdrop",                  downloadUtils.getArtwork(item, "Backdrop"))
         db.set(id+".poster",                    downloadUtils.getArtwork(item, "poster")) 
@@ -151,7 +149,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         db.set(id+".Watched",                   userData.get('Watched'))
         db.set(id+".Favorite",                  userData.get('Favorite'))
         db.set(id+".PlayCount",                 userData.get('PlayCount'))
-        db.set(id+".UnplayedItemCount",         userData.get('UnplayedItemCount'))        
+        db.set(id+".UnplayedItemCount",         str(userData.get('UnplayedItemCount')))
         db.set(id+".Studio",                    API().getStudio(item))
         db.set(id+".Genre",                     API().getGenre(item))
         db.set(id+".WatchedURL",                'http://' + mb3Host + ':' + mb3Port + '/mediabrowser/Users/' + userid + '/PlayedItems/' + id)
@@ -164,6 +162,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         db.set(id+".NumEpisodes",               tvInfo.get('NumEpisodes'))        
         db.set(id+".Season",                    tvInfo.get('Season'))        
         db.set(id+".Episode",                   tvInfo.get('Episode'))        
+        db.set(id+".SeriesName",                tvInfo.get('SeriesName'))
         
         
         if(item.get("PremiereDate") != None):

@@ -183,7 +183,7 @@ class List():
             if db.get(id + ".LocationType") == "Virtual":
                 listItemName = db.get(id + ".PremiereDate").decode("utf-8") + u" - " + db.get(id + '.SeriesName','').decode("utf-8") + u" - " + u"S" + db.get(id + 'Season').decode("utf-8") + u"E" + db.get(id + ".Name").decode("utf-8")
                 if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + "UnplayedItemCount") != ''):
-                    listItemName = listItemName + " (" + str(db.get(id + ".RecursiveItemCount") - db.get(id + ".UnplayedItemCount")) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
+                    listItemName = listItemName + " (" + str(int(db.get(id + ".RecursiveItemCount")) - int(db.get(id + ".UnplayedItemCount"))) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
                 listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
             else:
                 if db.get(id + '.Season') == '':
@@ -192,12 +192,12 @@ class List():
                     season = db.get(id + '.Season')
                 listItemName = db.get(id + 'SeriesName').decode("utf-8") + u" - " + u"S" + season + u"E" + db.get(id + '.Name').decode("utf-8")
                 if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + ".UnplayedItemCount") != ''):
-                    listItemName = listItemName + " (" + str(db.get(id + ".RecursiveItemCount") - db.get(id + ".UnplayedItemCount")) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
+                    listItemName = listItemName + " (" + str(int(db.get(id + ".RecursiveItemCount")) - int(db.get(id + ".UnplayedItemCount"))) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
                 listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
             listItemName = db.get(id + '.Name')
-            if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + ".UnplayedItemCount") != ''):
-                listItemName = listItemName + " (" + str(db.get(id + ".RecursiveItemCount") - db.get(id + ".UnplayedItemCount")) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
+            if(addCounts and db.get(id + ".RecursiveItemCount") != 'None' and db.get(id + ".UnplayedItemCount") != ''):
+                listItemName = listItemName + " (" + str(int(db.get(id + ".RecursiveItemCount")) - int(db.get(id + ".UnplayedItemCount"))) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
             listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         self.printDebug("Setting thumbnail as " + thumbPath, level=2)
         
@@ -262,12 +262,12 @@ class List():
         videoInfoLabels["season"] = details.get('season') 
         listItem.setInfo('video', videoInfoLabels)
 
-        listItem.setProperty('TotalTime', timeInfo.get('TotalTime'))
-        listItem.setProperty('TotalSeasons',tvInfo.get('TotalSeasons'))
-        listItem.setProperty('TotalEpisodes',tvInfo.get('TotalEpisodes'))
-        listItem.setProperty('WatchedEpisodes',tvInfo.get('WatchedEpisodes'))
-        listItem.setProperty('UnWatchedEpisodes',tvInfo.get('UnWatchedEpisodes'))
-        listItem.setProperty('NumEpisodes',tvInfo.get('NumEpisodes'))
+        listItem.setProperty('TotalTime', db.get(id + '.TotalTime'))
+        listItem.setProperty('TotalSeasons',db.get(id + '.TotalSeasons'))
+        listItem.setProperty('TotalEpisodes',db.get(id + '.TotalEpisodes'))
+        listItem.setProperty('WatchedEpisodes',db.get(id + '.WatchedEpisodes'))
+        listItem.setProperty('UnWatchedEpisodes',db.get(id + '.UnWatchedEpisodes'))
+        listItem.setProperty('NumEpisodes',db.get(id + '.NumEpisodes'))
         
         pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id
         listItem.setProperty('CastPluginLink', pluginCastLink)

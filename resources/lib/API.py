@@ -82,6 +82,7 @@ class API():
                 if(cappedPercentage == 100):
                     cappedPercentage = 90
         return {'Duration'      : tempDuration, 
+                'TotalTime'     : tempDuration,
                 'Percent'       : str(cappedPercentage),
                 'ResumeTime'    : str(resumeTime)
                }
@@ -160,12 +161,12 @@ class API():
                 playcount="1"
             else:
                 playcount="0"
-            if item.get('UnplayedItemCount') != None:
-                UnplayedItemCount = item.get('UnplayedItemCount')
+            if userData.get('UnplayedItemCount') != None:
+                UnplayedItemCount = userData.get('UnplayedItemCount')
             else:
                 UnplayedItemCount = 0
-            if item.get('PlaybackPositionTicks') != None:
-                PlaybackPositionTicks = item.get('PlaybackPositionTicks')
+            if userData.get('PlaybackPositionTicks') != None:
+                PlaybackPositionTicks = userData.get('PlaybackPositionTicks')
             else:
                 PlaybackPositionTicks = ''
         return  {'Watched'  :   watched,
@@ -227,13 +228,19 @@ class API():
         if (str(item.get("ParentIndexNumber")) != None):
             tempSeason = str(item.get("ParentIndexNumber"))
             if item.get("ParentIndexNumber") < 10:
-                tempSeason = "0" + tempSeason        
+                tempSeason = "0" + tempSeason
+        if item.get("SeriesName") != None:
+            temp=item.get("SeriesName")
+            SeriesName=temp.encode('utf-8')
+        else:
+            SeriesName=''
         return  {'TotalSeasons'     :   str(TotalSeasons),
                  'TotalEpisodes'    :   str(TotalEpisodes),
                  'WatchedEpisodes'  :   str(WatchedEpisodes),
                  'UnWatchedEpisodes':   str(UnWatchedEpisodes),
                  'NumEpisodes'      :   str(NumEpisodes),
                  'Season'           :   tempSeason,
-                 'Episode'          :   tempEpisode
+                 'Episode'          :   tempEpisode,
+                 'SeriesName'       :   SeriesName
                  }
                  
