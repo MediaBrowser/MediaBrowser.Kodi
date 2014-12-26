@@ -160,9 +160,19 @@ class API():
                 playcount="1"
             else:
                 playcount="0"
+            if item.get('UnplayedItemCount') != None:
+                UnplayedItemCount = item.get('UnplayedItemCount')
+            else:
+                UnplayedItemCount = 0
+            if item.get('PlaybackPositionTicks') != None:
+                PlaybackPositionTicks = item.get('PlaybackPositionTicks')
+            else:
+                PlaybackPositionTicks = ''
         return  {'Watched'  :   watched,
                  'Favorite' :   favorite,
-                 'PlayCount':   playcount
+                 'PlayCount':   playcount,
+                 'UnplayedItemCount' : UnplayedItemCount,
+                 'PlaybackPositionTicks' : str(PlaybackPositionTicks)
                 }
     
     def getGenre(self,item):

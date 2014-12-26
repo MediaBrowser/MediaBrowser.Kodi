@@ -136,8 +136,7 @@ class List():
         item_type = "Movie"
         premieredate = ""
         id = item.get('Id')
-        details={'title'        : db.get(id + ".Name"),
-                 'plot'         : db.get(id + ".Overview"),
+        details={'plot'         : db.get(id + ".Overview"),
                  }
         # Populate the extraData list
         extraData={'itemtype'     : item_type}
@@ -293,8 +292,7 @@ class List():
     def slowItem(self, item, pluginhandle):            
         item_type = "Movie"
         id = item.get('Id')
-        details={'title'        : API().getName(item),
-                 'plot'         : API().getOverview(item),
+        details={'plot'         : API().getOverview(item),
                  }
         # Populate the extraData list
         extraData={'itemtype'     : item_type}
@@ -344,24 +342,35 @@ class List():
         WINDOW = xbmcgui.Window( 10000 )
         if WINDOW.getProperty("addshowname") == "true":
             if item.get("LocationType") == "Virtual":
-                listItemName = item.get("PremiereDate").decode("utf-8") + u" - " + item.get('SeriesName','').decode("utf-8") + u" - " + u"S" + tvInfo.get('Season') + u"E" + API().getName(item)
-                if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != None):
+                listItemName = API().getPremiereDate(item) + u" - " + item.get('SeriesName','').decode("utf-8") + u" - " + u"S" + tvInfo.get('Season') + u"E" + tvInfo.get('Episode') + u" - " + API().getName(item)
+                if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != ''):
                     listItemName = listItemName + " (" + str(item.get("RecursiveItemCount") - userData.get("UnplayedItemCount")) + "/" + str(item.get("RecursiveItemCount")) + ")"
-                listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
             else:
-                if tvInfo.get('Season') == None:
+                if tvInfo.get('Season') == '':
                     season = '0'
                 else:
                     season = tvInfo.get('Season')
-                listItemName = item.get('SeriesName','').decode("utf-8") + u" - " + u"S" + season + u"E" + API().getName(item)
-                if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != None):
+                listItemName = item.get('SeriesName').decode("utf-8") + u" - " + u"S" + season + u"E" + tvInfo.get('Episode') + u" - " + API().getName(item)
+                if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != ''):
                     listItemName = listItemName + " (" + str(item.get("RecursiveItemCount") - userData.get("UnplayedItemCount")) + "/" + str(item.get("RecursiveItemCount")) + ")"
-                listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
+        elif item.get("Type") == "Episode":
+            prefix=''
+            if __settings__.getSetting('addSeasonNumber') == 'true':
+                prefix = "S" + tvInfo.get('Season')
+                if __settings__.getSetting('addEpisodeNumber') == 'true':
+                    prefix = prefix + "E"
+            if __settings__.getSetting('addEpisodeNumber') == 'true':
+                prefix = prefix + tvInfo.get('Episode')
+            if prefix != '':
+                listItemName = prefix + ' - ' + API().getName(item)
+            else:
+                listItemName = API().getName(item)
+            guiid = item.get("SeriesId")       
         else:
             listItemName = API().getName(item)
-            if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != None):
+            if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != ''):
                 listItemName = listItemName + " (" + str(item.get("RecursiveItemCount") - userData.get("UnplayedItemCount")) + "/" + str(item.get("RecursiveItemCount")) + ")"
-            listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
+        listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         self.printDebug("Setting thumbnail as " + thumbPath, level=2)
         
         listItem.setProperty("complete_percentage", timeInfo.get("Percent"))          
