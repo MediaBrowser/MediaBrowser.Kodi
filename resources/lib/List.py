@@ -182,23 +182,23 @@ class List():
         WINDOW = xbmcgui.Window( 10000 )
         if WINDOW.getProperty("addshowname") == "true":
             if db.get(id + ".LocationType") == "Virtual":
-                listItemName = db.get(id + ".PremiereDate").decode("utf-8") + u" - " + details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + details.get('season').decode("utf-8") + u"E" + details.get('title','Unknown').decode("utf-8")
-                if(addCounts and extraData.get("RecursiveItemCount") != None and extraData.get("UnplayedItemCount") != None):
-                    listItemName = listItemName + " (" + str(extraData.get("RecursiveItemCount") - extraData.get("UnplayedItemCount")) + "/" + str(extraData.get("RecursiveItemCount")) + ")"
+                listItemName = db.get(id + ".PremiereDate").decode("utf-8") + u" - " + db.get(id + '.SeriesName','').decode("utf-8") + u" - " + u"S" + db.get(id + 'Season').decode("utf-8") + u"E" + db.get(id + ".Name").decode("utf-8")
+                if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + "UnplayedItemCount") != ''):
+                    listItemName = listItemName + " (" + str(db.get(id + ".RecursiveItemCount") - db.get(id + ".UnplayedItemCount")) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
                 listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
             else:
-                if details.get('season') == None:
+                if db.get(id + '.Season') == '':
                     season = '0'
                 else:
-                    season = details.get('season')
-                listItemName = details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + season + u"E" + details.get('title','Unknown').decode("utf-8")
-                if(addCounts and extraData.get("RecursiveItemCount") != None and extraData.get("UnplayedItemCount") != None):
-                    listItemName = listItemName + " (" + str(extraData.get("RecursiveItemCount") - extraData.get("UnplayedItemCount")) + "/" + str(extraData.get("RecursiveItemCount")) + ")"
+                    season = db.get(id + '.Season')
+                listItemName = db.get(id + 'SeriesName').decode("utf-8") + u" - " + u"S" + season + u"E" + db.get(id + '.Name').decode("utf-8")
+                if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + ".UnplayedItemCount") != ''):
+                    listItemName = listItemName + " (" + str(db.get(id + ".RecursiveItemCount") - db.get(id + ".UnplayedItemCount")) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
                 listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
-            listItemName = details.get('title','Unknown')
-            if(addCounts and extraData.get("RecursiveItemCount") != None and extraData.get("UnplayedItemCount") != None):
-                listItemName = listItemName + " (" + str(extraData.get("RecursiveItemCount") - extraData.get("UnplayedItemCount")) + "/" + str(extraData.get("RecursiveItemCount")) + ")"
+            listItemName = db.get(id + '.Name')
+            if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + ".UnplayedItemCount") != ''):
+                listItemName = listItemName + " (" + str(db.get(id + ".RecursiveItemCount") - db.get(id + ".UnplayedItemCount")) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
             listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         self.printDebug("Setting thumbnail as " + thumbPath, level=2)
         
@@ -263,24 +263,18 @@ class List():
         videoInfoLabels["season"] = details.get('season') 
         listItem.setInfo('video', videoInfoLabels)
 
-        if extraData.get('totaltime') != None:
-            listItem.setProperty('TotalTime', extraData.get('totaltime'))
-        if extraData.get('TotalSeasons')!=None:
-            listItem.setProperty('TotalSeasons',extraData.get('TotalSeasons'))
-        if extraData.get('TotalEpisodes')!=None:  
-            listItem.setProperty('TotalEpisodes',extraData.get('TotalEpisodes'))
-        if extraData.get('WatchedEpisodes')!=None:
-            listItem.setProperty('WatchedEpisodes',extraData.get('WatchedEpisodes'))
-        if extraData.get('UnWatchedEpisodes')!=None:
-            listItem.setProperty('UnWatchedEpisodes',extraData.get('UnWatchedEpisodes'))
-        if extraData.get('NumEpisodes')!=None:
-            listItem.setProperty('NumEpisodes',extraData.get('NumEpisodes'))
+        listItem.setProperty('TotalTime', timeInfo.get('TotalTime'))
+        listItem.setProperty('TotalSeasons',tvInfo.get('TotalSeasons'))
+        listItem.setProperty('TotalEpisodes',tvInfo.get('TotalEpisodes'))
+        listItem.setProperty('WatchedEpisodes',tvInfo.get('WatchedEpisodes'))
+        listItem.setProperty('UnWatchedEpisodes',tvInfo.get('UnWatchedEpisodes'))
+        listItem.setProperty('NumEpisodes',tvInfo.get('NumEpisodes'))
         
         pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id
         listItem.setProperty('CastPluginLink', pluginCastLink)
         listItem.setProperty('ItemGUID', id)
         listItem.setProperty('id', id)
-        listItem.setProperty('Video3DFormat', details.get('Video3DFormat'))
+        listItem.setProperty('Video3DFormat', db.get(id + '.Video3DFormat'))
 
         listItem.addStreamInfo('video', 
                                     {'duration' : db.get(id + '.Duration'), 
@@ -349,22 +343,22 @@ class List():
         
         WINDOW = xbmcgui.Window( 10000 )
         if WINDOW.getProperty("addshowname") == "true":
-            if item.get(id + ".LocationType") == "Virtual":
-                listItemName = item.get("PremiereDate").decode("utf-8") + u" - " + details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + details.get('season').decode("utf-8") + u"E" + details.get('title','Unknown').decode("utf-8")
+            if item.get("LocationType") == "Virtual":
+                listItemName = item.get("PremiereDate").decode("utf-8") + u" - " + item.get('SeriesName','').decode("utf-8") + u" - " + u"S" + tvInfo.get('Season') + u"E" + API().getName(item)
                 if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != None):
                     listItemName = listItemName + " (" + str(item.get("RecursiveItemCount") - userData.get("UnplayedItemCount")) + "/" + str(item.get("RecursiveItemCount")) + ")"
                 listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
             else:
-                if details.get('season') == None:
+                if tvInfo.get('Season') == None:
                     season = '0'
                 else:
-                    season = details.get('season')
-                listItemName = details.get('SeriesName','').decode("utf-8") + u" - " + u"S" + season + u"E" + details.get('title','Unknown').decode("utf-8")
+                    season = tvInfo.get('Season')
+                listItemName = item.get('SeriesName','').decode("utf-8") + u" - " + u"S" + season + u"E" + API().getName(item)
                 if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != None):
                     listItemName = listItemName + " (" + str(item.get("RecursiveItemCount") - userData.get("UnplayedItemCount")) + "/" + str(item.get("RecursiveItemCount")) + ")"
                 listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         else:
-            listItemName = details.get('title','Unknown')
+            listItemName = API().getName(item)
             if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != None):
                 listItemName = listItemName + " (" + str(item.get("RecursiveItemCount") - userData.get("UnplayedItemCount")) + "/" + str(item.get("RecursiveItemCount")) + ")"
             listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
@@ -427,28 +421,22 @@ class List():
 
         videoInfoLabels["premiered"] = API().getPremiereDate(item)
         
-        videoInfoLabels["episode"] = details.get('episode')
-        videoInfoLabels["season"] = details.get('season') 
+        videoInfoLabels["episode"] = tvInfo.get('Episode')
+        videoInfoLabels["season"] = tvInfo.get('Season') 
         listItem.setInfo('video', videoInfoLabels)
 
-        if timeInfo.get('totaltime') != None:
-            listItem.setProperty('TotalTime', timeInfo.get('totaltime'))
-        if tvInfo.get('TotalSeasons')!=None:
-            listItem.setProperty('TotalSeasons',tvInfo.get('TotalSeasons'))
-        if tvInfo.get('TotalEpisodes')!=None:  
-            listItem.setProperty('TotalEpisodes',tvInfo.get('TotalEpisodes'))
-        if tvInfo.get('WatchedEpisodes')!=None:
-            listItem.setProperty('WatchedEpisodes',tvInfo.get('WatchedEpisodes'))
-        if tvInfo.get('UnWatchedEpisodes')!=None:
-            listItem.setProperty('UnWatchedEpisodes',tvInfo.get('UnWatchedEpisodes'))
-        if tvInfo.get('NumEpisodes')!=None:
-            listItem.setProperty('NumEpisodes',tvInfo.get('NumEpisodes'))
+        listItem.setProperty('TotalTime', timeInfo.get('totaltime'))
+        listItem.setProperty('TotalSeasons',tvInfo.get('TotalSeasons'))
+        listItem.setProperty('TotalEpisodes',tvInfo.get('TotalEpisodes'))
+        listItem.setProperty('WatchedEpisodes',tvInfo.get('WatchedEpisodes'))
+        listItem.setProperty('UnWatchedEpisodes',tvInfo.get('UnWatchedEpisodes'))
+        listItem.setProperty('NumEpisodes',tvInfo.get('NumEpisodes'))
         
         pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id
         listItem.setProperty('CastPluginLink', pluginCastLink)
         listItem.setProperty('ItemGUID', id)
         listItem.setProperty('id', id)
-        listItem.setProperty('Video3DFormat', details.get('Video3DFormat'))
+        listItem.setProperty('Video3DFormat', item.get('Video3DFormat'))
 
         listItem.addStreamInfo('video', 
                                     {'duration' : mediaStreams.get('Duration'), 

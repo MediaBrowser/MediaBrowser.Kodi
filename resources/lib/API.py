@@ -205,10 +205,25 @@ class API():
         WatchedEpisodes  = 0 if userData.get("UnplayedItemCount")==None else TotalEpisodes-userData.get("UnplayedItemCount")
         UnWatchedEpisodes = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")
         NumEpisodes      = TotalEpisodes
+        tempEpisode = ""
+        if (item.get("IndexNumber") != None):
+            episodeNum = item.get("IndexNumber")
+            if episodeNum < 10:
+                tempEpisode = "0" + str(episodeNum)
+            else:
+                tempEpisode = str(episodeNum)
+                
+        tempSeason = ""
+        if (str(item.get("ParentIndexNumber")) != None):
+            tempSeason = str(item.get("ParentIndexNumber"))
+            if item.get("ParentIndexNumber") < 10:
+                tempSeason = "0" + tempSeason        
         return  {'TotalSeasons'     :   str(TotalSeasons),
                  'TotalEpisodes'    :   str(TotalEpisodes),
                  'WatchedEpisodes'  :   str(WatchedEpisodes),
                  'UnWatchedEpisodes':   str(UnWatchedEpisodes),
-                 'NumEpisodes'      :   str(NumEpisodes)
+                 'NumEpisodes'      :   str(NumEpisodes),
+                 'Season'           :   tempSeason,
+                 'Episode'          :   tempEpisode
                  }
                  
