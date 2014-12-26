@@ -98,7 +98,6 @@ class List():
                 listItem=self.fastItem(item, pluginhandle)
             else:
                 listItem=self.slowItem(item, pluginhandle)
-            
             #Create the URL to pass to the item
             selectAction = __settings__.getSetting('selectAction') #Play or show item
             
@@ -298,9 +297,7 @@ class List():
         return listItem
 
     def slowItem(self, item, pluginhandle):            
-        isFolder = "false" #fix
         item_type = "Movie"
-        premieredate = ""
         id = item.get('Id')
         details={'title'        : API().getName(item),
                  'plot'         : API().getOverview(item),

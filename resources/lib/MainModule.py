@@ -405,7 +405,7 @@ def getDetailsString(fast=False):
         if(__settings__.getSetting('includeOverview') == "true"):
             detailsString += ",Overview"       
     else:
-        detailsString = "&IncludeItemTypes=Movie&EnableImages=false&IsFast=true"
+        detailsString = "&EnableImages=false&IsFast=true"
     return (detailsString)
     
 def displaySections(pluginhandle):
