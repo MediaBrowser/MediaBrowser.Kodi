@@ -302,7 +302,7 @@ class DownloadUtils():
                     
             elif originalType =="Backdrop2" or originalType =="Thumb2" and data.get("Type") != "Episode":
                 userData = data.get("UserData")
-                if originalType =="Backdrop2":
+                if originalType =="Backdrop2" and data.get("BackdropImageTags") != None: 
                   totalbackdrops = len(data.get("BackdropImageTags"))
                   if totalbackdrops != 0:
                     index = str(randrange(0,totalbackdrops))
@@ -327,7 +327,7 @@ class DownloadUtils():
                     
             elif originalType =="Backdrop3" or originalType =="Thumb3" and data.get("Type") != "Episode":
                 userData = data.get("UserData")
-                if originalType =="Backdrop3":
+                if originalType =="Backdrop3" and data.get("BackdropImageTags") != None:
                   totalbackdrops = len(data.get("BackdropImageTags"))
                   if totalbackdrops != 0:
                     index = str(randrange(0,totalbackdrops))
