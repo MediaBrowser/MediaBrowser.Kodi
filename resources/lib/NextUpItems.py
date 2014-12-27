@@ -69,7 +69,7 @@ class NextUpUpdaterThread(threading.Thread):
         
         self.logMsg("Updating NextUp List")
         
-        nextUpUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Shows/NextUp?UserId=" + userid + "&Fields=Path,Genres,MediaStreams,Overview,ShortOverview,SeasonUserData&format=json&ImageTypeLimit=1"
+        nextUpUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Shows/NextUp?UserId=" + userid + "&Fields=Path,Genres,MediaStreams,Overview,ShortOverview&format=json&ImageTypeLimit=1"
         
         jsonData = downloadUtils.downloadUrl(nextUpUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
