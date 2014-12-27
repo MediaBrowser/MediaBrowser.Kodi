@@ -42,7 +42,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         userid = self.downloadUtils.getUserId()
         self.userid = userid
        
-        jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + self.id + "?Fields=SeriesGenres&format=json", suppress=False, popup=1 )     
+        jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + self.id + "?Fields=SeriesGenres,AirTime&format=json", suppress=False, popup=1 )     
         item = json.loads(jsonData)
         self.item = item
         

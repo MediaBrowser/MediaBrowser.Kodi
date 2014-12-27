@@ -396,7 +396,7 @@ def delete (url):
     
 def getDetailsString(fast=False):
     if fast==False or __settings__.getSetting('useBackgroundData') != 'true':
-        detailsString = "EpisodeCount,SeasonCount,Path,Genres,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio"
+        detailsString = "EpisodeCount,SeasonCount,Path,Genres,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio,AirTime"
         if(__settings__.getSetting('includeStreamInfo') == "true"):
             detailsString += ",MediaStreams"
         if(__settings__.getSetting('includePeople') == "true"):
