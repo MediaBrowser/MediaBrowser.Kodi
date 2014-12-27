@@ -170,6 +170,18 @@ class List():
                 db.set("viewType", "_MUSICTRACKS")
             else:
                 db.set("viewType", "_MOVIES")
+            if item.get("Type") == "Episode" and db.get("allowSort") != "false":
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)
+            elif db.get("allowSort") != "false":
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)                
+            else:
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)                
             viewTypeSet=True        
         folder=False
  
@@ -331,6 +343,18 @@ class List():
                 db.set("viewType", "_MUSICTRACKS")
             else:
                 db.set("viewType", "_MOVIES")
+            if item.get("Type") == "Episode" and db.get("allowSort") != "false":
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)
+            elif db.get("allowSort") != "false":
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)                
+            else:
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)                
         folder=item.get("IsFolder")
  
         #Create the ListItem that will be displayed
@@ -1638,15 +1662,15 @@ class List():
                 argsToPass = 'unmarkFavorite,' + favoriteurl
                 commands.append(( __language__(30096), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
                 
-            argsToPass = 'sortby'
-            commands.append(( __language__(30097), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
+            #argsToPass = 'sortby'
+            #commands.append(( __language__(30097), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
             
-            if 'Ascending' in WINDOW.getProperty("currenturl"):
-                argsToPass = 'sortorder'
-                commands.append(( __language__(30098), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
-            else:
-                argsToPass = 'sortorder'
-                commands.append(( __language__(30099), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
+            #if 'Ascending' in WINDOW.getProperty("currenturl"):
+            #    argsToPass = 'sortorder'
+            #    commands.append(( __language__(30098), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
+            #else:
+            #    argsToPass = 'sortorder'
+            #    commands.append(( __language__(30099), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
                 
             argsToPass = 'genrefilter'
             commands.append(( __language__(30040), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))

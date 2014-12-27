@@ -1012,8 +1012,10 @@ def getContent( url, pluginhandle ):
         
     if "NextUp" in url and __settings__.getSetting('sortNextUp') == "true":
         xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_TITLE)
+    elif "DateCreated" in url:
+        db.set("allowSort","false")
     else:
-        xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)
+        db.set("allowSort","true")
     result = None
     
     progress = None
