@@ -583,6 +583,18 @@ class List():
                     db.set("viewType", "_MUSICTRACKS")
                 else:
                     db.set("viewType", "_MOVIES")
+                if item.get("Type") == "Episode" and db.get("allowSort") != "false":
+                    xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+                    xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
+                    xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
+                    xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)
+                elif db.get("allowSort") != "false":
+                    xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
+                    xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+                    xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
+                    xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)                
+                else:
+                    xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)                       
                 viewTypeSet=True
                 
             if item.get("Type") == "Episode":
@@ -1527,7 +1539,7 @@ class List():
         
         # calculate percentage
         cappedPercentage = None
-        if (extraData.get('resumetime') != None and int(extraData.get('resumetime')) > 0):
+        if (extraData.get('resumetime') != None and float(extraData.get('resumetime')) > 0):
             duration = float(extraData.get('duration'))
             if(duration > 0):
                 resume = float(extraData.get('resumetime')) / 60.0
