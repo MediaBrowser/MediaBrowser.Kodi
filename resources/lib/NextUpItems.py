@@ -11,11 +11,12 @@ import threading
 from datetime import datetime
 import urllib
 from DownloadUtils import DownloadUtils
-
+from Database import Database
 _MODE_BASICPLAY=12
 
 #define our global download utils
 downloadUtils = DownloadUtils()
+db = Database()
 
 class NextUpUpdaterThread(threading.Thread):
 
@@ -56,7 +57,7 @@ class NextUpUpdaterThread(threading.Thread):
         
     def updateNextUp(self):
         self.logMsg("updateNextUp Called")
-        
+        useBackgroundData = xbmcgui.Window(10000).getProperty("BackgroundDataLoaded") == "true"
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         
         mb3Host = addonSettings.getSetting('ipaddress')
@@ -68,7 +69,7 @@ class NextUpUpdaterThread(threading.Thread):
         
         self.logMsg("Updating NextUp List")
         
-        nextUpUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Shows/NextUp?UserId=" + userid + "&Fields=Path,Genres,MediaStreams,Overview,ShortOverview&format=json&ImageTypeLimit=1"
+        nextUpUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Shows/NextUp?UserId=" + userid + "&Fields=Path,Genres,MediaStreams,Overview,ShortOverview,SeasonUserData&format=json&ImageTypeLimit=1"
         
         jsonData = downloadUtils.downloadUrl(nextUpUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
@@ -115,27 +116,37 @@ class NextUpUpdaterThread(threading.Thread):
             shortplot = shortplot.encode('utf-8')
             year = item.get("ProductionYear")
             item_id = item.get("Id")
-            seriesId = item.get("SeriesId")          
-            seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=False, popup=1 )
-            seriesResult = json.loads(seriesJsonData)      
-            officialrating = seriesResult.get("OfficialRating")        
-            poster = downloadUtils.getArtwork(seriesResult, "Primary3")
-            small_poster = downloadUtils.getArtwork(seriesResult, "Primary2")
-            thumbnail = downloadUtils.getArtwork(item, "Primary")
-            logo = downloadUtils.getArtwork(seriesResult, "Logo")
-            fanart = downloadUtils.getArtwork(item, "Backdrop")
-            medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
-            banner = downloadUtils.getArtwork(item, "Banner")
-            #if item.get("SeriesThumbImageTag") != None:
-            #  seriesthumbnail = downloadUtils.getArtwork(seriesResult, "Thumb3")
-            # else:
-            #   seriesthumbnail = fanart
-              
-            if (seriesResult.get("ImageTags") != None and seriesResult.get("ImageTags").get("Thumb") != None):
-              seriesthumbnail = downloadUtils.getArtwork(seriesResult, "Thumb3")
-            else:
-              seriesthumbnail = fanart 
+            seriesId = item.get("SeriesId")
             
+            if useBackgroundData != True:
+                seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=False, popup=1 )
+                seriesResult = json.loads(seriesJsonData)      
+                officialrating = seriesResult.get("OfficialRating")        
+                poster = downloadUtils.getArtwork(seriesResult, "Primary3")
+                small_poster = downloadUtils.getArtwork(seriesResult, "Primary2")
+                thumbnail = downloadUtils.getArtwork(item, "Primary")
+                logo = downloadUtils.getArtwork(seriesResult, "Logo")
+                fanart = downloadUtils.getArtwork(item, "Backdrop")
+                medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
+                banner = downloadUtils.getArtwork(item, "Banner")
+                if (seriesResult.get("ImageTags") != None and seriesResult.get("ImageTags").get("Thumb") != None):
+                  seriesthumbnail = downloadUtils.getArtwork(seriesResult, "Thumb3")
+                else:
+                  seriesthumbnail = fanart 
+            else:
+                officialrating = db.get(seriesId + ".OfficialRating")
+                poster = db.get(seriesId + ".Primary3")
+                small_poster = db.get(seriesId + ".Primary2")
+                thumbnail = downloadUtils.getArtwork(item, "Primary")
+                logo = db.get(seriesId + ".Logo")
+                fanart = db.get(seriesId + ".Backdrop")
+                medium_fanart = db.get(seriesId + ".Backdrop3")
+                banner = db.get(seriesId + ".Banner")
+                if item.get("SeriesThumbImageTag") != None:
+                   seriesthumbnail = db.get(seriesId + ".Thumb3")
+                else:
+                   seriesthumbnail = fanart
+                                  
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
             playUrl = playUrl.replace("\\\\","smb://")

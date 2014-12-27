@@ -11,12 +11,14 @@ import threading
 from datetime import datetime
 import urllib
 from DownloadUtils import DownloadUtils
+from Database import Database
 
 _MODE_BASICPLAY=12
 _MODE_ITEM_DETAILS=17
 
 #define our global download utils
 downloadUtils = DownloadUtils()
+db = Database()
 
 class SuggestedUpdaterThread(threading.Thread):
 
@@ -47,7 +49,7 @@ class SuggestedUpdaterThread(threading.Thread):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             
-            if(secTotal > 300 and not xbmc.Player().isPlaying()):
+            if(secTotal > 60 and not xbmc.Player().isPlaying()):
                 self.updateSuggested()
                 lastRun = datetime.today()
 
@@ -57,6 +59,7 @@ class SuggestedUpdaterThread(threading.Thread):
         
     def updateSuggested(self):
         self.logMsg("updateSuggested Called")
+        useBackgroundData = xbmcgui.Window(10000).getProperty("BackgroundDataLoaded") == "true"
         
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         
@@ -114,18 +117,34 @@ class SuggestedUpdaterThread(threading.Thread):
                 else:
                     runtime = "0"
     
-                item_id = item.get("Id")
-                thumbnail = downloadUtils.getArtwork(item, "Primary")
-                logo = downloadUtils.getArtwork(item, "Logo")
-                fanart = downloadUtils.getArtwork(item, "Backdrop")
-                landscape = downloadUtils.getArtwork(item, "Thumb3")
-                medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
-    			
-                if item.get("ImageTags").get("Thumb") != None:
-                  realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
+                item_id = item.get("Id") 
+                if useBackgroundData != True:
+                    poster = downloadUtils.getArtwork(item, "Primary3")
+                    thumbnail = downloadUtils.getArtwork(item, "Primary")
+                    logo = downloadUtils.getArtwork(item, "Logo")
+                    fanart = downloadUtils.getArtwork(item, "Backdrop")
+                    landscape = downloadUtils.getArtwork(item, "Thumb3")
+                    discart = downloadUtils.getArtwork(item, "Disc")
+                    medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
+                    
+                    if item.get("ImageTags").get("Thumb") != None:
+                        realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
+                    else:
+                        realthumbnail = medium_fanart
                 else:
-                  realthumbnail = medium_fanart
-                
+                    poster = db.get(item_id +".Primary3")
+                    thumbnail = db.get(item_id +".Primary")
+                    logo = db.get(item_id +".Logo")
+                    fanart = db.get(item_id +".Backdrop")
+                    landscape = db.get(item_id +".Thumb3")
+                    discart = db.get(item_id +".Disc")
+                    medium_fanart = db.get(item_id +".Backdrop3")
+                    
+                    if item.get("ImageTags").get("Thumb") != None:
+                        realthumbnail = db.get(item_id +".Thumb3")
+                    else:
+                        realthumbnail = medium_fanart  
+                    
                 url =  mb3Host + ":" + mb3Port + ',;' + item_id
                 # play or show info
                 selectAction = addonSettings.getSetting('selectAction')
@@ -212,17 +231,33 @@ class SuggestedUpdaterThread(threading.Thread):
                 else:
                     runtime = "0"
     
-                item_id = item.get("Id")
-                thumbnail = downloadUtils.getArtwork(item, "Primary")
-                logo = downloadUtils.getArtwork(item, "Logo")
-                fanart = downloadUtils.getArtwork(item, "Backdrop")
-                landscape = downloadUtils.getArtwork(item, "Thumb3")
-                medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
-                
-                if item.get("ImageTags").get("Thumb") != None:
-                  realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
+                item_id = item.get("Id")  
+                if useBackgroundData != True:
+                    poster = downloadUtils.getArtwork(item, "Primary3")
+                    thumbnail = downloadUtils.getArtwork(item, "Primary")
+                    logo = downloadUtils.getArtwork(item, "Logo")
+                    fanart = downloadUtils.getArtwork(item, "Backdrop")
+                    landscape = downloadUtils.getArtwork(item, "Thumb3")
+                    discart = downloadUtils.getArtwork(item, "Disc")
+                    medium_fanart = downloadUtils.getArtwork(item, "Backdrop3")
+                    
+                    if item.get("ImageTags").get("Thumb") != None:
+                        realthumbnail = downloadUtils.getArtwork(item, "Thumb3")
+                    else:
+                        realthumbnail = medium_fanart
                 else:
-                  realthumbnail = medium_fanart
+                    poster = db.get(item_id +".Primary3")
+                    thumbnail = db.get(item_id +".Primary")
+                    logo = db.get(item_id +".Logo")
+                    fanart = db.get(item_id +".Backdrop")
+                    landscape = db.get(item_id +".Thumb3")
+                    discart = db.get(item_id +".Disc")
+                    medium_fanart = db.get(item_id +".Backdrop3")
+                    
+                    if item.get("ImageTags").get("Thumb") != None:
+                        realthumbnail = db.get(item_id +".Thumb3")
+                    else:
+                        realthumbnail = medium_fanart 
                 
                 url =  mb3Host + ":" + mb3Port + ',;' + item_id
                 # play or show info

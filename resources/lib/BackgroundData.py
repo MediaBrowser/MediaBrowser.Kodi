@@ -80,7 +80,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         
         self.logMsg("Updating BackgroundData Movie List")
         WINDOW = xbmcgui.Window( 10000 )
-        dataUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&SortBy=SortName&Fields=Path,People,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary,EpisodeCount,SeasonCount,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio&SortOrder=Ascending&ExcludeLocationTypes=Virtual&IncludeItemTypes=Series,BoxSet,Movie&format=json"
+        dataUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&SortBy=SortName&Fields=Path,People,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary,EpisodeCount,SeasonCount,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio&SortOrder=Ascending&ExcludeLocationTypes=Virtual&IncludeItemTypes=Series,BoxSet,Movie&CollapseBoxSetItems=false&format=json"
          
         jsonData = downloadUtils.downloadUrl(dataUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
@@ -92,6 +92,8 @@ class BackgroundDataUpdaterThread(threading.Thread):
         item_count = 1
         for item in result:
             self.updateDB(item)
+        WINDOW.setProperty("BackgroundDataLoaded", "true")
+    
             
     def updateDB(self, item):
         id=item.get("Id")
