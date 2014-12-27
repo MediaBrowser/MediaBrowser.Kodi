@@ -81,7 +81,7 @@ class DownloadUtils():
 
     def authenticate(self):    
         WINDOW = xbmcgui.Window( 10000 )
-
+        self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         token = WINDOW.getProperty("AccessToken"+self.addonSettings.getSetting('username'))
         if(token != None and token != ""):
             self.logMsg("DownloadUtils -> Returning saved AccessToken for user : " + self.addonSettings.getSetting('username') + " token: "+ token)
