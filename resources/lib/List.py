@@ -133,12 +133,13 @@ class List():
 
     def fastItem(self, item, pluginhandle):            
         isFolder = "false" #fix
-        item_type = "Movie"
         premieredate = ""
         id = item.get('Id')
+        guiid = id
         details={'plot'         : db.get(id + ".Overview"),
                  }
         # Populate the extraData list
+        item_type = str(item.get("Type")).encode('utf-8')
         extraData={'itemtype'     : item_type}
         mode = _MODE_GETCONTENT
         if db.get("viewType")=="":
@@ -282,7 +283,7 @@ class List():
         
         pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id
         listItem.setProperty('CastPluginLink', pluginCastLink)
-        listItem.setProperty('ItemGUID', id)
+        listItem.setProperty('ItemGUID', guiid)
         listItem.setProperty('id', id)
         listItem.setProperty('Video3DFormat', db.get(id + '.Video3DFormat'))
 
@@ -301,11 +302,12 @@ class List():
         return listItem
 
     def slowItem(self, item, pluginhandle):            
-        item_type = "Movie"
         id = item.get('Id')
+        guiid = id
         details={'plot'         : API().getOverview(item),
                  }
         # Populate the extraData list
+        item_type = str(item.get("Type")).encode('utf-8')
         extraData={'itemtype'     : item_type}
         timeInfo = API().getTimeInfo(item)
         userData=API().getUserData(item)
@@ -467,7 +469,7 @@ class List():
         
         pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id
         listItem.setProperty('CastPluginLink', pluginCastLink)
-        listItem.setProperty('ItemGUID', id)
+        listItem.setProperty('ItemGUID', guiid)
         listItem.setProperty('id', id)
         listItem.setProperty('Video3DFormat', item.get('Video3DFormat'))
 
