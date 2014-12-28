@@ -1009,7 +1009,10 @@ def getContent( url, pluginhandle ):
     global viewType
     printDebug("== ENTER: getContent ==")
     printDebug("URL: " + str(url))    
-        
+    userid = downloadUtils.getUserId()    
+    db.set("mb3Host", __settings__.getSetting('ipaddress'))
+    db.set("mb4Port", __settings__.getSetting('port'))
+    
     if "NextUp" in url and __settings__.getSetting('sortNextUp') == "true":
         xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_TITLE)
         db.set("allowSort","false")

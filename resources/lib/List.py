@@ -139,7 +139,7 @@ class List():
         details={'plot'         : db.get(id + ".Overview"),
                  }
         # Populate the extraData list
-        item_type = str(item.get("Type")).encode('utf-8')
+        item_type = db.get(id + ".Type")
         extraData={'itemtype'     : item_type}
         mode = _MODE_GETCONTENT
         if db.get("viewType")=="":
@@ -1650,9 +1650,9 @@ class List():
             favorite=userData.get('Favorite')
 
         WINDOW = xbmcgui.Window( 10000 )        
-        userid = downloadUtils.getUserId()
-        mb3Host = __settings__.getSetting('ipaddress')
-        mb3Port = __settings__.getSetting('port')
+        userid = WINDOW.getProperty("userid")
+        mb3Host = db.get("mb3Host")
+        mb3Port = db.get("mb3Port")
         
         if id != None:
             watchedurl = 'http://' + mb3Host + ':' + mb3Port + '/mediabrowser/Users/' + userid + '/PlayedItems/' + id

@@ -112,6 +112,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         CommunityRating=item.get("CommunityRating")
         if CommunityRating != None:
             db.set(id+".CommunityRating",       str(CommunityRating))
+        db.set(id+".Type",                      str(item.get("Type")).encode('utf-8'))
         db.set(id+".CriticRating",              str(item.get("CriticRating")))
         db.set(id+".ProductionYear",            str(item.get("ProductionYear")))
         db.set(id+".LocationType",              item.get("LocationType"))
