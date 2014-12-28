@@ -19,8 +19,8 @@ class DataManager():
     logLevel = 0
         
     def __init__(self, *args):
-        addonSettings = xbmcaddon.Addon(id='plugin.video.mbcon')
-        self.addonSettings = xbmcaddon.Addon(id='plugin.video.mbcon')
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         level = addonSettings.getSetting('logLevel')        
         self.logLevel = 0
         if(level != None):
@@ -28,7 +28,7 @@ class DataManager():
         
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
-            xbmc.log("MBCon DataManager -> " + msg)
+            xbmc.log("MB3 DataManager -> " + msg)
 
     def getCacheValidatorFromData(self, result):
         result = result.get("Items")
@@ -90,7 +90,7 @@ class DataManager():
         urlHash = m.hexdigest()
         
         # build cache data path
-        __addon__ = xbmcaddon.Addon(id='plugin.video.mbcon')
+        __addon__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         __addondir__ = xbmc.translatePath( __addon__.getAddonInfo('profile'))
         if not os.path.exists(os.path.join(__addondir__, "cache")):
             os.makedirs(os.path.join(__addondir__, "cache"))
@@ -147,8 +147,8 @@ class CacheManagerThread(threading.Thread):
     logLevel = 0
     
     def __init__(self, *args):
-        addonSettings = xbmcaddon.Addon(id='plugin.video.mbcon')
-        self.addonSettings = xbmcaddon.Addon(id='plugin.video.mbcon')
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         level = addonSettings.getSetting('logLevel')        
         self.logLevel = 0
         if(level != None):
@@ -158,7 +158,7 @@ class CacheManagerThread(threading.Thread):
 
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
-            xbmc.log("MBCon CacheManagerThread -> " + msg)
+            xbmc.log("MB3 CacheManagerThread -> " + msg)
             
     def setCacheData(self, data):
         self.dataManager = data
