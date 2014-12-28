@@ -1011,7 +1011,7 @@ def getContent( url, pluginhandle ):
     printDebug("URL: " + str(url))    
     userid = downloadUtils.getUserId()    
     db.set("mb3Host", __settings__.getSetting('ipaddress'))
-    db.set("mb4Port", __settings__.getSetting('port'))
+    db.set("mb3Port", __settings__.getSetting('port'))
     
     if "NextUp" in url and __settings__.getSetting('sortNextUp') == "true":
         xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_TITLE)
