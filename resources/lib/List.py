@@ -87,7 +87,8 @@ class List():
         self.setWindowHeading(url, pluginhandle)
         db.set("viewType","")
         xbmcplugin.setContent(pluginhandle, 'movies') #This too
-        
+        selectAction = __settings__.getSetting('selectAction') #Play or show item        
+
         for item in result:
             if(progress != None):
                 percentDone = (float(current_item) / float(item_count)) * 100
@@ -99,7 +100,6 @@ class List():
             else:
                 listItem=self.slowItem(item, pluginhandle)
             #Create the URL to pass to the item
-            selectAction = __settings__.getSetting('selectAction') #Play or show item
             
             isFolder = item.get('IsFolder')
             if isFolder == True:
