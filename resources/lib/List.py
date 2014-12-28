@@ -1650,7 +1650,7 @@ class List():
             favorite=userData.get('Favorite')
 
         WINDOW = xbmcgui.Window( 10000 )        
-        userid = WINDOW.getProperty("userid")
+        userid = downloadUtils.getUserId()
         mb3Host = __settings__.getSetting('ipaddress')
         mb3Port = __settings__.getSetting('port')
         

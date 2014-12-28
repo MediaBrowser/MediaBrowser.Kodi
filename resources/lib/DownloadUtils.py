@@ -46,10 +46,9 @@ class DownloadUtils():
         host = self.addonSettings.getSetting('ipaddress')
         userName = self.addonSettings.getSetting('username')
         
-        userid = WINDOW.getProperty("userid")
-        storedUserName = WINDOW.getProperty("username")
+        userid = WINDOW.getProperty("userid" + userName)
 
-        if(userid != None and userid != "" and userName == storedUserName):
+        if(userid != None and userid != ""):
             self.logMsg("DownloadUtils -> Returning saved UserID : " + userid + "UserName: " + userName)
             return userid
     
@@ -67,8 +66,7 @@ class DownloadUtils():
 
         self.logMsg("userid : " + userid)
 
-        WINDOW.setProperty("userid", userid)
-        WINDOW.setProperty("username", userName)
+        WINDOW.setProperty("userid"+userName, userid)
         
         self.postcapabilities()
         
@@ -124,7 +122,7 @@ class DownloadUtils():
         if(accessToken != None):
             self.logMsg("User Authenticated : " + accessToken)
             WINDOW.setProperty("AccessToken"+self.addonSettings.getSetting('username'), accessToken)
-            WINDOW.setProperty("userid", result.get("User").get("Id"))
+            WINDOW.setProperty("userid"+self.addonSettings.getSetting('username'), result.get("User").get("Id"))
             return accessToken
         else:
             self.logMsg("User NOT Authenticated")
