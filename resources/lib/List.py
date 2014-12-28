@@ -269,8 +269,7 @@ class List():
         videoInfoLabels["studio"] = db.get(id + ".Studio")
         videoInfoLabels["genre"] = db.get(id + ".Genre")
 
-        if extraData.get('premieredate') != None:
-            videoInfoLabels["premiered"] = extraData.get('premieredate').decode("utf-8")
+        videoInfoLabels["premiered"] = db.get('premieredate').decode("utf-8")
         
         videoInfoLabels["episode"] = details.get('episode')
         videoInfoLabels["season"] = details.get('season') 
@@ -348,6 +347,7 @@ class List():
             else:
                 db.set("viewType", "_MOVIES")
             if item.get("Type") == "Episode" and db.get("allowSort") != "false":
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_EPISODE)
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
