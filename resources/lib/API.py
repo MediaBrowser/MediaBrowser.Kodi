@@ -244,4 +244,12 @@ class API():
                  'Episode'          :   tempEpisode,
                  'SeriesName'       :   SeriesName
                  }
-                 
+    def getDate(self, item):
+        tempDate = item.get("DateCreated")
+        if tempDate != None:
+            tempDate = tempDate.split("T")[0]
+            date = tempDate.split("-")
+            tempDate = date[2] + "." + date[1] + "." +date[0]
+        else:
+            tempDate = "01.01.2000"
+        return tempDate

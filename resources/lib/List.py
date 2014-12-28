@@ -181,6 +181,7 @@ class List():
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)                
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_DATE)
             else:
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)                
             viewTypeSet=True        
@@ -258,6 +259,7 @@ class List():
         videoInfoLabels["mpaa"] = db.get(id + ".OfficialRating")
         videoInfoLabels["rating"] = db.get(id + ".CommunityRating")
         videoInfoLabels["year"] = db.get(id + ".ProductionYear")
+        videoInfoLabels["date"] = db.get(id + ".DateCreated")
         listItem.setProperty('CriticRating', db.get(id + ".CriticRating"))
         listItem.setProperty('ItemType', item_type)
 
@@ -354,7 +356,8 @@ class List():
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)                
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)        
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_DATE)                
             else:
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)                
         folder=item.get("IsFolder")
@@ -445,6 +448,7 @@ class List():
         if CommunityRating != None:
             videoInfoLabels["rating"] = CommunityRating
         videoInfoLabels["year"] = str(item.get("ProductionYear"))
+        videoInfoLabels["date"] = API().getDate(item)
         listItem.setProperty('CriticRating', str(item.get("CriticRating")))
         listItem.setProperty('ItemType', item_type)
 

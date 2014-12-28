@@ -80,7 +80,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         
         self.logMsg("Updating BackgroundData Movie List")
         WINDOW = xbmcgui.Window( 10000 )
-        dataUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&SortBy=SortName&Fields=Path,People,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary,EpisodeCount,SeasonCount,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio,AirTime&SortOrder=Ascending&ExcludeLocationTypes=Virtual&IncludeItemTypes=Series,BoxSet,Movie&CollapseBoxSetItems=false&format=json"
+        dataUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&SortBy=SortName&Fields=Path,People,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary,EpisodeCount,SeasonCount,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio,AirTime,DateCreated&SortOrder=Ascending&ExcludeLocationTypes=Virtual&IncludeItemTypes=Series,BoxSet,Movie&CollapseBoxSetItems=false&format=json"
          
         jsonData = downloadUtils.downloadUrl(dataUrl, suppress=False, popup=1 )
         result = json.loads(jsonData)
@@ -115,6 +115,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         db.set(id+".Type",                      str(item.get("Type")).encode('utf-8'))
         db.set(id+".CriticRating",              str(item.get("CriticRating")))
         db.set(id+".ProductionYear",            str(item.get("ProductionYear")))
+        db.set(id+".DateCreated",               API().getDate(item))
         db.set(id+".LocationType",              item.get("LocationType"))
         db.set(id+".PremiereDate",              str(item.get("PremiereDate")))
         db.set(id+".Video3DFormat",             item.get("Video3DFormat"))
