@@ -123,8 +123,8 @@ class DataManager():
                 actionThread.setCacheData(self)
                 actionThread.start()
                 xbmc.log("Cache_Data_Manager: Returning Cached Result")
-        except:
-            xbmc.log("Error in Cached Data")
+            except:
+                xbmc.log("Error in Cached Data")
 
             self.logMsg("Returning Cached Result")
             return result
