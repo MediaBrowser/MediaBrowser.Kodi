@@ -16,7 +16,20 @@ class DataManager():
     dataUrl = None
     cacheDataPath = None
     canRefreshNow = False
+    logLevel = 0
         
+    def __init__(self, *args):
+        addonSettings = xbmcaddon.Addon(id='plugin.video.mbcon')
+        self.addonSettings = xbmcaddon.Addon(id='plugin.video.mbcon')
+        level = addonSettings.getSetting('logLevel')        
+        self.logLevel = 0
+        if(level != None):
+            self.logLevel = int(level)         
+        
+    def logMsg(self, msg, level = 1):
+        if(self.logLevel >= level):
+            xbmc.log("MBCon DataManager -> " + msg)
+
     def getCacheValidatorFromData(self, result):
         result = result.get("Items")
         if(result == None):
@@ -34,21 +47,26 @@ class DataManager():
                     itemPercent = 0.0
                     if userData.get("Played") == False:
                         unwatchedItemCount = unwatchedItemCount + 1
-                        itemPossition = userData.get("PlaybackPositionTicks")
-                        itemRuntime = item.get("RunTimeTicks")
-                        if(itemRuntime != None and itemPossition != None):
-                            itemPercent = float(itemPossition) / float(itemRuntime)
-                    else:
-                        itemPercent == 100.0
+                        
+                    # calc the percentage
+                    itemPercent = 0.0
+                    itemPossition = userData.get("PlaybackPositionTicks")
+                    itemRuntime = item.get("RunTimeTicks")
+                    if(itemRuntime != None and itemPossition != None):
+                        itemPercent = (float(itemPossition) / float(itemRuntime)) * 100
                     
-                    dataHashString = dataHashString + str(itemCount) + "_" + item.get("Name", "name") + "_" + "{0:09.6f}".format(itemPercent) + "-" + str(unwatchedItemCount) + "|"
+                    itemString = str(itemCount) + "_" + item.get("Name", "name") + "_" + str(int(itemPercent)) + "-" + str(unwatchedItemCount) + "|"
+                    self.logMsg(itemString, level=2)
+                    dataHashString = dataHashString + itemString
                 else:
                     itemCount = itemCount + item.get("RecursiveItemCount")
                     unwatchedItemCount = unwatchedItemCount + userData.get("UnplayedItemCount")
                     PlayedPercentage = userData.get("PlayedPercentage")
                     if PlayedPercentage == None:
                         PlayedPercentage = 0
-                    dataHashString = dataHashString + str(itemCount) + "_" + item.get("Name", "name") + "_" + "{0:09.6f}".format(PlayedPercentage) + "-" + str(unwatchedItemCount) + "|"
+                    itemString = str(itemCount) + "_" + item.get("Name", "name") + "_" + str(int(PlayedPercentage)) + "-" + str(unwatchedItemCount) + "|"
+                    self.logMsg(itemString, level=2)
+                    dataHashString = dataHashString + itemString
               
         # hash the data
         dataHashString = dataHashString.encode("UTF-8")
@@ -56,8 +74,8 @@ class DataManager():
         m.update(dataHashString)
         validatorString = m.hexdigest()
         
-        #xbmc.log("Cache_Data_Manager: getCacheValidatorFromData : RawData  : " + dataHashString)
-        xbmc.log("Cache_Data_Manager: getCacheValidatorFromData : hashData : " + validatorString)
+        self.logMsg("getCacheValidatorFromData : RawData  : " + dataHashString, level=2)
+        self.logMsg("getCacheValidatorFromData : hashData : " + validatorString, level=2)
         
         return validatorString
 
@@ -72,13 +90,13 @@ class DataManager():
         urlHash = m.hexdigest()
         
         # build cache data path
-        __addon__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        __addon__ = xbmcaddon.Addon(id='plugin.video.mbcon')
         __addondir__ = xbmc.translatePath( __addon__.getAddonInfo('profile'))
         if not os.path.exists(os.path.join(__addondir__, "cache")):
             os.makedirs(os.path.join(__addondir__, "cache"))
         cacheDataPath = os.path.join(__addondir__, "cache", urlHash)
         
-        xbmc.log("Cache_Data_Manager:" + cacheDataPath)
+        self.logMsg("Cache_Data_Manager:" + cacheDataPath)
         
         # are we forcing a reload
         WINDOW = xbmcgui.Window( 10000 )
@@ -87,16 +105,16 @@ class DataManager():
     
         result = None
         
-        # load data from cache if it is available and trigger a background
-        # verification process to test cache validity          
-        if((os.path.exists(cacheDataPath)) and force_data_reload != "true"):
+        if(os.path.exists(cacheDataPath)) and force_data_reload != "true":
             try:
-                xbmc.log("Cache_Data_Manager: Loading Cached File")
+                # load data from cache if it is available and trigger a background
+                # verification process to test cache validity   
+                self.logMsg("Loading Cached File")
                 cachedfie = open(cacheDataPath, 'r')
                 jsonData = cachedfie.read()
-                cachedfie.close()            
+                cachedfie.close()
                 result = self.loadJasonData(jsonData)
-
+                
                 # start a worker thread to process the cache validity
                 self.cacheDataResult = result
                 self.dataUrl = url
@@ -104,47 +122,62 @@ class DataManager():
                 actionThread = CacheManagerThread()
                 actionThread.setCacheData(self)
                 actionThread.start()
-
                 xbmc.log("Cache_Data_Manager: Returning Cached Result")
-            except:
-                xbmc.log("Cache_Data_Manager: Error in Cached Data")
-                result = None
-             
-        # no cache data or cache data not valid
-        if(result == None):
+        except:
+            xbmc.log("Error in Cached Data")
+
+            self.logMsg("Returning Cached Result")
+            return result
+        else:
+            # no cache data so load the url and save it
             jsonData = DownloadUtils().downloadUrl(url, suppress=False, popup=1)
-            xbmc.log("Cache_Data_Manager: Loading URL and saving to cache")
+            self.logMsg("Loading URL and saving to cache")
             cachedfie = open(cacheDataPath, 'w')
             cachedfie.write(jsonData)
             cachedfie.close()
             result = self.loadJasonData(jsonData)
             self.cacheManagerFinished = True
-            xbmc.log("Cache_Data_Manager: Returning Loaded Result")        
+            self.logMsg("Returning Loaded Result")        
+            return result
         
-        return result
         
 class CacheManagerThread(threading.Thread):
 
     dataManager = None
+    logLevel = 0
     
+    def __init__(self, *args):
+        addonSettings = xbmcaddon.Addon(id='plugin.video.mbcon')
+        self.addonSettings = xbmcaddon.Addon(id='plugin.video.mbcon')
+        level = addonSettings.getSetting('logLevel')        
+        self.logLevel = 0
+        if(level != None):
+            self.logLevel = int(level)
+            
+        threading.Thread.__init__(self, *args)
+
+    def logMsg(self, msg, level = 1):
+        if(self.logLevel >= level):
+            xbmc.log("MBCon CacheManagerThread -> " + msg)
+            
     def setCacheData(self, data):
         self.dataManager = data
     
     def run(self):
     
-        xbmc.log("Cache_Data_Manager: CacheManagerThread Started")
+        self.logMsg("CacheManagerThread Started")
         
         cacheValidatorString = self.dataManager.getCacheValidatorFromData(self.dataManager.cacheDataResult)
-        xbmc.log("Cache_Data_Manager: Cache Validator String (" + cacheValidatorString + ")")
+        self.logMsg("Cache Validator String (" + cacheValidatorString + ")")
         
         jsonData = DownloadUtils().downloadUrl(self.dataManager.dataUrl, suppress=False, popup=1)
         loadedResult = self.dataManager.loadJasonData(jsonData)
         loadedValidatorString = self.dataManager.getCacheValidatorFromData(loadedResult)
-        xbmc.log("Cache_Data_Manager: loaded Validator String (" + loadedValidatorString + ")")
+        self.logMsg("Loaded Validator String (" + loadedValidatorString + ")")
         
         # if they dont match then save the data and trigger a content reload
         if(cacheValidatorString != loadedValidatorString):
-            xbmc.log("Cache_Data_Manager: CacheManagerThread Saving new cache data and reloading container")
+            self.logMsg("CacheManagerThread Saving new cache data and reloading container")
             cachedfie = open(self.dataManager.cacheDataPath, 'w')
             cachedfie.write(jsonData)
             cachedfie.close()
@@ -156,7 +189,7 @@ class CacheManagerThread(threading.Thread):
                 xbmc.sleep(100)
                 loops = loops + 1
             
-            xbmc.log("Cache_Data_Manager: Sending container refresh (" + str(loops) + ")")
+            self.logMsg("Sending container refresh (" + str(loops) + ")")
             xbmc.executebuiltin("Container.Refresh")
 
-        xbmc.log("Cache_Data_Manager: CacheManagerThread Exited")
+        self.logMsg("CacheManagerThread Exited")
