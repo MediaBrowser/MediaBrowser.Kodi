@@ -64,7 +64,7 @@ class List():
         server = self.getServerFromURL(url)
         userid = downloadUtils.getUserId()
         
-        detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio"
+        detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio,AirTime,SeasonUserData"
         if(__settings__.getSetting('includeStreamInfo') == "true"):
             detailsString += ",MediaStreams"
         if(__settings__.getSetting('includePeople') == "true"):
@@ -78,7 +78,7 @@ class List():
             result = []
         if len(result) == 1 and __settings__.getSetting('autoEnterSingle') == "true":
             if result[0].get("Type") == "Season":
-                url="http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + result[0].get("Id") + '&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName&format=json'
+                url="http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + result[0].get("Id") + '&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName&format=json&ImageTypeLimit=1'
                 jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 )
                 results = json.loads(jsonData)
                 result=results.get("Items")
@@ -108,9 +108,9 @@ class List():
                 if SortByTemp == '' and not (item_type == 'Series' or item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist'):
                     SortByTemp = 'SortName'
                 if item_type=='Series' and __settings__.getSetting('flattenSeasons')=='true':
-                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IncludeItemTypes=Episode&Recursive=true&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName' + '&format=json'
+                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IncludeItemTypes=Episode&Recursive=true&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName' + '&format=json&ImageTypeLimit=1'
                 else:
-                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp + '&format=json'
+                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp + '&format=json&ImageTypeLimit=1'
                 if (item.get("RecursiveItemCount") != 0):
                     u = sys.argv[0] + "?url=" + urllib.quote(u) + '&mode=' + str(_MODE_GETCONTENT)
                     dirItems.append([u, listItem, isFolder])
@@ -504,7 +504,7 @@ class List():
 
         server = self.getServerFromURL(url)
         
-        detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
+        detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks,SeasonUserData"
         if(__settings__.getSetting('includeStreamInfo') == "true"):
             detailsString += ",MediaStreams"
         if(__settings__.getSetting('includePeople') == "true"):
@@ -518,7 +518,7 @@ class List():
             result = []
         if len(result) == 1 and __settings__.getSetting('autoEnterSingle') == "true":
             if result[0].get("Type") == "Season":
-                url="http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + result[0].get("Id") + '&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName&format=json'
+                url="http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + result[0].get("Id") + '&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName&format=json&ImageTypeLimit=1'
                 jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 )
                 results = json.loads(jsonData)
                 result=results.get("Items")
@@ -733,9 +733,9 @@ class List():
                 if SortByTemp == '' and not (item_type == 'Series' or item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist'):
                     SortByTemp = 'SortName'
                 if item_type=='Series' and __settings__.getSetting('flattenSeasons')=='true':
-                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IncludeItemTypes=Episode&Recursive=true&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName'+'&format=json'
+                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IncludeItemTypes=Episode&Recursive=true&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName'+'&format=json&ImageTypeLimit=1'
                 else:
-                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json'
+                    u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy='+SortByTemp+'&format=json&ImageTypeLimit=1'
                 if (item.get("RecursiveItemCount") != 0):
                     dirItems.append(self.addGUIItem(u, details, extraData))
             else:
@@ -856,7 +856,7 @@ class List():
 
             extraData['mode'] = _MODE_GETCONTENT
             if isFolder == True:
-                u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&format=json'
+                u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&format=json&ImageTypeLimit=1'
                 dirItems.append(self.addGUIItem(u, details, extraData))
             elif tempDuration != '0':
                 u = server+',;'+id
@@ -1200,7 +1200,7 @@ class List():
 
             extraData['mode'] = _MODE_GETCONTENT
                                      
-            u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=' + content + '&Genres=' + item.get("Name") + '&format=json'
+            u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=' + content + '&Genres=' + item.get("Name") + '&format=json&ImageTypeLimit=1'
             dirItems.append(self.addGUIItem(u, details, extraData))
           
         return dirItems
@@ -1288,7 +1288,7 @@ class List():
             # Somehow need to handle foreign characters .. 
             title = item.get("Name").replace(" ", "+")
                                 
-            u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?SortBy=SortName&Fields=AudioInfo&Recursive=true&SortOrder=Ascending&IncludeItemTypes=MusicAlbum&Artists=' + title + '&format=json'
+            u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?SortBy=SortName&Fields=AudioInfo&Recursive=true&SortOrder=Ascending&IncludeItemTypes=MusicAlbum&Artists=' + title + '&format=json&ImageTypeLimit=1'
             dirItems.append(self.addGUIItem(u, details, extraData))
           
         return dirItems
@@ -1377,7 +1377,7 @@ class List():
             tempTitle = tempTitle.replace(' ', '+')
             xbmc.log("XBMB3C - process studios nocode spaces replaced: " + tempTitle)
             tempTitle2 = unicode(tempTitle,'utf-8')          
-            u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=' + content + '&Studios=' + tempTitle2.encode('ascii','ignore') + '&format=json'
+            u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=' + content + '&Studios=' + tempTitle2.encode('ascii','ignore') + '&format=json&ImageTypeLimit=1'
             xbmc.log("XBMB3C - process studios: " + u)
             dirItems.append(self.addGUIItem(u, details, extraData))
           
@@ -1466,7 +1466,7 @@ class List():
             tempTitle = tempTitle.replace(' ', '+')
             xbmc.log("XBMB3C - process people nocode spaces replaced: " + tempTitle)
             tempTitle2 = unicode(tempTitle,'utf-8')          
-            u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=' + content + '&Person=' + tempTitle2.encode('ascii','ignore') + '&format=json'
+            u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=' + content + '&Person=' + tempTitle2.encode('ascii','ignore') + '&format=json&ImageTypeLimit=1'
             xbmc.log("XBMB3C - process people: " + u)
             dirItems.append(self.addGUIItem(u, details, extraData))
           
