@@ -1057,7 +1057,8 @@ def getContent( url, pluginhandle ):
     global viewType
     printDebug("== ENTER: getContent ==")
     printDebug("URL: " + str(url))    
-    userid = downloadUtils.getUserId()    
+    userid = downloadUtils.getUserId()
+    db.set("userid", userid)
     db.set("mb3Host", __settings__.getSetting('ipaddress'))
     db.set("mb3Port", __settings__.getSetting('port'))
     

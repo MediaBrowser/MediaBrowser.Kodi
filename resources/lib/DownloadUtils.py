@@ -67,7 +67,7 @@ class DownloadUtils():
         self.logMsg("userid : " + userid)
 
         WINDOW.setProperty("userid"+userName, userid)
-        
+                
         self.postcapabilities()
         
         return userid
