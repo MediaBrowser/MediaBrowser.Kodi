@@ -344,6 +344,7 @@ class List():
             elif item.get("Type") == "Audio":
                 xbmcplugin.setContent(pluginhandle, 'songs')
                 db.set("viewType", "_MUSICTRACKS")
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_TRACKNUM)
             else:
                 db.set("viewType", "_MOVIES")
             if item.get("Type") == "Episode" and db.get("allowSort") != "false":
@@ -457,13 +458,16 @@ class List():
         videoInfoLabels["writer"] = people.get("Writer")
         videoInfoLabels["studio"] = API().getStudio(item)
         videoInfoLabels["genre"] = API().getGenre(item)
-
+        videoInfoLabels["tracknumber"] = str(item.get("IndexNumber"))
         videoInfoLabels["premiered"] = API().getPremiereDate(item)
-        
         videoInfoLabels["episode"] = tvInfo.get('Episode')
         videoInfoLabels["season"] = tvInfo.get('Season') 
         listItem.setInfo('video', videoInfoLabels)
-
+        
+        audioInfoLabels = {}
+        audioInfoLabels["tracknumber"] = str(item.get("IndexNumber"))
+        listItem.setInfo('audio', audioInfoLabels)
+        
         listItem.setProperty('TotalTime', timeInfo.get('totaltime'))
         listItem.setProperty('TotalSeasons',tvInfo.get('TotalSeasons'))
         listItem.setProperty('TotalEpisodes',tvInfo.get('TotalEpisodes'))
