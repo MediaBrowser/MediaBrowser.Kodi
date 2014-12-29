@@ -396,7 +396,7 @@ def delete (url):
     
 def getDetailsString(fast=False):
     if fast==False or __settings__.getSetting('useBackgroundData') != 'true':
-        detailsString = "EpisodeCount,SeasonCount,Path,Genres,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio,AirTime,DateCreated"
+        detailsString = "EpisodeCount,SeasonCount,Path,Genres,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio,AirTime,DateCreated,SeasonUserData"
         if(__settings__.getSetting('includeStreamInfo') == "true"):
             detailsString += ",MediaStreams"
         if(__settings__.getSetting('includePeople') == "true"):
@@ -687,7 +687,7 @@ def PLAY( url, handle ):
     playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     playlist.clear()
     # check for any intros first
-    jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "/Intros?format=json", suppress=False, popup=1 )     
+    jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "/Intros?format=json&ImageTypeLimit=1", suppress=False, popup=1 )     
     printDebug("Intros jsonData: " + jsonData)
     result = json.loads(jsonData)
                
@@ -695,7 +695,7 @@ def PLAY( url, handle ):
     if result.get("Items") != None and (seekTime == 0 or resume_result == 1):
       for item in result.get("Items"):
         id = item.get("Id")
-        jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
+        jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json&ImageTypeLimit=1", suppress=False, popup=1 )     
         result = json.loads(jsonData)
         playurl = PlayUtils().getPlayUrl(server, id, result)
         printDebug("Play URL: " + playurl)    
@@ -740,10 +740,9 @@ def PLAY( url, handle ):
         playlist.add(playurl, listItem)
    
     id = urlParts[1]
-    jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
+    jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json&ImageTypeLimit=1", suppress=False, popup=1 )     
     printDebug("Play jsonData: " + jsonData)
     result = json.loads(jsonData)
-    
     playurl = PlayUtils().getPlayUrl(server, id, result)
     printDebug("Play URL: " + playurl)    
     thumbPath = downloadUtils.getArtwork(result, "Primary")
@@ -790,6 +789,55 @@ def PLAY( url, handle ):
         WINDOW.setProperty(playurl+"SubtitleStreamIndex", str(mediaSources[0].get('DefaultSubtitleStreamIndex')))
     
     playlist.add(playurl, listItem)
+    
+    
+    if __settings__.getSetting("autoPlaySeason")=="true" and result.get("Type")=="Episode":
+        # add remaining unplayed episodes if applicable
+        seasonId = result.get("SeasonId")
+        jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items?ParentId=" + seasonId + "&ImageTypeLimit=1&StartIndex=1&SortBy=SortName&SortOrder=Ascending&Filters=IsUnPlayed&IncludeItemTypes=Episode&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json", suppress=False, popup=1 )     
+        result = json.loads(jsonData)
+        if result.get("Items") != None:
+          for item in result.get("Items"):
+            id = item.get("Id")
+            jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json&ImageTypeLimit=1", suppress=False, popup=1 )     
+            result = json.loads(jsonData)
+            playurl = PlayUtils().getPlayUrl(server, id, result)
+            printDebug("Play URL: " + playurl)    
+            thumbPath = downloadUtils.getArtwork(item, "Primary")
+            listItem = xbmcgui.ListItem(path=playurl, iconImage=thumbPath, thumbnailImage=thumbPath)
+            setListItemProps(server, id, listItem, result)
+    
+            watchedurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayedItems/' + id
+            positionurl = 'http://' + server + '/mediabrowser/Users/'+ userid + '/PlayingItems/' + id
+            deleteurl = 'http://' + server + '/mediabrowser/Items/' + id
+            
+            # set the current playing info
+            WINDOW = xbmcgui.Window( 10000 )
+            WINDOW.setProperty(playurl+"watchedurl", watchedurl)
+            WINDOW.setProperty(playurl+"positionurl", positionurl)
+            WINDOW.setProperty(playurl+"deleteurl", "")
+         
+            WINDOW.setProperty(playurl+"runtimeticks", str(result.get("RunTimeTicks")))
+            WINDOW.setProperty(playurl+"item_id", id)
+            
+            if PlayUtils().isDirectPlay(result) == True:
+              if __settings__.getSetting('playFromStream') == "true":
+                playMethod = "DirectStream"
+              else:
+                playMethod = "DirectPlay"
+            else:
+              playMethod = "Transcode"
+            WINDOW.setProperty(playurl+"playmethod", playMethod)
+            
+            mediaSources = result.get("MediaSources")
+            if(mediaSources != None):
+              if mediaSources[0].get('DefaultAudioStreamIndex') != None:
+                WINDOW.setProperty(playurl+"AudioStreamIndex", str(mediaSources[0].get('DefaultAudioStreamIndex')))  
+              if mediaSources[0].get('DefaultSubtitleStreamIndex') != None:
+                WINDOW.setProperty(playurl+"SubtitleStreamIndex", str(mediaSources[0].get('DefaultSubtitleStreamIndex')))
+            
+            playlist.add(playurl, listItem)
+    
     xbmc.Player().play(playlist)
     #Set a loop to wait for positive confirmation of playback
     count = 0

@@ -18,6 +18,7 @@
 		<setting id="selectAction" type="enum" label="30151" values="Play|Info" default="0" />
 		<setting id="resumeJumpBack" type="number" label="30114" default="10" visible="true" enable="true" />
 		<setting id="markPlayedAt" type="number" label="30115" default="90" visible="true" enable="true" />
+		<setting id="autoPlaySeason" type="bool" label="30216" default="false" visible="true" enable="true" />
 		<setting id="addCounts" type="bool" label="30116" default="true" visible="true" enable="true" />
 		<setting id="addSeasonNumber" type="bool" label="30162" default="false" visible="true" enable="true" />
 		<setting id="addEpisodeNumber" type="bool" label="30119" default="true" visible="true" enable="true" />

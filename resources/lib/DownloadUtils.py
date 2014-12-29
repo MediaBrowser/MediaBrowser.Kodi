@@ -190,9 +190,10 @@ class DownloadUtils():
         totalbackdrops = 0
 
         if self.addonSettings.getSetting('showArtIndicators')=='true': # add watched, unplayedcount and percentage played indicators to posters
-
+            userData = data.get("UserData") 
+            if  data.get("SeasonUserData") != None:
+                userData = data.get("SeasonUserData")
             if (originalType =="Primary" or  originalType =="Backdrop" or  originalType =="Banner") and data.get("Type") != "Episode":
-                userData = data.get("UserData")
                 if originalType =="Backdrop" and index == "0" and data.get("BackdropImageTags") != None:
                   totalbackdrops = len(data.get("BackdropImageTags"))
                   if totalbackdrops != 0:
@@ -215,7 +216,6 @@ class DownloadUtils():
                         played = str(PlayedPercentage)
 
             elif originalType =="Primary2":
-                userData = data.get("UserData") 
                 if userData != None:
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
@@ -236,7 +236,6 @@ class DownloadUtils():
                     width = "226"
                     
             elif originalType =="Primary3" or originalType == "SeriesPrimary":
-                userData = data.get("UserData") 
                 if userData != None:
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
@@ -256,7 +255,6 @@ class DownloadUtils():
                    
             
             elif originalType =="Primary4":
-                userData = data.get("UserData") 
                 if userData != None:
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
@@ -277,7 +275,6 @@ class DownloadUtils():
                     width = "180"    
                     
             elif type =="Primary" and data.get("Type") == "Episode":
-                userData = data.get("UserData")
                 if userData != None:
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
@@ -299,7 +296,6 @@ class DownloadUtils():
                                    
                     
             elif originalType =="Backdrop2" or originalType =="Thumb2" and data.get("Type") != "Episode":
-                userData = data.get("UserData")
                 if originalType =="Backdrop2" and data.get("BackdropImageTags") != None: 
                   totalbackdrops = len(data.get("BackdropImageTags"))
                   if totalbackdrops != 0:
@@ -324,7 +320,6 @@ class DownloadUtils():
                     width = "660"      
                     
             elif originalType =="Backdrop3" or originalType =="Thumb3" and data.get("Type") != "Episode":
-                userData = data.get("UserData")
                 if originalType =="Backdrop3" and data.get("BackdropImageTags") != None:
                   totalbackdrops = len(data.get("BackdropImageTags"))
                   if totalbackdrops != 0:
