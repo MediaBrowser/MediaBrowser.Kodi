@@ -306,6 +306,7 @@ class List():
         id = item.get('Id')
         guiid = id
         details={'plot'         : API().getOverview(item),
+                 'TVShowTitle'  :  item.get("SeriesName"),
                  }
         # Populate the extraData list
         item_type = str(item.get("Type")).encode('utf-8')
@@ -478,14 +479,14 @@ class List():
         listItem.setProperty('Video3DFormat', item.get('Video3DFormat'))
 
         listItem.addStreamInfo('video', 
-                                    {'duration' : mediaStreams.get('Duration'), 
-                                     'aspect'   : mediaStreams.get('AspectRatio'),
-                                     'codec'    : mediaStreams.get('VideoCodec'), 
-                                     'width'    : mediaStreams.get('Width'), 
-                                     'height'   : mediaStreams.get('Height')})
+                                    {'duration' : timeInfo.get('totaltime'), 
+                                     'aspect'   : mediaStreams.get('aspectratio'),
+                                     'codec'    : mediaStreams.get('videocodec'), 
+                                     'width'    : mediaStreams.get('width'), 
+                                     'height'   : mediaStreams.get('height')})
         listItem.addStreamInfo('audio', 
-                                    {'codec'    : mediaStreams.get('AudioCodec'),
-                                     'channels' : mediaStreams.get('Channels')})            
+                                    {'codec'    : mediaStreams.get('audiocodec'),
+                                     'channels' : mediaStreams.get('channels')})            
         menuItems = self.addContextMenu(details, userData, folder, id=id)
         if(len(menuItems) > 0):
             listItem.addContextMenuItems( menuItems, True )
