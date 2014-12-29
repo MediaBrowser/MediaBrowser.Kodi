@@ -60,7 +60,7 @@ class DownloadUtils():
             return_value = xbmcgui.Dialog().ok(self.getString(30044), self.getString(30044))
             return ""
 
-        userid = WINDOW.getProperty("userid")
+        userid = WINDOW.getProperty("userid"+ userName)
         if userid == "":
             return_value = xbmcgui.Dialog().ok(self.getString(30045),self.getString(30045))
 
