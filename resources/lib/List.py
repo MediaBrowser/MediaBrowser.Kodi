@@ -464,10 +464,6 @@ class List():
         videoInfoLabels["season"] = tvInfo.get('Season') 
         listItem.setInfo('video', videoInfoLabels)
         
-        audioInfoLabels = {}
-        audioInfoLabels["tracknumber"] = str(item.get("IndexNumber"))
-        listItem.setInfo('audio', audioInfoLabels)
-        
         listItem.setProperty('TotalTime', timeInfo.get('totaltime'))
         listItem.setProperty('TotalSeasons',tvInfo.get('TotalSeasons'))
         listItem.setProperty('TotalEpisodes',tvInfo.get('TotalEpisodes'))
