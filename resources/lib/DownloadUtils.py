@@ -64,10 +64,7 @@ class DownloadUtils():
         if userid == "":
             return_value = xbmcgui.Dialog().ok(self.getString(30045),self.getString(30045))
 
-        self.logMsg("userid : " + userid)
-
-        WINDOW.setProperty("userid"+userName, userid)
-                
+        self.logMsg("userid : " + userid)         
         self.postcapabilities()
         
         return userid
