@@ -380,7 +380,7 @@ class List():
                     season = '0'
                 else:
                     season = tvInfo.get('Season')
-                listItemName = item.get('SeriesName').decode("utf-8") + u" - " + u"S" + season + u"E" + tvInfo.get('Episode') + u" - " + API().getName(item)
+                listItemName = API().getSeriesName(item) + " - " + "S" + season + "E" + tvInfo.get('Episode') + " - " + API().getName(item)
                 if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != ''):
                     listItemName = listItemName + " (" + str(item.get("RecursiveItemCount") - userData.get("UnplayedItemCount")) + "/" + str(item.get("RecursiveItemCount")) + ")"
         elif item.get("Type") == "Episode":

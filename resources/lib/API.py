@@ -194,6 +194,13 @@ class API():
             Temp = ""
         Name=Temp.encode('utf-8')
         return Name
+    
+    def getSeriesName(self, item):
+        Temp = item.get("SeriesName")
+        if Temp == None:
+            Temp = ""
+        Name=Temp.encode('utf-8')
+        return Name        
         
     def getOverview(self, item):
         Temp = item.get("Overview")
