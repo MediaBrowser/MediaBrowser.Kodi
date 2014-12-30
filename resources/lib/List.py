@@ -317,15 +317,21 @@ class List():
             if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != ''):
                 listItemName = listItemName + " (" + str(item.get("RecursiveItemCount") - userData.get("UnplayedItemCount")) + "/" + str(item.get("RecursiveItemCount")) + ")"
         listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
+
+        # add resume percentage text to titles
+        if (__settings__.getSetting('addResumePercent') == 'true' and listItemName != '' and timeInfo.get('Percent') != '0'):
+            listItemName = (listItemName + " (" + timeInfo.get('Percent') + "%)")
+
         details['title'] =  listItemName
+        
         self.printDebug("Setting thumbnail as " + thumbPath, level=2)
         
         listItem.setProperty("complete_percentage", timeInfo.get("Percent"))          
        
         #Set the properties of the item, such as summary, name, season, etc
         if ( not folder):
-            listItem.setProperty('TotalTime', str(timeInfo.get("Duration")))
-            listItem.setProperty('ResumeTime', str(timeInfo.get("ResumeTime")))
+            listItem.setProperty('TotalTime', timeInfo.get("Duration"))
+            listItem.setProperty('ResumeTime', timeInfo.get("ResumeTime"))
         
         listItem.setArt({'poster':              downloadUtils.getArtwork(item, "poster")})
         listItem.setArt({'tvshow.poster':       downloadUtils.getArtwork(item, "tvshow.poster")})
@@ -380,7 +386,6 @@ class List():
         videoInfoLabels["season"] = tvInfo.get('Season') 
         listItem.setInfo('video', videoInfoLabels)
         
-        listItem.setProperty('TotalTime', timeInfo.get('totaltime'))
         listItem.setProperty('TotalSeasons',tvInfo.get('TotalSeasons'))
         listItem.setProperty('TotalEpisodes',tvInfo.get('TotalEpisodes'))
         listItem.setProperty('WatchedEpisodes',tvInfo.get('WatchedEpisodes'))
