@@ -218,9 +218,9 @@ class List():
        
         #Set the properties of the item, such as summary, name, season, etc
         if ( not folder):
-            if extraData.get('type','video').lower() == "video":
-                listItem.setProperty('TotalTime', str(db.get(id + ".Duration")))
-                listItem.setProperty('ResumeTime', str(db.get(id + ".ResumeTime")))
+            #if extraData.get('type','video').lower() == "video":
+            listItem.setProperty('TotalTime', str(db.get(id + ".Duration")))
+            listItem.setProperty('ResumeTime', str(db.get(id + ".ResumeTime")))
         
         listItem.setArt({'poster':db.get(id + ".poster")})
         listItem.setArt({'tvshow.poster':db.get(id + ".tvshow.poster")})
@@ -408,9 +408,9 @@ class List():
        
         #Set the properties of the item, such as summary, name, season, etc
         if ( not folder):
-            if extraData.get('type','video').lower() == "video":
-                listItem.setProperty('TotalTime', str(timeInfo.get("Duration")))
-                listItem.setProperty('ResumeTime', str(timeInfo.get("ResumeTime")))
+            #if extraData.get('type','video').lower() == "video":
+            listItem.setProperty('TotalTime', str(timeInfo.get("Duration")))
+            listItem.setProperty('ResumeTime', str(timeInfo.get("ResumeTime")))
         
         listItem.setArt({'poster':              downloadUtils.getArtwork(item, "poster")})
         listItem.setArt({'tvshow.poster':       downloadUtils.getArtwork(item, "tvshow.poster")})
