@@ -195,7 +195,7 @@ class List():
         WINDOW = xbmcgui.Window( 10000 )
         if WINDOW.getProperty("addshowname") == "true":
             if db.get(id + ".LocationType") == "Virtual":
-                listItemName = db.get(id + ".PremiereDate").decode("utf-8") + u" - " + db.get(id + '.SeriesName','').decode("utf-8") + u" - " + u"S" + db.get(id + 'Season').decode("utf-8") + u"E" + db.get(id + ".Name").decode("utf-8")
+                listItemName = db.get(id + ".PremiereDate") + " - " + db.get(id + '.SeriesName','') + " - " + "S" + db.get(id + 'Season') + "E" + db.get(id + ".Name")
                 if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + "UnplayedItemCount") != ''):
                     listItemName = listItemName + " (" + str(int(db.get(id + ".RecursiveItemCount")) - int(db.get(id + ".UnplayedItemCount"))) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
             else:
@@ -203,7 +203,7 @@ class List():
                     season = '0'
                 else:
                     season = db.get(id + '.Season')
-                listItemName = db.get(id + 'SeriesName').decode("utf-8") + u" - " + u"S" + season + u"E" + db.get(id + '.Name').decode("utf-8")
+                listItemName = db.get(id + 'SeriesName') + " - " + "S" + season + "E" + db.get(id + '.Name')
                 if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + ".UnplayedItemCount") != ''):
                     listItemName = listItemName + " (" + str(int(db.get(id + ".RecursiveItemCount")) - int(db.get(id + ".UnplayedItemCount"))) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
         else:
@@ -269,7 +269,7 @@ class List():
         videoInfoLabels["studio"] = db.get(id + ".Studio")
         videoInfoLabels["genre"] = db.get(id + ".Genre")
 
-        videoInfoLabels["premiered"] = db.get('premieredate').decode("utf-8")
+        videoInfoLabels["premiered"] = db.get('premieredate')
         
         videoInfoLabels["episode"] = details.get('episode')
         videoInfoLabels["season"] = details.get('season') 
@@ -372,7 +372,7 @@ class List():
         WINDOW = xbmcgui.Window( 10000 )
         if WINDOW.getProperty("addshowname") == "true":
             if item.get("LocationType") == "Virtual":
-                listItemName = API().getPremiereDate(item) + u" - " + item.get('SeriesName','').decode("utf-8") + u" - " + u"S" + tvInfo.get('Season') + u"E" + tvInfo.get('Episode') + u" - " + API().getName(item)
+                listItemName = API().getPremiereDate(item) + " - " + API().getSeriesName(item) + " - " + "S" + tvInfo.get('Season') + "E" + tvInfo.get('Episode') + " - " + API().getName(item)
                 if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != ''):
                     listItemName = listItemName + " (" + str(item.get("RecursiveItemCount") - userData.get("UnplayedItemCount")) + "/" + str(item.get("RecursiveItemCount")) + ")"
             else:
