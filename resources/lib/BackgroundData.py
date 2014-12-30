@@ -176,5 +176,5 @@ class BackgroundDataUpdaterThread(threading.Thread):
             premieredate = ""
 
         # add resume percentage text to titles
-        if (__settings__.getSetting('addResumePercent') == 'true' and Name != '' and timeInfo.get('Percent') != 'None'):
+        if (__settings__.getSetting('addResumePercent') == 'true' and Name != '' and timeInfo.get('Percent') != '0'):
             db.set(id+".Name", Name + " (" + timeInfo.get('Percent') + "%)")

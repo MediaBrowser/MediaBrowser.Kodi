@@ -143,48 +143,7 @@ class List():
         extraData={'itemtype'     : item_type}
         mode = _MODE_GETCONTENT
         if db.get("viewType")=="":
-            if item.get("Type") == "Movie":
-                xbmcplugin.setContent(pluginhandle, 'movies')
-                db.set("viewType", "_MOVIES")
-            elif item.get("Type") == "BoxSet":
-                xbmcplugin.setContent(pluginhandle, 'movies')
-                db.set("viewType", "_BOXSETS")
-            elif item.get("Type") == "Series":
-                xbmcplugin.setContent(pluginhandle, 'tvshows')
-                db.set("viewType", "_SERIES")
-            elif item.get("Type") == "Season":
-                xbmcplugin.setContent(pluginhandle, 'seasons')
-                db.set("viewType", "_SEASONS")
-                guiid = item.get("SeriesId")
-            elif item.get("Type") == "Episode":
-                xbmcplugin.setContent(pluginhandle, 'episodes')
-                db.set("viewType", "_EPISODES")
-                guiid = item.get("SeriesId")
-            elif item.get("Type") == "MusicArtist":
-                xbmcplugin.setContent(pluginhandle, 'artists')
-                db.set("viewType", "_MUSICARTISTS")
-            elif item.get("Type") == "MusicAlbum":
-                xbmcplugin.setContent(pluginhandle, 'albums')
-                db.set("viewType", "_MUSICTALBUMS")
-            elif item.get("Type") == "Audio":
-                xbmcplugin.setContent(pluginhandle, 'songs')
-                db.set("viewType", "_MUSICTRACKS")
-            else:
-                db.set("viewType", "_MOVIES")
-            if item.get("Type") == "Episode" and db.get("allowSort") != "false":
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)
-            elif db.get("allowSort") != "false":
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)                
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_DATE)
-            else:
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)                
-            viewTypeSet=True        
+            self.setViewType(item, pluginhandle)      
         folder=False
  
         #Create the ListItem that will be displayed
@@ -218,7 +177,6 @@ class List():
        
         #Set the properties of the item, such as summary, name, season, etc
         if ( not folder):
-            #if extraData.get('type','video').lower() == "video":
             listItem.setProperty('TotalTime', str(db.get(id + ".Duration")))
             listItem.setProperty('ResumeTime', str(db.get(id + ".ResumeTime")))
         
@@ -319,49 +277,7 @@ class List():
         
         mode = _MODE_GETCONTENT
         if db.get("viewType")=="":
-            if item.get("Type") == "Movie":
-                xbmcplugin.setContent(pluginhandle, 'movies')
-                db.set("viewType", "_MOVIES")
-            elif item.get("Type") == "BoxSet":
-                xbmcplugin.setContent(pluginhandle, 'movies')
-                db.set("viewType", "_BOXSETS")
-            elif item.get("Type") == "Series":
-                xbmcplugin.setContent(pluginhandle, 'tvshows')
-                db.set("viewType", "_SERIES")
-            elif item.get("Type") == "Season":
-                xbmcplugin.setContent(pluginhandle, 'seasons')
-                db.set("viewType", "_SEASONS")
-                guiid = item.get("SeriesId")
-            elif item.get("Type") == "Episode":
-                xbmcplugin.setContent(pluginhandle, 'episodes')
-                db.set("viewType", "_EPISODES")
-                guiid = item.get("SeriesId")
-            elif item.get("Type") == "MusicArtist":
-                xbmcplugin.setContent(pluginhandle, 'artists')
-                db.set("viewType", "_MUSICARTISTS")
-            elif item.get("Type") == "MusicAlbum":
-                xbmcplugin.setContent(pluginhandle, 'albums')
-                db.set("viewType", "_MUSICTALBUMS")
-            elif item.get("Type") == "Audio":
-                xbmcplugin.setContent(pluginhandle, 'songs')
-                db.set("viewType", "_MUSICTRACKS")
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_TRACKNUM)
-            else:
-                db.set("viewType", "_MOVIES")
-            if item.get("Type") == "Episode" and db.get("allowSort") != "false":
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_EPISODE)
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)
-            elif db.get("allowSort") != "false":
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)        
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_DATE)                
-            else:
-                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)                
+            self.setViewType(item, pluginhandle)
         folder=item.get("IsFolder")
  
         #Create the ListItem that will be displayed
@@ -408,7 +324,6 @@ class List():
        
         #Set the properties of the item, such as summary, name, season, etc
         if ( not folder):
-            #if extraData.get('type','video').lower() == "video":
             listItem.setProperty('TotalTime', str(timeInfo.get("Duration")))
             listItem.setProperty('ResumeTime', str(timeInfo.get("ResumeTime")))
         
@@ -492,8 +407,51 @@ class List():
             listItem.addContextMenuItems( menuItems, True )
         return listItem        
 
-
-        
+    def setViewType(self, item, pluginhandle):
+        if item.get("Type") == "Movie":
+            xbmcplugin.setContent(pluginhandle, 'movies')
+            db.set("viewType", "_MOVIES")
+        elif item.get("Type") == "BoxSet":
+            xbmcplugin.setContent(pluginhandle, 'movies')
+            db.set("viewType", "_BOXSETS")
+        elif item.get("Type") == "Series":
+            xbmcplugin.setContent(pluginhandle, 'tvshows')
+            db.set("viewType", "_SERIES")
+        elif item.get("Type") == "Season":
+            xbmcplugin.setContent(pluginhandle, 'seasons')
+            db.set("viewType", "_SEASONS")
+            guiid = item.get("SeriesId")
+        elif item.get("Type") == "Episode":
+            xbmcplugin.setContent(pluginhandle, 'episodes')
+            db.set("viewType", "_EPISODES")
+            guiid = item.get("SeriesId")
+        elif item.get("Type") == "MusicArtist":
+            xbmcplugin.setContent(pluginhandle, 'artists')
+            db.set("viewType", "_MUSICARTISTS")
+        elif item.get("Type") == "MusicAlbum":
+            xbmcplugin.setContent(pluginhandle, 'albums')
+            db.set("viewType", "_MUSICTALBUMS")
+        elif item.get("Type") == "Audio":
+            xbmcplugin.setContent(pluginhandle, 'songs')
+            db.set("viewType", "_MUSICTRACKS")
+            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_TRACKNUM)
+        else:
+            db.set("viewType", "_MOVIES")
+        if item.get("Type") == "Episode" and db.get("allowSort") != "false":
+            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_EPISODE)
+            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
+            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
+            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)
+        elif db.get("allowSort") != "false":
+            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
+            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
+            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)        
+            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_DATE)                
+        else:
+            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)    
+            
     def processDirectory(self, url, results, progress, pluginhandle):
         self.printDebug("== ENTER: processDirectory ==")
         parsed = urlparse(url)
@@ -1545,23 +1503,17 @@ class List():
         self.printDebug("Setting thumbnail as " + thumbPath, level=2)
         
         # calculate percentage
-        cappedPercentage = None
+        percentage = 0
         if (extraData.get('resumetime') != None and float(extraData.get('resumetime')) > 0):
             duration = float(extraData.get('duration'))
             if(duration > 0):
-                resume = float(extraData.get('resumetime')) / 60.0
+                resume = float(extraData.get('resumetime')) #/ 60.0
                 percentage = int((resume / duration) * 100.0)
-                cappedPercentage = percentage - (percentage % 10)
-                if(cappedPercentage == 0):
-                    cappedPercentage = 10
-                if(cappedPercentage == 100):
-                    cappedPercentage = 90
-                list.setProperty("complete_percentage", str(cappedPercentage))          
-        
+                list.setProperty("complete_percentage", str(percentage))          
         # add resume percentage text to titles
         addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
-        if (addResumePercent and details.get('title') != None and cappedPercentage != None):
-            details['title'] = details.get('title') + " (" + str(cappedPercentage) + "%)"
+        if (addResumePercent and details.get('title') != None and percentage != 0):
+            details['title'] = details.get('title') + " (" + str(percentage) + "%)"
         
         #Set the properties of the item, such as summary, name, season, etc
         #list.setInfo( type=extraData.get('type','Video'), infoLabels=details )
@@ -1680,16 +1632,6 @@ class List():
             else:
                 argsToPass = 'unmarkFavorite,' + favoriteurl
                 commands.append(( __language__(30096), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
-                
-            #argsToPass = 'sortby'
-            #commands.append(( __language__(30097), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
-            
-            #if 'Ascending' in WINDOW.getProperty("currenturl"):
-            #    argsToPass = 'sortorder'
-            #    commands.append(( __language__(30098), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
-            #else:
-            #    argsToPass = 'sortorder'
-            #    commands.append(( __language__(30099), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
                 
             argsToPass = 'genrefilter'
             commands.append(( __language__(30040), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))

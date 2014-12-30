@@ -72,19 +72,15 @@ class API():
                 tempDuration = "0"
         cappedPercentage = None
         resume=0
+        percentage=0
         if (resumeTime != "" and int(resumeTime) > 0):
             duration = float(tempDuration)
             if(duration > 0):
                 resume = float(resumeTime) / 60
                 percentage = int((resume / duration) * 100.0)
-                cappedPercentage = percentage - (percentage % 10)
-                if(cappedPercentage == 0):
-                    cappedPercentage = 10
-                if(cappedPercentage == 100):
-                    cappedPercentage = 90
         return {'Duration'      : tempDuration, 
                 'TotalTime'     : tempDuration,
-                'Percent'       : str(cappedPercentage),
+                'Percent'       : str(percentage),
                 'ResumeTime'    : str(resume)
                }
 
