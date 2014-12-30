@@ -955,7 +955,7 @@ class ArtworkRotationThread(threading.Thread):
                         info["id"] = id
                         info["parent"] = parentID
                         info["name"] = name
-                        self.logMsg("BG Favorite Movie Image Info : " + str(info), level=0)
+                        self.logMsg("BG Favorite Movie Image Info : " + str(info), level=1)
         
                         if (info not in self.favorites_art_links):
                             self.favorites_art_links.append(info)
@@ -993,7 +993,7 @@ class ArtworkRotationThread(threading.Thread):
                         info["id"] = id
                         info["parent"] = parentID
                         info["name"] = name
-                        self.logMsg("BG Favorite Shows Image Info : " + str(info), level=0)
+                        self.logMsg("BG Favorite Shows Image Info : " + str(info))
         
                         if (info not in self.favoriteshows_art_links):
                             self.favoriteshows_art_links.append(info)
@@ -1031,7 +1031,7 @@ class ArtworkRotationThread(threading.Thread):
                         info["id"] = id
                         info["parent"] = parentID
                         info["name"] = name
-                        self.logMsg("BG MusicVideo Image Info : " + str(info), level=0)
+                        self.logMsg("BG MusicVideo Image Info : " + str(info), level=1)
         
                         if (info not in self.musicvideo_art_links):
                             self.musicvideo_art_links.append(info)
@@ -1100,7 +1100,7 @@ class ArtworkRotationThread(threading.Thread):
                     info["plot"] = plot
                     info["parent"] = parentID
                     info["name"] = name
-                    self.logMsg("BG Channel Image Info : " + str(info), level=0)
+                    self.logMsg("BG Channel Image Info : " + str(info), level=1)
                 except Exception, e:
                         self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))             
 

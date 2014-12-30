@@ -27,14 +27,12 @@ downloadUtils = DownloadUtils()
 class SkinHelperThread(threading.Thread):
 
     logLevel = 0
-    addonSettings = None
     user_art_links = []
     current_user_art = 0
 
     
     def __init__(self, *args):
-        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        level = addonSettings.getSetting('logLevel')
+        level = __settings__.getSetting('logLevel')
         self.logLevel = 0
         if(level != None):
             self.logLevel = int(level)
@@ -178,9 +176,10 @@ class SkinHelperThread(threading.Thread):
             stdSearchCount=0
             dirItems = []
             
-            # some default settings (todo: get this from a skin setting)
-            collapseBoxSets = True #todo: get this from (skin)settings
-            useNextUpforInProgressTvShowsWidget = True #todo: get this from (skin)settings
+            if __settings__.getSetting('collapseBoxSets')=='true':
+                collapseBoxSets = True
+            else:
+                collapseBoxSets = False
             
             allSections = MainModule.getCollections()
             collectionCount = 0
@@ -235,8 +234,6 @@ class SkinHelperThread(threading.Thread):
                         WINDOW.setProperty("MediaBrowser.usr.%d.inprogress.path"     % (sectionCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('inprogress_path', '')) + modeurl + ",return)")
                         WINDOW.setProperty("MediaBrowser.usr.%d.inprogress.content"     % (sectionCount) , "plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('inprogress_path', '')) + modeurl)
                         WINDOW.setProperty("MediaBrowser.usr.%d.genre.path"          % (sectionCount) , "ActivateWindow(" + window + ",plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('genre_path', '')) + modeurl + ",return)")
-                    if useNextUpforInProgressTvShowsWidget == True and section.get('sectype')=='tvshows':
-                        WINDOW.setProperty("MediaBrowser.usr.%d.inprogress.content"     % (sectionCount) , "plugin://plugin.video.xbmb3c/?url=http://" + urllib.quote(section['address'] + section.get('nextepisodes_path', '')) + modeurl)
           
                     #get user collections - indexed by type
                     if section.get('sectype')=='movies':
@@ -320,7 +317,7 @@ class SkinHelperThread(threading.Thread):
                 sectionCount += 1 
             WINDOW.setProperty("MediaBrowser.usr.Count", str(collectionCount))
         except Exception, e:
-            self.logMsg("[MB3 SkinHelper] exception in SetMB3WindowProperties: " + str(e))
+            self.logMsg("[XBMB3C SkinHelperThread] exception in SetMB3WindowProperties: " + str(e), level=0)
             return False
 
         return True
