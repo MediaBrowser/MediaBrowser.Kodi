@@ -130,6 +130,7 @@ class DownloadUtils():
 
         id = data.get("Id")
         getSeriesData = False
+        userData = data.get("UserData") 
 
         if type == "tvshow.poster": # Change the Id to the series to get the overall series poster
             if data.get("Type") == "Season" or data.get("Type")== "Episode":
@@ -140,7 +141,7 @@ class DownloadUtils():
         if type == "poster" or type == "tvshow.poster": # Now that the Ids are right, change type to MB3 name
             type="Primary"
         if data.get("Type") == "Season":  # For seasons: primary (poster), thumb and banner get season art, rest series art
-            if type != "Primary" and type != "Primary2" and type != "Primary3" and type != "Primary4" and type != "Thumb" and type != "Banner":
+            if type != "Primary" and type != "Primary2" and type != "Primary3" and type != "Primary4" and type != "Thumb" and type != "Banner" and type!="Thumb3":
                 id = data.get("SeriesId")
                 getSeriesData = True
         if data.get("Type") == "Episode":  # For episodes: primary (episode thumb) gets episode art, rest series art. 
@@ -150,17 +151,10 @@ class DownloadUtils():
             if type =="Primary2" or type=="Primary3" or type=="Primary4":
                 id = data.get("SeasonId")
                 getSeriesData = True
+                if  data.get("SeasonUserData") != None:
+                    userData = data.get("SeasonUserData")
         if id == None:
             id=data.get("Id")
-        # if requested get parent info
-        if getSeriesData == True and userParentInfo == True and self.addonSettings.getSetting('showArtIndicators')=='true':
-            self.logMsg("Using Parent Info for image link", level=1)
-            mb3Host = self.addonSettings.getSetting('ipaddress')
-            mb3Port = self.addonSettings.getSetting('port')
-            userid = self.getUserId()
-            seriesJsonData = self.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )
-            seriesResult = json.loads(seriesJsonData)
-            data = seriesResult
                 
         imageTag = "e3ab56fe27d389446754d0fb04910a34" # a place holder tag, needs to be in this format
         originalType = type
@@ -179,7 +173,10 @@ class DownloadUtils():
             imageTag = data.get("ParentArtImageTag")
         if (data.get("Type") == "Episode") and originalType=="Thumb3":
             imageTag = data.get("SeriesThumbImageTag")
-
+        if (data.get("Type") == "Season") and originalType=="Thumb3" and imageTag=="e3ab56fe27d389446754d0fb04910a34" :
+            imageTag = data.get("ParentThumbImageTag")
+            id = data.get("SeriesId")
+     
         query = ""
         height = "10000"
         width = "10000"
@@ -187,9 +184,6 @@ class DownloadUtils():
         totalbackdrops = 0
 
         if self.addonSettings.getSetting('showArtIndicators')=='true': # add watched, unplayedcount and percentage played indicators to posters
-            userData = data.get("UserData") 
-            if  data.get("SeasonUserData") != None:
-                userData = data.get("SeasonUserData")
             if (originalType =="Primary" or  originalType =="Backdrop" or  originalType =="Banner") and data.get("Type") != "Episode":
                 if originalType =="Backdrop" and index == "0" and data.get("BackdropImageTags") != None:
                   totalbackdrops = len(data.get("BackdropImageTags"))
