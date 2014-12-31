@@ -105,7 +105,7 @@ class List():
             if isFolder == True:
                 SortByTemp = __settings__.getSetting('sortby')
                 item_type=str(item.get("Type")).encode('utf-8')
-                if SortByTemp == '' and not (item_type == 'Series' or item_type == 'Season' or item_type == 'BoxSet' or item_type == 'MusicAlbum' or item_type == 'MusicArtist'):
+                if SortByTemp == '' and not (item_type == 'Series' or item_type == 'Season' or item_type == 'BoxSet'  or item_type == 'MusicArtist'):
                     SortByTemp = 'SortName'
                 if item_type=='Series' and __settings__.getSetting('flattenSeasons')=='true':
                     u = 'http://' + server + '/mediabrowser/Users/'+ userid + '/items?ParentId=' +id +'&IncludeItemTypes=Episode&Recursive=true&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName' + '&format=json&ImageTypeLimit=1'
@@ -440,6 +440,7 @@ class List():
             xbmcplugin.setContent(pluginhandle, 'songs')
             db.set("viewType", "_MUSICTRACKS")
             xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_TRACKNUM)
+            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)
         else:
             db.set("viewType", "_MOVIES")
         if item.get("Type") == "Episode" and db.get("allowSort") != "false":
@@ -448,7 +449,7 @@ class List():
             xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
             xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
             xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)
-        elif db.get("allowSort") != "false":
+        elif item.get("Type") != "Audio" and db.get("allowSort") != "false":
             xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
             xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
             xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
