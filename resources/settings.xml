@@ -37,15 +37,18 @@
 		<setting id="numRecentMovies" type="number" label="30036" default="20" visible="true" enable="true" />
 		<setting id="numRecentTV" type="number" label="30037" default="20" visible="true" enable="true" />
 		<setting id="numRecentMusic" type="number" label="30035" default="20" visible="true" enable="true" />
+        
 	</category>
 	<category label="30159"> <!-- Artwork -->
-		<setting id="backgroundRefresh" type="number" label="30117" default="30" visible="true" enable="true" />
+		<setting id="compressArt" type="bool" label="30218" default="false" visible="true" enable="true" />
+        <setting id="backgroundRefresh" type="number" label="30117" default="30" visible="true" enable="true" />
 		<setting id="useSeasonPoster" type="bool" label="30039" default="false" visible="true" enable="true" />
 		<setting id="disableCoverArt" type="bool" label="30157" default="false" visible="true" enable="true" />
 		<setting id="showArtIndicators" type="bool" label="30152" default="false" visible="true" enable="true" />
 		<setting id="showWatchedIndicators" type="bool" label="30153" default="true" visible="eq(-1,true)" enable="eq(-1,true)" />
 		<setting id="showUnplayedIndicators" type="bool" label="30154" default="true" visible="eq(-2,true)" enable="eq(-2,true)" />
 		<setting id="showPlayedPrecentageIndicators" type="bool" label="30155" default="true" visible="eq(-3,true)" enable="eq(-3,true)" />
+        
 	</category>
 	<category label="30142"> <!-- Services -->
 		<setting id="useBackgroundLoader" type="bool" label="30141" default="true" visible="true" enable="true" />
@@ -62,7 +65,7 @@
 		<setting id="useThemeMovies" type="bool" label="30212" default="true" visible="true" enable="true" />
 		<setting id="loopThemeMovies" type="bool" label="30213" default="true" visible="eq(-1,true)" enable="true" />
 		<setting id="usePlaylistsUpdater" type="bool" label="30206" default="true" visible="true" enable="true" />
-		<setting id="useBackgroundData" type="bool" label="30215" default="false" visible="true" enable="true" />        
+		<setting id="useBackgroundData" type="bool" label="30215" default="true" visible="true" enable="true" />        
 	</category>
 	<category label="30022"> <!-- Advanced -->
 		<setting id="logLevel" type="enum" label="30004" values="None(0)|Info(1)|Debug(2)" default="0" />

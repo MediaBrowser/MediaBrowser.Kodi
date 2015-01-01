@@ -1,3 +1,43 @@
+0.9.764
+  Features:
+      - Complete new 'Background Data' scheme - 2x speed increase - on by default
+      - Switch to built-in XBMC sorting (press left)
+      - Use new 'Season' information from server - big speed up for episodes
+      - Add option to use reduced image quality for low-end devices
+      
+  Bug Fixes:
+      - Fix rotater thread when only one image exists
+      - Fix resume time displays
+      - Fix 'Play all from here' for Music Tracks
+      - Fix track order display for Music Tracks
+      - More profile change fixes
+
+0.9.740
+  Features:
+      - Rename to MediaBrowser
+      - Added Theme Videos
+      - Added DiscArt to InProgress and Recent Movies
+      - Added PlayList Items widgets
+      - Enable new MB3 security scheme
+      - Enable new service playback progress tracking
+      - New more reliable caching system
+      - Moved code into module to enable pre-compiling
+      - Add more artwork to items
+      - Refactoring of code
+      - Beta testing of using background data
+      - Ported over skin helper function from Marcel's Titan work
+      - New 'API helper' class to translate MediaBrowser->XBMC
+      - Reduce images to '1' when not in rotater code
+      
+  Bug Fixes:
+      - Fix search when backdrops for item are missing
+      - Enable installing on Kodi
+      - Add connection retries
+      - Fix 'Play All From Here'
+      - Various safety checks
+      - Various fixes for profile changing
+      
+      
 0.9.6
   Features:
       - Added MB3 Channels
