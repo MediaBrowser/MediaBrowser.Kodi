@@ -344,6 +344,8 @@ class DownloadUtils():
         host = self.addonSettings.getSetting('ipaddress')
         server = host + ":" + port
         
+        query = query + "&Quality=90"
+        
         if imageTag == None:
             imageTag = "e3ab56fe27d389446754d0fb04910a34"
         artwork = "http://" + server + "/mediabrowser/Items/" + str(id) + "/Images/" + type + "/" + index + "/" + imageTag + "/original/" + width + "/" + height + "/" + played + "?" + query
