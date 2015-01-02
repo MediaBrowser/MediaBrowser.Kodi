@@ -764,7 +764,7 @@ class ArtworkRotationThread(threading.Thread):
                 else:
                     stored_item["collections"].append(item.get("Name"))            
 
-        collection_count = collection_count + 1
+            collection_count = collection_count + 1
 
         # build global link list
         final_global_art = []
