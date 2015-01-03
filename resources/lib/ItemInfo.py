@@ -6,6 +6,7 @@ import xbmcaddon
 import json as json
 import urllib
 from DownloadUtils import DownloadUtils
+from BackgroundData import BackgroundDataUpdaterThread
 
 _MODE_BASICPLAY=12
 _MODE_CAST_LIST=14
@@ -470,12 +471,14 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
     def postUrl (self,url):
         self.downloadUtils.downloadUrl(url, postBody="", type="POST")  
         WINDOW = xbmcgui.Window( 10000 )
-        WINDOW.setProperty("force_data_reload", "true")  
+        WINDOW.setProperty("force_data_reload", "true")
+        BackgroundDataUpdaterThread().updateItem(self.id)   
         xbmc.executebuiltin("Container.Refresh")
     
     def deleteUrl (self,url):
         self.downloadUtils.downloadUrl(url, type="DELETE")
         WINDOW = xbmcgui.Window( 10000 )
-        WINDOW.setProperty("force_data_reload", "true")      
+        WINDOW.setProperty("force_data_reload", "true")
+        BackgroundDataUpdaterThread().updateItem(self.id)      
         xbmc.executebuiltin("Container.Refresh")
         
