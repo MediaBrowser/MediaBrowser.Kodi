@@ -315,22 +315,7 @@ def stopAll(played_information):
                     if(deleteurl != None and deleteurl != ""):
                         printDebug("XBMB3C Service -> Offering Delete:" + str(deleteurl))
                         gotDeleted = deleteItem(deleteurl)
-                        
-                    #if(gotDeleted == 0):
-                        #setPosition(positionurl + '/Progress?PositionTicks=0', 'POST')
-                        #reportPlayback("0000000")
-                        #if(newWebSocketThread != None):
-                            #newWebSocketThread.playbackStopped(item_id, str(0))
-                     #   stopPlayback(currentFile, "0000000")
-                        #markWatched(watchedurl)
-                #else:
-                    #markUnWatched(watchedurl) # this resets the LastPlayedDate and that causes issues with sortby PlayedDate so I removed it for now
-                    #if(newWebSocketThread != None):
-                        #newWebSocketThread.playbackStopped(item_id, str(int(currentPossition * 10000000)))
-                    #stopPlayback(currentFile,str(int(currentPossition * 10000000)))
-                    #setPosition(positionurl + '?PositionTicks=' + str(int(currentPossition * 10000000)), 'DELETE')
-                    #reportPlayback(str(int(currentPossition * 10000000)))
-                    
+
     if(newNextUpThread != None):
         newNextUpThread.updateNextUp()
         

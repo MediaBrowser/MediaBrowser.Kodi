@@ -74,6 +74,7 @@ from DataManager import DataManager
 from ConnectionManager import ConnectionManager
 from List import List
 from API import API
+from BackgroundData import BackgroundDataUpdaterThread
 
 XBMB3C_VERSION = ClientInformation().getVersion()
 
@@ -293,6 +294,9 @@ def markWatched (url):
     downloadUtils.downloadUrl(url, postBody="", type="POST")  
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("force_data_reload", "true")  
+    splitURL=url.split("/")
+    id = splitURL[-1]
+    BackgroundDataUpdaterThread().updateItem(id)
     xbmc.executebuiltin("Container.Refresh")
     
 def markUnwatched (url):

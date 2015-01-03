@@ -65,7 +65,28 @@ class BackgroundDataUpdaterThread(threading.Thread):
             xbmc.sleep(30000)
                         
         self.logMsg("Exited")
+
+    def updateItem(self, id):
+        self.logMsg("updateItem Called")
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        mb3Host = addonSettings.getSetting('ipaddress')
+        mb3Port = addonSettings.getSetting('port')    
+        userName = addonSettings.getSetting('username')     
         
+        userid = downloadUtils.getUserId()
+        
+        self.logMsg("UserName : " + userName + " UserID : " + userid)        
+        dataUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&Ids=" + id + "&Fields=Path,People,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary,EpisodeCount,SeasonCount,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio,AirTime,DateCreated&SortOrder=Ascending&ExcludeLocationTypes=Virtual&IncludeItemTypes=Series,BoxSet,Movie&CollapseBoxSetItems=false&format=json"        
+        jsonData = downloadUtils.downloadUrl(dataUrl, suppress=False, popup=1 )
+        result = json.loads(jsonData)
+        self.logMsg("Individual Item Json Data : " + str(result), level=2)
+        result = result.get("Items")
+        if(result == None):
+            result = []
+        item_count = 1
+        for item in result:
+            self.updateDB(item)
+
     def updateBackgroundData(self):
         self.logMsg("updateBackgroundData Called")
         db.set("itemString","")
