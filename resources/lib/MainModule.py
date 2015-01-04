@@ -1676,7 +1676,7 @@ def MainEntryPoint():
             printDebug("Search String : " + searchString)
             if searchString == "":
                 sys.exit()
-            param_url=param_url.replace("Search/Hints?","Search/Hints?SearchTerm="+searchString + "&UserId=")
+            param_url=param_url.replace("Search/Hints?","Search/Hints?SearchTerm="+searchString + "&UserId="+downloadUtils.getUserId())
             param_url=param_url + "&Fields=" + getDetailsString() + "&format=json"
             getContent(param_url, pluginhandle)
         elif mode == _MODE_SETVIEWS:

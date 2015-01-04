@@ -226,12 +226,13 @@ class BackgroundSearchThread(threading.Thread):
         server = host + ":" + port
         
         downloadUtils = DownloadUtils()
+        userid = downloadUtils.getUserId()
         
         #
         # Process movies
         #
         search = urllib.quote(searchTerm)
-        url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&Limit=10&IncludeItemTypes=Movie&format=json"
+        url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&UserId=" + userid + "&Limit=10&IncludeItemTypes=Movie&format=json"
         jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1) 
         result = json.loads(jsonData)
             
@@ -263,7 +264,7 @@ class BackgroundSearchThread(threading.Thread):
         # Process series
         #
         search = urllib.quote(searchTerm)
-        url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&Limit=10&IncludeItemTypes=Series&format=json"
+        url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&UserId=" + userid + "&Limit=10&IncludeItemTypes=Series&format=json"
         jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 ) 
         result = json.loads(jsonData)
             
@@ -299,7 +300,7 @@ class BackgroundSearchThread(threading.Thread):
         # Process episodes
         #
         search = urllib.quote(searchTerm)
-        url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&Limit=10&IncludeItemTypes=Episode&format=json"
+        url = "http://" + server + "/mediabrowser/Search/Hints?SearchTerm=" + search + "&UserId=" + userid +  "&Limit=10&IncludeItemTypes=Episode&format=json"
         jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 ) 
         result = json.loads(jsonData)
             
