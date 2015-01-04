@@ -472,13 +472,15 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         self.downloadUtils.downloadUrl(url, postBody="", type="POST")  
         WINDOW = xbmcgui.Window( 10000 )
         WINDOW.setProperty("force_data_reload", "true")
-        BackgroundDataUpdaterThread().updateItem(self.id)   
+        guid =  xbmcgui.Window( 10025 ).getProperty("ItemGUID")
+        BackgroundDataUpdaterThread().updateItem(guid)   
         xbmc.executebuiltin("Container.Refresh")
     
     def deleteUrl (self,url):
         self.downloadUtils.downloadUrl(url, type="DELETE")
         WINDOW = xbmcgui.Window( 10000 )
         WINDOW.setProperty("force_data_reload", "true")
-        BackgroundDataUpdaterThread().updateItem(self.id)      
+        guid =  xbmcgui.Window( 10025 ).getProperty("ItemGUID")
+        BackgroundDataUpdaterThread().updateItem(guid)      
         xbmc.executebuiltin("Container.Refresh")
         
