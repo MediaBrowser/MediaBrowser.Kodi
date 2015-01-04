@@ -659,7 +659,7 @@ def PLAY( url, handle ):
     resume = 0
     
     id = urlParts[1]
-    jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json", suppress=False, popup=1 )     
+    jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json&ImageTypeLimit=1", suppress=False, popup=1 )     
     result = json.loads(jsonData)
     
     # Is this a strm placeholder ?
@@ -770,6 +770,10 @@ def PLAY( url, handle ):
     if result.get("Type")=="Episode" and __settings__.getSetting("offerDelete")=="true":
       WINDOW.setProperty(playurl+"deleteurl", deleteurl)
     
+    if result.get("Type")=="Episode":
+        WINDOW.setProperty(playurl+"refresh_id", result.get("SeriesId"))
+    else:
+        WINDOW.setProperty(playurl+"refresh_id", id)
     WINDOW.setProperty(playurl+"runtimeticks", str(result.get("RunTimeTicks")))
     WINDOW.setProperty(playurl+"item_id", id)
     
@@ -823,6 +827,7 @@ def PLAY( url, handle ):
          
             WINDOW.setProperty(playurl+"runtimeticks", str(result.get("RunTimeTicks")))
             WINDOW.setProperty(playurl+"item_id", id)
+            WINDOW.setProperty(playurl+"refresh_id", result.get("SeriesId"))
             
             if PlayUtils().isDirectPlay(result) == True:
               if __settings__.getSetting('playFromStream') == "true":

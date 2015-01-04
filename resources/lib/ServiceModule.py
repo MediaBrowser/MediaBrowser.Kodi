@@ -103,6 +103,7 @@ def ServiceEntryPoint():
 
     
     if __addon__.getSetting('useInProgressUpdater') == "true":
+        global newInProgressThread
         newInProgressThread = InProgressUpdaterThread()
         newInProgressThread.start()
     else:
@@ -110,6 +111,7 @@ def ServiceEntryPoint():
       
     
     if __addon__.getSetting('useRecentInfoUpdater') == "true":
+        global newRecentInfoThread
         newRecentInfoThread = RecentInfoUpdaterThread()
         newRecentInfoThread.start()
     else:
@@ -117,6 +119,7 @@ def ServiceEntryPoint():
     
       
     if __addon__.getSetting('useRandomInfo') == "true":
+        global newRandomInfoThread
         newRandomInfoThread = RandomInfoUpdaterThread()
         newRandomInfoThread.start()
     else:
@@ -124,54 +127,63 @@ def ServiceEntryPoint():
     
     
     if __addon__.getSetting('useNextUp') == "true":
+        global newNextUpThread
         newNextUpThread = NextUpUpdaterThread()
         newNextUpThread.start()
     else:
         printDebug("XBMB3C Service NextUp Disabled")    
         
     if __addon__.getSetting('useSuggested') == "true":
+        global newSuggestedThread
         newSuggestedThread = SuggestedUpdaterThread()
         newSuggestedThread.start()
     else:
         printDebug("XBMB3C Service Suggested Disabled")   
     
     if __addon__.getSetting('useWebSocketRemote') == "true":
+        global newWebSocketThread
         newWebSocketThread = WebSocketThread()
         newWebSocketThread.start()
     else:
         printDebug("XBMB3C Service WebSocketRemote Disabled")
     
     if __addon__.getSetting('useMenuLoader') == "true":
+        global newMenuThread
         newMenuThread = LoadMenuOptionsThread()
         newMenuThread.start()
     else:
         printDebug("XBMB3C Service MenuLoader Disabled")
     
     if __addon__.getSetting('useBackgroundLoader') == "true":
+        global artworkRotationThread
         artworkRotationThread = ArtworkRotationThread()
         artworkRotationThread.start()
     else:
         printDebug("XBMB3C Service BackgroundLoader Disabled")
            
     if __addon__.getSetting('useThemeMovies') == "true" or __addon__.getSetting('useThemeMusic') == "true":
+        global newThemeMediaThread
         newThemeMediaThread = ThemeMediaThread()
         newThemeMediaThread.start()
     else:
         printDebug("XBMB3C Service ThemeMedia Disabled")
     
     if __addon__.getSetting('useInfoLoader') == "true":
+        global newInfoThread
         newInfoThread = InfoUpdaterThread()
         newInfoThread.start()
     else:
         printDebug("XBMB3C Service InfoLoader Disabled")
         
     if __addon__.getSetting('usePlaylistsUpdater') == "true":
+        global newPlaylistsThread
         newPlaylistsThread = PlaylistItemUpdaterThread()
         newPlaylistsThread.start()
     else:
         printDebug("XBMB3C Service PlaylistsUpdater Disabled")
         
     if __addon__.getSetting('useBackgroundData') == "true":
+        global newBackgroundDataThread
         newBackgroundDataThread = BackgroundDataUpdaterThread()
         newBackgroundDataThread.start()
     else:
@@ -300,8 +312,9 @@ def stopAll(played_information):
             runtime = data.get("runtime")
             currentPossition = data.get("currentPossition")
             item_id = data.get("item_id")
+            refresh_id = data.get("refresh_id")
             currentFile = data.get("currentfile")
-          
+            BackgroundDataUpdaterThread().updateItem(refresh_id)
             if(currentPossition != None and hasData(runtime) and hasData(positionurl) and hasData(watchedurl)):
                 runtimeTicks = int(runtime)
                 printDebug("XBMB3C Service -> runtimeticks:" + str(runtimeTicks))
@@ -414,6 +427,7 @@ class Service( xbmc.Player ):
             positionurl = WINDOW.getProperty(currentFile+"positionurl")
             runtime = WINDOW.getProperty(currentFile+"runtimeticks")
             item_id = WINDOW.getProperty(currentFile+"item_id")
+            refresh_id = WINDOW.getProperty(currentFile+"refresh_id")
             audioindex = WINDOW.getProperty(currentFile+"AudioStreamIndex")
             subtitleindex = WINDOW.getProperty(currentFile+"SubtitleStreamIndex")
             playMethod = WINDOW.getProperty(currentFile+"playmethod")
@@ -448,6 +462,7 @@ class Service( xbmc.Player ):
                 data["positionurl"] = positionurl
                 data["runtime"] = runtime
                 data["item_id"] = item_id
+                data["refresh_id"] = refresh_id
                 data['currentfile'] = currentFile
                 self.played_information[currentFile] = data
                 

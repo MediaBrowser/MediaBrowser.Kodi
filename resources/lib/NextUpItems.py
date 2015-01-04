@@ -134,18 +134,22 @@ class NextUpUpdaterThread(threading.Thread):
                 else:
                   seriesthumbnail = fanart 
             else:
+                # get rid of the call below when we can get the series userdata
+                seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=False, popup=1 )
+                seriesResult = json.loads(seriesJsonData)      
+                
                 officialrating = db.get(seriesId + ".OfficialRating")
-                poster = db.get(seriesId + ".Primary3")
-                small_poster = db.get(seriesId + ".Primary2")
+                poster = downloadUtils.getArtwork(seriesResult, "Primary3")
+                small_poster = downloadUtils.getArtwork(seriesResult, "Primary2")
                 thumbnail = downloadUtils.getArtwork(item, "Primary")
                 logo = db.get(seriesId + ".Logo")
                 fanart = db.get(seriesId + ".Backdrop")
                 medium_fanart = db.get(seriesId + ".Backdrop3")
                 banner = db.get(seriesId + ".Banner")
-                if item.get("SeriesThumbImageTag") != None:
-                   seriesthumbnail = db.get(seriesId + ".Thumb3")
+                if (seriesResult.get("ImageTags") != None and seriesResult.get("ImageTags").get("Thumb") != None):
+                  seriesthumbnail = downloadUtils.getArtwork(seriesResult, "Thumb3")
                 else:
-                   seriesthumbnail = fanart
+                  seriesthumbnail = fanart
                                   
             url =  mb3Host + ":" + mb3Port + ',;' + item_id
             playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
