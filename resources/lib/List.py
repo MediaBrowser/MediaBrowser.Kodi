@@ -263,6 +263,9 @@ class List():
     def slowItem(self, item, pluginhandle):            
         id = item.get('Id')
         guiid = id
+        dbid = id
+        if (item.get("SeriesId")!=None):
+            dbid = item.get("SeriesId")
         details={'plot'         : API().getOverview(item),
                  'TVShowTitle'  :  item.get("SeriesName"),
                  }
@@ -366,11 +369,17 @@ class List():
         if (userData.get("Favorite") == 'True'):
             videoInfoLabels["top250"] = "1"    
             
-        videoInfoLabels["mpaa"] = item.get("OfficialRating")
+        videoInfoLabels["mpaa"] =  db.get(dbid + ".OfficialRating")
         CommunityRating=item.get("CommunityRating")
         if CommunityRating != None:
             videoInfoLabels["rating"] = CommunityRating
-        videoInfoLabels["year"] = str(item.get("ProductionYear"))
+        else:
+            videoInfoLabels["rating"] = db.get(dbid + ".CommunityRating")
+        
+        if (item.get("ProductionYear") != None):
+            videoInfoLabels["year"] = str(item.get("ProductionYear"))
+        else:
+            videoInfoLabels["year"] = db.get(dbid + ".ProductionYear")
         videoInfoLabels["date"] = API().getDate(item)
         listItem.setProperty('CriticRating', str(item.get("CriticRating")))
         listItem.setProperty('ItemType', item_type)
@@ -378,8 +387,8 @@ class List():
 
         videoInfoLabels["director"] = people.get("Director")
         videoInfoLabels["writer"] = people.get("Writer")
-        videoInfoLabels["studio"] = API().getStudio(item)
-        videoInfoLabels["genre"] = API().getGenre(item)
+        videoInfoLabels["studio"] = db.get(dbid + ".Studio")
+        videoInfoLabels["genre"] = db.get(dbid + ".Genre")
         videoInfoLabels["tracknumber"] = str(item.get("IndexNumber"))
         videoInfoLabels["premiered"] = API().getPremiereDate(item)
         videoInfoLabels["episode"] = tvInfo.get('Episode')
@@ -892,14 +901,7 @@ class List():
             studio = API().getStudio(item)
             
             # Process Genres
-            genre = ""
-            genres = item.get("Genres")
-            if(genres != None and genres != []):
-                for genre_string in genres:
-                    if genre == "": #Just take the first genre
-                        genre = genre_string
-                    elif genre_string != None:
-                        genre = genre + " / " + genre_string
+            genre = API().getGenre(item)
                     
             # Process UserData
             userData = item.get("UserData")

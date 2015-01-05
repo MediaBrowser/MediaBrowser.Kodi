@@ -135,19 +135,16 @@ class NextUpUpdaterThread(threading.Thread):
                   seriesthumbnail = fanart 
             else:
                 # get rid of the call below when we can get the series userdata
-                seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=False, popup=1 )
-                seriesResult = json.loads(seriesJsonData)      
-                
                 officialrating = db.get(seriesId + ".OfficialRating")
-                poster = downloadUtils.getArtwork(seriesResult, "Primary3")
-                small_poster = downloadUtils.getArtwork(seriesResult, "Primary2")
-                thumbnail = downloadUtils.getArtwork(item, "Primary")
+                poster = db.get(seriesId +  ".Primary3")
+                small_poster = db.get(seriesId +  ".Primary2")
+                thumbnail = db.get(seriesId +  ".Primary")
                 logo = db.get(seriesId + ".Logo")
                 fanart = db.get(seriesId + ".Backdrop")
                 medium_fanart = db.get(seriesId + ".Backdrop3")
                 banner = db.get(seriesId + ".Banner")
-                if (seriesResult.get("ImageTags") != None and seriesResult.get("ImageTags").get("Thumb") != None):
-                  seriesthumbnail = downloadUtils.getArtwork(seriesResult, "Thumb3")
+                if (item.get("SeriesThumbImageTag") != None and item.get("SeriesThumbImageTag") != ""):
+                  seriesthumbnail = db.get(seriesId +  ".Thumb3")
                 else:
                   seriesthumbnail = fanart
                                   

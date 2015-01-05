@@ -958,11 +958,6 @@ def setListItemProps(server, id, listItem, result):
         seasonNum = result.get("ParentIndexNumber")
         eppNum = result.get("IndexNumber")
         tvshowTitle = result.get("SeriesName")
-        seriesJsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + thumbID + "?format=json", suppress=False, popup=1 )     
-        seriesResult = json.loads(seriesJsonData)
-        resultForType=seriesResult
-    else:
-        resultForType = result
         
     setArt(listItem,'poster', downloadUtils.getArtwork(result, "Primary"))
     setArt(listItem,'tvshow.poster', downloadUtils.getArtwork(result, "SeriesPrimary"))
@@ -977,13 +972,8 @@ def setListItemProps(server, id, listItem, result):
     listItem.setProperty('IsPlayable', 'true')
     listItem.setProperty('IsFolder', 'false')
     
-    studio = ""
-    studios = resultForType.get("Studios")
-    if(studios != None):
-        for studio_string in studios:
-            if studio=="": #Just take the first one
-                temp=studio_string.get("Name")
-                studio=temp.encode('utf-8')    
+    # Process Studios
+    studio = API().getStudio(result) 
     listItem.setInfo('video', {'studio' : studio})    
 
     # play info
@@ -1013,19 +1003,12 @@ def setListItemProps(server, id, listItem, result):
 
     people = API().getPeople(result)
 
-     # Process Genres
-    genre = ""
-    genres = result.get("Genres")
-    if(genres != None):
-        for genre_string in genres:
-            if genre == "": #Just take the first genre
-                genre = genre_string
-            else:
-                genre = genre + " / " + genre_string
-
+    # Process Genres
+    genre = API().getGenre(result)
+    
     listItem.setInfo('video', {'director' : people.get('Director')})
     listItem.setInfo('video', {'writer' : people.get('Writer')})
-    listItem.setInfo('video', {'mpaa': resultForType.get("OfficialRating")})
+    listItem.setInfo('video', {'mpaa': db.get(thumbID + ".OfficialRating")})
     listItem.setInfo('video', {'genre': genre})
 
     return

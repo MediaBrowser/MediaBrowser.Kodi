@@ -176,12 +176,20 @@ class API():
     def getGenre(self,item):
         genre = ""
         genres = item.get("Genres")
-        if(genres != None and genres != []):
+        if genres != None and genres != []:
             for genre_string in genres:
-                if genre == "": 
+                if genre == "": #Just take the first genre
                     genre = genre_string
-                elif genre_string != None:
-                    genre = genre + " / " + genre_string   
+                else:
+                    genre = genre + " / " + genre_string
+        elif item.get("SeriesGenres") != None and item.get("SeriesGenres") != '':
+            genres = item.get("SeriesGenres")
+            if genres != None and genres != []:
+              for genre_string in genres:
+                if genre == "": #Just take the first genre
+                    genre = genre_string
+                else:
+                    genre = genre + " / " + genre_string
         return genre
         
     def getName(self, item):
