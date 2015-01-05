@@ -294,27 +294,32 @@ def markWatched (url):
     downloadUtils.downloadUrl(url, postBody="", type="POST")  
     WINDOW = xbmcgui.Window( 10000 )
     WINDOW.setProperty("force_data_reload", "true")  
-    splitURL=url.split("/")
-    id = splitURL[-1]
+    id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
     BackgroundDataUpdaterThread().updateItem(id)
     xbmc.executebuiltin("Container.Refresh")
     
 def markUnwatched (url):
     downloadUtils.downloadUrl(url, type="DELETE")
     WINDOW = xbmcgui.Window( 10000 )
-    WINDOW.setProperty("force_data_reload", "true")      
+    WINDOW.setProperty("force_data_reload", "true") 
+    id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
+    BackgroundDataUpdaterThread().updateItem(id)     
     xbmc.executebuiltin("Container.Refresh")
 
 def markFavorite (url):
     downloadUtils.downloadUrl(url, postBody="", type="POST")
     WINDOW = xbmcgui.Window( 10000 )
-    WINDOW.setProperty("force_data_reload", "true")    
+    WINDOW.setProperty("force_data_reload", "true")
+    id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
+    BackgroundDataUpdaterThread().updateItem(id)    
     xbmc.executebuiltin("Container.Refresh")
     
 def unmarkFavorite (url):
     downloadUtils.downloadUrl(url, type="DELETE")
     WINDOW = xbmcgui.Window( 10000 )
-    WINDOW.setProperty("force_data_reload", "true")    
+    WINDOW.setProperty("force_data_reload", "true")
+    id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
+    BackgroundDataUpdaterThread().updateItem(id)    
     xbmc.executebuiltin("Container.Refresh")
 
 def sortby ():
