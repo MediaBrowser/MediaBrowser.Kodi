@@ -1,4 +1,4 @@
-XBMB3C is a full-featured XBMC client for MediaBrowser
+MediaBrowser is a full-featured Kodi client for MediaBrowser
 
 Bringing all of your media together into one place has never been easier! Media Browser unites your movies, music, television and more in one dazzling interface. 
 At home or on the road, pause and resume across all your devices. You are never more than a few taps from what you want to listen to or watch with Media Browser.
@@ -13,13 +13,13 @@ Get the free, open source Media Browser Server at http://mediabrowser.tv (requir
 
 Energize your collection with Media Browser and take your media to the next level.
 
-To Install the XBMB3C client
-1. Install XBMC
-2. Download and install the XBMB3C AddOn
-    - Stable version in the XBMC repo: http://addons.xbmc.org/show/plugin.video.xbmb3c/
-    - Beta versions in the XBMB3C repo: http://im85288.no-ip.org/xbmc/addons/xbmb3c-repo/repository.xbmb3c-1.0.0.zip
+To Install the MediaBrowser client
+1. Install Kodi
+2. Download and install the MediaBrowser AddOn and then a compatible skin
+    - Stable version in the Kodi repo: http://addons.xbmc.org/show/plugin.video.xbmb3c/
+    - Stable repo with compatible skins in MediaBrowser repo: http://cdn.mediabrowser.tv/downloads/addons/xbmb3c/xbmb3c-repo/repository.xbmb3c-1.0.2.zip
+    - Beta repo with compatible skins in MediaBrowser repo: http://cdn.mediabrowser.tv/downloads/addons/xbmb3c/kodi-beta-repo/repository.beta.mediabrowser.kodi-1.0.1.zip
     - Alpha versions in the Git: https://github.com/MediaBrowser/MediaBrowser.XBMC
-3. Install a supporting skin from the XBMB3C repo: http://im85288.no-ip.org/xbmc/addons/xbmb3c-repo/repository.xbmb3c-1.0.0.zip
 
 Join us here for support and suggestions:
 http://mediabrowser.tv/community/index.php?/forum/99-xbmb3c/
