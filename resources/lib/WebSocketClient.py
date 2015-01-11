@@ -179,7 +179,7 @@ class WebSocketThread(threading.Thread):
             deviceName = addonSettings.getSetting('deviceName')
             deviceName = deviceName.replace("\"", "_")
         
-            messageData["Data"] = "XBMC|" + machineId + "|" + version + "|" + deviceName
+            messageData["Data"] = "Kodi|" + machineId + "|" + version + "|" + deviceName
             messageString = json.dumps(messageData)
             self.logMsg("Opened : " + str(messageString))
             ws.send(messageString)

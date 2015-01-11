@@ -96,7 +96,7 @@ class DownloadUtils():
         deviceName = self.addonSettings.getSetting('deviceName')
         deviceName = deviceName.replace("\"", "_")
 
-        authString = "Mediabrowser Client=\"XBMC\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+        authString = "Mediabrowser Client=\"Kodi\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
         headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}
         
         if self.addonSettings.getSetting('password') !=None and  self.addonSettings.getSetting('password') !='':   
@@ -396,12 +396,12 @@ class DownloadUtils():
         deviceName = deviceName.replace("\"", "_")
 
         if(authenticate == False):
-            authString = "MediaBrowser Client=\"XBMC\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+            authString = "MediaBrowser Client=\"Kodi\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
             headers = {"Accept-encoding": "gzip", "Accept-Charset" : "UTF-8,*", "Authorization" : authString}        
             return headers
         else:
             userid = self.getUserId()
-            authString = "MediaBrowser UserId=\"" + userid + "\",Client=\"XBMC\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+            authString = "MediaBrowser UserId=\"" + userid + "\",Client=\"Kodi\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
             headers = {"Accept-encoding": "gzip", "Accept-Charset" : "UTF-8,*", "Authorization" : authString}        
                 
             authToken = self.authenticate()
