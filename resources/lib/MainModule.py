@@ -1062,7 +1062,7 @@ def getContent( url, pluginhandle ):
     if "NextUp" in url and __settings__.getSetting('sortNextUp') == "true":
         xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_TITLE)
         db.set("allowSort","false")
-    elif "DateCreated" in url:
+    elif "SortBy=DateCreated" in url:
         db.set("allowSort","false")
     else:
         db.set("allowSort","true")
@@ -1105,8 +1105,6 @@ def getContent( url, pluginhandle ):
         dirItems = List().processPeople(url, result, progress, "Movie", pluginhandle)
     elif "/mediabrowser/Persons?" in url and "&IncludeItemTypes=Series" in url:
         dirItems = List().processPeople(url, result, progress, "Series", pluginhandle)
-    elif __settings__.getSetting('useBackgroundData')=='true': # and "IsFast" in url:
-        dirItems = List().processFast(url, result, progress, pluginhandle)
     else:
         dirItems = List().processDirectory(url, result, progress, pluginhandle)
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)

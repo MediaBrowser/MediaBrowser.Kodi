@@ -197,6 +197,7 @@ class API():
         if Temp == None:
             Temp = ""
         Name=Temp.encode('utf-8')
+        print "Name is :" + Name
         return Name
     
     def getSeriesName(self, item):
@@ -220,7 +221,9 @@ class API():
             premieredate = premieredatelist[0]
         else:
             premieredate = ""
-        return premieredate.decode("utf-8")
+        Temp = premieredate
+        premieredate = Temp.encode('utf-8')            
+        return premieredate
         
     def getTVInfo(self, item, userData):
         TotalSeasons     = 0 if item.get("ChildCount")==None else item.get("ChildCount")
