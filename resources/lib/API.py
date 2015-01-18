@@ -197,7 +197,6 @@ class API():
         if Temp == None:
             Temp = ""
         Name=Temp.encode('utf-8')
-        print "Name is :" + Name
         return Name
     
     def getSeriesName(self, item):
