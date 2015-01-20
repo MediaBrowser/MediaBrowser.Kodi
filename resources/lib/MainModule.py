@@ -983,7 +983,7 @@ def setListItemProps(server, id, listItem, result):
 
     # play info
     playinformation = ''
-    if PlayUtils().isDirectPlay(result) == True:
+    if PlayUtils().fileExists(result) == True or PlayUtils().isDirectPlay(result) == True:
         if __settings__.getSetting('playFromStream') == "true":
             playinformation = __language__(30164)
         else:

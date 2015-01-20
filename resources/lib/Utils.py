@@ -13,6 +13,7 @@ from DownloadUtils import DownloadUtils
 from ClientInformation import ClientInformation
 import urllib
 import sys
+import os
 
 #define our global download utils
 downloadUtils = DownloadUtils()
@@ -26,7 +27,7 @@ class PlayUtils():
       addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
       # if the path is local and depending on the video quality play we can direct play it do so-
       xbmc.log("XBMB3C getPlayUrl")
-      if self.isDirectPlay(result) == True:
+      if self.fileExists(result) or self.isDirectPlay(result) == True:
           xbmc.log("XBMB3C getPlayUrl -> Direct Play")
           playurl = result.get("Path")
           if playurl != None:
@@ -56,14 +57,6 @@ class PlayUtils():
                 if mediaSources[0].get('DefaultSubtitleStreamIndex') != None:
                   playurl = playurl + "&SubtitleStreamIndex=" + str(mediaSources[0].get('DefaultAudioStreamIndex')) 
   
-            
-     # elif self.isNetworkQualitySufficient(result) == True:
-      #   xbmc.log("XBMB3C getPlayUrl -> Stream")
-          #No direct path but sufficient network so static stream   
-       #  if result.get("Type") == "Audio":
-        #    playurl = 'http://' + server + '/mediabrowser/Audio/' + id + '/stream?static=true&mediaSourceId=' + id
-         #else:
-          #  playurl = 'http://' + server + '/mediabrowser/Videos/' + id + '/stream?static=true&mediaSourceId=' + id   
       else:
           #No path or has a path but not sufficient network so transcode
           xbmc.log("XBMB3C getPlayUrl -> Transcode")
@@ -154,6 +147,17 @@ class PlayUtils():
         elif (videoQuality == "18"):
            return '1000000'
        
+    def fileExists(self, result):
+    
+        xbmc.log("Checking existence of : " + result.get("Path"))
+        if os.path.exists(result.get("Path")) == True:
+            xbmc.log("Path exists")
+            return True
+        else:
+            xbmc.log("Path does not exists")
+            return False
+    
+    
     # Works out if the network quality can play directly or if transcoding is needed
     def isLocalPath(self, result):
         playurl = result.get("Path")
