@@ -103,7 +103,7 @@ class ThemeMediaThread(threading.Thread):
             themeMusicUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + id + "/ThemeSongs?format=json"
             self.logMsg("updateThemeMedia themeUrl : " + themeMusicUrl)
             if themeMusicUrl not in self.themeMusicMap:
-                jsonData = downloadUtils.downloadUrl(themeMusicUrl, suppress=False, popup=1 )
+                jsonData = downloadUtils.downloadUrl(themeMusicUrl, suppress=True, popup=1 )
                 themeMusic = json.loads(jsonData)     
                
                 if(themeMusic == None):
@@ -117,7 +117,7 @@ class ThemeMediaThread(threading.Thread):
                 
             themeMoviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Items/" + id + "/ThemeVideos?format=json"
             if themeMoviesUrl not in self.themeMoviesMap:
-                jsonData = downloadUtils.downloadUrl(themeMoviesUrl, suppress=False, popup=1 )
+                jsonData = downloadUtils.downloadUrl(themeMoviesUrl, suppress=True, popup=1 )
                 themeMovies = json.loads(jsonData)  
                
                 if(themeMovies == None):

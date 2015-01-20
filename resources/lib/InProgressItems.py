@@ -73,7 +73,10 @@ class InProgressUpdaterThread(threading.Thread):
         
         recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=Path,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary&Filters=IsResumable&IncludeItemTypes=Movie&format=json"
    
-        jsonData = downloadUtils.downloadUrl(recentUrl, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(recentUrl, suppress=True, popup=1 )
+        if(jsonData == ""):
+            return
+            
         result = json.loads(jsonData)
         result = result.get("Items")
         if(result == None):
@@ -214,7 +217,7 @@ class InProgressUpdaterThread(threading.Thread):
         
         recentUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=DatePlayed&SortOrder=Descending&Fields=Path,Genres,MediaStreams,Overview,CriticRatingSummary&Filters=IsResumable&IncludeItemTypes=Episode&format=json"
         
-        jsonData = downloadUtils.downloadUrl(recentUrl, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(recentUrl, suppress=True, popup=1 )
         result = json.loads(jsonData)
         
         result = result.get("Items")
@@ -273,7 +276,7 @@ class InProgressUpdaterThread(threading.Thread):
             seriesId = item.get("SeriesId")
             
             if useBackgroundData != True:
-                seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=False, popup=1 )
+                seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=True, popup=1 )
                 seriesResult = json.loads(seriesJsonData)      
                 poster = downloadUtils.getArtwork(seriesResult, "Primary3")
                 small_poster = downloadUtils.getArtwork(seriesResult, "Primary2")

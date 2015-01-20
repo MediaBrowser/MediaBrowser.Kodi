@@ -73,7 +73,10 @@ class RandomInfoUpdaterThread(threading.Thread):
         
         randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json"
                 
-        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=False, popup=1)
+        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=True, popup=1)
+        if(jsonData == ""):
+            return
+            
         result = json.loads(jsonData)
         self.logMsg("Random Movie Json Data : " + str(result), level=2)
         
@@ -189,7 +192,7 @@ class RandomInfoUpdaterThread(threading.Thread):
         
         randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=10&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview,ShortOverview&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json"
                  
-        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=False, popup=1)
+        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=True, popup=1)
         result = json.loads(jsonData)
         self.logMsg("Random TV Show Json Data : " + str(result), level=2)
         
@@ -234,7 +237,7 @@ class RandomInfoUpdaterThread(threading.Thread):
             seriesId = item.get("SeriesId")          
               
             if useBackgroundData != True:
-                seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=False, popup=1 )
+                seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=True, popup=1 )
                 seriesResult = json.loads(seriesJsonData)      
                 officialrating = seriesResult.get("OfficialRating")        
                 poster = downloadUtils.getArtwork(seriesResult, "Primary3")
@@ -311,7 +314,7 @@ class RandomInfoUpdaterThread(threading.Thread):
     
         randomUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Limit=30&Recursive=true&SortBy=Random&Fields=Path,Genres,MediaStreams,Overview&SortOrder=Descending&Filters=IsUnplayed,IsFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=MusicAlbum&format=json"
     
-        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=False, popup=1)
+        jsonData = downloadUtils.downloadUrl(randomUrl, suppress=True, popup=1)
         result = json.loads(jsonData)
         self.logMsg("Random MusicList Json Data : " + str(result), level=2)
     

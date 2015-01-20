@@ -14,6 +14,7 @@ from random import randrange
 from uuid import uuid4 as uuid4
 from ClientInformation import ClientInformation
 import encodings
+import time
 
 class DownloadUtils():
 
@@ -38,7 +39,7 @@ class DownloadUtils():
         if(self.logLevel >= level):
             xbmc.log("XBMB3C DownloadUtils -> " + msg)
 
-    def getUserId(self):
+    def getUserId(self, suppress=True):
 
         WINDOW = xbmcgui.Window( 10000 )
         self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -52,17 +53,17 @@ class DownloadUtils():
             self.logMsg("DownloadUtils -> Returning saved UserID : " + userid + "UserName: " + userName)
             return userid
     
-        
         self.logMsg("Looking for user name: " + userName)
 
         authOk = self.authenticate()
         if(authOk == ""):
-            return_value = xbmcgui.Dialog().ok(self.getString(30044), self.getString(30044))
+            if(suppress == False):
+                xbmcgui.Dialog().ok(self.getString(30044), self.getString(30044))
             return ""
 
         userid = WINDOW.getProperty("userid"+ userName)
-        if userid == "":
-            return_value = xbmcgui.Dialog().ok(self.getString(30045),self.getString(30045))
+        if(userid == "" and suppress == False):
+            xbmcgui.Dialog().ok(self.getString(30045),self.getString(30045))
 
         self.logMsg("userid : " + userid)         
         self.postcapabilities()
@@ -107,7 +108,7 @@ class DownloadUtils():
         
         messageData = "username=" + self.addonSettings.getSetting('username') + "&password=" + sha1
 
-        resp = self.downloadUrl(url, postBody=messageData, type="POST", authenticate=False)
+        resp = self.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
 
         accessToken = None
         try:
@@ -485,6 +486,23 @@ class DownloadUtils():
                 except: pass
                 return data.getheader('Location')
 
+            elif int(data.status) == 401:
+                error = "HTTP response error: " + str(data.status) + " " + str(data.reason)
+                xbmc.log(error)
+                
+                WINDOW = xbmcgui.Window(10000)
+                timeStamp = WINDOW.getProperty("XBMB3C_LAST_USER_ERROR")
+                if(timeStamp == None or timeStamp == ""):
+                    timeStamp = "0"
+                    
+                if((int(timeStamp) + 10) < int(time.time())):
+                    xbmcgui.Dialog().ok(self.getString(30135), self.getString(30044))
+                    WINDOW.setProperty("XBMB3C_LAST_USER_ERROR", str(int(time.time())))
+                
+                try: conn.close()
+                except: pass
+                return ""
+                
             elif int(data.status) >= 400:
                 error = "HTTP response error: " + str(data.status) + " " + str(data.reason)
                 xbmc.log(error)
@@ -493,7 +511,6 @@ class DownloadUtils():
                         xbmc.executebuiltin("XBMC.Notification(URL error: "+ str(data.reason) +",)")
                     else:
                         xbmcgui.Dialog().ok(self.getString(30135),server)
-                xbmc.log (error)
                 try: conn.close()
                 except: pass
                 return ""
@@ -503,6 +520,7 @@ class DownloadUtils():
             error = "Unable to connect to " + str(server) + " : " + str(msg)
             xbmc.log(error)
             if suppress is False:
+                xbmc.log("Suppress is False, displaying user message: popup=" + str(popup))
                 if popup == 0:
                     xbmc.executebuiltin("XBMC.Notification(: URL error: Unable to connect to server,)")
                 else:

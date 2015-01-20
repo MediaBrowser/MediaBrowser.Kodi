@@ -1326,7 +1326,7 @@ def getWigetContent(pluginName, handle, params):
     printDebug("WIDGET_DATE_URL: " + itemsUrl, 2)
     
     # get the recent items
-    jsonData = downloadUtils.downloadUrl(itemsUrl, suppress=False, popup=1 )
+    jsonData = downloadUtils.downloadUrl(itemsUrl, suppress=True, popup=1 )
     printDebug("Recent(Items) jsonData: " + jsonData, 2)
     result = json.loads(jsonData)
     

@@ -77,7 +77,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         
         self.logMsg("UserName : " + userName + " UserID : " + userid)        
         dataUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&Ids=" + id + "&Fields=Path,People,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary,EpisodeCount,SeasonCount,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio,AirTime,DateCreated&SortOrder=Ascending&ExcludeLocationTypes=Virtual&IncludeItemTypes=Series,BoxSet,Movie&CollapseBoxSetItems=false&format=json"        
-        jsonData = downloadUtils.downloadUrl(dataUrl, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(dataUrl, suppress=True, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("Individual Item Json Data : " + str(result), level=2)
         result = result.get("Items")
@@ -103,7 +103,10 @@ class BackgroundDataUpdaterThread(threading.Thread):
         WINDOW = xbmcgui.Window( 10000 )
         dataUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Recursive=true&SortBy=SortName&Fields=Path,People,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary,EpisodeCount,SeasonCount,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio,AirTime,DateCreated&SortOrder=Ascending&ExcludeLocationTypes=Virtual&IncludeItemTypes=Series,BoxSet,Movie&CollapseBoxSetItems=false&format=json"
          
-        jsonData = downloadUtils.downloadUrl(dataUrl, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(dataUrl, suppress=True, popup=1 )
+        if(jsonData == ""):
+            return
+            
         result = json.loads(jsonData)
         self.logMsg("BackgroundData Movie Json Data : " + str(result), level=2)
         

@@ -498,7 +498,10 @@ class ArtworkRotationThread(threading.Thread):
         self.logMsg("updateCollectionArtLinks UserID : " + userid)
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/Root?format=json"
-        jsonData = downloadUtils.downloadUrl(userUrl, suppress=False, popup=1 )    
+        jsonData = downloadUtils.downloadUrl(userUrl, suppress=True, popup=1 )
+        if(jsonData == ""):
+            return
+            
         self.logMsg("updateCollectionArtLinks UserData : " + str(jsonData), 2)
         result = json.loads(jsonData)
         
@@ -507,7 +510,7 @@ class ArtworkRotationThread(threading.Thread):
             
         userRootPath = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentid + "&SortBy=SortName&Fields=CollectionType,Overview,RecursiveItemCount&format=json"
     
-        jsonData = downloadUtils.downloadUrl(userRootPath, suppress=False, popup=1 ) 
+        jsonData = downloadUtils.downloadUrl(userRootPath, suppress=True, popup=1 ) 
         self.logMsg("updateCollectionArtLinks userRootPath : " + str(jsonData), 2)            
         result = json.loads(jsonData)
         result = result.get("Items")
@@ -801,7 +804,10 @@ class ArtworkRotationThread(threading.Thread):
         # load Movie BG
         moviesUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=Movie&format=json"
 
-        jsonData = downloadUtils.downloadUrl(moviesUrl, suppress=False, popup=1 ) 
+        jsonData = downloadUtils.downloadUrl(moviesUrl, suppress=True, popup=1 ) 
+        if(jsonData == ""):
+            return
+            
         result = json.loads(jsonData)
 
         result = result.get("Items")
@@ -824,7 +830,7 @@ class ArtworkRotationThread(threading.Thread):
             trailerActionUrl = None
             if item.get("LocalTrailerCount") != None and item.get("LocalTrailerCount") > 0:
                 itemTrailerUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "/LocalTrailers?format=json"
-                jsonData = downloadUtils.downloadUrl(itemTrailerUrl, suppress=False, popup=1 ) 
+                jsonData = downloadUtils.downloadUrl(itemTrailerUrl, suppress=True, popup=1 ) 
                 trailerItem = json.loads(jsonData)
                 trailerUrl = mb3Host + ":" + mb3Port + ',;' + trailerItem[0].get("Id")
                 trailerUrl = urllib.quote(trailerUrl) 
@@ -853,7 +859,7 @@ class ArtworkRotationThread(threading.Thread):
         # load TV BG links
         tvUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=Series&format=json"
 
-        jsonData = downloadUtils.downloadUrl(tvUrl, suppress=False, popup=1 ) 
+        jsonData = downloadUtils.downloadUrl(tvUrl, suppress=True, popup=1 ) 
         result = json.loads(jsonData)        
         
         result = result.get("Items")
@@ -892,7 +898,7 @@ class ArtworkRotationThread(threading.Thread):
         # load music BG links
         musicUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=MusicArtist&format=json"
         
-        jsonData = downloadUtils.downloadUrl(musicUrl, suppress=False, popup=1 ) 
+        jsonData = downloadUtils.downloadUrl(musicUrl, suppress=True, popup=1 ) 
         result = json.loads(jsonData)        
         
         result = result.get("Items")
@@ -1239,7 +1245,7 @@ class ArtworkRotationThread(threading.Thread):
         userid = downloadUtils.getUserId()
         itemUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "?Fields=ParentId,Overview&format=json"
         
-        jsonData = downloadUtils.downloadUrl(itemUrl, suppress=False, popup=1 ) 
+        jsonData = downloadUtils.downloadUrl(itemUrl, suppress=True, popup=1 ) 
         item = json.loads(jsonData)
         
         self.logMsg("loadItemBackgroundLinks found item : " + str(item), 2);
@@ -1268,7 +1274,7 @@ class ArtworkRotationThread(threading.Thread):
         trailerActionUrl = None
         if item.get("LocalTrailerCount") != None and item.get("LocalTrailerCount") > 0:
             itemTrailerUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "/LocalTrailers?format=json"
-            jsonData = downloadUtils.downloadUrl(itemTrailerUrl, suppress=False, popup=1 ) 
+            jsonData = downloadUtils.downloadUrl(itemTrailerUrl, suppress=True, popup=1 ) 
             trailerItem = json.loads(jsonData)
             trailerUrl = mb3Host + ":" + mb3Port + ',;' + trailerItem[0].get("Id")
             trailerUrl = urllib.quote(trailerUrl) 

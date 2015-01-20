@@ -71,7 +71,10 @@ class NextUpUpdaterThread(threading.Thread):
         
         nextUpUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Shows/NextUp?UserId=" + userid + "&Fields=Path,Genres,MediaStreams,Overview,ShortOverview&format=json&ImageTypeLimit=1"
         
-        jsonData = downloadUtils.downloadUrl(nextUpUrl, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(nextUpUrl, suppress=True, popup=1 )
+        if(jsonData == ""):
+            return
+            
         result = json.loads(jsonData)
         self.logMsg("NextUP TV Show Json Data : " + str(result), level=2)
         
@@ -119,7 +122,7 @@ class NextUpUpdaterThread(threading.Thread):
             seriesId = item.get("SeriesId")
             
             if useBackgroundData != True:
-                seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=False, popup=1 )
+                seriesJsonData = downloadUtils.downloadUrl("http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + seriesId + "?format=json", suppress=True, popup=1 )
                 seriesResult = json.loads(seriesJsonData)      
                 officialrating = seriesResult.get("OfficialRating")        
                 poster = downloadUtils.getArtwork(seriesResult, "Primary3")

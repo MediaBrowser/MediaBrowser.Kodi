@@ -70,7 +70,10 @@ class InfoUpdaterThread(threading.Thread):
         
         infoUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=CollectionType&format=json"
         
-        jsonData = downloadUtils.downloadUrl(infoUrl, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(infoUrl, suppress=True, popup=1 )
+        if(jsonData == ""):
+            return
+            
         result = json.loads(jsonData)
         
         result = result.get("Items")
@@ -166,7 +169,7 @@ class InfoUpdaterThread(threading.Thread):
         WINDOW.setProperty("MB3TotalPhotos", str(photos_count))
         
         userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "?format=json"
-        jsonData = downloadUtils.downloadUrl(userUrl, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(userUrl, suppress=True, popup=1 )
         
         result = json.loads(jsonData)
         userImage = downloadUtils.getUserArtwork(result, "Primary")
@@ -178,7 +181,7 @@ class InfoUpdaterThread(threading.Thread):
         self.logMsg("InfoTV start")
         infoTVUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?&IncludeItemTypes=Series&Recursive=true&SeriesStatus=Continuing&format=json"
         
-        jsonData = downloadUtils.downloadUrl(infoTVUrl, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(infoTVUrl, suppress=True, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("InfoTV Json Data : " + str(result), level=2)
         
@@ -189,7 +192,7 @@ class InfoUpdaterThread(threading.Thread):
         self.logMsg("InfoNextAired start")
         InfoNextAiredUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?IsUnaired=true&SortBy=PremiereDate%2CAirTime%2CSortName&SortOrder=Ascending&IncludeItemTypes=Episode&Limit=1&Recursive=true&Fields=SeriesInfo%2CUserData&format=json"
          
-        jsonData = downloadUtils.downloadUrl(InfoNextAiredUrl, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(InfoNextAiredUrl, suppress=True, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("InfoNextAired Json Data : " + str(result), level=2)
         
@@ -232,7 +235,7 @@ class InfoUpdaterThread(threading.Thread):
         dateformat = today.strftime("%Y-%m-%d") 
         nextAiredUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?IsUnaired=true&SortBy=PremiereDate%2CAirTime%2CSortName&SortOrder=Ascending&IncludeItemTypes=Episode&Recursive=true&Fields=SeriesInfo%2CUserData&MinPremiereDate="  + str(dateformat) + "&MaxPremiereDate=" + str(dateformat) + "&format=json"
         
-        jsonData = downloadUtils.downloadUrl(nextAiredUrl, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(nextAiredUrl, suppress=True, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("InfoNextAired total url: " + nextAiredUrl)
         self.logMsg("InfoNextAired total Json Data : " + str(result), level=2)
@@ -244,7 +247,7 @@ class InfoUpdaterThread(threading.Thread):
         self.logMsg("Channels start")
         channelsUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Channels/?format=json"
         
-        jsonData = downloadUtils.downloadUrl(channelsUrl, suppress=False, popup=1 )
+        jsonData = downloadUtils.downloadUrl(channelsUrl, suppress=True, popup=1 )
         result = json.loads(jsonData)
         self.logMsg("Channels Json Data : " + str(result), level=2)
         

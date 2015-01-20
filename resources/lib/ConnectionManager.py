@@ -12,6 +12,7 @@ from datetime import datetime
 from DownloadUtils import DownloadUtils
 import urllib
 import sys
+import socket
 
 #define our global download utils
 downloadUtils = DownloadUtils()
@@ -64,7 +65,7 @@ class ConnectionManager():
         server_port = serverInfo[index+1:]
         self.printDebug ("XBMB3C detected server info " + server_address + " : " + server_port)
         
-        xbmcgui.Dialog().ok(__language__(30167), __language__(30168), __language__(30169) + server_address, __language__(30030) + server_port)
+        xbmcgui.Dialog().ok(self.__language__(30167), self.__language__(30168), self.__language__(30169) + server_address, self.__language__(30030) + server_port)
     
         # get a list of users
         self.printDebug ("Getting user list")
@@ -93,7 +94,7 @@ class ConnectionManager():
     
         self.printDebug ("User List : " + str(names))
         self.printDebug ("User List : " + str(userList))
-        return_value = xbmcgui.Dialog().select(__language__(30200), names)
+        return_value = xbmcgui.Dialog().select(self.__language__(30200), names)
         
         if(return_value > -1):
             selected_user = userList[return_value]
