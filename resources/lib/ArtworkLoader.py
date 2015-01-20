@@ -128,7 +128,7 @@ class ArtworkRotationThread(threading.Thread):
                 if(backgroundRefresh < 10):
                     backgroundRefresh = 10
             
-            # update item BG every 7 seconds
+            # update item BG every 5 seconds
             if(secTotal2 > itemBackgroundRefresh):
                 self.setItemBackgroundLink()
                 itemLastRun = datetime.today()
@@ -146,7 +146,7 @@ class ArtworkRotationThread(threading.Thread):
                 last_id = current_id
                 
             self.logMsg("entering event wait")
-            self.event.wait(30.0)
+            self.event.wait(5.0)
             self.logMsg("event wait finished")
         
         try:
