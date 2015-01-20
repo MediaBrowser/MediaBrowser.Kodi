@@ -194,7 +194,10 @@ def ServiceEntryPoint():
         printDebug("XBMB3 -> HTTP Image Proxy Server EXITING")
         xbmc.log("XBMB3C Service -> HTTP Image Proxy Server EXITING")
         
-    Thread(target=startImageProxyServer).start()
+    if __addon__.getSetting('useImageProxyServer') == "true":
+        Thread(target=startImageProxyServer).start()
+    else:
+        printDebug("XBMB3C ImageProxyServer Disabled")        
     
     monitor = Service()
     lastProgressUpdate = datetime.today()
@@ -268,11 +271,11 @@ def ServiceEntryPoint():
     # stop the image proxy
     keepServing = False
     
-    try:
-        xbmc.log("XBMB3C Service -> Sending image proxy stop request")
-        requesthandle = urllib.urlopen("http://localhost:15001/?id=dummy&type=Primary", proxies={})
-    except:
-        printDebug("XBMB3C Service -> Tried to stop image proxy server but it was already stopped")
+    if __addon__.getSetting('useImageProxyServer') == "true":       
+        try:
+            urllib.urlopen("http://localhost:15001/?id=dummy&type=Primary", proxies={})
+        except:
+            pass
     
     xbmc.log("XBMB3C Service -> Service shutting down")
 
