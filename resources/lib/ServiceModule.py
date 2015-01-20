@@ -53,6 +53,7 @@ from SkinHelperThread import SkinHelperThread
 
 downloadUtils = DownloadUtils()
 
+skinHelperThread = None
 newInProgressThread = None
 newRecentInfoThread = None
 newRandomInfoThread = None
@@ -97,93 +98,79 @@ def ServiceEntryPoint():
         pass
     
     # start some worker threads
-    skinHelperThread = SkinHelperThread()
-    skinHelperThread.start()
-    printDebug("[MB3 SkinHelper] Started... fetching background images now")
-
+    if __addon__.getSetting('useSkinHelper') == "true":
+        skinHelperThread = SkinHelperThread()
+        skinHelperThread.start()
+    else:
+        printDebug("XBMB3C Service SkinHelperThread Disabled")    
     
     if __addon__.getSetting('useInProgressUpdater') == "true":
-        global newInProgressThread
         newInProgressThread = InProgressUpdaterThread()
         newInProgressThread.start()
     else:
         printDebug("XBMB3C Service InProgressUpdater Disabled")
       
-    
     if __addon__.getSetting('useRecentInfoUpdater') == "true":
-        global newRecentInfoThread
         newRecentInfoThread = RecentInfoUpdaterThread()
         newRecentInfoThread.start()
     else:
         printDebug("XBMB3C Service RecentInfoUpdater Disabled")    
     
-      
     if __addon__.getSetting('useRandomInfo') == "true":
-        global newRandomInfoThread
         newRandomInfoThread = RandomInfoUpdaterThread()
         newRandomInfoThread.start()
     else:
         printDebug("XBMB3C Service RandomInfo Disabled")        
     
-    
     if __addon__.getSetting('useNextUp') == "true":
-        global newNextUpThread
         newNextUpThread = NextUpUpdaterThread()
         newNextUpThread.start()
     else:
         printDebug("XBMB3C Service NextUp Disabled")    
         
     if __addon__.getSetting('useSuggested') == "true":
-        global newSuggestedThread
         newSuggestedThread = SuggestedUpdaterThread()
         newSuggestedThread.start()
     else:
         printDebug("XBMB3C Service Suggested Disabled")   
     
     if __addon__.getSetting('useWebSocketRemote') == "true":
-        global newWebSocketThread
         newWebSocketThread = WebSocketThread()
         newWebSocketThread.start()
     else:
         printDebug("XBMB3C Service WebSocketRemote Disabled")
     
     if __addon__.getSetting('useMenuLoader') == "true":
-        global newMenuThread
         newMenuThread = LoadMenuOptionsThread()
         newMenuThread.start()
     else:
         printDebug("XBMB3C Service MenuLoader Disabled")
     
     if __addon__.getSetting('useBackgroundLoader') == "true":
-        global artworkRotationThread
         artworkRotationThread = ArtworkRotationThread()
         artworkRotationThread.start()
     else:
         printDebug("XBMB3C Service BackgroundLoader Disabled")
         
     if __addon__.getSetting('useThemeMovies') == "true" or __addon__.getSetting('useThemeMusic') == "true":
-        global newThemeMediaThread
         newThemeMediaThread = ThemeMediaThread()
         newThemeMediaThread.start()
     else:
         printDebug("XBMB3C Service ThemeMedia Disabled")
      
     if __addon__.getSetting('useInfoLoader') == "true":
-        global newInfoThread
         newInfoThread = InfoUpdaterThread()
         newInfoThread.start()
     else:
         printDebug("XBMB3C Service InfoLoader Disabled")
         
     if __addon__.getSetting('usePlaylistsUpdater') == "true":
-        global newPlaylistsThread
         newPlaylistsThread = PlaylistItemUpdaterThread()
         newPlaylistsThread.start()
     else:
         printDebug("XBMB3C Service PlaylistsUpdater Disabled")
     
     if __addon__.getSetting('useBackgroundData') == "true":
-        global newBackgroundDataThread
         newBackgroundDataThread = BackgroundDataUpdaterThread()
         newBackgroundDataThread.start()
     else:
