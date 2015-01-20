@@ -29,7 +29,8 @@ class SkinHelperThread(threading.Thread):
     logLevel = 0
     user_art_links = []
     current_user_art = 0
-
+    event = None
+    exit = False
     
     def __init__(self, *args):
         level = __settings__.getSetting('logLevel')
@@ -40,8 +41,15 @@ class SkinHelperThread(threading.Thread):
             self.LogCalls = True
         xbmc.log("XBMB3C SkinHelperThread -> Log Level:" +  str(self.logLevel))
         
+        self.event =  threading.Event()
+        
         threading.Thread.__init__(self, *args)    
     
+    def stop(self):
+        self.logMsg("stop called")
+        self.exit = True
+        self.event.set()
+        
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
             xbmc.log("XBMB3C SkinHelperThread -> " + msg)
@@ -55,7 +63,7 @@ class SkinHelperThread(threading.Thread):
         lastRun = datetime.today()
         lastProfilePath = xbmc.translatePath('special://profile')
         
-        while (xbmc.abortRequested == False):
+        while (xbmc.abortRequested == False and self.exit != True):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             profilePath = xbmc.translatePath('special://profile')
@@ -68,7 +76,9 @@ class SkinHelperThread(threading.Thread):
                 lastProfilePath = profilePath    
                 lastRun = datetime.today()
             
-            xbmc.sleep(500)
+            self.logMsg("entering event wait")
+            self.event.wait(30.0)
+            self.logMsg("event wait finished")
                         
         self.logMsg("Exited")
         

@@ -24,6 +24,8 @@ db = Database()
 class BackgroundDataUpdaterThread(threading.Thread):
 
     logLevel = 0
+    event = None
+    exit = False
     
     def __init__(self, *args):
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -35,12 +37,19 @@ class BackgroundDataUpdaterThread(threading.Thread):
             self.LogCalls = True
         xbmc.log("XBMB3C BackgroundDataUpdaterThread -> Log Level:" +  str(self.logLevel))
         
+        self.event =  threading.Event()
+        
         threading.Thread.__init__(self, *args)    
     
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
             xbmc.log("XBMB3C BackgroundDataUpdaterThread -> " + msg)
-                
+        
+    def stop(self):
+        self.logMsg("stop called")
+        self.exit = True
+        self.event.set()
+    
     def run(self):
         self.logMsg("Started")
         
@@ -48,7 +57,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         lastRun = datetime.today()
         lastProfilePath = xbmc.translatePath('special://profile')
         
-        while (xbmc.abortRequested == False):
+        while (xbmc.abortRequested == False and self.exit != True):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             
@@ -62,7 +71,9 @@ class BackgroundDataUpdaterThread(threading.Thread):
 
             lastProfilePath = profilePath
             
-            xbmc.sleep(30000)
+            self.logMsg("entering event wait")
+            self.event.wait(30.0)
+            self.logMsg("event wait finished")
                         
         self.logMsg("Exited")
 
@@ -118,7 +129,6 @@ class BackgroundDataUpdaterThread(threading.Thread):
             self.updateDB(item)
         WINDOW.setProperty("BackgroundDataLoaded", "true")
     
-            
     def updateDB(self, item):
         id=item.get("Id")
         userid = downloadUtils.getUserId()

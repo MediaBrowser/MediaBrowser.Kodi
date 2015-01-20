@@ -32,8 +32,8 @@ class MyHandler(BaseHTTPRequestHandler):
         BaseHTTPRequestHandler.__init__(self, *args)
     
     def logMsg(self, msg, level = 1):
-        if(self.logLevel >= level):
-            xbmc.log("XBMB3C ImageProxy -> " + msg)
+        #if(self.logLevel >= level):
+        xbmc.log("XBMB3C ImageProxy -> " + msg)
     
     #overload the default log func to stop stderr message from showing up in the xbmc log
     def log_message(self, format, *args):
@@ -54,6 +54,10 @@ class MyHandler(BaseHTTPRequestHandler):
         self.logMsg("Params : " + str(params))
         
         if(params.get("id") == None and params.get("name") == None):
+            return
+            
+        if(params.get("id")[0] == "dummy"):
+            xbmc.log("Dummy request received, returning")
             return
             
         if(params.get("id") != None):

@@ -22,6 +22,8 @@ db = Database()
 class InProgressUpdaterThread(threading.Thread):
 
     logLevel = 0
+    event = None
+    exit = False    
     
     def __init__(self, *args):
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -32,7 +34,14 @@ class InProgressUpdaterThread(threading.Thread):
     
         xbmc.log("XBMB3C InProgressUpdaterThread -> Log Level:" +  str(self.logLevel))
         
+        self.event =  threading.Event()
+        
         threading.Thread.__init__(self, *args)
+        
+    def stop(self):
+        self.logMsg("stop called")
+        self.exit = True
+        self.event.set()
         
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
@@ -46,7 +55,7 @@ class InProgressUpdaterThread(threading.Thread):
 
         updateInterval = 300
         
-        while (xbmc.abortRequested == False):
+        while (xbmc.abortRequested == False and self.exit != True):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             
@@ -54,7 +63,9 @@ class InProgressUpdaterThread(threading.Thread):
                 self.updateInProgress()
                 lastRun = datetime.today()
             
-            xbmc.sleep(3000)
+            self.logMsg("entering event wait")
+            self.event.wait(30.0)
+            self.logMsg("event wait finished")
                         
         self.logMsg("Exited")
         

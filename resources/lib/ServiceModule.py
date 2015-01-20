@@ -160,14 +160,14 @@ def ServiceEntryPoint():
         artworkRotationThread.start()
     else:
         printDebug("XBMB3C Service BackgroundLoader Disabled")
-           
+        
     if __addon__.getSetting('useThemeMovies') == "true" or __addon__.getSetting('useThemeMusic') == "true":
         global newThemeMediaThread
         newThemeMediaThread = ThemeMediaThread()
         newThemeMediaThread.start()
     else:
         printDebug("XBMB3C Service ThemeMedia Disabled")
-    
+     
     if __addon__.getSetting('useInfoLoader') == "true":
         global newInfoThread
         newInfoThread = InfoUpdaterThread()
@@ -181,14 +181,13 @@ def ServiceEntryPoint():
         newPlaylistsThread.start()
     else:
         printDebug("XBMB3C Service PlaylistsUpdater Disabled")
-        
+    
     if __addon__.getSetting('useBackgroundData') == "true":
         global newBackgroundDataThread
         newBackgroundDataThread = BackgroundDataUpdaterThread()
         newBackgroundDataThread.start()
     else:
         printDebug("XBMB3C BackgroundDataUpdater Disabled")
-
     
     ###############################################
     # start the image proxy server
@@ -198,12 +197,15 @@ def ServiceEntryPoint():
     def startImageProxyServer():
     
         printDebug("XBMB3 -> HTTP Image Proxy Server Starting")
+        xbmc.log("XBMB3C Service -> HTTP Image Proxy Server Starting")
         server = ThreadingHTTPServer(("",15001), MyHandler)
         
         while (keepServing):
             server.handle_request()
+            xbmc.log("XBMB3C Service -> Processing Request : " + str(keepServing))
         
         printDebug("XBMB3 -> HTTP Image Proxy Server EXITING")
+        xbmc.log("XBMB3C Service -> HTTP Image Proxy Server EXITING")
         
     Thread(target=startImageProxyServer).start()
     
@@ -213,6 +215,8 @@ def ServiceEntryPoint():
     addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
     if socket.gethostname() != None and socket.gethostname() != '' and addonSettings.getSetting("deviceName") == 'XBMB3C':
         addonSettings.setSetting("deviceName", socket.gethostname())
+    
+    xbmc.log("XBMB3C Service -> Starting Service")
     
     while not xbmc.abortRequested:
         if xbmc.Player().isPlaying():
@@ -240,19 +244,50 @@ def ServiceEntryPoint():
     
         xbmc.sleep(1000)
         xbmcgui.Window(10000).setProperty("XBMB3C_Service_Timestamp", str(int(time.time())))
-        
-    # stop the WebSocket client
+    
+    xbmc.log("XBMB3C Service -> Stopping Service")
+    
+    # stop all worker threads
     if(newWebSocketThread != None):
-        newWebSocketThread.stopClient()
+        newWebSocketThread.stopClient()    
+
+    if(skinHelperThread != None):
+        skinHelperThread.stop()
+    if(newInProgressThread != None):
+        newInProgressThread.stop()
+    if(newRecentInfoThread != None):
+        newRecentInfoThread.stop()
+    if(newRandomInfoThread != None):
+        newRandomInfoThread.stop()
+    if(newNextUpThread != None):
+        newNextUpThread.stop()
+    if(newSuggestedThread != None):
+        newSuggestedThread.stop()
+    if(newMenuThread != None):
+        newMenuThread.stop()
+    if(artworkRotationThread != None):
+        artworkRotationThread.stop()
+    if(newThemeMediaThread != None):
+        newThemeMediaThread.stop()
+    if(newInfoThread != None):
+        newInfoThread.stop()
+    if(newPlaylistsThread != None):
+        newPlaylistsThread.stop()
+    if(newBackgroundDataThread != None):
+        newBackgroundDataThread.stop()        
+        
+    xbmc.log("XBMB3C Service -> Stopping Image Proxy")
     
     # stop the image proxy
     keepServing = False
+    
     try:
+        xbmc.log("XBMB3C Service -> Sending image proxy stop request")
         requesthandle = urllib.urlopen("http://localhost:15001/?id=dummy&type=Primary", proxies={})
     except:
         printDebug("XBMB3C Service -> Tried to stop image proxy server but it was already stopped")
     
-    printDebug("XBMB3C Service -> Service shutting down") 
+    xbmc.log("XBMB3C Service -> Service shutting down")
 
 def deleteItem (url):
     return_value = xbmcgui.Dialog().yesno(__language__(30091),__language__(30092))

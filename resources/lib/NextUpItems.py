@@ -21,6 +21,8 @@ db = Database()
 class NextUpUpdaterThread(threading.Thread):
 
     logLevel = 0
+    event = None
+    exit = False    
     
     def __init__(self, *args):
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -31,11 +33,18 @@ class NextUpUpdaterThread(threading.Thread):
     
         xbmc.log("XBMB3C NextUpUpdaterThread -> Log Level:" +  str(self.logLevel))
         
+        self.event =  threading.Event()
+        
         threading.Thread.__init__(self, *args)    
     
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
             xbmc.log("XBMB3C NextUpUpdaterThread -> " + msg)
+        
+    def stop(self):
+        self.logMsg("stop called")
+        self.exit = True
+        self.event.set()
         
     def run(self):
         self.logMsg("Started")
@@ -43,7 +52,7 @@ class NextUpUpdaterThread(threading.Thread):
         self.updateNextUp()
         lastRun = datetime.today()
         
-        while (xbmc.abortRequested == False):
+        while (xbmc.abortRequested == False and self.exit != True):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             
@@ -51,7 +60,9 @@ class NextUpUpdaterThread(threading.Thread):
                 self.updateNextUp()
                 lastRun = datetime.today()
 
-            xbmc.sleep(3000)
+            self.logMsg("entering event wait")
+            self.event.wait(30.0)
+            self.logMsg("event wait finished")
                         
         self.logMsg("Exited")
         

@@ -23,6 +23,8 @@ db = Database()
 class SuggestedUpdaterThread(threading.Thread):
 
     logLevel = 0
+    event = None
+    exit = False    
     
     def __init__(self, *args):
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -33,19 +35,26 @@ class SuggestedUpdaterThread(threading.Thread):
     
         xbmc.log("XBMB3C SuggestedUpdaterThread -> Log Level:" +  str(self.logLevel))
         
+        self.event =  threading.Event()
+        
         threading.Thread.__init__(self, *args)    
     
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
             xbmc.log("XBMB3C SuggestedUpdaterThread -> " + msg)
             
+    def stop(self):
+        self.logMsg("stop called")
+        self.exit = True
+        self.event.set()
+        
     def run(self):
         self.logMsg("Started")
         
         self.updateSuggested()
         lastRun = datetime.today()
         
-        while (xbmc.abortRequested == False):
+        while (xbmc.abortRequested == False and self.exit != True):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             
@@ -53,7 +62,9 @@ class SuggestedUpdaterThread(threading.Thread):
                 self.updateSuggested()
                 lastRun = datetime.today()
 
-            xbmc.sleep(3000)
+            self.logMsg("entering event wait")
+            self.event.wait(30.0)
+            self.logMsg("event wait finished")
                         
         self.logMsg("Exited")
         

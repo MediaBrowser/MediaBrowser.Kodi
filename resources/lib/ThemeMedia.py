@@ -28,6 +28,8 @@ class ThemeMediaThread(threading.Thread):
     volume = ''
     themeMusicMap = {}
     themeMoviesMap = {}
+    event = None
+    exit = False    
     
     def __init__(self, *args):
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
@@ -38,11 +40,18 @@ class ThemeMediaThread(threading.Thread):
     
         xbmc.log("XBMB3C ThemeMediaThread -> Log Level:" +  str(self.logLevel))
         
+        self.event =  threading.Event()
+        
         threading.Thread.__init__(self, *args)    
     
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
             xbmc.log("XBMB3C ThemeMediaThread -> " + msg)
+    
+    def stop(self):
+        self.logMsg("stop called")
+        self.exit = True
+        self.event.set()    
     
     def run(self):
         self.logMsg("Started")
@@ -51,7 +60,7 @@ class ThemeMediaThread(threading.Thread):
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         themeRefresh = 2
         
-        while (xbmc.abortRequested == False):
+        while (xbmc.abortRequested == False and self.exit != True):
             td = datetime.today() - lastRun
             secTotal = td.seconds
             
@@ -63,7 +72,9 @@ class ThemeMediaThread(threading.Thread):
                     xbmc.log("ThemeThread playback complete restarting thread")
                     xbmcgui.Window(10000).clearProperty('ThemeMediaMB3Disable')
                 
-            xbmc.sleep(2000)
+            self.logMsg("entering event wait")
+            self.event.wait(2.0)
+            self.logMsg("event wait finished")
             
         self.logMsg("Exited")
 
