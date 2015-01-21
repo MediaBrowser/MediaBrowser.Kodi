@@ -1319,10 +1319,32 @@ def getWigetContent(pluginName, handle, params):
     userid = downloadUtils.getUserId()
     
     if(type == "recent"):
-        itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DateCreated&Fields=Path,Overview&SortOrder=Descending&Filters=IsNotFolder&IncludeItemTypes=Movie,Episode,Trailer,Musicvideo,Video&CollapseBoxSetItems=false&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json"
+        itemsUrl = ("http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId +
+            "&Limit=10"
+            "&SortBy=DateCreated"
+            "&Fields=Path"
+            "&SortOrder=Descending"
+            "&Filters=IsNotFolder,IsUnplayed"
+            "&IncludeItemTypes=Movie,Episode"
+            "&CollapseBoxSetItems=false"
+            "&IsVirtualUnaired=false"
+            "&Recursive=true"
+            "&IsMissing=False"
+            "&format=json")
     elif(type == "active"):
-        itemsUrl = "http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId + "&Limit=10&SortBy=DatePlayed&Fields=Path,Overview&SortOrder=Descending&Filters=IsResumable,IsNotFolder&IncludeItemTypes=Movie,Episode,Trailer,Musicvideo,Video&CollapseBoxSetItems=false&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json"
-        
+        itemsUrl = ("http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId +
+            "&Limit=10"
+            "&SortBy=DatePlayed"
+            "&Fields=Path"
+            "&SortOrder=Descending"
+            "&Filters=IsResumable,IsNotFolder"
+            "&IncludeItemTypes=Movie,Episode"
+            "&CollapseBoxSetItems=false"
+            "&IsVirtualUnaired=false"
+            "&Recursive=true"
+            "&IsMissing=False"
+            "&format=json")
+            
     printDebug("WIDGET_DATE_URL: " + itemsUrl, 2)
     
     # get the recent items
@@ -1341,39 +1363,41 @@ def getWigetContent(pluginName, handle, params):
 
         image_id = item_id
         if item.get("Type") == "Episode":
-            image_id = item.get("SeriesId")
-        
-        #image = downloadUtils.getArtwork(item, "Primary")
-        image = downloadUtils.imageUrl(image_id, "Primary", 0, 400, 400)
-        fanart = downloadUtils.getArtwork(item, "Backdrop")
+            image = downloadUtils.getArtwork(item, "Primary")
+            fanart = downloadUtils.getArtwork(item, "Primary")        
+        else:
+            image = downloadUtils.getArtwork(item, "Backdrop")
+            fanart = downloadUtils.getArtwork(item, "Backdrop")        
         
         Duration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
         
         name = item.get("Name")
+        episodeDetails = ""
         printDebug("WIDGET_DATE_NAME: " + name, 2)
         
         seriesName = ''
-        if(item.get("SeriesName") != None):
-            seriesName = item.get("SeriesName").encode('utf-8')   
+        if(item.get("Type") == "Episode" and item.get("SeriesName") != None):
 
             eppNumber = "X"
             tempEpisodeNumber = "00"
             if(item.get("IndexNumber") != None):
                 eppNumber = item.get("IndexNumber")
-                if eppNumber < 10:
-                  tempEpisodeNumber = "0" + str(eppNumber)
-                else:
-                  tempEpisodeNumber = str(eppNumber)     
+                #if eppNumber < 10:
+                #  tempEpisodeNumber = "0" + str(eppNumber)
+                #else:
+                tempEpisodeNumber = str(eppNumber)     
 
             seasonNumber = item.get("ParentIndexNumber")
-            if seasonNumber < 10:
-              tempSeasonNumber = "0" + str(seasonNumber)
-            else:
-              tempSeasonNumber = str(seasonNumber)                  
+            #if seasonNumber < 10:
+            #  tempSeasonNumber = "0" + str(seasonNumber)
+            #else:
+            tempSeasonNumber = str(seasonNumber)                  
                   
-            name =  tempSeasonNumber + "x" + tempEpisodeNumber + "-" + name
+            episodeDetails =  "s" + tempSeasonNumber + "e" + tempEpisodeNumber + " " + name
+            name = item.get("SeriesName")
         
         list_item = xbmcgui.ListItem(label=name, iconImage=image, thumbnailImage=image)
+        list_item.setLabel2(episodeDetails)
         list_item.setInfo( type="Video", infoLabels={ "year":item.get("ProductionYear"), "duration":str(Duration), "plot":item.get("Overview"), "tvshowtitle":str(seriesName), "premiered":item.get("PremiereDate"), "rating":item.get("CommunityRating") } )
         list_item.setProperty('fanart_image',fanart)
         
