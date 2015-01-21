@@ -97,8 +97,9 @@ class ThemeMediaThread(threading.Thread):
         if newid != self.themeId:
             if self.playingTheme == True:
               if  xbmc.Player().isPlaying():
+                xbmc.sleep(5000)
                 self.stop()
-                xbmc.sleep(1500)
+                
         id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
         if id == '' and xbmcgui.getCurrentWindowId() == 10025:
            self.logMsg("updateThemeMedia Called had a sleep using 10025 id")      
