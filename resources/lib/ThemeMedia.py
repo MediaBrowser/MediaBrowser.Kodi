@@ -48,7 +48,7 @@ class ThemeMediaThread(threading.Thread):
         if(self.logLevel >= level):
             xbmc.log("XBMB3C ThemeMediaThread -> " + msg)
     
-    def stop(self):
+    def stopThread(self):
         self.logMsg("stop called")
         self.exit = True
         self.event.set()    
@@ -97,7 +97,7 @@ class ThemeMediaThread(threading.Thread):
         if newid != self.themeId:
             if self.playingTheme == True:
               if  xbmc.Player().isPlaying():
-                xbmc.sleep(5000)
+                self.event.wait(5.0)
                 self.stop()
                 
         id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')

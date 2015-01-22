@@ -258,7 +258,7 @@ def ServiceEntryPoint():
     if(artworkRotationThread != None):
         artworkRotationThread.stop()
     if(newThemeMediaThread != None):
-        newThemeMediaThread.stop()
+        newThemeMediaThread.stopThread()
     if(newInfoThread != None):
         newInfoThread.stop()
     if(newPlaylistsThread != None):
