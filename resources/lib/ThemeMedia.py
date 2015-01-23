@@ -97,8 +97,8 @@ class ThemeMediaThread(threading.Thread):
         if newid != self.themeId:
             if self.playingTheme == True:
               if  xbmc.Player().isPlaying():
-                self.event.wait(5.0)
                 self.stop()
+                self.event.wait(1.5)
                 
         id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
         if id == '' and xbmcgui.getCurrentWindowId() == 10025:
