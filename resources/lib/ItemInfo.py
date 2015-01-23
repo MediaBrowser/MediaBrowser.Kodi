@@ -52,12 +52,13 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         WINDOW.setProperty('ItemGUID', id)
         
         name = item.get("Name")
-        image = self.downloadUtils.getArtwork(item, "Primary3","0",True)
+        image = self.downloadUtils.getArtwork(item, "Primary","0",True)
         fanArt = self.downloadUtils.getArtwork(item, "BackdropNoIndicators")
         discart = self.downloadUtils.getArtwork(item, "Disc")
         # calculate the percentage complete
         userData = item.get("UserData")
-        cappedPercentage = None
+        cappedPercentage = 0
+        
         if(userData != None):
             playBackTicks = float(userData.get("PlaybackPositionTicks"))
             if(playBackTicks != None and playBackTicks > 0):
@@ -69,36 +70,47 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
                         cappedPercentage = 10
                     if(cappedPercentage == 100):
                         cappedPercentage = 90
+            
             try:
                 watchedButton = self.getControl(3192)
-                if(watchedButton != None):
-                    if userData.get("Played") == True:
-                        watchedButton.setSelected(True)
-                    else:
-                        watchedButton.setSelected(False)
-                
-                dislikeButton = self.getControl(3193)
-                if(dislikeButton != None):
-                    if userData.get("Likes") != None and userData.get("Likes") == False:
-                        dislikeButton.setSelected(True)
-                    else:
-                        dislikeButton.setSelected(False)
-                        
-                likeButton = self.getControl(3194)
-                if(likeButton != None):
-                    if userData.get("Likes") != None and userData.get("Likes") == True:
-                        likeButton.setSelected(True)
-                    else:
-                        likeButton.setSelected(False)
-                        
-                favouriteButton = self.getControl(3195)
-                if(favouriteButton != None):
-                    if userData.get("IsFavorite") == True:
-                        favouriteButton.setSelected(True)
-                    else:
-                        favouriteButton.setSelected(False)
             except:
-                pass            
+                watchedButton = None
+            if(watchedButton != None):
+                if userData.get("Played") == True:
+                    watchedButton.setSelected(True)
+                else:
+                    watchedButton.setSelected(False)
+            
+            try:
+                dislikeButton = self.getControl(3193)
+            except:
+                dislikeButton = None            
+            if(dislikeButton != None):
+                if userData.get("Likes") != None and userData.get("Likes") == False:
+                    dislikeButton.setSelected(True)
+                else:
+                    dislikeButton.setSelected(False)
+                    
+            try:
+                likeButton = self.getControl(3194)
+            except:
+                likeButton = None                       
+            if(likeButton != None):
+                if userData.get("Likes") != None and userData.get("Likes") == True:
+                    likeButton.setSelected(True)
+                else:
+                    likeButton.setSelected(False)
+                    
+            try:
+                favouriteButton = self.getControl(3195)
+            except:
+                favouriteButton = None
+            if(favouriteButton != None):
+                if userData.get("IsFavorite") == True:
+                    favouriteButton.setSelected(True)
+                else:
+                    favouriteButton.setSelected(False)
+          
         
         episodeInfo = ""
         type = item.get("Type")
@@ -326,8 +338,8 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
      
         # add resume percentage text to name
         addResumePercent = __settings__.getSetting('addResumePercent') == 'true'
-        if (addResumePercent and cappedPercentage != None):
-            name = name + " (" + str(cappedPercentage) + "%)"        
+        if (addResumePercent and cappedPercentage != 0):
+            name = name + " (" + str(cappedPercentage) + "%)"
 
         self.getControl(3000).setLabel(name)
         self.getControl(3003).setLabel(episodeInfo)
@@ -465,6 +477,10 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
                 self.postUrl(url)
             else:
                 self.deleteUrl(url)
+            self.onInit()
+        elif(controlID == 3006):                   
+            url = "http://" + self.server + "/mediabrowser/Users/" + self.userid + "/PlayingItems/" + self.id + "/Progress?PositionTicks=0"
+            self.postUrl(url)
             self.onInit()
         pass
     
