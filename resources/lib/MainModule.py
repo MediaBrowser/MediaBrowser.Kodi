@@ -394,11 +394,6 @@ def delete (url):
         progress = xbmcgui.DialogProgress()
         progress.create(__language__(30052), __language__(30053))
         downloadUtils.downloadUrl(url, type="DELETE")
-        deleteSleep=0
-        while deleteSleep<10:
-            xbmc.sleep(1000)
-            deleteSleep=deleteSleep+1
-            progress.update(deleteSleep*10,__language__(30053))
         progress.close()
         xbmc.executebuiltin("Container.Refresh")
                
