@@ -149,7 +149,7 @@ class PlayUtils():
        
     def fileExists(self, result):
     
-        xbmc.log("Checking existence of : " + result.get("Path"))
+        xbmc.log("Checking existence of : " + result.get("Path").encode('utf-8'))
         if os.path.exists(result.get("Path")) == True:
             xbmc.log("Path exists")
             return True
