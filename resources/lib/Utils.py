@@ -148,9 +148,9 @@ class PlayUtils():
            return '1000000'
        
     def fileExists(self, result):
-    
-        xbmc.log("Checking existence of : " + result.get("Path").encode('utf-8'))
-        if os.path.exists(result.get("Path")) == True:
+        path=result.get("Path").encode('utf-8')
+        xbmc.log("Checking existence of : " + path)
+        if os.path.exists(path) == True:
             xbmc.log("Path exists")
             return True
         else:
@@ -160,7 +160,8 @@ class PlayUtils():
     
     # Works out if the network quality can play directly or if transcoding is needed
     def isLocalPath(self, result):
-        playurl = result.get("Path")
+        path=result.get("Path").encode('utf-8')
+        playurl = path
         if playurl != None:
             #We have a path to play so play it
             if ":\\" in playurl:
