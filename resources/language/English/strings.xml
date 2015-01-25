@@ -213,7 +213,6 @@
 	<string id="30217">Show boxsets collapsed in views (Requires Restart)</string>	
     <string id="30218">Compress Artwork</string>
     <string id="30219">Enable Skin Helper (Requires Restart)</string>
-    <string id="30220">Enable Image Proxy (Requires Restart)</string>
     
 	<!-- Default views -->
     <string id="30300">Active</string>              

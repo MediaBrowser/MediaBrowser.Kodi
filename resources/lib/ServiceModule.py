@@ -30,7 +30,6 @@ BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'li
 sys.path.append(BASE_RESOURCE_PATH)
 base_window = xbmcgui.Window( 10000 )
 
-
 from InfoUpdater import InfoUpdaterThread
 from NextUpItems import NextUpUpdaterThread
 from SuggestedItems import SuggestedUpdaterThread
@@ -42,14 +41,11 @@ from InProgressItems import InProgressUpdaterThread
 from WebSocketClient import WebSocketThread
 from ClientInformation import ClientInformation
 from MenuLoad import LoadMenuOptionsThread
-from ImageProxy import MyHandler
-from ImageProxy import ThreadingHTTPServer
 from PlaylistItems import PlaylistItemUpdaterThread
 from DownloadUtils import DownloadUtils
 from BackgroundData import BackgroundDataUpdaterThread
 from Utils import PlayUtils
 from SkinHelperThread import SkinHelperThread
-
 
 downloadUtils = DownloadUtils()
 
@@ -176,29 +172,7 @@ def ServiceEntryPoint():
     else:
         printDebug("XBMB3C BackgroundDataUpdater Disabled")
     
-    ###############################################
-    # start the image proxy server
-    ###############################################
-    
-    keepServing = True
-    def startImageProxyServer():
-    
-        printDebug("XBMB3 -> HTTP Image Proxy Server Starting")
-        xbmc.log("XBMB3C Service -> HTTP Image Proxy Server Starting")
-        server = ThreadingHTTPServer(("",15001), MyHandler)
-        
-        while (keepServing):
-            server.handle_request()
-            xbmc.log("XBMB3C Service -> Processing Request : " + str(keepServing))
-        
-        printDebug("XBMB3 -> HTTP Image Proxy Server EXITING")
-        xbmc.log("XBMB3C Service -> HTTP Image Proxy Server EXITING")
-        
-    if __addon__.getSetting('useImageProxyServer') == "true":
-        Thread(target=startImageProxyServer).start()
-    else:
-        printDebug("XBMB3C ImageProxyServer Disabled")        
-    
+    # start the service
     monitor = Service()
     lastProgressUpdate = datetime.today()
     
@@ -265,18 +239,7 @@ def ServiceEntryPoint():
         newPlaylistsThread.stop()
     if(newBackgroundDataThread != None):
         newBackgroundDataThread.stop()        
-        
-    xbmc.log("XBMB3C Service -> Stopping Image Proxy")
-    
-    # stop the image proxy
-    keepServing = False
-    
-    if __addon__.getSetting('useImageProxyServer') == "true":       
-        try:
-            urllib.urlopen("http://localhost:15001/?id=dummy&type=Primary", proxies={})
-        except:
-            pass
-    
+      
     xbmc.log("XBMB3C Service -> Service shutting down")
 
 def deleteItem (url):
