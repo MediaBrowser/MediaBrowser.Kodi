@@ -1442,7 +1442,7 @@ def showParentContent(pluginName, handle, params):
     
     parentId = params.get("ParentId")
     name = params.get("Name")
-    detailsString = getDetailsString()
+    detailsString = getDetailsString(fast=True)
     userid = downloadUtils.getUserId()
     
     contentUrl = (
