@@ -229,6 +229,10 @@ def getCollections():
                 detailsString=getDetailsString(fast=True)
             else:
                 detailsString=getDetailsString(fast=False)
+            if section == "movies":
+                itemDetailsString=getDetailsString(fast=True)
+            else:
+                itemDetailsString=getDetailsString(fast=False)                
             
             
             collections.append( {'title'      : Name,
@@ -241,11 +245,11 @@ def getCollections():
                     'guiid'             : item.get("Id"),
                     'path'              : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json&ImageTypeLimit=1'),
                     'collapsed_path'    : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json&CollapseBoxSetItems=true&ImageTypeLimit=1'),
-                    'recent_path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString+ '&SortOrder=Descending&Filters=IsNotFolder&ExcludeLocationTypes=Virtual&format=json&ImageTypeLimit=1'),
-                    'inprogress_path'   : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") +'&Recursive=true&SortBy=DatePlayed&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsResumable&Filters=IsNotFolder,IsUnplayed&IsVirtualUnaired=false&IsMissing=False&ExcludeLocationTypes=Virtual&format=json&ImageTypeLimit=1'),
-                    'genre_path'        : ('/mediabrowser/Genres?Userid=' + userid + '&parentId=' + item.get("Id") +'&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&Recursive=true&format=json&ImageTypeLimit=1'),
-                    'nextepisodes_path' : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&parentId=' + item.get("Id") +'&Recursive=true&SortBy=DateCreated&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsUnplayed&IsVirtualUnaired=false&IsMissing=False&ExcludeLocationTypes=Virtual&IncludeItemTypes=Episode&format=json&ImageTypeLimit=1'),
-                    'unwatched_path'    : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") +'&Recursive=true&SortBy=SortName&Fields=' + detailsString + '&SortOrder=Ascending&Filters=IsNotFolder,IsUnplayed&ExcludeLocationTypes=Virtual&format=json&ImageTypeLimit=1')})
+                    'recent_path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + itemDetailsString + '&SortOrder=Descending&Filters=IsNotFolder&ExcludeLocationTypes=Virtual&format=json&ImageTypeLimit=1'),
+                    'inprogress_path'   : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") +'&Recursive=true&SortBy=DatePlayed&Fields=' + itemDetailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsResumable&Filters=IsNotFolder,IsUnplayed&IsVirtualUnaired=false&IsMissing=False&ExcludeLocationTypes=Virtual&format=json&ImageTypeLimit=1'),
+                    'genre_path'        : ('/mediabrowser/Genres?Userid=' + userid + '&parentId=' + item.get("Id") +'&SortBy=SortName&Fields=' + itemDetailsString + '&SortOrder=Ascending&Recursive=true&format=json&ImageTypeLimit=1'),
+                    'nextepisodes_path' : ('/mediabrowser/Shows/NextUp/?Userid=' + userid + '&parentId=' + item.get("Id") +'&Recursive=true&SortBy=DateCreated&Fields=' + itemDetailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsUnplayed&IsVirtualUnaired=false&IsMissing=False&ExcludeLocationTypes=Virtual&IncludeItemTypes=Episode&format=json&ImageTypeLimit=1'),
+                    'unwatched_path'    : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") +'&Recursive=true&SortBy=SortName&Fields=' + itemDetailsString + '&SortOrder=Ascending&Filters=IsNotFolder,IsUnplayed&ExcludeLocationTypes=Virtual&format=json&ImageTypeLimit=1')})
 
             printDebug("Title " + Name)    
     
