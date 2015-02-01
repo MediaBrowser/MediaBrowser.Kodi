@@ -13,6 +13,7 @@ from datetime import datetime
 import urllib
 import urllib2
 import random
+import time
 
 from Utils import PlayUtils
 from DownloadUtils import DownloadUtils
@@ -100,6 +101,7 @@ class ThemeMediaThread(threading.Thread):
                 self.stop()
                 self.event.wait(1.5)
                 
+        time.sleep(2)        
         id = xbmc.getInfoLabel('ListItem.Property(ItemGUID)')
         if id == '' and xbmcgui.getCurrentWindowId() == 10025:
            self.logMsg("updateThemeMedia Called had a sleep using 10025 id")      

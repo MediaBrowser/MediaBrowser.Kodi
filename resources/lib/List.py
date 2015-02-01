@@ -288,6 +288,9 @@ class List():
         
         addCounts = __settings__.getSetting('addCounts') == 'true'
         
+        if item.get("Type") == "Season":
+            guiid = item.get("SeriesId") 
+        
         WINDOW = xbmcgui.Window( 10000 )
         if WINDOW.getProperty("addshowname") == "true":
             if item.get("LocationType") == "Virtual":
@@ -314,7 +317,7 @@ class List():
                 listItemName = prefix + ' - ' + API().getName(item)
             else:
                 listItemName = API().getName(item)
-            guiid = item.get("SeriesId")       
+            guiid = item.get("SeriesId")    
         else:
             listItemName = API().getName(item)
             if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != ''):
