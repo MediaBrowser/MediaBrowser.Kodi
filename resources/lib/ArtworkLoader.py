@@ -755,27 +755,7 @@ class ArtworkRotationThread(threading.Thread):
                             artLinks[id] = stored_item
                         except Exception, e:
                             self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))                    
-                    
-                    if images == []:
-                        for imagetag in images2:
-                            try:
-                                info = {}
-                                info["url"] = downloadUtils.getArtwork(col_item, "Primary", index=str(index))
-                                info["type"] = MB3type
-                                info["index"] = index
-                                info["id"] = id
-                                info["action"] = "None"
-                                info["plot"] = ""
-                                info["poster"] = ""
-                                info["parent"] = parentID
-                                info["name"] = name
-                                links.append(info)
-                                index = index + 1
-                                stored_item["links"] = links
-                                artLinks[id] = stored_item
-                            except Exception, e:
-                                self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))
-                                              
+                                                                
 
                         stored_item["links"] = links
                         artLinks[id] = stored_item
