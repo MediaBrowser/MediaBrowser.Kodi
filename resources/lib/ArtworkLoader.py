@@ -57,7 +57,7 @@ class ArtworkRotationThread(threading.Thread):
         level = addonSettings.getSetting('logLevel')
         self.logLevel = 0
         if(level != None):
-            self.logLevel = int(level)           
+            self.logLevel = int(level)         
     
         xbmc.log("XBMB3C BackgroundRotationThread -> Log Level:" +  str(self.logLevel))
         
@@ -67,7 +67,7 @@ class ArtworkRotationThread(threading.Thread):
     
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
-            xbmc.log("XBMB3C BackgroundRotationThread -> " + msg)
+            xbmc.log("XBMB3C BackgroundRotationThread -> " + msg.encode('utf-8'))
     
     def stop(self):
         self.logMsg("stop called")
@@ -412,6 +412,8 @@ class ArtworkRotationThread(threading.Thread):
     
         if(filterOnParent == None or filterOnParent == ""):
             filterOnParent = "empty"
+            
+        filterOnParent = filterOnParent.decode("utf-8")
         
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         backgroundRefresh = int(addonSettings.getSetting('backgroundRefresh'))
