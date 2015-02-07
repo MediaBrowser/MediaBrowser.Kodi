@@ -310,7 +310,13 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         
         if item.get("Metascore") != None:
           listItem = xbmcgui.ListItem("Metascore:", str(item.get("Metascore")))
-          infoList.addItem(listItem) 
+          infoList.addItem(listItem)
+          
+        playCount = 0
+        if(userData != None and userData.get("Played") == True):
+            playCount = 1
+        listItem = xbmcgui.ListItem("PlayedCount:", str(playCount))
+        infoList.addItem(listItem) 
             
         # alternate list 
         try:
@@ -333,6 +339,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
                    listItem = xbmcgui.ListItem("Premiered Date:", premieredate)
                    alternateList.addItem(listItem)
                 alternateList.addItem(pathlistItem2)
+                
         except:
             pass     
      
