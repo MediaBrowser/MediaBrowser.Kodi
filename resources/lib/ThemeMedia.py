@@ -47,7 +47,7 @@ class ThemeMediaThread(threading.Thread):
     
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
-            xbmc.log("XBMB3C ThemeMediaThread -> " + msg)
+            xbmc.log("XBMB3C ThemeMediaThread -> " + msg.encode('utf-8'))
     
     def stopThread(self):
         self.logMsg("stop called")

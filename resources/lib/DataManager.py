@@ -28,7 +28,7 @@ class DataManager():
         
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
-            xbmc.log("MB3 DataManager -> " + msg)
+            xbmc.log("MB3 DataManager -> " + msg.encode('utf-8'))
 
     def getCacheValidatorFromData(self, result):
         result = result.get("Items")
@@ -155,13 +155,13 @@ class CacheManagerThread(threading.Thread):
             self.logLevel = int(level)
             
         threading.Thread.__init__(self, *args)
-
-    def logMsg(self, msg, level = 1):
-        if(self.logLevel >= level):
-            xbmc.log("MB3 CacheManagerThread -> " + msg)
-            
+           
     def setCacheData(self, data):
         self.dataManager = data
+    
+    def logMsg(self, msg, level = 1):
+        if(self.logLevel >= level):
+            xbmc.log("MB3 DataManager -> " + msg.encode('utf-8'))
     
     def run(self):
     

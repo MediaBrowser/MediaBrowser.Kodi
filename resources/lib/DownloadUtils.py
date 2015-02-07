@@ -37,7 +37,7 @@ class DownloadUtils():
 
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
-            xbmc.log("XBMB3C DownloadUtils -> " + msg)
+            xbmc.log("XBMB3C DownloadUtils -> " + msg.encode('utf-8'))
 
     def getUserId(self, suppress=True):
 

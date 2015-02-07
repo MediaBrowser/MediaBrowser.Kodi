@@ -39,7 +39,7 @@ class NextUpUpdaterThread(threading.Thread):
     
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
-            xbmc.log("XBMB3C NextUpUpdaterThread -> " + msg)
+            xbmc.log("XBMB3C NextUpUpdaterThread -> " + msg.encode('utf-8'))
         
     def stop(self):
         self.logMsg("stop called")

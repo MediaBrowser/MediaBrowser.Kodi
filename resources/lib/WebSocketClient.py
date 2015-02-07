@@ -39,7 +39,7 @@ class WebSocketThread(threading.Thread):
     
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
-            xbmc.log("XBMB3C WebSocketThread -> " + msg)    
+            xbmc.log("XBMB3C WebSocketThread -> " + msg.encode('utf-8'))    
     
     def playbackStarted(self, itemId):
         if(self.client != None):

@@ -52,7 +52,7 @@ class SkinHelperThread(threading.Thread):
         
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
-            xbmc.log("XBMB3C SkinHelperThread -> " + msg)
+            xbmc.log("XBMB3C SkinHelperThread -> " + msg.encode('utf-8'))
                 
     def run(self):
         self.logMsg("Started")
