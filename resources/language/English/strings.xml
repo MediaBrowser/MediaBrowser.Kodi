@@ -213,6 +213,10 @@
 	<string id="30217">Show boxsets collapsed in views (Requires Restart)</string>	
     <string id="30218">Compress Artwork</string>
     <string id="30219">Enable Skin Helper (Requires Restart)</string>
+    <string id="30220">Latest </string>
+    <string id="30221">In Progress </string>
+    <string id="30222">NextUp </string>
+    <string id="30223">User Views</string>
     
 	<!-- Default views -->
     <string id="30300">Active</string>              

@@ -287,6 +287,7 @@ def getCollections():
     collections.append({'title':__language__(30209), 'sectype' : 'std.music', 'section' : 'music'  , 'address' : MB_server , 'path' : '/mediabrowser/Artists/AlbumArtists?SortBy=SortName&Fields=AudioInfo&Recursive=true&SortOrder=Ascending&userid=' + userid + '&format=json&ImageTypeLimit=1','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })
     collections.append({'title':__language__(30210), 'sectype' : 'std.music', 'section' : 'music'  , 'address' : MB_server , 'path' : '/mediabrowser/Artists?SortBy=SortName&Fields=AudioInfo&Recursive=true&SortOrder=Ascending&userid=' + userid + '&format=json&ImageTypeLimit=1','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })
     collections.append({'title':__language__(30211), 'sectype' : 'std.music', 'section' : 'music'  , 'address' : MB_server , 'path' : '/mediabrowser/MusicGenres?SortBy=SortName&Fields=AudioInfo&Recursive=true&IncludeItemTypes=Audio,MusicVideo&SortOrder=Ascending&userid=' + userid + '&format=json&ImageTypeLimit=1','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })
+    collections.append({'title':__language__(30223), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Views?format=json&ImageTypeLimit=1' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     
     collections.append({'title':__language__(30198)                 , 'sectype' : 'std.search', 'section' : 'search'  , 'address' : MB_server , 'path' : '/mediabrowser/Search/Hints?' + userid,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     
@@ -438,6 +439,21 @@ def displaySections(pluginhandle):
         s_url = 'http://%s%s' % ( collection['address'], path)
         printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
         dirItems.append(List().addGUIItem(s_url, details, extraData))
+        if collection.get('recent_path') != None:
+            details = {'title' : __language__(30220) + collection.get('title', 'Unknown') }
+            s_url = 'http://%s%s' % ( collection['address'], collection['recent_path'])
+            printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
+            dirItems.append(List().addGUIItem(s_url, details, extraData))
+
+            details = {'title' : __language__(30221) + collection.get('title', 'Unknown') }
+            s_url = 'http://%s%s' % ( collection['address'], collection['inprogress_path'])
+            printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
+            dirItems.append(List().addGUIItem(s_url, details, extraData))
+            if collection.get('section') == "tvshows":
+                details = {'title' : __language__(30222) + collection.get('title', 'Unknown') }
+                s_url = 'http://%s%s' % ( collection['address'], collection['nextepisodes_path'])
+                printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
+                dirItems.append(List().addGUIItem(s_url, details, extraData))            
         
     #All XML entries have been parsed and we are ready to allow the user to browse around.  So end the screen listing.
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)

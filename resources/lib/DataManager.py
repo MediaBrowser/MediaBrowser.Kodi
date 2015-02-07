@@ -59,8 +59,12 @@ class DataManager():
                     self.logMsg(itemString, level=2)
                     dataHashString = dataHashString + itemString
                 else:
-                    itemCount = itemCount + item.get("RecursiveItemCount")
-                    unwatchedItemCount = unwatchedItemCount + userData.get("UnplayedItemCount")
+                    if item.get("RecursiveItemCount") == None:
+                        itemCount=0
+                        unwatchedItemCount=0
+                    else:
+                        itemCount = itemCount + item.get("RecursiveItemCount")
+                        unwatchedItemCount = unwatchedItemCount + userData.get("UnplayedItemCount")
                     PlayedPercentage = userData.get("PlayedPercentage")
                     if PlayedPercentage == None:
                         PlayedPercentage = 0
