@@ -1084,7 +1084,7 @@ def getContent( url, pluginhandle ):
     result = None
     
     progress = None
-    if(__settings__.getSetting('showLoadProgress') == "true"):
+    if(__settings__.getSetting('showLoadProgress') == "true" and not xbmc.getCondVisibility("Window.IsActive(Home)")):
         progress = xbmcgui.DialogProgress()
         progress.create(__language__(30121))
         progress.update(0, __language__(30122))    

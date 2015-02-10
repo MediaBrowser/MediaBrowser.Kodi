@@ -39,7 +39,12 @@ class PlaylistItemUpdaterThread(threading.Thread):
         
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
-            xbmc.log("XBMB3C PlaylistItemUpdaterThread -> " + msg.encode('utf-8'))
+            try:
+                xbmc.log("XBMB3C PlaylistItemUpdaterThread -> " + str(msg))
+            except UnicodeEncodeError:
+                try:
+                    xbmc.log("XBMB3C PlaylistItemUpdaterThread -> " + str(msg.encode('utf-8')))
+                except: pass
         
     def stop(self):
         self.logMsg("stop called")

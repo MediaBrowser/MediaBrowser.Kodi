@@ -28,7 +28,12 @@ class DataManager():
         
     def logMsg(self, msg, level = 1):
         if(self.logLevel >= level):
-            xbmc.log("MB3 DataManager -> " + msg.encode('utf-8'))
+            try:
+                xbmc.log("XBMB3C DataManager -> " + str(msg))
+            except UnicodeEncodeError:
+                try:
+                    xbmc.log("XBMB3C DataManager -> " + str(msg.encode('utf-8')))
+                except: pass
 
     def getCacheValidatorFromData(self, result):
         result = result.get("Items")
