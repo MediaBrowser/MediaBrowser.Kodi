@@ -1454,7 +1454,7 @@ def getWigetContent(pluginName, handle, params):
     xbmcplugin.endOfDirectory(handle, cacheToDisc=False)
     
 def showParentContent(pluginName, handle, params):
-    printDebug("showParentContent Called" + str(params), 2)
+    printDebug("showParentContent Called" + str(params), 1)
     
     port = __settings__.getSetting('port')
     host = __settings__.getSetting('ipaddress')
@@ -1462,7 +1462,13 @@ def showParentContent(pluginName, handle, params):
     
     parentId = params.get("ParentId")
     name = params.get("Name")
-    detailsString = getDetailsString(fast=True)
+    useFast = params.get("useFast")
+    
+    isFast = True
+    if(useFast != None and useFast == "false"):
+        isFast = False
+    
+    detailsString = getDetailsString(fast=isFast)
     userid = downloadUtils.getUserId()
     
     contentUrl = (
@@ -1471,11 +1477,9 @@ def showParentContent(pluginName, handle, params):
         "&IsVirtualUnaired=false" +
         "&IsMissing=False" +
         "&Fields=" + detailsString +
-        "&SortOrder=" + __settings__.getSetting('sortorderfor' + urllib.quote(name)) +
-        "&SortBy=" + __settings__.getSetting('sortbyfor' + urllib.quote(name)) +
-        "&Genres=&format=json")
+        "&format=json")
     
-    printDebug("showParentContent Content Url : " + str(contentUrl), 2)
+    printDebug("showParentContent Content Url : " + str(contentUrl), 1)
     
     getContent(contentUrl, handle)
     

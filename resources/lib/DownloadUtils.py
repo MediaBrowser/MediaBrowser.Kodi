@@ -74,11 +74,41 @@ class DownloadUtils():
         self.postcapabilities()
         
         return userid
+        
     def postcapabilities(self):
-        url = ("http://%s:%s/mediabrowser/Sessions/Capabilities" % (self.addonSettings.getSetting('ipaddress'), self.addonSettings.getSetting('port')))  
-        url = url + "?PlayableMediaTypes=Audio,Video,Photo"   
-        self.logMsg("DownloadUtils -> postcapabilities :" + url)
-        self.downloadUrl(url, postBody="", type="POST")        
+        self.logMsg("postcapabilities called")
+        
+        # Set Capabilities
+        mb3Port = self.addonSettings.getSetting('port')
+        mb3Host = self.addonSettings.getSetting('ipaddress')
+        clientInfo = ClientInformation()
+        machineId = clientInfo.getMachineId()
+        
+        # get session id
+        url = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Sessions?DeviceId=" + machineId + "&format=json"
+        self.logMsg("Session URL : " + url);
+        jsonData = self.downloadUrl(url)
+        self.logMsg("Session JsonData : " + jsonData)
+        result = json.loads(jsonData)
+        self.logMsg("Session JsonData : " + str(result))
+        sessionId = result[0].get("Id")
+        self.logMsg("Session Id : " + str(sessionId))
+        
+        # post capability data
+        playableMediaTypes = "Audio,Video,Photo"
+        supportedCommands = "Play,Playstate,DisplayContent,GoHome,SendString,GoToSettings,DisplayMessage,PlayNext"
+        
+        url = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Sessions/Capabilities?Id=" + sessionId + "&PlayableMediaTypes=" + playableMediaTypes + "&SupportedCommands=" + supportedCommands
+        
+        postData = {}
+        #postData["Id"] = sessionId;
+        #postData["PlayableMediaTypes"] = "Video";
+        #postData["SupportedCommands"] = "MoveUp";
+        stringdata = json.dumps(postData)
+        self.logMsg("Capabilities URL : " + url);
+        self.logMsg("Capabilities Data : " + stringdata)
+        
+        self.downloadUrl(url, postBody=stringdata, type="POST")
 
     def authenticate(self):    
         WINDOW = xbmcgui.Window( 10000 )

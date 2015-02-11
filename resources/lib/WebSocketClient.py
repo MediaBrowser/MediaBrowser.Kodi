@@ -14,11 +14,7 @@ import websocket
 from ClientInformation import ClientInformation
 from DownloadUtils import DownloadUtils
 
-
 _MODE_BASICPLAY=12
-
-downloadUtils = DownloadUtils()
-
 
 class WebSocketThread(threading.Thread):
 
@@ -154,49 +150,122 @@ class WebSocketThread(threading.Thread):
                 playUrl = playUrl.replace("\\","/")                
                 
                 xbmc.Player().play(playUrl)
+            '''
+            I dont know how to do this, play lists are weird in Kodi
+            if someone wants to have a go at playlist set when adding an item to the queue that would be good 
+            elif(playCommand != None and playCommand == "PlayNext"):
+                list = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
                 
+                startPositionTicks = data.get("StartPositionTicks")
+                self.logMsg("PlayNext Media With ID : " + itemIds[0])
+                
+                addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+                mb3Host = addonSettings.getSetting('ipaddress')
+                mb3Port = addonSettings.getSetting('port')                   
+                
+                url =  mb3Host + ":" + mb3Port + ',;' + itemIds[0]
+                if(startPositionTicks == None):
+                    url  += ",;" + "-1"
+                else:
+                    url  += ",;" + str(startPositionTicks)
+                    
+                playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
+                playUrl = playUrl.replace("\\\\","smb://")
+                playUrl = playUrl.replace("\\","/")                    
+            
+                self.logMsg("PlayNext URL : " + playUrl)
+                
+                list.add(playUrl)
+                #xbmc.Player().play(list)
+            '''
+            
         elif(messageType != None and messageType == "Playstate"):
             command = data.get("Command")
             if(command != None and command == "Stop"):
                 self.logMsg("Playback Stopped")
                 xbmc.executebuiltin('xbmc.activatewindow(10000)')
                 xbmc.Player().stop()
-                
-            if(command != None and command == "Seek"):
+            elif(command != None and command == "Seek"):
                 seekPositionTicks = data.get("SeekPositionTicks")
                 self.logMsg("Playback Seek : " + str(seekPositionTicks))
                 seekTime = (seekPositionTicks / 1000) / 10000
                 xbmc.Player().seekTime(seekTime)
+                
+        elif(messageType != None and messageType == "GeneralCommand"):
+            commandName = data.get("Name")
+            
+            if(commandName != None and commandName == "DisplayContent"):
+            
+                arguments = data.get("Arguments")
+                itemName = arguments.get("ItemName")
+                itemId = arguments.get("ItemId")
+                itemType = arguments.get("ItemType")
+                context = arguments.get("Context")
+                
+                self.logMsg("DisplayContent_Arguments : " + str(arguments))
+                
+                if(itemType != None and (itemType == "Series" or itemType == "Season")):
+                
+                    xbmc.executebuiltin("Dialog.Close(all,true)")
+                    pluginLink = "plugin://plugin.video.xbmb3c/?ParentId=" + itemId + '&useFast=false&mode=21'
+                    xbmc.executebuiltin("xbmc.ActivateWindow(VideoLibrary," + pluginLink + ")")
 
+                elif(itemType != None and (itemType == "Episode" or itemType == "Movie")):
+                
+                    xbmc.executebuiltin("Dialog.Close(all,true)")
+                    pluginLink = "plugin://plugin.video.xbmb3c?id=" + itemId + "&mode=" + str(17)
+                    xbmc.executebuiltin("xbmc.RunPlugin(" + pluginLink + ")")
+                    
+                elif(itemType != None and (itemType == "Person")):
+                
+                    baseName = itemName
+                    baseName = baseName.replace(" ", "+")
+                    baseName = baseName.replace("&", "_")
+                    baseName = baseName.replace("?", "_")
+                    baseName = baseName.replace("=", "_")
+            
+                    xbmc.executebuiltin("Dialog.Close(all,true)")
+                    pluginLink = "plugin://plugin.video.xbmb3c?mode=" + str(15) +"&name=" + baseName
+                    xbmc.executebuiltin("xbmc.RunPlugin(" + pluginLink + ")")                    
+                
+                else:
+                    xbmc.executebuiltin("XBMC.Notification(DisplayContent: " + str(itemType) + " not implemented,)")
+        
     def on_error(self, ws, error):
         self.logMsg("Error : " + str(error))
+        #raise
 
     def on_close(self, ws):
         self.logMsg("Closed")
 
     def on_open(self, ws):
-        try:
-            clientInfo = ClientInformation()
-            machineId = clientInfo.getMachineId()
-            version = clientInfo.getVersion()
-            messageData = {}
-            messageData["MessageType"] = "Identity"
-            
-            addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-            deviceName = addonSettings.getSetting('deviceName')
-            deviceName = deviceName.replace("\"", "_")
+
+        clientInfo = ClientInformation()
+        machineId = clientInfo.getMachineId()
+        version = clientInfo.getVersion()
+        messageData = {}
+        messageData["MessageType"] = "Identity"
         
-            messageData["Data"] = "Kodi|" + machineId + "|" + version + "|" + deviceName
-            messageString = json.dumps(messageData)
-            self.logMsg("Opened : " + str(messageString))
-            ws.send(messageString)
-        except Exception, e:
-            self.logMsg("Exception : " + str(e), level=0)                
+        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        deviceName = addonSettings.getSetting('deviceName')
+        deviceName = deviceName.replace("\"", "_")
+    
+        messageData["Data"] = "Kodi|" + machineId + "|" + version + "|" + deviceName
+        messageString = json.dumps(messageData)
+        self.logMsg("Opened : " + str(messageString))
+        ws.send(messageString)
+        
+        # Set Capabilities
+        xbmc.log("postcapabilities_called")
+        downloadUtils = DownloadUtils()
+        downloadUtils.postcapabilities()
+           
         
     def getWebSocketPort(self, host, port):
         
         userUrl = "http://" + host + ":" + port + "/mediabrowser/System/Info?format=json"
          
+        downloadUtils = DownloadUtils()
         jsonData = downloadUtils.downloadUrl(userUrl, suppress=True, popup=1 )
         if(jsonData == ""):
             return -1
