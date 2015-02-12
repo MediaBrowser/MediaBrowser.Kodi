@@ -295,6 +295,52 @@ def getCollections():
         
     return collections
 
+def getViewCollections():
+    printDebug("== ENTER: getViewCollections ==")
+    __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+    MB_server = __settings__.getSetting('ipaddress')+":"+__settings__.getSetting('port')
+    userid = downloadUtils.getUserId()
+    
+    if(userid == None or len(userid) == 0):
+        return {}
+    
+    try:
+        jsonData = downloadUtils.downloadUrl("http://" + MB_server + "/mediabrowser/Users/" + userid + "/Views?format=json&ImageTypeLimit=1")
+    except Exception, msg:
+        error = "Get connect : " + str(msg)
+        xbmc.log (error)
+        return {}        
+    
+    printDebug("getViewCollections jsonData : " + jsonData, level=2)
+    result = json.loads(jsonData)
+    
+    collections=[]
+    result = result.get("Items")
+    
+    for item in result:
+        if(item.get("ChildCount") != 0):
+            Name =(item.get("Name")).encode('utf-8')
+            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+            
+            total = str(item.get("ChildCount"))
+            section = item.get("CollectionType")
+            if section == None:
+                section = "movies"
+
+            collections.append( {'title'      : Name,
+                    'address'           : MB_server ,
+                    'thumb'             : downloadUtils.getArtwork(item,"Primary") ,
+                    'fanart_image'      : downloadUtils.getArtwork(item, "Backdrop") ,
+                    'poster'            : downloadUtils.getArtwork(item,"Primary") ,
+                    'sectype'           : section,
+                    'section'           : section,
+                    'id'             : item.get("Id")})
+   
+         
+    return collections
+
 def markWatched (url):
     downloadUtils.downloadUrl(url, postBody="", type="POST")  
     WINDOW = xbmcgui.Window( 10000 )

@@ -63,6 +63,7 @@ class SkinHelperThread(threading.Thread):
         self.logMsg("Started")
         
         self.SetMB3WindowProperties()
+        self.SetMB3WindowViewsProperties()
         self.getImagesFromCache()
 
         lastRun = datetime.today()
@@ -77,6 +78,7 @@ class SkinHelperThread(threading.Thread):
             if((secTotal > updateInterval or lastProfilePath != profilePath) and not xbmc.Player().isPlaying()):
                 
                 self.SetMB3WindowProperties()
+                self.SetMB3WindowViewsProperties()
                 self.setImagesInCache()
                 lastProfilePath = profilePath    
                 lastRun = datetime.today()
@@ -333,6 +335,96 @@ class SkinHelperThread(threading.Thread):
             WINDOW.setProperty("MediaBrowser.usr.Count", str(collectionCount))
         except Exception, e:
             self.logMsg("[XBMB3C SkinHelperThread] exception in SetMB3WindowProperties: " + str(e), level=0)
+            return False
+
+        return True
+    
+    def SetMB3WindowViewsProperties(self, filter=None, shared=False ):
+        self.logMsg("[MB3 SkinHelper] setting skin properties...")
+        try:
+            userid = downloadUtils.getUserId()
+    
+            if(userid == None or len(userid) == 0):
+                return {}
+            #Get the global host variable set in settings
+            WINDOW = xbmcgui.Window( 10000 )
+            
+            if __settings__.getSetting('collapseBoxSets')=='true':
+                collapseBoxSets = True
+            else:
+                collapseBoxSets = False
+            
+            allSections = MainModule.getViewCollections()
+            xbmc.log("MediaBrowser SetMB3WindowViewsProperties ->  ")
+            collectionCount = 0
+            mode=0
+            for section in allSections:
+                
+                id = section.get('id')   
+                
+                details={'title' : section.get('title', 'Unknown') }
+
+                extraData={ 'fanart_image' : '' ,
+                            'type'         : "Video" ,
+                            'thumb'        : '' ,
+                            'token'        : section.get('token',None) }
+
+                extraData['mode']=mode
+                modeurl="&mode=0"
+
+                #Build that listing..
+                total = section.get('total')
+                if (total == None):
+                    total = 0
+                
+                window=""
+                if section.get('sectype')=='photo':
+                    window="Pictures"
+                elif section.get('sectype')=='music':
+                    window="MusicLibrary "
+                else:
+                    window="VideoLibrary"
+                    
+                #get movies nodes
+                if section.get('sectype') == 'movies':
+                    detailsString= MainModule.getDetailsString(fast=True)   
+                    htmlpath = ("http://%s/mediabrowser/Users/" % section.get('address'))
+                    jsonData = downloadUtils.downloadUrl(htmlpath + userid + "/items?ParentId=" + id + "&Sortby=SortName&format=json")
+                    result = json.loads(jsonData)
+                    result = result.get("Items")
+                    
+                    for item in result:
+                        if item.get('CollectionType') == 'MovieMovies':
+                    
+                            Name =(item.get("Name")).encode('utf-8')
+                            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+                            path = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1'
+                            collapsedpath = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1&CollapseBoxSetItems=true'
+                            
+                            s_url='http://%s%s' % (section['address'], path)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                        
+                            WINDOW.setProperty("MediaBrowser.views.movies.0.title"  , item.get('Name', 'Unknown'))
+                            WINDOW.setProperty("MediaBrowser.views.movies.0.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            
+                            s_url='http://%s%s' % (section['address'], collapsedpath)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.0.collapsed_path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.movies.0.type" , section.get('sectype'))
+                            WINDOW.setProperty("MediaBrowser.views.movies.0.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
+                            WINDOW.setProperty("MediaBrowser.views.movies.0.total"  , str(item.get('ChildCount')))
+                        
+                elif section.get('sectype') == 'tvshows':    
+                    # get tvshows node
+                    detailsString= MainModule.getDetailsString(fast=True)   
+                    
+                    
+
+        except Exception, e:
+            self.logMsg("[XBMB3C SkinHelperThread] exception in SetMB3WindowViewsProperties: " + str(e), level=0)
             return False
 
         return True
