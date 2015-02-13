@@ -44,6 +44,11 @@ class DownloadUtils():
                     xbmc.log("XBMB3C DownloadUtils -> " + str(msg.encode('utf-8')))
                 except: pass
 
+    def getServer(self):
+        port = self.addonSettings.getSetting('port')
+        host = self.addonSettings.getSetting('ipaddress')    
+        return host + ":" + port
+    
     def getUserId(self, suppress=True):
 
         WINDOW = xbmcgui.Window( 10000 )

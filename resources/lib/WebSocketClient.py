@@ -13,6 +13,7 @@ import socket
 import websocket
 from ClientInformation import ClientInformation
 from DownloadUtils import DownloadUtils
+from PlaybackUtils import PlaybackUtils
 
 _MODE_BASICPLAY=12
 
@@ -130,55 +131,21 @@ class WebSocketThread(threading.Thread):
         if(messageType != None and messageType == "Play" and data != None):
             itemIds = data.get("ItemIds")
             playCommand = data.get("PlayCommand")
+            
             if(playCommand != None and playCommand == "PlayNow"):
             
+                xbmc.executebuiltin("Dialog.Close(all,true)")
                 startPositionTicks = data.get("StartPositionTicks")
-                self.logMsg("Playing Media With ID : " + itemIds[0])
-                
-                addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-                mb3Host = addonSettings.getSetting('ipaddress')
-                mb3Port = addonSettings.getSetting('port')                   
-                
-                url =  mb3Host + ":" + mb3Port + ',;' + itemIds[0]
-                if(startPositionTicks == None):
-                    url  += ",;" + "-1"
-                else:
-                    url  += ",;" + str(startPositionTicks)
-                    
-                playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-                playUrl = playUrl.replace("\\\\","smb://")
-                playUrl = playUrl.replace("\\","/")                
-                
-                xbmc.Player().play(playUrl)
-            '''
-            I dont know how to do this, play lists are weird in Kodi
-            if someone wants to have a go at playlist set when adding an item to the queue that would be good 
+                PlaybackUtils().PLAYAllItems(itemIds, startPositionTicks)
+                xbmc.executebuiltin("XBMC.Notification(Playlist: Added " + str(len(itemIds)) + " items to Playlist,)")
+
             elif(playCommand != None and playCommand == "PlayNext"):
-                list = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-                
-                startPositionTicks = data.get("StartPositionTicks")
-                self.logMsg("PlayNext Media With ID : " + itemIds[0])
-                
-                addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-                mb3Host = addonSettings.getSetting('ipaddress')
-                mb3Port = addonSettings.getSetting('port')                   
-                
-                url =  mb3Host + ":" + mb3Port + ',;' + itemIds[0]
-                if(startPositionTicks == None):
-                    url  += ",;" + "-1"
-                else:
-                    url  += ",;" + str(startPositionTicks)
-                    
-                playUrl = "plugin://plugin.video.xbmb3c/?url=" + url + '&mode=' + str(_MODE_BASICPLAY)
-                playUrl = playUrl.replace("\\\\","smb://")
-                playUrl = playUrl.replace("\\","/")                    
             
-                self.logMsg("PlayNext URL : " + playUrl)
-                
-                list.add(playUrl)
-                #xbmc.Player().play(list)
-            '''
-            
+                playlist = PlaybackUtils().AddToPlaylist(itemIds)
+                xbmc.executebuiltin("XBMC.Notification(Playlist: Added " + str(len(itemIds)) + " items to Playlist,)")
+                if(xbmc.Player().isPlaying() == False):
+                    xbmc.Player().play(playlist)
+                            
         elif(messageType != None and messageType == "Playstate"):
             command = data.get("Command")
             if(command != None and command == "Stop"):
@@ -203,6 +170,10 @@ class WebSocketThread(threading.Thread):
                 context = arguments.get("Context")
                 
                 self.logMsg("DisplayContent_Arguments : " + str(arguments))
+                
+                if(xbmc.Player().isPlaying() == True):
+                    self.logMsg("DisplayContent: Playing media so not doing DisplayContent")
+                    return
                 
                 if(itemType != None and (itemType == "Series" or itemType == "Season")):
                 

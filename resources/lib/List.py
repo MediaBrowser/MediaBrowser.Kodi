@@ -25,6 +25,7 @@ _MODE_CAST_LIST=14
 _MODE_SHOW_SEARCH=18
 _MODE_BASICPLAY=12
 _MODE_ITEM_DETAILS=17
+_MODE_PLAYLISTPLAY=13
 CP_ADD_URL = 'XBMC.RunPlugin(plugin://plugin.video.couchpotato_manager/movies/add?title=%s)'
 
 __cwd__ = __settings__.getAddonInfo('path')
