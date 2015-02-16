@@ -97,6 +97,7 @@ class PlaybackUtils():
         playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
         
         '''
+        # use this to print out the current playlist info
         for x in range(0, len(playlist)):
             self.logMsg("PLAYLIST_ITEM : " + str(playlist[x].getfilename()))
         
@@ -191,6 +192,7 @@ class PlaybackUtils():
             WINDOW.setProperty(playurl+"refresh_id", result.get("SeriesId"))
         else:
             WINDOW.setProperty(playurl+"refresh_id", id)
+            
         WINDOW.setProperty(playurl+"runtimeticks", str(result.get("RunTimeTicks")))
         WINDOW.setProperty(playurl+"item_id", id)
         
@@ -214,7 +216,6 @@ class PlaybackUtils():
             WINDOW.setProperty(playurl+"SubtitleStreamIndex", str(mediaSources[0].get('DefaultSubtitleStreamIndex')))
         
         playlist.add(playurl, listItem)
-        
         
         if self.settings.getSetting("autoPlaySeason")=="true" and result.get("Type")=="Episode":
             # add remaining unplayed episodes if applicable
@@ -270,29 +271,7 @@ class PlaybackUtils():
         #If resuming then wait for playback to start and then
         #seek to position
         if resume_result == 0:
-        
             self.seekToPosition(seekTime)
-            '''
-            #Set a loop to wait for positive confirmation of playback
-            count = 0
-            while not xbmc.Player().isPlaying():
-                self.logMsg( "Not playing yet...sleep for 1 sec")
-                count = count + 1
-                if count >= 10:
-                    return
-                else:
-                    time.sleep(1)
-                
-            #Jump to resume point
-            jumpBackSec = int(self.settings.getSetting("resumeJumpBack"))
-            seekToTime = seekTime - jumpBackSec
-            while xbmc.Player().getTime() < (seekToTime - 5):
-                xbmc.Player().pause
-                xbmc.sleep(100)
-                xbmc.Player().seekTime(seekToTime)
-                xbmc.sleep(100)
-                xbmc.Player().play()
-            '''
 
     def seekToPosition(self, seekTo):
     
@@ -338,7 +317,10 @@ class PlaybackUtils():
         xbmc.Player().play(playlist)
         
         #seek to position
-        seekTime = (startPositionTicks / 1000) / 10000
+        seekTime = 0
+        if(startPositionTicks != None):
+            seekTime = (startPositionTicks / 1000) / 10000
+            
         if seekTime > 0:
             self.seekToPosition(seekTime)
     
@@ -434,14 +416,20 @@ class PlaybackUtils():
 
             # set the current playing info
             WINDOW = xbmcgui.Window( 10000 )
-            WINDOW.setProperty(playurl+"watchedurl", watchedurl)
-            WINDOW.setProperty(playurl+"positionurl", positionurl)
-            WINDOW.setProperty(playurl+"deleteurl", "")
-            if item.get("Type")=="Episode" and self.settings.getSetting("offerDelete")=="true":
-               WINDOW.setProperty(playurl+"deleteurl", deleteurl)
+            WINDOW.setProperty(playurl + "watchedurl", watchedurl)
+            WINDOW.setProperty(playurl + "positionurl", positionurl)
+            WINDOW.setProperty(playurl + "deleteurl", "")
+            
+            if item.get("Type") == "Episode" and self.settings.getSetting("offerDelete")=="true":
+               WINDOW.setProperty(playurl + "deleteurl", deleteurl)
         
-            WINDOW.setProperty(playurl+"runtimeticks", str(item.get("RunTimeTicks")))
-            WINDOW.setProperty(playurl+"item_id", id)
+            WINDOW.setProperty(playurl + "runtimeticks", str(item.get("RunTimeTicks")))
+            WINDOW.setProperty(playurl + "item_id", id)
+            
+            if (item.get("Type") == "Episode"):
+                WINDOW.setProperty(playurl + "refresh_id", item.get("SeriesId"))
+            else:
+                WINDOW.setProperty(playurl + "refresh_id", id)            
             
             self.logMsg( "PlayList Item Url : " + str(playurl))
             

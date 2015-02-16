@@ -83,7 +83,11 @@ class BackgroundDataUpdaterThread(threading.Thread):
         self.logMsg("Exited")
 
     def updateItem(self, id):
-        self.logMsg("updateItem Called")
+        self.logMsg("updateItem Called for : " + str(id))
+        
+        if(id == None or len(id) == 0):
+            return
+        
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         mb3Host = addonSettings.getSetting('ipaddress')
         mb3Port = addonSettings.getSetting('port')    
