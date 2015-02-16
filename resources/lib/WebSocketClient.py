@@ -187,16 +187,19 @@ class WebSocketThread(threading.Thread):
                     self.logMsg("DisplayContent: Playing media so not doing DisplayContent")
                     return
                 
-                if(itemType != None and (itemType == "Series" or itemType == "Season")):
+                # still missing handling for type MusicGenre and probably more
+                # also the info dialog is not set up to display the Audio type so it is not well supported yet
+                
+                if(itemType != None and (itemType == "Series" or itemType == "Season" or itemType == "MusicAlbum" or itemType == "MusicArtist")):
                 
                     xbmc.executebuiltin("Dialog.Close(all,true)")
                     pluginLink = "plugin://plugin.video.xbmb3c/?ParentId=" + itemId + '&useFast=false&mode=21'
                     xbmc.executebuiltin("xbmc.ActivateWindow(VideoLibrary," + pluginLink + ")")
 
-                elif(itemType != None and (itemType == "Episode" or itemType == "Movie")):
+                elif(itemType != None and (itemType == "Episode" or itemType == "Movie" or itemType == "Audio")):
                 
                     xbmc.executebuiltin("Dialog.Close(all,true)")
-                    pluginLink = "plugin://plugin.video.xbmb3c?id=" + itemId + "&mode=" + str(17)
+                    pluginLink = "plugin://plugin.video.xbmb3c?id=" + itemId + "&mode=17"
                     xbmc.executebuiltin("xbmc.RunPlugin(" + pluginLink + ")")
                     
                 elif(itemType != None and (itemType == "Person")):
@@ -208,7 +211,7 @@ class WebSocketThread(threading.Thread):
                     baseName = baseName.replace("=", "_")
             
                     xbmc.executebuiltin("Dialog.Close(all,true)")
-                    pluginLink = "plugin://plugin.video.xbmb3c?mode=" + str(15) +"&name=" + baseName
+                    pluginLink = "plugin://plugin.video.xbmb3c?mode=15&name=" + baseName
                     xbmc.executebuiltin("xbmc.RunPlugin(" + pluginLink + ")")                    
                 
                 else:
