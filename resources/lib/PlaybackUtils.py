@@ -299,11 +299,13 @@ class PlaybackUtils():
     
     def PLAYAllItems(self, items, startPositionTicks):
         self.logMsg("== ENTER: PLAYAllItems ==")
+        self.logMsg("Items : " + str(items))
         userid = self.downloadUtils.getUserId()
         server = self.downloadUtils.getServer()
         
         playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
         playlist.clear()        
+        started = False
         
         for itemID in items:
         
@@ -312,9 +314,15 @@ class PlaybackUtils():
             jsonData = self.downloadUtils.downloadUrl(item_url, suppress=False, popup=1 )
             
             item_data = json.loads(jsonData)
-            self.addPlaylistItem(playlist, item_data, server, userid)
-           
-        xbmc.Player().play(playlist)
+            added = self.addPlaylistItem(playlist, item_data, server, userid)
+            if(added and started == False):
+                started = True
+                self.logMsg("Starting Playback Pre")
+                xbmc.Player().play(playlist)
+        
+        if(started == False):
+            self.logMsg("Starting Playback Post")
+            xbmc.Player().play(playlist)
         
         #seek to position
         seekTime = 0
@@ -361,7 +369,6 @@ class PlaybackUtils():
                 
             if found:
                 if(item.get('RecursiveItemCount') != 0):
-                
                     self.addPlaylistItem(playlist, item, server, userid)
                     
         xbmc.Player().play(playlist)
@@ -407,6 +414,7 @@ class PlaybackUtils():
         if (item.get("LocationType") == "Virtual") or (item.get("IsPlaceHolder") == True):
         
             xbmcgui.Dialog().ok(self.language(30128), self.language(30129))
+            return False
             
         else:
         
@@ -434,6 +442,8 @@ class PlaybackUtils():
             self.logMsg( "PlayList Item Url : " + str(playurl))
             
             playlist.add(playurl, listItem)
+            
+            return True
     
     def setArt(self, list,name,path):
         if name=='thumb' or name=='fanart_image' or name=='small_poster' or name=='tiny_poster'  or name == "medium_landscape" or name=='medium_poster' or name=='small_fanartimage' or name=='medium_fanartimage' or name=='fanart_noindicators':
