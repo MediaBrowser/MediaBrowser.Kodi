@@ -152,6 +152,18 @@ class WebSocketThread(threading.Thread):
                 self.logMsg("Playback Stopped")
                 xbmc.executebuiltin('xbmc.activatewindow(10000)')
                 xbmc.Player().stop()
+            elif(command != None and command == "Pause"):
+                self.logMsg("Playback Paused")
+                xbmc.Player().pause()
+            elif(command != None and command == "Unpause"):
+                self.logMsg("Playback UnPaused")
+                xbmc.Player().pause()
+            elif(command != None and command == "NextTrack"):
+                self.logMsg("Playback NextTrack")
+                xbmc.Player().playnext()
+            elif(command != None and command == "PreviousTrack"):
+                self.logMsg("Playback PreviousTrack")
+                xbmc.Player().playprevious()
             elif(command != None and command == "Seek"):
                 seekPositionTicks = data.get("SeekPositionTicks")
                 self.logMsg("Playback Seek : " + str(seekPositionTicks))
