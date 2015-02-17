@@ -141,6 +141,7 @@ class PlaybackUtils():
             WINDOW.setProperty(playurl+"deleteurl", "")
          
             WINDOW.setProperty(playurl+"runtimeticks", str(result.get("RunTimeTicks")))
+            WINDOW.setProperty(playurl+"type", result.get("Type"))
             WINDOW.setProperty(playurl+"item_id", id)
             
             if PlayUtils().isDirectPlay(result) == True:
@@ -194,6 +195,7 @@ class PlaybackUtils():
             WINDOW.setProperty(playurl+"refresh_id", id)
             
         WINDOW.setProperty(playurl+"runtimeticks", str(result.get("RunTimeTicks")))
+        WINDOW.setProperty(playurl+"type", result.get("Type"))
         WINDOW.setProperty(playurl+"item_id", id)
         
         if PlayUtils().isDirectPlay(result) == True:
@@ -244,6 +246,7 @@ class PlaybackUtils():
                 WINDOW.setProperty(playurl+"deleteurl", "")
              
                 WINDOW.setProperty(playurl+"runtimeticks", str(result.get("RunTimeTicks")))
+                WINDOW.setProperty(playurl+"type", result.get("Type"))
                 WINDOW.setProperty(playurl+"item_id", id)
                 WINDOW.setProperty(playurl+"refresh_id", result.get("SeriesId"))
                 
@@ -432,6 +435,7 @@ class PlaybackUtils():
                WINDOW.setProperty(playurl + "deleteurl", deleteurl)
         
             WINDOW.setProperty(playurl + "runtimeticks", str(item.get("RunTimeTicks")))
+            WINDOW.setProperty(playurl+"type", item.get("Type"))
             WINDOW.setProperty(playurl + "item_id", id)
             
             if (item.get("Type") == "Episode"):
@@ -485,13 +489,14 @@ class PlaybackUtils():
 
         # play info
         playinformation = ''
-        if PlayUtils().fileExists(result) == True or PlayUtils().isDirectPlay(result) == True:
+        if PlayUtils().isDirectPlay(result) == True:
             if self.settings.getSetting('playFromStream') == "true":
                 playinformation = self.language(30164)
             else:
                 playinformation = self.language(30165)
         else:
-            playinformation = self.language(30166)      
+            playinformation = self.language(30166)
+            
         details = {
                  'title'        : result.get("Name", "Missing Name") + ' - ' + playinformation,
                  'plot'         : result.get("Overview")

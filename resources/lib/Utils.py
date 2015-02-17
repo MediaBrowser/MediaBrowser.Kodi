@@ -27,7 +27,7 @@ class PlayUtils():
       addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
       # if the path is local and depending on the video quality play we can direct play it do so-
       xbmc.log("XBMB3C getPlayUrl")
-      if self.fileExists(result) or self.isDirectPlay(result) == True:
+      if self.isDirectPlay(result) == True:
           xbmc.log("XBMB3C getPlayUrl -> Direct Play")
           playurl = result.get("Path")
           if playurl != None:
@@ -79,7 +79,7 @@ class PlayUtils():
 
     # Works out if we are direct playing or not
     def isDirectPlay(self, result):
-        if result.get("LocationType") == "FileSystem" and self.isNetworkQualitySufficient(result) == True and self.isLocalPath(result) == False:
+        if (self.fileExists(result) or (result.get("LocationType") == "FileSystem" and self.isNetworkQualitySufficient(result) == True and self.isLocalPath(result) == False)):
             return True
         else:
             return False
