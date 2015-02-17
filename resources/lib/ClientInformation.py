@@ -37,7 +37,7 @@ class ClientInformation():
         return deviceId
         
         
-        # TO BE DELETED ONCE NEW METHOD FULLY IS TESTED - 02/16/2015 - ANGEL
+        # TO BE DELETED ONCE NEW METHOD IS FULLY TESTED - 02/16/2015 - ANGEL
         """WINDOW = xbmcgui.Window( 10000 )
         
         clientId = WINDOW.getProperty("client_id")
@@ -60,5 +60,12 @@ class ClientInformation():
         return clientId"""
         
     def getVersion(self):
-        version = xbmcaddon.Addon(id="plugin.video.xbmb3c").getAddonInfo("version")
+        
+        # Get the version of Mediabrowser add-on
+        version = addon.getAddonInfo('version')
+        
         return version
+        
+        # TO BE DELETED ONCE NEW METHOD IS FULLY TESTED - 02/16/2015 - ANGEL
+        """version = xbmcaddon.Addon(id="plugin.video.xbmb3c").getAddonInfo("version")
+        return version"""
