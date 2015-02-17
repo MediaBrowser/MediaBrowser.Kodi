@@ -9,30 +9,38 @@ class ClientInformation():
 
     def getMachineId(self):
     
-        WINDOW = xbmcgui.Window( 10000 )
-        deviceId = addon.getSetting('deviceId')
-        
-        # Verify if deviceId exists in settings
-        if deviceId == "":
-            
-            xbmc.log("deviceId - > Not found in Settings")
-            
-            # Generate deviceId
-            guid = uuid4()
-            deviceId = str("%012X" % guid).lower()
-            
-            xbmc.log("deviceId - > New deviceId : %s" % deviceId)
-            
-            # Set deviceId to window and addon settings
-            WINDOW.setProperty('deviceId', deviceId)
-            addon.setSetting('deviceId', deviceId)
-        
-        else:
-            
-            xbmc.log("deviceId - > deviceId saved to WINDOW from Settings : %s" % deviceId)
+        # Verify if deviceId is already loaded from Settings
+        if WINDOW.getProperty('deviceId') != "":
 
-            # deviceId already exists, set to window
-            WINDOW.setProperty('deviceId', deviceId)
+            deviceId = WINDOW.getProperty('deviceId')
+
+            xbmc.log("deviceId - > deviceId loaded from WINDOW : %s" % deviceId)
+
+        else:
+
+            deviceId = addon.getSetting('deviceId')
+        
+            # Verify if deviceId exists in settings
+            if deviceId == "":
+                
+                xbmc.log("deviceId - > Not found in Settings")
+                
+                # Generate deviceId
+                guid = uuid4()
+                deviceId = str("%012X" % guid).lower()
+                
+                xbmc.log("deviceId - > New deviceId : %s" % deviceId)
+                
+                # Set deviceId to window and addon settings
+                WINDOW.setProperty('deviceId', deviceId)
+                addon.setSetting('deviceId', deviceId)
+            
+            else:
+                
+                xbmc.log("deviceId - > deviceId saved to WINDOW from Settings : %s" % deviceId)
+
+                # deviceId already exists, set to window
+                WINDOW.setProperty('deviceId', deviceId)
 
         return deviceId
         
