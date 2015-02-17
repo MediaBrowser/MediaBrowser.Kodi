@@ -3,8 +3,6 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-addon = xbmcaddon.Addon()
-
 class ClientInformation():
 
     def getMachineId(self):
@@ -20,6 +18,7 @@ class ClientInformation():
 
         else:
 
+            addon = xbmcaddon.Addon()
             deviceId = addon.getSetting('deviceId')
         
             # Verify if deviceId exists in settings
@@ -72,6 +71,7 @@ class ClientInformation():
     def getVersion(self):
         
         # Get the version of Mediabrowser add-on
+        addon = xbmcaddon.Addon()
         version = addon.getAddonInfo('version')
         
         return version
