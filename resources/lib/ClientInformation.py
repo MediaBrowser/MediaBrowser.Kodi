@@ -8,7 +8,9 @@ addon = xbmcaddon.Addon()
 class ClientInformation():
 
     def getMachineId(self):
-    
+        
+        WINDOW = xbmcgui.Window( 10000 )
+        
         # Verify if deviceId is already loaded from Settings
         if WINDOW.getProperty('deviceId') != "":
 
