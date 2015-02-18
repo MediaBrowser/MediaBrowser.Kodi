@@ -78,6 +78,8 @@ class Reporting(threading.Thread):
         addon_ver = clientInfo.getVersion()
         kodi_ver = xbmc.getInfoLabel("System.BuildVersion")
         
+        kodi_platform = clientInfo.getPlatform()
+        
         kodi_skin = xbmc.translatePath('special://skin')
         try:
             if(kodi_skin.endswith("\\") or kodi_skin.endswith("/")):
@@ -90,6 +92,7 @@ class Reporting(threading.Thread):
                         "&account_hash=" + urllib.quote_plus(account_hash) +
                         "&addon_ver=" + urllib.quote_plus(addon_ver) +
                         "&kodi_ver=" + urllib.quote_plus(kodi_ver) +
+                        "&kodi_platform=" + urllib.quote_plus(kodi_platform) +
                         "&kodi_skin=" + urllib.quote_plus(kodi_skin))
                         
         messageData += "&" + self.AddStatToMessage("Movie", stats)
@@ -103,7 +106,6 @@ class Reporting(threading.Thread):
         url = "http://magnesium.cloudapp.net/submit/"
         downloadUtils.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
         
- 
     def AddStatToMessage(self, name, stats):
         
         if(stats.get(name) == None):

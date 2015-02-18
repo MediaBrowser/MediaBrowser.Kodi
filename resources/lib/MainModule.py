@@ -139,24 +139,8 @@ def getAuthHeader():
     xbmc.log("XBMB3C Authentication Header : " + str(headers))
     return headers 
             
-def getPlatform( ):
 
-    if xbmc.getCondVisibility('system.platform.osx'):
-        return "OSX"
-    elif xbmc.getCondVisibility('system.platform.atv2'):
-        return "ATV2"
-    elif xbmc.getCondVisibility('system.platform.ios'):
-        return "iOS"
-    elif xbmc.getCondVisibility('system.platform.windows'):
-        return "Windows"
-    elif xbmc.getCondVisibility('system.platform.linux'):
-        return "Linux/RPi"
-    elif xbmc.getCondVisibility('system.platform.android'): 
-        return "Linux/Android"
-
-    return "Unknown"
-
-XBMB3C_PLATFORM=getPlatform()
+XBMB3C_PLATFORM = ClientInformation().getPlatform()
 xbmc.log ("XBMB3C -> Platform: " + str(XBMB3C_PLATFORM))
 
 g_flatten = __settings__.getSetting('flatten')
