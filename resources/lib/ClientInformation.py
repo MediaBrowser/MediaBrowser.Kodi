@@ -111,25 +111,23 @@ class ClientInformation():
     
     def getHeader(self):
         
-        # Shortcut variable
+        # Shortcut variables
         window = self.window
-        
-        # Necessary parts of the headers
-        # Authorization=Mediabrowser, Device Name, Device Id, Version. Optional: UserId, Token
         deviceName = self.deviceName
         deviceId = self.getMachineId()
         version = self.getVersion()
-        
         userName = self.username
+        
         userId = ""
         token = ""
 
         # Verify if userId is currently used
         if window.getProperty('userid' + userName) != "":
-            userId = 'UserId="%s",' % str(window.getProperty('userid' + userName))
+            userId = 'UserId="%s",' % window.getProperty('userid' + userName)
 
         # Verify if token for userId has been returned
         if window.getProperty('AccessToken' + userName) != "":
-            token = str(window.getProperty('AccessToken' + userName))
-
+            token = window.getProperty('AccessToken' + userName)
+            
+        # Authorization=Mediabrowser, Device Name, Device Id, Version. Optional: UserId, Token
         return {'Accept-Charset':'UTF-8,*', 'Accept-encoding':'gzip', 'Authorization':'Mediabrowser Client="Kodi", Device="' + deviceName + '", DeviceId="' + deviceId + '", ' + userId + ' Version="' + version + '"', 'X-Mediabrowser-Token': token}
