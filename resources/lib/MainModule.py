@@ -78,11 +78,12 @@ from API import API
 from BackgroundData import BackgroundDataUpdaterThread
 
 XBMB3C_VERSION = ClientInformation().getVersion()
+addonName = xbmcaddon.Addon().getAddonInfo('name').upper()
 
-xbmc.log ("===== XBMB3C START =====")
+xbmc.log ("===== %s START =====" % addonName)
 
-xbmc.log ("XBMB3C -> running Python: " + str(sys.version_info))
-xbmc.log ("XBMB3C -> running XBMB3C: " + str(XBMB3C_VERSION))
+xbmc.log ("%s -> running Python: %s" % (addonName, str(sys.version_info)))
+xbmc.log ("%s -> running XBMB3C: %s" % (addonName, str(XBMB3C_VERSION)))
 xbmc.log (xbmc.getInfoLabel( "System.BuildVersion" ))
 
 #Get the setting from the appropriate file.
