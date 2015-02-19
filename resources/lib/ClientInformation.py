@@ -8,12 +8,13 @@ class ClientInformation():
     def __init__(self):
         
         # Internal variables
-        self.addon =  xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        self.addonId = xbmcaddon.Addon().getAddonInfo('id')
+        self.addon =  xbmcaddon.Addon(id=self.addonId)
         self.window = xbmcgui.Window( 10000 )
         self.addonName = self.addon.getAddonInfo('name').upper()
         
         # Preparation for headers
-        self.deviceName = self.addon.getSetting('deviceName')
+        self.deviceName = self.addon.getSetting('deviceName').replace("\\", "_")
         self.deviceId = self.window.getProperty('deviceId')
         self.username = self.addon.getSetting('username')
         self.version = self.addon.getAddonInfo('version')
