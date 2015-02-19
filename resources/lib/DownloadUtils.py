@@ -27,7 +27,7 @@ class DownloadUtils():
 
     def __init__(self, *args):
                
-        self.addonId = xbmcaddon.Addon().getAddonInfo('id')
+        #self.addonId = xbmcaddon.Addon().getAddonInfo('id')
         self.addon =  xbmcaddon.Addon(id='plugin.video.xbmb3c')
         self.addonName = self.addon.getAddonInfo('name').upper()
         
