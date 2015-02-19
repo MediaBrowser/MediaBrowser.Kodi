@@ -8,7 +8,7 @@ class ClientInformation():
     def __init__(self):
         
         # Internal variables
-        self.addonId = xbmcaddon.Addon().getAddonInfo('id')
+        #self.addonId = xbmcaddon.Addon().getAddonInfo('id')
         self.addon =  xbmcaddon.Addon(id='plugin.video.xbmb3c')
         self.window = xbmcgui.Window( 10000 )
         self.addonName = self.addon.getAddonInfo('name').upper()
