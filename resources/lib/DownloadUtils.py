@@ -470,10 +470,10 @@ class DownloadUtils():
                 
             authToken = self.authenticate()
             if(authToken != ""):
-                headers["X-MediaBrowser-Token"] = authToken"""
+                headers["X-MediaBrowser-Token"] = authToken
                     
             self.logMsg("Authentication Header : " + str(headers))
-            return headers
+            return headers"""
         
     def downloadUrl(self, url, suppress=False, postBody=None, type="GET", popup=0, authenticate=True ):
         self.logMsg("== ENTER: getURL ==")
