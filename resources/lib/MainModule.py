@@ -78,7 +78,7 @@ from API import API
 from BackgroundData import BackgroundDataUpdaterThread
 
 XBMB3C_VERSION = ClientInformation().getVersion()
-addonName = xbmcaddon.Addon().getAddonInfo('name').upper()
+addonName = xbmcaddon.Addon(id='plugin.video.xbmb3c').getAddonInfo('name').upper()
 
 xbmc.log ("===== %s START =====" % addonName)
 

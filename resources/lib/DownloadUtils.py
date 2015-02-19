@@ -26,8 +26,8 @@ class DownloadUtils():
     TotalUrlCalls = 0
 
     def __init__(self, *args):
-        
-        self.addon =  xbmcaddon.Addon()
+               
+        self.addon =  xbmcaddon.Addon(id='plugin.video.xbmb3c')
         self.addonName = self.addon.getAddonInfo('name').upper()
         
         self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
