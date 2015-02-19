@@ -10,6 +10,7 @@
     <string id="30008">Samba wachtwoord: </string>
     <string id="30009">Transcode: </string>
     <string id="30010">Prestatie profilering inschakelen:</string>
+	 <string id="30011">Lokale cache systeem</string>
 
     <string id="30014">MediaBrowser</string>
     <string id="30015">Netwerk</string>    
@@ -84,7 +85,13 @@
     <string id="30097">Sorteer op...</string>
     <string id="30098">Sorteer oplopend</string>
     <string id="30099">Sorteer aflopend</string>
+	<string id="30100">Toon acteurs</string>
     
+	<!-- resume dialog -->
+    <string id="30105">Hervatten</string>
+    <string id="30106">Hervatten vanaf</string>
+    <string id="30107">Start vanaf begin</string>
+	
     <string id="30110">Interface</string>
     <string id="30111">Inclusief stream info</string>
     <string id="30112">Inclusief personen</string>
@@ -139,11 +146,12 @@
     <string id="30158">Metadata</string>
     <string id="30159">Afbeeldingen</string>
     <string id="30160">Video kwaliteit</string>
+	
 	<string id="30161">Activeer Suggested Loader (vereist herstart)</string>
     <string id="30162">Seizoen tonen in titel</string>     
     <string id="30163">Seizoenen verbergen</string>   
 
-<string id="30164">Direct Play - HTTP</string>     
+	<string id="30164">Direct Play - HTTP</string>     
     <string id="30165">Direct Play</string>     
     <string id="30166">Transcoding</string>     
     <string id="30167">Server Detection Succeeded</string>     
@@ -203,7 +211,13 @@
 	<string id="30214">Schakel het forceren van view uit</string>
 	<string id="30215">Schakel snelle modus in (beta)</string>
     <string id="30216">Automatisch resterende afleveringen in een seizoen afspelen</string> 
-	<string id="30217">Boxsets tonen in de overzichten (vereist herstart)</string>	
+	<string id="30217">Boxsets tonen in de overzichten (vereist herstart)</string>
+	<string id="30218">Afbeeldingen comprimeren</string>
+    <string id="30219">Activeer Skin Helper (vereust herstart)</string>
+    <string id="30220">Laatste </string>
+    <string id="30221">Bezig </string>
+    <string id="30222">Volgende </string>
+    <string id="30223">Gebruikerweergaven </string>
     
     <!-- Default views -->
     <string id="30300">Actief</string>              

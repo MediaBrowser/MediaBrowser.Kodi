@@ -150,7 +150,8 @@
     <string id="30161">Enable Suggested Loader (Requires Restart)</string>
     <string id="30162">Add Season Number</string>     
     <string id="30163">Flatten Seasons</string>     
-    <string id="30164">Direct Play - HTTP</string>     
+    
+	<string id="30164">Direct Play - HTTP</string>     
     <string id="30165">Direct Play</string>     
     <string id="30166">Transcoding</string>     
     <string id="30167">Server Detection Succeeded</string>     
