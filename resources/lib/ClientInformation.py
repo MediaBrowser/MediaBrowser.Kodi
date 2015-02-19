@@ -18,6 +18,7 @@ class ClientInformation():
         self.username = self.addon.getSetting('username')
         self.version = self.addon.getAddonInfo('version')
     
+    
     def getMachineId(self):
         
         # Shortcut variables
@@ -27,12 +28,7 @@ class ClientInformation():
         deviceId = self.deviceId
         
         # Verify if deviceId is already loaded from Settings
-        if window.getProperty('deviceId') != "":
-
-            deviceId = window.getProperty('deviceId')
-            xbmc.log("%s ClientInformation -> DeviceId loaded from Window : %s" % (addonName, deviceId))
-
-        else:
+        if deviceId == "":
 
             deviceId = addon.getSetting('deviceId')
         
@@ -59,28 +55,6 @@ class ClientInformation():
         return deviceId
         
         
-        # TO BE DELETED ONCE NEW METHOD IS FULLY TESTED - 02/16/2015 - ANGEL
-        """WINDOW = xbmcgui.Window( 10000 )
-        
-        clientId = WINDOW.getProperty("client_id")
-        self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        if(clientId == None or clientId == ""):
-            xbmc.log("CLIENT_ID - > No Client ID in WINDOW")
-            clientId = self.addonSettings.getSetting('client_id')
-        
-            if(clientId == None or clientId == ""):
-                xbmc.log("CLIENT_ID - > No Client ID in SETTINGS")
-                uuid = uuid4()
-                clientId = str("%012X" % uuid)
-                WINDOW.setProperty("client_id", clientId)
-                self.addonSettings.setSetting('client_id', clientId)
-                xbmc.log("CLIENT_ID - > New Client ID : " + clientId)
-            else:
-                WINDOW.setProperty('client_id', clientId)
-                xbmc.log("CLIENT_ID - > Client ID saved to WINDOW from Settings : " + clientId)
-                
-        return clientId"""
-        
     def getPlatform(self):
 
         if xbmc.getCondVisibility('system.platform.osx'):
@@ -98,16 +72,14 @@ class ClientInformation():
 
         return "Unknown"
     
+    
     def getVersion(self):
         
         # Get the version of Mediabrowser add-on
         version = self.version
         
         return version
-        
-        # TO BE DELETED ONCE NEW METHOD IS FULLY TESTED - 02/16/2015 - ANGEL
-        """version = xbmcaddon.Addon(id="plugin.video.xbmb3c").getAddonInfo("version")
-        return version"""
+
     
     def getHeader(self):
         
@@ -115,19 +87,19 @@ class ClientInformation():
         window = self.window
         deviceName = self.deviceName
         deviceId = self.getMachineId()
-        version = self.getVersion()
-        userName = self.username
+        version = self.version
+        username = self.username
         
         userId = ""
         token = ""
 
         # Verify if userId is currently used
-        if window.getProperty('userid' + userName) != "":
-            userId = 'UserId="%s",' % window.getProperty('userid' + userName)
+        if window.getProperty('userid' + username) != "":
+            userId = 'UserId="%s",' % window.getProperty('userid' + username)
 
         # Verify if token for userId has been returned
-        if window.getProperty('AccessToken' + userName) != "":
-            token = window.getProperty('AccessToken' + userName)
+        if window.getProperty('AccessToken' + username) != "":
+            token = window.getProperty('AccessToken' + username)
             
         # Authorization=Mediabrowser, Device Name, Device Id, Version. Optional: UserId, Token
         return {'Accept-Charset':'UTF-8,*', 'Accept-encoding':'gzip', 'Authorization':'Mediabrowser Client="Kodi", Device="' + deviceName + '", DeviceId="' + deviceId + '", ' + userId + ' Version="' + version + '"', 'X-Mediabrowser-Token': token}
