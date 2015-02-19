@@ -26,6 +26,10 @@ class DownloadUtils():
     TotalUrlCalls = 0
 
     def __init__(self, *args):
+        
+        self.addon =  xbmcaddon.Addon()
+        self.addonName = self.addon.getAddonInfo('name').upper()
+        
         self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         self.getString = self.addonSettings.getLocalizedString
         level = self.addonSettings.getSetting('logLevel')        
@@ -36,12 +40,15 @@ class DownloadUtils():
             self.LogCalls = True
 
     def logMsg(self, msg, level = 1):
+        
+        addonName = self.addonName
+        
         if(self.logLevel >= level):
             try:
-                xbmc.log("XBMB3C DownloadUtils -> " + str(msg))
+                xbmc.log("%s DownloadUtils -> %s" % (addonName, str(msg)))
             except UnicodeEncodeError:
                 try:
-                    xbmc.log("XBMB3C DownloadUtils -> " + str(msg.encode('utf-8')))
+                    xbmc.log("%s DownloadUtils -> %s" % (addonName, str(msg.encode('utf-8'))))
                 except: pass
 
     def getServer(self):
@@ -60,7 +67,7 @@ class DownloadUtils():
         userid = WINDOW.getProperty("userid" + userName)
 
         if(userid != None and userid != ""):
-            self.logMsg("DownloadUtils -> Returning saved UserID : " + userid + "UserName: " + userName)
+            self.logMsg("Returning saved UserID : " + userid + "UserName: " + userName)
             return userid
     
         self.logMsg("Looking for user name: " + userName)
@@ -120,7 +127,7 @@ class DownloadUtils():
         self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         token = WINDOW.getProperty("AccessToken"+self.addonSettings.getSetting('username'))
         if(token != None and token != ""):
-            self.logMsg("DownloadUtils -> Returning saved AccessToken for user : " + self.addonSettings.getSetting('username') + " token: "+ token)
+            self.logMsg("Returning saved AccessToken for user : " + self.addonSettings.getSetting('username') + " token: "+ token)
             return token
         
         port = self.addonSettings.getSetting("port")
@@ -131,14 +138,17 @@ class DownloadUtils():
         url = "http://" + self.addonSettings.getSetting("ipaddress") + ":" + self.addonSettings.getSetting("port") + "/mediabrowser/Users/AuthenticateByName?format=json"
     
         clientInfo = ClientInformation()
-        txt_mac = clientInfo.getMachineId()
+        headers = clientInfo.getHeader()
+        
+        # TO BE DELETED ONCE FULLY TESTED - 02/18/2015 - ANGEL
+        """txt_mac = clientInfo.getMachineId()
         version = clientInfo.getVersion()
 
         deviceName = self.addonSettings.getSetting('deviceName')
         deviceName = deviceName.replace("\"", "_")
 
         authString = "Mediabrowser Client=\"Kodi\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
-        headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}
+        headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}"""
         
         if self.addonSettings.getSetting('password') !=None and  self.addonSettings.getSetting('password') !='':   
             sha1 = hashlib.sha1(self.addonSettings.getSetting('password'))
@@ -428,7 +438,22 @@ class DownloadUtils():
     
     def getAuthHeader(self, authenticate=True):
         clientInfo = ClientInformation()
-        txt_mac = clientInfo.getMachineId()
+        headers = clientInfo.getHeader()
+        
+        if(authenticate == False):  
+            return headers
+        
+        else:
+            userid = self.getUserId()
+            headers = clientInfo.getHeader()    
+                
+            authToken = self.authenticate()
+                    
+            self.logMsg("Authentication Header : " + str(headers))
+            return headers
+        
+        # TO BE DELETED ONCE FULLY TESTED - 02/18/2015 - ANGEL
+        """txt_mac = clientInfo.getMachineId()
         version = clientInfo.getVersion()
         
         deviceName = self.addonSettings.getSetting('deviceName')
@@ -445,7 +470,7 @@ class DownloadUtils():
                 
             authToken = self.authenticate()
             if(authToken != ""):
-                headers["X-MediaBrowser-Token"] = authToken
+                headers["X-MediaBrowser-Token"] = authToken"""
                     
             self.logMsg("Authentication Header : " + str(headers))
             return headers
