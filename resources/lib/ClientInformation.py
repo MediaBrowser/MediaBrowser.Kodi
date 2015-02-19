@@ -22,6 +22,7 @@ class ClientInformation():
     def getMachineId(self):
         
         # Shortcut variables
+        className = self.__class__.__name__
         addon = self.addon
         addonName = self.addonName
         window = self.window
@@ -35,12 +36,12 @@ class ClientInformation():
             # Verify if deviceId exists in settings
             if deviceId == "":
                 
-                xbmc.log("%s ClientInformation -> DeviceId not found in Settings" % addonName)
+                xbmc.log("%s %s -> DeviceId not found in Settings" % (addonName, className))
                 
                 # Generate deviceId
                 guid = uuid4()
                 deviceId = str("%012X" % guid).lower()
-                xbmc.log("%s ClientInformation -> New deviceId : %s" % (addonName, deviceId))
+                xbmc.log("%s %s -> New deviceId : %s" % (addonName, className, deviceId))
                 
                 # Set deviceId to window and addon settings
                 window.setProperty('deviceId', deviceId)
@@ -50,7 +51,7 @@ class ClientInformation():
                 
                 # deviceId already exists, set to window
                 window.setProperty('deviceId', deviceId)
-                xbmc.log("%s ClientInformation -> DeviceId saved to Window from Settings : %s" % (addonName, deviceId))
+                xbmc.log("%s %s -> DeviceId saved to Window from Settings : %s" % (addonName, className, deviceId))
 
         return deviceId
         
