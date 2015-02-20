@@ -406,16 +406,124 @@ class SkinHelperThread(threading.Thread):
                             s_url='http://%s%s' % (section['address'], path)
                             murl= "?url="+urllib.quote(s_url)+modeurl      
                         
-                            WINDOW.setProperty("MediaBrowser.views.movies.0.title"  , item.get('Name', 'Unknown'))
-                            WINDOW.setProperty("MediaBrowser.views.movies.0.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.movies.all.title"  , item.get('Name', 'Unknown'))
+                            WINDOW.setProperty("MediaBrowser.views.movies.all.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
                             
                             s_url='http://%s%s' % (section['address'], collapsedpath)
                             murl= "?url="+urllib.quote(s_url)+modeurl      
                             
-                            WINDOW.setProperty("MediaBrowser.views.movies.0.collapsed_path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
-                            WINDOW.setProperty("MediaBrowser.views.movies.0.type" , section.get('sectype'))
-                            WINDOW.setProperty("MediaBrowser.views.movies.0.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
-                            WINDOW.setProperty("MediaBrowser.views.movies.0.total"  , str(item.get('ChildCount')))
+                            WINDOW.setProperty("MediaBrowser.views.movies.all.collapsed_path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.movies.all.type" , section.get('sectype'))
+                            WINDOW.setProperty("MediaBrowser.views.movies.all.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
+                            WINDOW.setProperty("MediaBrowser.views.movies.all.thumb" , downloadUtils.getArtwork(item, "Thumb"))
+                            WINDOW.setProperty("MediaBrowser.views.movies.all.poster" , downloadUtils.getArtwork(item, "Poster"))
+                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.all.total"  , str(item.get('ChildCount')))
+                            
+                        elif item.get('CollectionType') == 'MovieCollections':
+                    
+                            Name =(item.get("Name")).encode('utf-8')
+                            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+                            path = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1'
+                            
+                            s_url='http://%s%s' % (section['address'], path)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                        
+                            WINDOW.setProperty("MediaBrowser.views.movies.collections.title"  , item.get('Name', 'Unknown'))
+                            WINDOW.setProperty("MediaBrowser.views.movies.collections.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.collections.type" , section.get('sectype'))
+                            WINDOW.setProperty("MediaBrowser.views.movies.collections.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
+                            WINDOW.setProperty("MediaBrowser.views.movies.collections.thumb" , downloadUtils.getArtwork(item, "Thumb"))
+                            WINDOW.setProperty("MediaBrowser.views.movies.collections.poster" , downloadUtils.getArtwork(item, "Primary"))
+                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.collections.total"  , str(item.get('ChildCount')))
+                            
+                        elif item.get('CollectionType') == 'MovieResume':
+                    
+                            Name =(item.get("Name")).encode('utf-8')
+                            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+                            path = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1'
+                            
+                            s_url='http://%s%s' % (section['address'], path)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                        
+                            WINDOW.setProperty("MediaBrowser.views.movies.resume.title"  , item.get('Name', 'Unknown'))
+                            WINDOW.setProperty("MediaBrowser.views.movies.resume.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.resume.type" , section.get('sectype'))
+                            WINDOW.setProperty("MediaBrowser.views.movies.resume.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
+                            WINDOW.setProperty("MediaBrowser.views.movies.resume.thumb" , downloadUtils.getArtwork(item, "Thumb"))
+                            WINDOW.setProperty("MediaBrowser.views.movies.resume.poster" , downloadUtils.getArtwork(item, "Primary"))
+                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.resume.total"  , str(item.get('ChildCount')))
+                            
+                        elif item.get('CollectionType') == 'MovieLatest':
+                    
+                            Name =(item.get("Name")).encode('utf-8')
+                            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+                            path = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1'
+                            
+                            s_url='http://%s%s' % (section['address'], path)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                        
+                            WINDOW.setProperty("MediaBrowser.views.movies.latest.title"  , item.get('Name', 'Unknown'))
+                            WINDOW.setProperty("MediaBrowser.views.movies.latest.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.latest.type" , section.get('sectype'))
+                            WINDOW.setProperty("MediaBrowser.views.movies.latest.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
+                            WINDOW.setProperty("MediaBrowser.views.movies.latest.thumb" , downloadUtils.getArtwork(item, "Thumb"))
+                            WINDOW.setProperty("MediaBrowser.views.movies.latest.poster" , downloadUtils.getArtwork(item, "Primary"))
+                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.latest.total"  , str(item.get('ChildCount')))
+                            
+                        elif item.get('CollectionType') == 'MovieFavorites':
+                    
+                            Name =(item.get("Name")).encode('utf-8')
+                            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+                            path = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1'
+                            
+                            s_url='http://%s%s' % (section['address'], path)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                        
+                            WINDOW.setProperty("MediaBrowser.views.movies.favourites.title"  , item.get('Name', 'Unknown'))
+                            WINDOW.setProperty("MediaBrowser.views.movies.favourites.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.favourites.type" , section.get('sectype'))
+                            WINDOW.setProperty("MediaBrowser.views.movies.favourites.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
+                            WINDOW.setProperty("MediaBrowser.views.movies.favourites.thumb" , downloadUtils.getArtwork(item, "Thumb"))
+                            WINDOW.setProperty("MediaBrowser.views.movies.favourites.poster" , downloadUtils.getArtwork(item, "Primary"))
+                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.favourites.total"  , str(item.get('ChildCount')))
+                            
+                        elif item.get('CollectionType') == 'MovieGenres':
+                    
+                            Name =(item.get("Name")).encode('utf-8')
+                            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+                            path = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1'
+                            
+                            s_url='http://%s%s' % (section['address'], path)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                        
+                            WINDOW.setProperty("MediaBrowser.views.movies.genres.title"  , item.get('Name', 'Unknown'))
+                            WINDOW.setProperty("MediaBrowser.views.movies.genres.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.genres.type" , section.get('sectype'))
+                            WINDOW.setProperty("MediaBrowser.views.movies.genres.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
+                            WINDOW.setProperty("MediaBrowser.views.movies.genres.thumb" , downloadUtils.getArtwork(item, "Thumb"))
+                            WINDOW.setProperty("MediaBrowser.views.movies.genres.poster" , downloadUtils.getArtwork(item, "Primary"))
+                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.genres.total"  , str(item.get('ChildCount')))
                         
                 elif section.get('sectype') == 'tvshows':    
                     # get tvshows node
