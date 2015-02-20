@@ -77,7 +77,9 @@ class Monitor():
     def ServiceEntryPoint(self):
     
         reporting = Reporting()
-        reporting.start()     
+        
+        if self.settings.getSetting('reportMetrics') == "true":
+            reporting.start()
     
         # auth the service
         try:
@@ -512,14 +514,14 @@ class Service( xbmc.Player ):
             self.printDebug("XBMB3C Service -> ADDING_FILE : " + str(self.played_information))
 
             # log some playback stats
-            if(itemType != None):
+            if(itemType != None and len(itemType) != 0):
                 if(self.playStats.get(itemType) != None):
                     count = self.playStats.get(itemType) + 1
                     self.playStats[itemType] = count
                 else:
                     self.playStats[itemType] = 1
                     
-            if(playMethod != None):
+            if(playMethod != None and len(playMethod) != 0):
                 if(self.playStats.get(playMethod) != None):
                     count = self.playStats.get(playMethod) + 1
                     self.playStats[playMethod] = count
