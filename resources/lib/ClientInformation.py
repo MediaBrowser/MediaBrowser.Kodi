@@ -9,7 +9,8 @@ class ClientInformation():
         
         # Internal variables
         self.window = xbmcgui.Window( 10000 )
-        self.addon =  xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        self.addonId = self.getAddonId()
+        self.addon =  xbmcaddon.Addon(id=self.addonId)
         self.addonName = self.addon.getAddonInfo('name').upper()
         
         # Preparation for headers
@@ -19,6 +20,14 @@ class ClientInformation():
         self.version = self.addon.getAddonInfo('version')
     
     
+    def getAddonId(self):
+        
+        # If addon Id is ever changed...
+        addonId = 'plugin.video.xbmb3c'
+        
+        return addonId
+        
+        
     def getMachineId(self):
         
         # Shortcut variables
