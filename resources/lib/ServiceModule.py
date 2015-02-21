@@ -75,19 +75,18 @@ class Monitor():
                     xbmc.log("XBMB3C " + str(level) + " -> " + str(msg.encode('utf-8')))
 
     def ServiceEntryPoint(self):
-    
-        reporting = Reporting()
-        
-        if self.settings.getSetting('reportMetrics') == "true":
-            reporting.start()
-    
+
         # auth the service
         try:
             downloadUtils = DownloadUtils()
             downloadUtils.authenticate()
         except Exception, e:
             pass
-
+            
+        reporting = Reporting()
+        if self.settings.getSetting('reportMetrics') == "true":
+            reporting.start()
+            
         # start some worker threads
         if self.settings.getSetting('useSkinHelper') == "true":
             skinHelperThread = SkinHelperThread()

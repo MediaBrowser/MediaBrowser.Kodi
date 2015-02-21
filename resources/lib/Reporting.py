@@ -62,7 +62,8 @@ class Reporting(threading.Thread):
     def ReportStats(self):
         
         __addon__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-            
+        
+        downloadUtils = DownloadUtils()
         clientInfo = ClientInformation()
         
         xbmc.log("Reporting Stats")
@@ -70,7 +71,7 @@ class Reporting(threading.Thread):
         
         machine_id = clientInfo.getMachineId()
         
-        accountString = __addon__.getSetting('username').lower() + "-" + __addon__.getSetting('password')
+        accountString = downloadUtils.getUserId()
         hash = hashlib.sha1(accountString)
         hashString = hash.hexdigest()        
         account_hash = hashString
@@ -102,7 +103,6 @@ class Reporting(threading.Thread):
         messageData += "&" + self.AddStatToMessage("DirectPlay", stats)
         messageData += "&" + self.AddStatToMessage("Transcode", stats)
         
-        downloadUtils = DownloadUtils()
         url = "http://magnesium.cloudapp.net/submit/"
         downloadUtils.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
         
