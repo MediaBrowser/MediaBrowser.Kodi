@@ -215,6 +215,8 @@ def getCollections():
                 detailsString=getDetailsString(fast=False)
             if section == "movies":
                 itemDetailsString=getDetailsString(fast=True)
+            elif section == "tvshows":
+                itemDetailsString="IncludeItemTypes=Episode" + getDetailsString(fast=False)                
             else:
                 itemDetailsString=getDetailsString(fast=False)                
             
