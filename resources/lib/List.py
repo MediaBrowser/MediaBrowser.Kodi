@@ -456,20 +456,23 @@ class List():
             xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)
         else:
             db.set("viewType", "_MOVIES")
-        if item.get("Type") == "Episode" and db.get("allowSort") != "false":
-            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_EPISODE)
-            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
-            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
-            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
-            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)
-        elif item.get("Type") != "Audio" and db.get("allowSort") != "false":
-            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
-            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
-            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
-            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)        
-            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_DATE)                
+        if __settings__.getSetting('useKodiSorting') == "true":
+            if item.get("Type") == "Episode" and db.get("allowSort") != "false":
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_EPISODE)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)
+            elif item.get("Type") != "Audio" and db.get("allowSort") != "false":
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)        
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_DATE)                
+            else:
+                xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)
         else:
-            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)    
+            xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)
             
 
     def processSearch(self, url, results, progress, pluginhandle):
@@ -1395,7 +1398,17 @@ class List():
             else:
                 argsToPass = 'unmarkFavorite,' + favoriteurl
                 commands.append(( __language__(30096), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
-                
+            argsToPass = 'sortby'
+            commands.append(( __language__(30097), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
+            
+            if __settings__.getSetting('useKodiSorting') == "true":
+                if 'Ascending' in WINDOW.getProperty("currenturl"):
+                    argsToPass = 'sortorder'
+                    commands.append(( __language__(30098), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
+                else:
+                    argsToPass = 'sortorder'
+                    commands.append(( __language__(30099), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))                
+            
             argsToPass = 'genrefilter'
             commands.append(( __language__(30040), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
             
