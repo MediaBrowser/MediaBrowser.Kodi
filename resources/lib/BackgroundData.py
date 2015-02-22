@@ -163,7 +163,7 @@ class BackgroundDataUpdaterThread(threading.Thread):
         db.set(id+".PremiereDate",              str(item.get("PremiereDate")))
         db.set(id+".Video3DFormat",             item.get("Video3DFormat"))
         db.set(id+".IsFolder",                  str(item.get("IsFolder")))
-        db.set(id+".RecursiveItemCount",        str(item.get("RecursiveItemCount")))
+        db.set(id+".RecursiveItemCount",        API().getRecursiveItemCount(item))
         db.set(id+".Primary",                   downloadUtils.getArtwork(item, "Primary")) 
         db.set(id+".Backdrop",                  downloadUtils.getArtwork(item, "Backdrop"))
         db.set(id+".poster",                    downloadUtils.getArtwork(item, "poster")) 

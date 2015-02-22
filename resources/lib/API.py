@@ -161,7 +161,7 @@ class API():
             if userData.get('UnplayedItemCount') != None:
                 UnplayedItemCount = userData.get('UnplayedItemCount')
             else:
-                UnplayedItemCount = 0
+                UnplayedItemCount = "0"
             if userData.get('PlaybackPositionTicks') != None:
                 PlaybackPositionTicks = userData.get('PlaybackPositionTicks')
             else:
@@ -198,7 +198,13 @@ class API():
             Temp = ""
         Name=Temp.encode('utf-8')
         return Name
-    
+        
+    def getRecursiveItemCount(self, item):
+        if item.get("RecursiveItemCount") != None:
+            return str(item.get("RecursiveItemCount"))
+        else:
+            return "0"
+            
     def getSeriesName(self, item):
         Temp = item.get("SeriesName")
         if Temp == None:
@@ -227,8 +233,8 @@ class API():
     def getTVInfo(self, item, userData):
         TotalSeasons     = 0 if item.get("ChildCount")==None else item.get("ChildCount")
         TotalEpisodes    = 0 if item.get("RecursiveItemCount")==None else item.get("RecursiveItemCount")
-        WatchedEpisodes  = 0 if userData.get("UnplayedItemCount")==None else TotalEpisodes-userData.get("UnplayedItemCount")
-        UnWatchedEpisodes = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")
+        WatchedEpisodes  = 0 if userData.get("UnplayedItemCount")==None else TotalEpisodes-int(userData.get("UnplayedItemCount"))
+        UnWatchedEpisodes = 0 if userData.get("UnplayedItemCount")==None else int(userData.get("UnplayedItemCount"))
         NumEpisodes      = TotalEpisodes
         tempEpisode = ""
         if (item.get("IndexNumber") != None):
