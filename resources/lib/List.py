@@ -1398,10 +1398,10 @@ class List():
             else:
                 argsToPass = 'unmarkFavorite,' + favoriteurl
                 commands.append(( __language__(30096), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
-            argsToPass = 'sortby'
-            commands.append(( __language__(30097), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
             
-            if __settings__.getSetting('useKodiSorting') == "true":
+            if __settings__.getSetting('useKodiSorting') == "false":
+                argsToPass = 'sortby'
+                commands.append(( __language__(30097), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
                 if 'Ascending' in WINDOW.getProperty("currenturl"):
                     argsToPass = 'sortorder'
                     commands.append(( __language__(30098), "XBMC.RunScript(" + scriptToRun + ", " + argsToPass + ")"))
