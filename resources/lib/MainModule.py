@@ -200,7 +200,8 @@ def getCollections():
     
     for item in result:
         if(item.get("RecursiveItemCount") != 0):
-            Name =(item.get("Name")).encode('utf-8')
+            Temp = item.get("Name")
+            Name = Temp.encode('utf-8')
             if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
                 __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
                 __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
