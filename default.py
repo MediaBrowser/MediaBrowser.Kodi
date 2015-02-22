@@ -35,5 +35,13 @@ BASE_RESOURCE_PATH = xbmc.translatePath( os.path.join( __cwd__, 'resources', 'li
 sys.path.append(BASE_RESOURCE_PATH)
 
 import MainModule
+from Reporting import Reporting
 
-MainModule.MainEntryPoint()
+try:
+    MainModule.MainEntryPoint()
+except Exception, msg:
+    Reporting().ReportError()
+    raise
+    
+    
+    

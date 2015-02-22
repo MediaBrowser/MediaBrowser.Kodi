@@ -8,6 +8,7 @@ import encodings
 import hashlib
 import threading
 import os
+import re
 
 from ClientInformation import ClientInformation
 from DownloadUtils import DownloadUtils
@@ -59,8 +60,47 @@ class Reporting(threading.Thread):
             xbmc.log(tb)
             return {}
         
-    def ReportStats(self):
+    def ReportError(self):
+    
+        stack = traceback.format_exc()
         
+        downloadUtils = DownloadUtils()
+
+        xbmc.log("Reporting Error")
+        
+        # try to remove user path from File names
+        stack = re.sub("File \".*plugin\\.video\\.xbmb3c", "File \"", stack)
+        
+        stackPost = urllib.quote_plus(stack)
+        #unQuoted = urllib.unquote_plus(stackPost)
+        #xbmc.log("UNQUOTED_DATA:\n" + unQuoted)
+        
+        messageData = self.GetBaseMessageData()
+        messageData += "&" + "stack=" + stackPost
+
+        url = "http://magnesium.cloudapp.net/submit/error.php"
+        downloadUtils.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
+        
+    def ReportStats(self, stack = None):
+        
+        downloadUtils = DownloadUtils()
+        
+        xbmc.log("Reporting Stats")
+        stats = self.LoadLastStats()
+        
+        messageData = self.GetBaseMessageData()
+                        
+        messageData += "&" + self.AddStatToMessage("Movie", stats)
+        messageData += "&" + self.AddStatToMessage("Episode", stats)
+        messageData += "&" + self.AddStatToMessage("Audio", stats)
+        messageData += "&" + self.AddStatToMessage("DirectStream", stats)
+        messageData += "&" + self.AddStatToMessage("DirectPlay", stats)
+        messageData += "&" + self.AddStatToMessage("Transcode", stats)
+        
+        url = "http://magnesium.cloudapp.net/submit/"
+        downloadUtils.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
+        
+    def GetBaseMessageData(self):
         __addon__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         
         downloadUtils = DownloadUtils()
@@ -96,15 +136,7 @@ class Reporting(threading.Thread):
                         "&kodi_platform=" + urllib.quote_plus(kodi_platform) +
                         "&kodi_skin=" + urllib.quote_plus(kodi_skin))
                         
-        messageData += "&" + self.AddStatToMessage("Movie", stats)
-        messageData += "&" + self.AddStatToMessage("Episode", stats)
-        messageData += "&" + self.AddStatToMessage("Audio", stats)
-        messageData += "&" + self.AddStatToMessage("DirectStream", stats)
-        messageData += "&" + self.AddStatToMessage("DirectPlay", stats)
-        messageData += "&" + self.AddStatToMessage("Transcode", stats)
-        
-        url = "http://magnesium.cloudapp.net/submit/"
-        downloadUtils.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
+        return messageData
         
     def AddStatToMessage(self, name, stats):
         

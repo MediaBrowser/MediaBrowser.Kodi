@@ -210,11 +210,13 @@ class Monitor():
                                     #newWebSocketThread.sendProgressUpdate(item_id, str(int(playTime * 10000000)))
                         except Exception, msg:
                             xbmc.log("XBMB3C Service -> Exception reporting progress : " + msg)
+                            Reporting().ReportError()
                             pass
                         lastProgressUpdate = datetime.today()
                     
                 except Exception, e:
                     xbmc.log("XBMB3C Service -> Exception in Playback Monitor Service : " + str(e))
+                    Reporting().ReportError()
                     pass
         
             xbmc.sleep(1000)
