@@ -1456,8 +1456,7 @@ class List():
             dirUrl = splitUrl[0] + '?format=json'
             jsonData = downloadUtils.downloadUrl(dirUrl)
             result = json.loads(jsonData)
-            for name in result:
-                title = name
+            title = result.get("Name")
             WINDOW.setProperty("heading", title)
         elif 'IncludeItemTypes=Episode' in url:
             WINDOW.setProperty("addshowname", "true")        
