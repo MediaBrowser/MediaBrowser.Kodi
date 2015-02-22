@@ -71,13 +71,21 @@ class Reporting(threading.Thread):
         # try to remove user path from File names
         stack = re.sub("File \".*plugin\\.video\\.xbmb3c", "File \"", stack)
         
+        lines = stack.splitlines()
+        message = "None"
+        if(len(lines) > 0):
+            message = lines[len(lines)-1]
+        #xbmc.log("MESSAGE_DATA: " + message)
+        message = urllib.quote_plus(message)
+        
         stackPost = urllib.quote_plus(stack)
         #unQuoted = urllib.unquote_plus(stackPost)
         #xbmc.log("UNQUOTED_DATA:\n" + unQuoted)
         
         messageData = self.GetBaseMessageData()
+        messageData += "&" + "message=" + message
         messageData += "&" + "stack=" + stackPost
-
+        
         url = "http://magnesium.cloudapp.net/submit/error.php"
         downloadUtils.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
         
