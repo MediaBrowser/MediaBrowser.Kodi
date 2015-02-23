@@ -449,11 +449,9 @@ class DownloadUtils():
         
         else:
             userid = self.getUserId()
-            headers = clientInfo.getHeader()    
-                
+            headers = clientInfo.getHeader()
             authToken = self.authenticate()
-                    
-            self.logMsg("Authentication Header : " + str(headers))
+
             return headers
         
         
