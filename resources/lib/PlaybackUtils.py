@@ -268,8 +268,7 @@ class PlaybackUtils():
                 
                 playlist.add(playurl, listItem)
         
-        if(xbmc.Player().isPlaying() == False):
-            xbmc.Player().play(playlist)
+        xbmc.Player().play(playlist)
         
         #If resuming then wait for playback to start and then
         #seek to position
