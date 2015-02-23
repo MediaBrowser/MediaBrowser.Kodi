@@ -377,11 +377,24 @@ class Service( xbmc.Player ):
         playMethod = data.get("playmethod")
         currentPossition = data.get("currentPossition")
         positionTicks = str(int(currentPossition * 10000000))
-                
-        url = ("http://%s:%s/mediabrowser/Sessions/Playing/Stopped" % (addonSettings.getSetting('ipaddress'), addonSettings.getSetting('port')))  
-            
+        
+        # save playback stats
+        started = data.get("Started")
+        itemType = data.get("Type")
+        playedFor = datetime.today() - started
+        minutesRun = int(playedFor.seconds / 60)
+        #xbmc.log("PLAYED_FOR ITEM " + itemType + " played for : " + str(minutesRun))
+        
+        if(itemType != None and len(itemType) != 0):
+            if(self.playStats.get(itemType) != None):
+                count = self.playStats.get(itemType) + minutesRun
+                self.playStats[itemType] = count
+            else:
+                self.playStats[itemType] = minutesRun
+        
+        # send the stop action
+        url = ("http://%s:%s/mediabrowser/Sessions/Playing/Stopped" % (addonSettings.getSetting('ipaddress'), addonSettings.getSetting('port')))     
         url = url + "?itemId=" + item_id
-
         url = url + "&canSeek=true"
         url = url + "&PlayMethod=" + playMethod
         url = url + "&QueueableMediaTypes=Video"
@@ -393,7 +406,7 @@ class Service( xbmc.Player ):
         if(subtitleindex != None and subtitleindex!=""):
           url = url + "&SubtitleStreamIndex=" + subtitleindex
             
-        self.downloadUtils.downloadUrl(url, postBody="", type="POST")    
+        self.downloadUtils.downloadUrl(url, postBody="", type="POST")   
     
     
     def reportPlayback(self):
@@ -509,19 +522,13 @@ class Service( xbmc.Player ):
             data["SubtitleStreamIndex"] = subtitleindex
             data["playmethod"] = playMethod
             data["Type"] = itemType
+            data["Started"] = datetime.today()
             self.played_information[currentFile] = data
             
             self.printDebug("XBMB3C Service -> ADDING_FILE : " + currentFile)
             self.printDebug("XBMB3C Service -> ADDING_FILE : " + str(self.played_information))
 
-            # log some playback stats
-            if(itemType != None and len(itemType) != 0):
-                if(self.playStats.get(itemType) != None):
-                    count = self.playStats.get(itemType) + 1
-                    self.playStats[itemType] = count
-                else:
-                    self.playStats[itemType] = 1
-                    
+            # log some playback stats                   
             if(playMethod != None and len(playMethod) != 0):
                 if(self.playStats.get(playMethod) != None):
                     count = self.playStats.get(playMethod) + 1
@@ -538,9 +545,19 @@ class Service( xbmc.Player ):
     def onPlayBackEnded( self ):
         # Will be called when xbmc stops playing a file
         self.printDebug("XBMB3C Service -> onPlayBackEnded")
-        self.stopAll()
+        try:
+            self.stopAll()
+        except Exception, msg:
+            Reporting().ReportError()
+            pass
 
     def onPlayBackStopped( self ):
         # Will be called when user stops xbmc playing a file
         self.printDebug("XBMB3C Service -> onPlayBackStopped")
-        self.stopAll()
+        try:
+            self.stopAll()
+        except Exception, msg:
+            Reporting().ReportError()
+            pass
+            
+            
