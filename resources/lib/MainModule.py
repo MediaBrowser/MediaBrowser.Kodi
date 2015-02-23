@@ -432,8 +432,7 @@ def displaySections(pluginhandle):
     # Add collections
     collections = getCollections()
     for collection in collections:
-        Temp=collection.get('title', 'Unknown')
-        title=Temp.encode('utf-8')
+        title=collection.get('title', 'Unknown')
         details = {'title' : title }
         path = collection['path']
         extraData['mode'] = _MODE_MOVIES
@@ -445,17 +444,17 @@ def displaySections(pluginhandle):
         printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
         dirItems.append(List().addGUIItem(s_url, details, extraData))
         if collection.get('recent_path') != None:
-            details = {'title' : __language__(30220) + title }
+            details = {'title' : __language__(30220).encode('utf-8') + title }
             s_url = 'http://%s%s' % ( collection['address'], collection['recent_path'])
             printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
             dirItems.append(List().addGUIItem(s_url, details, extraData))
 
-            details = {'title' : __language__(30221) + title }
+            details = {'title' : __language__(30221).encode('utf-8') + title }
             s_url = 'http://%s%s' % ( collection['address'], collection['inprogress_path'])
             printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
             dirItems.append(List().addGUIItem(s_url, details, extraData))
             if collection.get('section') == "tvshows":
-                details = {'title' : __language__(30222) + title }
+                details = {'title' : __language__(30222).encode('utf-8') + title }
                 s_url = 'http://%s%s' % ( collection['address'], collection['nextepisodes_path'])
                 printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
                 dirItems.append(List().addGUIItem(s_url, details, extraData))            
