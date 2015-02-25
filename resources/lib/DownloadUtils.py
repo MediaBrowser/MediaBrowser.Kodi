@@ -158,29 +158,37 @@ class DownloadUtils():
         sha1 = hashlib.sha1(addon.getSetting('password'))
         sha1 = sha1.hexdigest()
         
-        messageData = "username=" + addon.getSetting('username') + "&password=" + sha1
-        resp = self.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
-
-        accessToken = None
+        accessToken = addon.getSetting('token')
         
-        try:
-            result = json.loads(resp)
-            accessToken = result.get('AccessToken')
-        except:
-            pass
-
-        if accessToken != None:
-            self.logMsg("User Authenticated : " + accessToken)
-            WINDOW.setProperty('AccessToken' + addon.getSetting('username'), accessToken)
-            WINDOW.setProperty('userid' + addon.getSetting('username'), result.get('User').get('Id'))
-            
-            return accessToken
-
+        if accessToken == "":
+            messageData = "username=" + addon.getSetting('username') + "&password=" + sha1
+            resp = self.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
+    
+            try:
+                result = json.loads(resp)
+                accessToken = result.get('AccessToken')
+            except:
+                pass
+    
+            if accessToken != None:
+                self.logMsg("User Authenticated : " + accessToken)
+                addon.setSetting('token', accessToken)
+                WINDOW.setProperty('AccessToken' + addon.getSetting('username'), accessToken)
+                WINDOW.setProperty('userid' + addon.getSetting('username'), result.get('User').get('Id'))
+                addon.setSetting('userid', result.get('User').get('Id'))
+                
+                return accessToken
+    
+            else:
+                self.logMsg("User NOT Authenticated")
+                WINDOW.setProperty('AccessToken' + addon.getSetting('username'), "")
+                
+                return ""
         else:
-            self.logMsg("User NOT Authenticated")
-            WINDOW.setProperty('AccessToken' + addon.getSetting('username'), "")
-            
-            return ""
+            self.logMsg("User already authenticated: " + accessToken)
+            WINDOW.setProperty('AccessToken' + addon.getSetting('username'), accessToken)
+            WINDOW.setProperty('userid' + addon.getSetting('username'), addon.getSetting('userid'))
+            return accessToken
 
 
     def getArtwork(self, data, type, index = "0", userParentInfo = False):
@@ -458,6 +466,7 @@ class DownloadUtils():
     def downloadUrl(self, url, suppress=False, postBody=None, type="GET", popup=0, authenticate=True ):
         
         WINDOW = self.window
+        addon = self.addon
         getString = self.getString
 
         self.logMsg("== ENTER: getURL ==")
@@ -536,6 +545,8 @@ class DownloadUtils():
             elif int(data.status) == 401:
                 error = "HTTP response error: " + str(data.status) + " " + str(data.reason)
                 xbmc.log(error)
+                addon.setSetting('token', "")
+                addon.setSetting('userid', "")
                 
                 timeStamp = WINDOW.getProperty("XBMB3C_LAST_USER_ERROR")
                 if(timeStamp == None or timeStamp == ""):
