@@ -156,7 +156,7 @@ class List():
         if WINDOW.getProperty("addshowname") == "true":
             if db.get(id + ".LocationType") == "Virtual":
                 listItemName = db.get(id + ".PremiereDate") + " - " + db.get(id + '.SeriesName','') + " - " + "S" + db.get(id + 'Season') + "E" + db.get(id + ".Name")
-                if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + "UnplayedItemCount") != ''):
+                if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + "UnplayedItemCount") != '' and item_type != "Movie"):
                     listItemName = listItemName + " (" + str(int(db.get(id + ".RecursiveItemCount")) - int(db.get(id + ".UnplayedItemCount"))) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
             else:
                 if db.get(id + '.Season') == '':
@@ -164,11 +164,11 @@ class List():
                 else:
                     season = db.get(id + '.Season')
                 listItemName = db.get(id + 'SeriesName') + " - " + "S" + season + "E" + db.get(id + '.Name')
-                if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + ".UnplayedItemCount") != ''):
+                if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + ".UnplayedItemCount") != '' and item_type != "Movie"):
                     listItemName = listItemName + " (" + str(int(db.get(id + ".RecursiveItemCount")) - int(db.get(id + ".UnplayedItemCount"))) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
         else:
             listItemName = db.get(id + '.Name')
-            if(addCounts and db.get(id + ".RecursiveItemCount") != 'None' and db.get(id + ".UnplayedItemCount") != ''):
+            if(addCounts and db.get(id + ".RecursiveItemCount") != 'None' and db.get(id + ".UnplayedItemCount") != '' and item_type != "Movie"):
                 listItemName = listItemName + " (" + str(int(db.get(id + ".RecursiveItemCount")) - int(db.get(id + ".UnplayedItemCount"))) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
         listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         details['title'] =  listItemName
@@ -296,7 +296,7 @@ class List():
         if WINDOW.getProperty("addshowname") == "true":
             if item.get("LocationType") == "Virtual":
                 listItemName = API().getPremiereDate(item) + " - " + API().getSeriesName(item) + " - " + "S" + tvInfo.get('Season') + "E" + tvInfo.get('Episode') + " - " + API().getName(item)
-                if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != ''):
+                if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != '' and item_type != "Movie"):
                     listItemName = listItemName + " (" + str(item.get("RecursiveItemCount") - userData.get("UnplayedItemCount")) + "/" + str(item.get("RecursiveItemCount")) + ")"
             else:
                 if tvInfo.get('Season') == '':
@@ -304,7 +304,7 @@ class List():
                 else:
                     season = tvInfo.get('Season')
                 listItemName = API().getSeriesName(item) + " - " + "S" + season + "E" + tvInfo.get('Episode') + " - " + API().getName(item)
-                if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != ''):
+                if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != '' and item_type != "Movie"):
                     listItemName = listItemName + " (" + str(item.get("RecursiveItemCount") - userData.get("UnplayedItemCount")) + "/" + str(item.get("RecursiveItemCount")) + ")"
         elif item.get("Type") == "Episode":
             prefix=''
@@ -321,7 +321,7 @@ class List():
             guiid = item.get("SeriesId")    
         else:
             listItemName = API().getName(item)
-            if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != ''):
+            if(addCounts and item.get("RecursiveItemCount") != None and userData.get("UnplayedItemCount") != '' and item_type != "Movie"):
                 listItemName = listItemName + " (" + str(item.get("RecursiveItemCount") - userData.get("UnplayedItemCount")) + "/" + str(item.get("RecursiveItemCount")) + ")"
         listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
 
