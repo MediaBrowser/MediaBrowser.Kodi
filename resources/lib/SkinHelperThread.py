@@ -408,6 +408,7 @@ class SkinHelperThread(threading.Thread):
                         
                             WINDOW.setProperty("MediaBrowser.views.movies.all.title"  , item.get('Name', 'Unknown'))
                             WINDOW.setProperty("MediaBrowser.views.movies.all.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.movies.all.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
                             
                             s_url='http://%s%s' % (section['address'], collapsedpath)
                             murl= "?url="+urllib.quote(s_url)+modeurl      
@@ -433,6 +434,7 @@ class SkinHelperThread(threading.Thread):
                         
                             WINDOW.setProperty("MediaBrowser.views.movies.collections.title"  , item.get('Name', 'Unknown'))
                             WINDOW.setProperty("MediaBrowser.views.movies.collections.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.movies.collections.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
                             
                             WINDOW.setProperty("MediaBrowser.views.movies.collections.type" , section.get('sectype'))
                             WINDOW.setProperty("MediaBrowser.views.movies.collections.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
@@ -454,6 +456,7 @@ class SkinHelperThread(threading.Thread):
                         
                             WINDOW.setProperty("MediaBrowser.views.movies.resume.title"  , item.get('Name', 'Unknown'))
                             WINDOW.setProperty("MediaBrowser.views.movies.resume.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.movies.resume.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
                             
                             WINDOW.setProperty("MediaBrowser.views.movies.resume.type" , section.get('sectype'))
                             WINDOW.setProperty("MediaBrowser.views.movies.resume.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
@@ -475,7 +478,8 @@ class SkinHelperThread(threading.Thread):
                         
                             WINDOW.setProperty("MediaBrowser.views.movies.latest.title"  , item.get('Name', 'Unknown'))
                             WINDOW.setProperty("MediaBrowser.views.movies.latest.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
-                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.latest.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
+                           
                             WINDOW.setProperty("MediaBrowser.views.movies.latest.type" , section.get('sectype'))
                             WINDOW.setProperty("MediaBrowser.views.movies.latest.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
                             WINDOW.setProperty("MediaBrowser.views.movies.latest.thumb" , downloadUtils.getArtwork(item, "Thumb"))
@@ -496,7 +500,8 @@ class SkinHelperThread(threading.Thread):
                         
                             WINDOW.setProperty("MediaBrowser.views.movies.favourites.title"  , item.get('Name', 'Unknown'))
                             WINDOW.setProperty("MediaBrowser.views.movies.favourites.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
-                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.favourites.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
+                           
                             WINDOW.setProperty("MediaBrowser.views.movies.favourites.type" , section.get('sectype'))
                             WINDOW.setProperty("MediaBrowser.views.movies.favourites.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
                             WINDOW.setProperty("MediaBrowser.views.movies.favourites.thumb" , downloadUtils.getArtwork(item, "Thumb"))
@@ -517,7 +522,8 @@ class SkinHelperThread(threading.Thread):
                         
                             WINDOW.setProperty("MediaBrowser.views.movies.genres.title"  , item.get('Name', 'Unknown'))
                             WINDOW.setProperty("MediaBrowser.views.movies.genres.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
-                            
+                            WINDOW.setProperty("MediaBrowser.views.movies.genres.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
+                           
                             WINDOW.setProperty("MediaBrowser.views.movies.genres.type" , section.get('sectype'))
                             WINDOW.setProperty("MediaBrowser.views.movies.genres.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
                             WINDOW.setProperty("MediaBrowser.views.movies.genres.thumb" , downloadUtils.getArtwork(item, "Thumb"))
