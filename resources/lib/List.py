@@ -924,8 +924,7 @@ class List():
                 extraData['thumb'] = extraData['fanart_image']
 
             extraData['mode'] = _MODE_GETCONTENT
-                                     
-            u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=' + content + '&Genres=' + item.get("Name") + '&format=json&ImageTypeLimit=1'
+            u = 'http://' + server + '/mediabrowser/Users/' + userid + '/Items?&SortBy=SortName&Fields=' + detailsString + '&Recursive=true&SortOrder=Ascending&IncludeItemTypes=' + content + '&Genres=' + urllib.quote(item.get("Name").encode('utf-8'))    + '&format=json&ImageTypeLimit=1'
             dirItems.append(self.addGUIItem(u, details, extraData))
           
         return dirItems
