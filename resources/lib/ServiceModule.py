@@ -203,20 +203,18 @@ class Monitor():
                     secDiff = td.seconds
                     if(secDiff > 10):
                         try:
-                            service.reportPlayback()
+                            service.reportPlayback(currentFile)
                             #if(service.played_information.get(currentFile) != None and service.played_information.get(currentFile).get("item_id") != None):
                                 #item_id =  service.played_information.get(currentFile).get("item_id")
                                 #if(newWebSocketThread != None):
                                     #newWebSocketThread.sendProgressUpdate(item_id, str(int(playTime * 10000000)))
                         except Exception, msg:
-                            xbmc.log("XBMB3C Service -> Exception reporting progress : " + msg)
-                            Reporting().ReportError()
+                            xbmc.log("XBMB3C Service -> Exception reporting progress : " + str(msg))
                             pass
                         lastProgressUpdate = datetime.today()
                     
                 except Exception, e:
                     xbmc.log("XBMB3C Service -> Exception in Playback Monitor Service : " + str(e))
-                    Reporting().ReportError()
                     pass
         
             xbmc.sleep(1000)
@@ -409,20 +407,16 @@ class Service( xbmc.Player ):
         self.downloadUtils.downloadUrl(url, postBody="", type="POST")   
     
     
-    def reportPlayback(self):
+    def reportPlayback(self, currentFile):
         self.printDebug("reportPlayback Called")
-        
-        currentFile = xbmc.Player().getPlayingFile()
-        
-        #TODO need to change this to use the one in the data map
-        playTime = xbmc.Player().getTime()
-        
-        data = self.played_information.get(currentFile)
+
+        data = self.played_information.get(currentFile)               
         
         # only report playback if xbmb3c has initiated the playback (item_id has value)
-        if(data != None and data.get("item_id") != None):
+        if(data != None and data.get("item_id") != None and data.get("currentPossition") != None):
             addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
             
+            playTime = data.get("currentPossition")
             item_id = data.get("item_id")
             audioindex = data.get("AudioStreamIndex")
             subtitleindex = data.get("SubtitleStreamIndex")
@@ -453,91 +447,119 @@ class Service( xbmc.Player ):
             self.downloadUtils.downloadUrl(url, postBody="", type="POST")
     
     def onPlayBackPaused( self ):
-        currentFile = xbmc.Player().getPlayingFile()
-        self.printDebug("PLAYBACK_PAUSED : " + currentFile)
-        if(self.played_information.get(currentFile) != None):
-            self.played_information[currentFile]["paused"] = "true"
-        self.reportPlayback()
+    
+        try:
+            if xbmc.Player().isPlaying():
+                currentFile = xbmc.Player().getPlayingFile()
+                self.printDebug("PLAYBACK_PAUSED : " + currentFile)
+                if(self.played_information.get(currentFile) != None):
+                    self.played_information[currentFile]["paused"] = "true"
+                self.reportPlayback(currentFile)
+        except Exception, msg:
+            Reporting().ReportError()
+            raise           
     
     def onPlayBackResumed( self ):
-        currentFile = xbmc.Player().getPlayingFile()
-        self.printDebug("PLAYBACK_RESUMED : " + currentFile)
-        if(self.played_information.get(currentFile) != None):
-            self.played_information[currentFile]["paused"] = "false"
-        self.reportPlayback()
+    
+        try:
+            if xbmc.Player().isPlaying():
+                currentFile = xbmc.Player().getPlayingFile()
+                self.printDebug("PLAYBACK_RESUMED : " + currentFile)
+                if(self.played_information.get(currentFile) != None):
+                    self.played_information[currentFile]["paused"] = "false"
+                self.reportPlayback(currentFile)
+        except Exception, msg:
+            Reporting().ReportError()
+            raise              
     
     def onPlayBackSeek( self, time, seekOffset ):
-        self.printDebug("PLAYBACK_SEEK")
-        self.reportPlayback()
+    
+        try:
+            if xbmc.Player().isPlaying():
+                self.printDebug("PLAYBACK_SEEK")
+                currentFile = xbmc.Player().getPlayingFile()
+                self.reportPlayback(currentFile)
+        except Exception, msg:
+            Reporting().ReportError()
+            raise            
         
     def onPlayBackStarted( self ):
-        # Will be called when xbmc starts playing a file
-        WINDOW = xbmcgui.Window( 10000 )
-        self.stopAll()
-        addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        
-        if xbmc.Player().isPlaying():
-            currentFile = xbmc.Player().getPlayingFile()
-            self.printDebug("XBMB3C Service -> onPlayBackStarted" + currentFile)
+    
+        try:
+            # Will be called when xbmc starts playing a file
+            WINDOW = xbmcgui.Window( 10000 )
+            self.stopAll()
+            addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
             
-            # grab all the info about this item from the stored windows props
-            # only ever use the win props here, use the data map in all other places
-            deleteurl = WINDOW.getProperty(currentFile + "deleteurl")
-            runtime = WINDOW.getProperty(currentFile + "runtimeticks")
-            item_id = WINDOW.getProperty(currentFile + "item_id")
-            refresh_id = WINDOW.getProperty(currentFile + "refresh_id")
-            audioindex = WINDOW.getProperty(currentFile + "AudioStreamIndex")
-            subtitleindex = WINDOW.getProperty(currentFile + "SubtitleStreamIndex")
-            playMethod = WINDOW.getProperty(currentFile + "playmethod")
-            itemType = WINDOW.getProperty(currentFile + "type")
+            if xbmc.Player().isPlaying():
+                currentFile = xbmc.Player().getPlayingFile()
+                self.printDebug("XBMB3C Service -> onPlayBackStarted" + currentFile)
+                
+                # grab all the info about this item from the stored windows props
+                # only ever use the win props here, use the data map in all other places
+                deleteurl = WINDOW.getProperty(currentFile + "deleteurl")
+                runtime = WINDOW.getProperty(currentFile + "runtimeticks")
+                item_id = WINDOW.getProperty(currentFile + "item_id")
+                refresh_id = WINDOW.getProperty(currentFile + "refresh_id")
+                audioindex = WINDOW.getProperty(currentFile + "AudioStreamIndex")
+                subtitleindex = WINDOW.getProperty(currentFile + "SubtitleStreamIndex")
+                playMethod = WINDOW.getProperty(currentFile + "playmethod")
+                itemType = WINDOW.getProperty(currentFile + "type")
+                
+                if(item_id == None or len(item_id) == 0):
+                    return
             
-            if(item_id == None or len(item_id) == 0):
-                return
-        
-            url = ("http://%s:%s/mediabrowser/Sessions/Playing" % (addonSettings.getSetting('ipaddress'), addonSettings.getSetting('port')))  
-            
-            url = url + "?itemId=" + item_id
+                url = ("http://%s:%s/mediabrowser/Sessions/Playing" % (addonSettings.getSetting('ipaddress'), addonSettings.getSetting('port')))  
+                
+                url = url + "?itemId=" + item_id
 
-            url = url + "&canSeek=true"
-            url = url + "&PlayMethod=" + playMethod
-            url = url + "&QueueableMediaTypes=Video"
-            url = url + "&MediaSourceId=" + item_id
-            
-            if(audioindex != None and audioindex!=""):
-              url = url + "&AudioStreamIndex=" + audioindex
-            
-            if(subtitleindex != None and subtitleindex!=""):
-              url = url + "&SubtitleStreamIndex=" + subtitleindex
-            
-            self.downloadUtils.downloadUrl(url, postBody="", type="POST")
-            
-            # save data map for updates and position calls
-            data = {}
-            data["deleteurl"] = deleteurl
-            data["runtime"] = runtime
-            data["item_id"] = item_id
-            data["refresh_id"] = refresh_id
-            data["currentfile"] = currentFile
-            data["AudioStreamIndex"] = audioindex
-            data["SubtitleStreamIndex"] = subtitleindex
-            data["playmethod"] = playMethod
-            data["Type"] = itemType
-            data["Started"] = datetime.today()
-            self.played_information[currentFile] = data
-            
-            self.printDebug("XBMB3C Service -> ADDING_FILE : " + currentFile)
-            self.printDebug("XBMB3C Service -> ADDING_FILE : " + str(self.played_information))
+                url = url + "&canSeek=true"
+                url = url + "&PlayMethod=" + playMethod
+                url = url + "&QueueableMediaTypes=Video"
+                url = url + "&MediaSourceId=" + item_id
+                
+                if(audioindex != None and audioindex!=""):
+                  url = url + "&AudioStreamIndex=" + audioindex
+                
+                if(subtitleindex != None and subtitleindex!=""):
+                  url = url + "&SubtitleStreamIndex=" + subtitleindex
+                
+                self.downloadUtils.downloadUrl(url, postBody="", type="POST")
+                
+                # save data map for updates and position calls
+                data = {}
+                data["deleteurl"] = deleteurl
+                data["runtime"] = runtime
+                data["item_id"] = item_id
+                data["refresh_id"] = refresh_id
+                data["currentfile"] = currentFile
+                data["AudioStreamIndex"] = audioindex
+                data["SubtitleStreamIndex"] = subtitleindex
+                data["playmethod"] = playMethod
+                data["Type"] = itemType
+                data["Started"] = datetime.today()
+                self.played_information[currentFile] = data
+                
+                self.printDebug("XBMB3C Service -> ADDING_FILE : " + currentFile)
+                self.printDebug("XBMB3C Service -> ADDING_FILE : " + str(self.played_information))
 
-            # log some playback stats                   
-            if(playMethod != None and len(playMethod) != 0):
-                if(self.playStats.get(playMethod) != None):
-                    count = self.playStats.get(playMethod) + 1
-                    self.playStats[playMethod] = count
-                else:
-                    self.playStats[playMethod] = 1
-            
-            # reset in progress position
-            self.reportPlayback()
+                # log some playback stats                   
+                if(playMethod != None and len(playMethod) != 0):
+                    if(self.playStats.get(playMethod) != None):
+                        count = self.playStats.get(playMethod) + 1
+                        self.playStats[playMethod] = count
+                    else:
+                        self.playStats[playMethod] = 1
+                
+                # set current position
+                playTime = xbmc.Player().getTime()
+                if(self.played_information.get(currentFile) != None):
+                    self.played_information[currentFile]["currentPossition"] = playTime
+                    
+                self.reportPlayback(currentFile)
+        except Exception, msg:
+            Reporting().ReportError()
+            raise                
             
     def GetPlayStats(self):
         return self.playStats
@@ -549,7 +571,7 @@ class Service( xbmc.Player ):
             self.stopAll()
         except Exception, msg:
             Reporting().ReportError()
-            pass
+            raise
 
     def onPlayBackStopped( self ):
         # Will be called when user stops xbmc playing a file
@@ -558,6 +580,6 @@ class Service( xbmc.Player ):
             self.stopAll()
         except Exception, msg:
             Reporting().ReportError()
-            pass
+            raise
             
             
