@@ -138,11 +138,12 @@ class DownloadUtils():
         WINDOW = self.window
         addon = self.addon
         server = self.getServer()
-        token = WINDOW.getProperty('AccessToken' + addon.getSetting('username'))
+        username = addon.getSetting('username').lower()
+        token = WINDOW.getProperty('AccessToken' + username)
 
         # Verify if there's an access token saved for the user
         if (token != None and token != ""):
-            self.logMsg("Returning saved AccessToken for user: %s Token: %s" % (addon.getSetting('username'), token))
+            self.logMsg("Returning saved AccessToken for user: %s Token: %s" % (username, token))
             return token
         
         # Verify if there's server information saved
@@ -158,10 +159,19 @@ class DownloadUtils():
         sha1 = hashlib.sha1(addon.getSetting('password'))
         sha1 = sha1.hexdigest()
         
-        accessToken = addon.getSetting('token')
-        
-        if accessToken == "":
-            messageData = "username=" + addon.getSetting('username') + "&password=" + sha1
+        accessToken = addon.getSetting('token').lower()
+
+        if username in accessToken:
+            # Correct token is detected
+            accessToken = accessToken.strip(username)
+            self.logMsg("User already authenticated: " + accessToken)
+            WINDOW.setProperty('AccessToken' + username, accessToken)
+            WINDOW.setProperty('userid' + username, addon.getSetting('userid'))
+            
+            return accessToken
+        else:
+            # Authenticate user
+            messageData = "username=" + username + "&password=" + sha1
             resp = self.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
     
             try:
@@ -169,26 +179,21 @@ class DownloadUtils():
                 accessToken = result.get('AccessToken')
             except:
                 pass
-    
+
             if accessToken != None:
                 self.logMsg("User Authenticated : " + accessToken)
-                addon.setSetting('token', accessToken)
-                WINDOW.setProperty('AccessToken' + addon.getSetting('username'), accessToken)
-                WINDOW.setProperty('userid' + addon.getSetting('username'), result.get('User').get('Id'))
+                addon.setSetting('token', username + accessToken)
+                WINDOW.setProperty('AccessToken' + username, accessToken)
+                WINDOW.setProperty('userid' + username, result.get('User').get('Id'))
                 addon.setSetting('userid', result.get('User').get('Id'))
                 
                 return accessToken
     
             else:
                 self.logMsg("User NOT Authenticated")
-                WINDOW.setProperty('AccessToken' + addon.getSetting('username'), "")
+                WINDOW.setProperty('AccessToken' + username, "")
                 
                 return ""
-        else:
-            self.logMsg("User already authenticated: " + accessToken)
-            WINDOW.setProperty('AccessToken' + addon.getSetting('username'), accessToken)
-            WINDOW.setProperty('userid' + addon.getSetting('username'), addon.getSetting('userid'))
-            return accessToken
 
 
     def getArtwork(self, data, type, index = "0", userParentInfo = False):
