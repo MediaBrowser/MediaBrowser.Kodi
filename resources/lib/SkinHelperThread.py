@@ -348,7 +348,8 @@ class SkinHelperThread(threading.Thread):
                 return {}
             #Get the global host variable set in settings
             WINDOW = xbmcgui.Window( 10000 )
-            
+            useBackgroundData = WINDOW.getProperty("BackgroundDataLoaded") == "true"
+        
             if __settings__.getSetting('collapseBoxSets')=='true':
                 collapseBoxSets = True
             else:
@@ -387,7 +388,9 @@ class SkinHelperThread(threading.Thread):
                     
                 #get movies nodes
                 if section.get('sectype') == 'movies':
-                    detailsString= MainModule.getDetailsString(fast=True)   
+                    detailsString= MainModule.getDetailsString(fast=True)
+                    if useBackgroundData == False:
+                        detailsString= MainModule.getDetailsString(fast=False) 
                     htmlpath = ("http://%s/mediabrowser/Users/" % section.get('address'))
                     jsonData = downloadUtils.downloadUrl(htmlpath + userid + "/items?ParentId=" + id + "&Sortby=SortName&format=json")
                     result = json.loads(jsonData)
@@ -402,6 +405,9 @@ class SkinHelperThread(threading.Thread):
                                 __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
                             path = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1'
                             collapsedpath = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1&CollapseBoxSetItems=true'
+                    
+                            randompath = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&Limit=10&SortBy=Random&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&Filters=IsUnplayed,IsNotFolder&format=json&ImageTypeLimit=1'
+                            unwatchedpath = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&SortBy=Random&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&Filters=IsUnplayed,IsNotFolder&format=json&ImageTypeLimit=1'
                             
                             s_url='http://%s%s' % (section['address'], path)
                             murl= "?url="+urllib.quote(s_url)+modeurl      
@@ -420,6 +426,19 @@ class SkinHelperThread(threading.Thread):
                             WINDOW.setProperty("MediaBrowser.views.movies.all.poster" , downloadUtils.getArtwork(item, "Poster"))
                             
                             WINDOW.setProperty("MediaBrowser.views.movies.all.total"  , str(item.get('ChildCount')))
+                           
+                            s_url='http://%s%s' % (section['address'], randompath)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                           
+                            WINDOW.setProperty("MediaBrowser.views.movies.random.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.movies.random.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
+                            
+                            s_url='http://%s%s' % (section['address'], unwatchedpath)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                           
+                            WINDOW.setProperty("MediaBrowser.views.movies.unwatched.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.movies.unwatched.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
+                            
                             
                         elif item.get('CollectionType') == 'MovieCollections':
                     
@@ -533,8 +552,173 @@ class SkinHelperThread(threading.Thread):
                         
                 elif section.get('sectype') == 'tvshows':    
                     # get tvshows node
-                    detailsString= MainModule.getDetailsString(fast=True)   
+                    detailsString= MainModule.getDetailsString(fast=True)
+                    if useBackgroundData == False:
+                        detailsString= MainModule.getDetailsString(fast=False)   
+                    htmlpath = ("http://%s/mediabrowser/Users/" % section.get('address'))
+                    jsonData = downloadUtils.downloadUrl(htmlpath + userid + "/items?ParentId=" + id + "&Sortby=SortName&format=json")
+                    result = json.loads(jsonData)
+                    result = result.get("Items")
                     
+                    for item in result:
+                        if item.get('CollectionType') == 'TvShowSeries':
+                    
+                            Name =(item.get("Name")).encode('utf-8')
+                            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+                            path = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1'    
+                            randompath = '/mediabrowser/Users/' + userid + '/items?Limit=10&Recursive=true&SortBy=Random&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&Filters=IsUnplayed,IsNotFolder&format=json&ImageTypeLimit=1&IncludeItemTypes=Episode'
+                            s_url='http://%s%s' % (section['address'], path)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                        
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.all.title"  , item.get('Name', 'Unknown'))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.all.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.all.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.all.type" , section.get('sectype'))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.all.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.all.thumb" , downloadUtils.getArtwork(item, "Thumb"))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.all.poster" , downloadUtils.getArtwork(item, "Poster"))
+                            
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.all.total"  , str(item.get('ChildCount')))
+                            s_url='http://%s%s' % (section['address'], randompath)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                           
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.random.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.random.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
+                           
+                            
+                        elif item.get('CollectionType') == 'TvNextUp':
+                    
+                            Name =(item.get("Name")).encode('utf-8')
+                            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+                            path = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1'
+                            
+                            s_url='http://%s%s' % (section['address'], path)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                        
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.nextup.title"  , item.get('Name', 'Unknown'))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.nextup.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.nextup.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
+                            
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.nextup.type" , section.get('sectype'))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.nextup.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.nextup.thumb" , downloadUtils.getArtwork(item, "Thumb"))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.nextup.poster" , downloadUtils.getArtwork(item, "Primary"))
+                            
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.nextup.total"  , str(item.get('ChildCount')))
+                            
+                        elif item.get('CollectionType') == 'TvResume':
+                    
+                            Name =(item.get("Name")).encode('utf-8')
+                            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+                            path = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1'
+                            
+                            s_url='http://%s%s' % (section['address'], path)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                        
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.resume.title"  , item.get('Name', 'Unknown'))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.resume.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.resume.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
+                            
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.resume.type" , section.get('sectype'))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.resume.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.resume.thumb" , downloadUtils.getArtwork(item, "Thumb"))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.resume.poster" , downloadUtils.getArtwork(item, "Primary"))
+                            
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.resume.total"  , str(item.get('ChildCount')))
+                            
+                        elif item.get('CollectionType') == 'TvLatest':
+                    
+                            Name =(item.get("Name")).encode('utf-8')
+                            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+                            path = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1'
+                            
+                            s_url='http://%s%s' % (section['address'], path)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                        
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.latest.title"  , item.get('Name', 'Unknown'))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.latest.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.latest.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
+                           
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.latest.type" , section.get('sectype'))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.latest.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.latest.thumb" , downloadUtils.getArtwork(item, "Thumb"))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.latest.poster" , downloadUtils.getArtwork(item, "Primary"))
+                            
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.latest.total"  , str(item.get('ChildCount')))
+                            
+                        elif item.get('CollectionType') == 'TvFavoriteSeries':
+                    
+                            Name =(item.get("Name")).encode('utf-8')
+                            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+                            path = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1'
+                            
+                            s_url='http://%s%s' % (section['address'], path)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                        
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteseries.title"  , item.get('Name', 'Unknown'))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteseries.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteseries.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
+                           
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteseries.type" , section.get('sectype'))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteseries.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteseries.thumb" , downloadUtils.getArtwork(item, "Thumb"))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteseries.poster" , downloadUtils.getArtwork(item, "Primary"))
+                            
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteseries.total"  , str(item.get('ChildCount')))
+                            
+                        elif item.get('CollectionType') == 'TvFavoriteEpisodes':
+                    
+                            Name =(item.get("Name")).encode('utf-8')
+                            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+                            path = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1'
+                            
+                            s_url='http://%s%s' % (section['address'], path)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                        
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteepisodes.title"  , item.get('Name', 'Unknown'))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteepisodes.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteepisodes.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
+                           
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteepisodes.type" , section.get('sectype'))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteepisodes.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteepisodes.thumb" , downloadUtils.getArtwork(item, "Thumb"))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteepisodes.poster" , downloadUtils.getArtwork(item, "Primary"))
+                            
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.favouriteepisodes.total"  , str(item.get('ChildCount')))
+                            
+                        elif item.get('CollectionType') == 'TvGenres':
+                    
+                            Name =(item.get("Name")).encode('utf-8')
+                            if __settings__.getSetting(urllib.quote('sortbyfor'+Name)) == '':
+                                __settings__.setSetting(urllib.quote('sortbyfor'+Name),'SortName')
+                                __settings__.setSetting(urllib.quote('sortorderfor'+Name),'Ascending')
+                            path = '/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&format=json&ImageTypeLimit=1'
+                            
+                            s_url='http://%s%s' % (section['address'], path)
+                            murl= "?url="+urllib.quote(s_url)+modeurl      
+                        
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.genres.title"  , item.get('Name', 'Unknown'))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.genres.path" , "ActivateWindow("+window+",plugin://plugin.video.xbmb3c/" + murl+",return)")
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.genres.content" ,  "plugin://plugin.video.xbmb3c/" + murl)
+                           
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.genres.type" , section.get('sectype'))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.genres.fanart" , downloadUtils.getArtwork(item, "Backdrop"))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.genres.thumb" , downloadUtils.getArtwork(item, "Thumb"))
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.genres.poster" , downloadUtils.getArtwork(item, "Primary"))
+                            
+                            WINDOW.setProperty("MediaBrowser.views.tvshows.genres.total"  , str(item.get('ChildCount')))
                     
 
         except Exception, e:
