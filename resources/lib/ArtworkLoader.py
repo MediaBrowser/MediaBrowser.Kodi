@@ -423,7 +423,11 @@ class ArtworkRotationThread(threading.Thread):
         filterOnParent = filterOnParent.decode("utf-8")
         
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        backgroundRefresh = int(addonSettings.getSetting('backgroundRefresh'))
+        backgroundRefresh = 30
+        try:
+            backgroundRefresh = int(addonSettings.getSetting('backgroundRefresh'))
+        except:
+            pass
         if(backgroundRefresh < 10):
             backgroundRefresh = 10
             
@@ -842,20 +846,20 @@ class ArtworkRotationThread(threading.Thread):
             
             for backdrop in images:
               
-              info = {}
-              info["url"] = downloadUtils.getArtwork(item, "BackdropNoIndicators", index=str(index))
-              info["index"] = index
-              info["id"] = id
-              info["plot"] = plot
-              info["action"] = actionUrl
-              info["trailer"] = trailerActionUrl
-              info["parent"] = parentID
-              info["name"] = name
-              self.logMsg("BG Movie Image Info : " + str(info), level=2)
-              
-              if (info not in self.movie_art_links):
-                  self.movie_art_links.append(info)
-              index = index + 1
+                info = {}
+                info["url"] = downloadUtils.getArtwork(item, "BackdropNoIndicators", index=str(index))
+                info["index"] = index
+                info["id"] = id
+                info["plot"] = plot
+                info["action"] = actionUrl
+                info["trailer"] = trailerActionUrl
+                info["parent"] = parentID
+                info["name"] = name
+                self.logMsg("BG Movie Image Info : " + str(info), level=2)
+
+                if (info not in self.movie_art_links):
+                    self.movie_art_links.append(info)
+                    index = index + 1
         
         random.shuffle(self.movie_art_links)
         self.logMsg("Background Movie Art Links : " + str(len(self.movie_art_links)))
@@ -881,20 +885,20 @@ class ArtworkRotationThread(threading.Thread):
             index = 0
             for backdrop in images:
               
-              info = {}
-              info["url"] = downloadUtils.getArtwork(item, "BackdropNoIndicators", index=str(index))
-              info["index"] = index
-              info["id"] = id
-              info["action"] = "None"
-              info["trailer"] = "None"
-              info["plot"] = plot
-              info["parent"] = parentID
-              info["name"] = name
-              self.logMsg("BG TV Image Info : " + str(info), level=2)
-              
-              if (info not in self.tv_art_links):
-                  self.tv_art_links.append(info)    
-              index = index + 1
+                info = {}
+                info["url"] = downloadUtils.getArtwork(item, "BackdropNoIndicators", index=str(index))
+                info["index"] = index
+                info["id"] = id
+                info["action"] = "None"
+                info["trailer"] = "None"
+                info["plot"] = plot
+                info["parent"] = parentID
+                info["name"] = name
+                self.logMsg("BG TV Image Info : " + str(info), level=2)
+
+                if (info not in self.tv_art_links):
+                    self.tv_art_links.append(info)    
+                    index = index + 1
               
         random.shuffle(self.tv_art_links)
         self.logMsg("Background Tv Art Links : " + str(len(self.tv_art_links)))
@@ -920,20 +924,20 @@ class ArtworkRotationThread(threading.Thread):
             index = 0
             for backdrop in images:
               
-              info = {}
-              info["url"] = downloadUtils.getArtwork(item, "BackdropNoIndicators", index=str(index))
-              info["index"] = index
-              info["id"] = id
-              info["action"] = "None"
-              info["trailer"] = "None"
-              info["plot"] = plot
-              info["parent"] = parentID
-              info["name"] = name
-              self.logMsg("BG Music Image Info : " + str(info), level=2)
+                info = {}
+                info["url"] = downloadUtils.getArtwork(item, "BackdropNoIndicators", index=str(index))
+                info["index"] = index
+                info["id"] = id
+                info["action"] = "None"
+                info["trailer"] = "None"
+                info["plot"] = plot
+                info["parent"] = parentID
+                info["name"] = name
+                self.logMsg("BG Music Image Info : " + str(info), level=2)
 
-              if (info not in self.music_art_links):
-                  self.music_art_links.append(info)
-              index = index + 1
+                if (info not in self.music_art_links):
+                    self.music_art_links.append(info)
+                    index = index + 1
               
         random.shuffle(self.music_art_links)
         self.logMsg("Background Music Art Links : " + str(len(self.music_art_links)))
@@ -969,7 +973,8 @@ class ArtworkRotationThread(threading.Thread):
         
                         if (info not in self.favorites_art_links):
                             self.favorites_art_links.append(info)
-                        index = index + 1
+                            index = index + 1
+                            
                     except Exception, e:
                         self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))
                     count += 1                    
@@ -1007,7 +1012,8 @@ class ArtworkRotationThread(threading.Thread):
         
                         if (info not in self.favoriteshows_art_links):
                             self.favoriteshows_art_links.append(info)
-                        index = index + 1
+                            index = index + 1
+                            
                     except Exception, e:
                         self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))
                     count += 1                    
@@ -1045,7 +1051,8 @@ class ArtworkRotationThread(threading.Thread):
         
                         if (info not in self.musicvideo_art_links):
                             self.musicvideo_art_links.append(info)
-                        index = index + 1
+                            index = index + 1
+                            
                     except Exception, e:
                             self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))
                     count += 1                    
@@ -1077,7 +1084,8 @@ class ArtworkRotationThread(threading.Thread):
     
                 if (info not in self.photo_art_links):
                     self.photo_art_links.append(info)
-                index = index + 1
+                    index = index + 1
+                    
             except Exception, e:
                     self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))         
 
@@ -1111,12 +1119,13 @@ class ArtworkRotationThread(threading.Thread):
                     info["parent"] = parentID
                     info["name"] = name
                     self.logMsg("BG Channel Image Info : " + str(info), level=1)
+                    
+                    if (info not in self.channels_art_links):
+                        self.channels_art_links.append(info)    
+                        index = index + 1
+            
                 except Exception, e:
                         self.logMsg("[XBMB3C ArtworkLoader] error occurred: " + str(e))             
-
-            if (info not in self.channels_art_links):
-                self.channels_art_links.append(info)    
-            index = index + 1
 
         random.shuffle(self.channels_art_links)
         

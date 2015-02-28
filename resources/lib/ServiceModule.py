@@ -209,7 +209,10 @@ class Monitor():
                                 #if(newWebSocketThread != None):
                                     #newWebSocketThread.sendProgressUpdate(item_id, str(int(playTime * 10000000)))
                         except Exception, msg:
-                            xbmc.log("XBMB3C Service -> Exception reporting progress : " + str(msg))
+                            try:
+                                xbmc.log("XBMB3C Service -> Exception reporting progress : " + str(msg))
+                            except:
+                                pass
                             pass
                         lastProgressUpdate = datetime.today()
                     
@@ -292,11 +295,11 @@ class Service( xbmc.Player ):
                     xbmc.log("XBMB3C " + str(level) + " -> " + str(msg.encode('utf-8')))        
     
     def deleteItem (self, url):
-        return_value = xbmcgui.Dialog().yesno(__language__(30091),__language__(30092))
+        return_value = xbmcgui.Dialog().yesno(self.settings.getLocalizedString(30091), self.settings.getLocalizedString(30092))
         if return_value:
             self.printDebug('Deleting via URL: ' + url)
             progress = xbmcgui.DialogProgress()
-            progress.create(__language__(30052), __language__(30053))
+            progress.create(self.settings.getLocalizedString(30052), self.settings.getLocalizedString(30053))
             self.downloadUtils.downloadUrl(url, type="DELETE")
             progress.close()
             xbmc.executebuiltin("Container.Refresh")

@@ -7,6 +7,7 @@ import urllib
 import datetime
 import time
 import json as json
+import inspect
 
 from DownloadUtils import DownloadUtils
 from Utils import PlayUtils
@@ -70,8 +71,10 @@ class PlaybackUtils():
         
         # Is this a strm placeholder ?
         IsStrmPlaceholder = False    
-        if result.get("Path").endswith(".strm"):
+        if result.get("Path", "").endswith(".strm"):
             IsStrmPlaceholder = True
+        
+        resume_result = 1
         
         if IsStrmPlaceholder == False:
             if(autoResume != 0):

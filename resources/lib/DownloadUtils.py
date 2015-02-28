@@ -174,13 +174,15 @@ class DownloadUtils():
             messageData = "username=" + username + "&password=" + sha1
             resp = self.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
     
+            accessToken = None
+            result = None
             try:
                 result = json.loads(resp)
                 accessToken = result.get('AccessToken')
             except:
                 pass
 
-            if accessToken != None:
+            if result != None and accessToken != None:
                 self.logMsg("User Authenticated : " + accessToken)
                 addon.setSetting('token', username + accessToken)
                 WINDOW.setProperty('AccessToken' + username, accessToken)
