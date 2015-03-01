@@ -552,9 +552,7 @@ class SkinHelperThread(threading.Thread):
                         
                 elif section.get('sectype') == 'tvshows':    
                     # get tvshows node
-                    detailsString= MainModule.getDetailsString(fast=True)
-                    if useBackgroundData == False:
-                        detailsString= MainModule.getDetailsString(fast=False)   
+                    detailsString= MainModule.getDetailsString(fast=False)  
                     htmlpath = ("http://%s/mediabrowser/Users/" % section.get('address'))
                     jsonData = downloadUtils.downloadUrl(htmlpath + userid + "/items?ParentId=" + id + "&Sortby=SortName&format=json")
                     result = json.loads(jsonData)
