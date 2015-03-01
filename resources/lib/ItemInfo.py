@@ -52,7 +52,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         WINDOW.setProperty('ItemGUID', id)
         
         name = item.get("Name")
-        image = self.downloadUtils.getArtwork(item, "Primary","0",True)
+        image = self.downloadUtils.getArtwork(item, "Primary")
         fanArt = self.downloadUtils.getArtwork(item, "BackdropNoIndicators")
         discart = self.downloadUtils.getArtwork(item, "Disc")
         # calculate the percentage complete
@@ -114,6 +114,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         
         episodeInfo = ""
         type = item.get("Type")
+        WINDOW.setProperty('ItemType', type)
         if(type == "Episode" or type == "Season"):
             WINDOW.setProperty('ItemGUID', item.get("SeriesId"))
             name = item.get("SeriesName") + ": " + name
@@ -302,10 +303,21 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         if item.get("CriticRating") != None:
             listItem = xbmcgui.ListItem("CriticRating:", str(item.get("CriticRating")))
             infoList.addItem(listItem)
-            
-        # Process Studio 
+               
+        # Process Studio
+        studio = "" 
         if item.get("SeriesStudio") != None and item.get("SeriesStudio") != '':
-            listItem = xbmcgui.ListItem("Studio:", item.get("SeriesStudio"))
+            studio = item.get("SeriesStudio")
+        if studio == "":        
+            studios = item.get("Studios")
+            if(studios != None):
+                for studio_string in studios:
+                    if studio=="": #Just take the first one
+                        temp=studio_string.get("Name")
+                        studio=temp.encode('utf-8')
+        
+        if studio != "":
+            listItem = xbmcgui.ListItem("Studio:", studio)
             infoList.addItem(listItem)
         
         if item.get("Metascore") != None:
@@ -316,8 +328,21 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         if(userData != None and userData.get("Played") == True):
             playCount = 1
         listItem = xbmcgui.ListItem("PlayedCount:", str(playCount))
-        infoList.addItem(listItem) 
-            
+        infoList.addItem(listItem)
+        
+        if item.get("ProviderIds") != None and item.get("ProviderIds").get("Imdb") != None and type == "Movie":
+            listItem = xbmcgui.ListItem("ID:", item.get("ProviderIds").get("Imdb"))
+            infoList.addItem(listItem)
+        elif item.get("ProviderIds") != None and item.get("ProviderIds").get("Tvdb") != None and type == "Series":
+            listItem = xbmcgui.ListItem("ID:", item.get("ProviderIds").get("Tvdb"))
+            infoList.addItem(listItem)
+        elif (type == "Episode" or type == "Season"):
+            jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + item.get("SeriesId") + "?Fields=SeriesGenres,AirTime&format=json", suppress=False, popup=1 )     
+            seriesitem = json.loads(jsonData)
+            if seriesitem.get("ProviderIds") != None and seriesitem.get("ProviderIds").get("Tvdb") != None:
+              listItem = xbmcgui.ListItem("ID:", seriesitem.get("ProviderIds").get("Tvdb"))
+              infoList.addItem(listItem)
+        
         # alternate list 
         try:
             alternateList = self.getControl(3291)
@@ -382,6 +407,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
             pass 
         
         if(type == "Episode"):
+            image = self.downloadUtils.getArtwork(seriesitem, "Primary")
             self.getControl(3009).setImage(image)
             if(cappedPercentage != None):
                 self.getControl(3010).setImage("Progress\progress_" + str(cappedPercentage) + ".png")
@@ -393,7 +419,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         # disable play button
         if(type == "Season" or type == "Series"):
             self.setFocusId(3226)
-            self.getControl(3002).setEnabled(False)                
+            self.getControl(3002).setEnabled(False)                 
         
     def setId(self, id):
         self.id = id
