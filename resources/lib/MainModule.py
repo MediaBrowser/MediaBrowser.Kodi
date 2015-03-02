@@ -182,6 +182,11 @@ def getCollections():
         return {}        
     
     printDebug("jsonData : " + jsonData, level=2)
+    
+    if(jsonData == ""):
+        printDebug("No Json data")
+        return
+        
     result = json.loads(jsonData)
     
     parentid = result.get("Id")

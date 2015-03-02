@@ -15,6 +15,7 @@ from uuid import uuid4 as uuid4
 from ClientInformation import ClientInformation
 import encodings
 import time
+import traceback
 
 class DownloadUtils():
 
@@ -545,8 +546,10 @@ class DownloadUtils():
                 self.logMsg("====== 200 finished ======", level=2)
 
             elif ( int(data.status) == 301 ) or ( int(data.status) == 302 ):
-                try: conn.close()
-                except: pass
+                try: 
+                    conn.close()
+                except: 
+                    pass
                 return data.getheader('Location')
 
             elif int(data.status) == 401:
@@ -563,8 +566,11 @@ class DownloadUtils():
                     xbmcgui.Dialog().ok(getString(30135), getString(30044))
                     WINDOW.setProperty("XBMB3C_LAST_USER_ERROR", str(int(time.time())))
                 
-                try: conn.close()
-                except: pass
+                try: 
+                    conn.close()
+                except: 
+                    pass
+                    
                 return ""
                 
             elif int(data.status) >= 400:
@@ -575,24 +581,29 @@ class DownloadUtils():
                         xbmc.executebuiltin("XBMC.Notification(URL error: "+ str(data.reason) +",)")
                     else:
                         xbmcgui.Dialog().ok(getString(30135),server)
-                try: conn.close()
-                except: pass
+                try: 
+                    conn.close()
+                except: 
+                    pass
                 return ""
             else:
                 link = ""
         except Exception, msg:
             error = "Unable to connect to " + str(server) + " : " + str(msg)
             xbmc.log(error)
+            stack = traceback.format_exc()
+            self.logMsg(stack)
             if suppress is False:
-                xbmc.log("Suppress is False, displaying user message: popup=" + str(popup))
                 if popup == 0:
-                    xbmc.executebuiltin("XBMC.Notification(: URL error: Unable to connect to server,)")
+                    xbmc.executebuiltin("XBMC.Notification(: Connection Error: Error connecting to server,)")
                 else:
-                    xbmcgui.Dialog().ok("",getString(30204))
-                raise
+                    xbmcgui.Dialog().ok(getString(30204), str(msg))
+            pass
         else:
-            try: conn.close()
-            except: pass
+            try: 
+                conn.close()
+            except: 
+                pass
 
         return link
         
