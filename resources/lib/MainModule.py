@@ -172,20 +172,20 @@ def getCollections():
     userid = downloadUtils.getUserId()
     
     if(userid == None or len(userid) == 0):
-        return {}
+        return []
     
     try:
         jsonData = downloadUtils.downloadUrl("http://" + MB_server + "/mediabrowser/Users/" + userid + "/Items/Root?format=json")
     except Exception, msg:
         error = "Get connect : " + str(msg)
         xbmc.log (error)
-        return {}        
+        return []
     
     printDebug("jsonData : " + jsonData, level=2)
     
     if(jsonData == ""):
         printDebug("No Json data")
-        return
+        return []
         
     result = json.loads(jsonData)
     
@@ -197,8 +197,9 @@ def getCollections():
     printDebug("jsonData : " + jsonData, level=2)
     collections=[]
 
-    if jsonData is False:
-        return {}
+    if(jsonData == ""):
+        printDebug("No Json data")
+        return []
 
     result = json.loads(jsonData)
     result = result.get("Items")
