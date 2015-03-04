@@ -52,7 +52,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         WINDOW.setProperty('ItemGUID', id)
         
         name = item.get("Name")
-        image = self.downloadUtils.getArtwork(item, "Primary")
+        image = self.downloadUtils.getArtwork(item, "poster")
         fanArt = self.downloadUtils.getArtwork(item, "BackdropNoIndicators")
         discart = self.downloadUtils.getArtwork(item, "Disc")
         # calculate the percentage complete
@@ -407,7 +407,8 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
             pass 
         
         if(type == "Episode"):
-            image = self.downloadUtils.getArtwork(seriesitem, "Primary")
+            # null_pointer - I have removed this in favor of letting the user chose from the setting and using the "poster" type in the above image url create
+            #image = self.downloadUtils.getArtwork(seriesitem, "Primary")
             self.getControl(3009).setImage(image)
             if(cappedPercentage != None):
                 self.getControl(3010).setImage("Progress\progress_" + str(cappedPercentage) + ".png")
