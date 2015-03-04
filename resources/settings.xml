@@ -15,7 +15,7 @@
 		<setting id="playFromStream" type="bool" label="30002" default="false" visible="true" enable="true" />
 	</category>
 	<category label="30110"> <!-- Interface -->
-		<setting id="selectAction" type="enum" label="30151" values="Play|Info" default="0" />
+		<setting id="selectAction" type="enum" label="30151" values="Play|Info" default="1" />
 		<setting id="resumeJumpBack" type="number" label="30114" default="10" visible="true" enable="true" />
 		<setting id="markPlayedAt" type="number" label="30115" default="90" visible="true" enable="true" />
 		<setting id="autoPlaySeason" type="bool" label="30216" default="false" visible="true" enable="true" />
