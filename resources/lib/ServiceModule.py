@@ -342,12 +342,12 @@ class Service( xbmc.Player ):
                     runtimeTicks = int(runtime)
                     self.printDebug("XBMB3C Service -> runtimeticks:" + str(runtimeTicks))
                     percentComplete = (currentPossition * 10000000) / runtimeTicks
-                    markPlayedAt = float(addonSettings.getSetting("markPlayedAt")) / 100    
+                    offerDeleteAt = float(addonSettings.getSetting("offerDeleteAt")) / 100    
 
-                    self.printDebug("XBMB3C Service -> Percent Complete:" + str(percentComplete) + " Mark Played At:" + str(markPlayedAt))
+                    self.printDebug("XBMB3C Service -> Percent Complete:" + str(percentComplete) + " Mark Played At:" + str(offerDeleteAt))
                     self.stopPlayback(data)
                     
-                    if (percentComplete > markPlayedAt):
+                    if (percentComplete > offerDeleteAt):
                         gotDeleted = 0
                         if(deleteurl != None and deleteurl != ""):
                             self.printDebug("XBMB3C Service -> Offering Delete:" + str(deleteurl))

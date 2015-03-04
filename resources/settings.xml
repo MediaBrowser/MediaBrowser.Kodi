@@ -17,7 +17,6 @@
 	<category label="30110"> <!-- Interface -->
 		<setting id="selectAction" type="enum" label="30151" values="Play|Info" default="1" />
 		<setting id="resumeJumpBack" type="number" label="30114" default="10" visible="true" enable="true" />
-		<setting id="markPlayedAt" type="number" label="30115" default="90" visible="true" enable="true" />
 		<setting id="autoPlaySeason" type="bool" label="30216" default="false" visible="true" enable="true" />
 		<setting id="addCounts" type="bool" label="30116" default="true" visible="true" enable="true" />
 		<setting id="addSeasonNumber" type="bool" label="30162" default="false" visible="true" enable="true" />
@@ -27,6 +26,7 @@
 		<setting id="autoEnterSingle" type="bool" label="30001" default="true" visible="true" enable="true" />
 		<setting id="sortNextUp" type="bool" label="30156" default="false" visible="true" enable="true" />
 		<setting id="offerDelete" type="bool" label="30127" default="false" visible="true" enable="true" />
+        <setting id="offerDeleteAt" type="number" label="30115" default="90" visible="eq(-1,true)" enable="true" />
 		<setting id="showLoadProgress" type="bool" label="30120" default="false" visible="true" enable="true" />
 		<setting id="collapseBoxSets" type="bool" label="30217" default="true" visible="true" enable="true" />
 		<setting id="useKodiSorting" type="bool" label="30225" default="false" visible="true" enable="true" />
