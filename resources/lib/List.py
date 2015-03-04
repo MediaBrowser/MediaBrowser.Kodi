@@ -32,16 +32,16 @@ __cwd__ = __settings__.getAddonInfo('path')
 PLUGINPATH = xbmc.translatePath( os.path.join( __cwd__) )
 __language__     = __addon__.getLocalizedString
 
-#define our global download utils
-db = Database()
-
-# EXPERIMENTAL    
 class List():
+
     addonSettings = None
     __addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
     __addondir__    = xbmc.translatePath( __addon__.getAddonInfo('profile') ) 
     __language__     = __addon__.getLocalizedString
+    db = None
     
+    def __init__(self):
+        self.db = Database()
     
     def printDebug(self, msg, level = 1):
         if(logLevel >= level):
@@ -65,7 +65,6 @@ class List():
         
         downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
-        db = Database()
         
         detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio,AirTime,SeasonUserData"
         if(__settings__.getSetting('includeStreamInfo') == "true"):
@@ -88,7 +87,7 @@ class List():
         item_count = len(result)
         current_item = 1;
         self.setWindowHeading(url, pluginhandle)
-        db.set("viewType","")
+        self.db.set("viewType","")
         xbmcplugin.setContent(pluginhandle, 'movies') #This too
         selectAction = __settings__.getSetting('selectAction') #Play or show item        
 
@@ -98,7 +97,7 @@ class List():
                 progress.update(int(percentDone), __language__(30126) + str(current_item))
                 current_item = current_item + 1
             id = str(item.get("Id")).encode('utf-8')
-            if db.get(id + ".Name") != '':
+            if self.db.get(id + ".Name") != '':
                 listItem=self.fastItem(item, pluginhandle)
             else:
                 listItem=self.slowItem(item, pluginhandle)
@@ -135,71 +134,70 @@ class List():
         return dirItems
 
     def fastItem(self, item, pluginhandle):      
-        db = Database()    
         isFolder = "false" #fix
         premieredate = ""
         id = item.get('Id')
         guiid = id
-        details={'plot'         : db.get(id + ".Overview"),
+        details={'plot'         : self.db.get(id + ".Overview"),
                  }
         # Populate the extraData list
-        item_type = db.get(id + ".Type")
+        item_type = self.db.get(id + ".Type")
         extraData={'itemtype'     : item_type}
         mode = _MODE_GETCONTENT
-        if db.get("viewType")=="":
+        if self.db.get("viewType")=="":
             self.setViewType(item, pluginhandle)      
         folder=False
  
         #Create the ListItem that will be displayed
-        thumbPath=db.get(id + ".Primary")
+        thumbPath=self.db.get(id + ".Primary")
         
         addCounts = __settings__.getSetting('addCounts') == 'true'
         
         WINDOW = xbmcgui.Window( 10000 )
         if WINDOW.getProperty("addshowname") == "true":
-            if db.get(id + ".LocationType") == "Virtual":
-                listItemName = db.get(id + ".PremiereDate") + " - " + db.get(id + '.SeriesName','') + " - " + "S" + db.get(id + 'Season') + "E" + db.get(id + ".Name")
-                if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + "UnplayedItemCount") != '' and item_type != "Movie"):
-                    listItemName = listItemName + " (" + str(int(db.get(id + ".RecursiveItemCount")) - int(db.get(id + ".UnplayedItemCount"))) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
+            if self.db.get(id + ".LocationType") == "Virtual":
+                listItemName = self.db.get(id + ".PremiereDate") + " - " + self.db.get(id + '.SeriesName','') + " - " + "S" + self.db.get(id + 'Season') + "E" + self.db.get(id + ".Name")
+                if(addCounts and self.db.get(id + ".RecursiveItemCount") != '' and self.db.get(id + "UnplayedItemCount") != '' and item_type != "Movie"):
+                    listItemName = listItemName + " (" + str(int(self.db.get(id + ".RecursiveItemCount")) - int(self.db.get(id + ".UnplayedItemCount"))) + "/" + str(self.db.get(id + ".RecursiveItemCount")) + ")"
             else:
-                if db.get(id + '.Season') == '':
+                if self.db.get(id + '.Season') == '':
                     season = '0'
                 else:
-                    season = db.get(id + '.Season')
-                listItemName = db.get(id + 'SeriesName') + " - " + "S" + season + "E" + db.get(id + '.Name')
-                if(addCounts and db.get(id + ".RecursiveItemCount") != '' and db.get(id + ".UnplayedItemCount") != '' and item_type != "Movie"):
-                    listItemName = listItemName + " (" + str(int(db.get(id + ".RecursiveItemCount")) - int(db.get(id + ".UnplayedItemCount"))) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
+                    season = self.db.get(id + '.Season')
+                listItemName = self.db.get(id + 'SeriesName') + " - " + "S" + season + "E" + self.db.get(id + '.Name')
+                if(addCounts and self.db.get(id + ".RecursiveItemCount") != '' and self.db.get(id + ".UnplayedItemCount") != '' and item_type != "Movie"):
+                    listItemName = listItemName + " (" + str(int(self.db.get(id + ".RecursiveItemCount")) - int(self.db.get(id + ".UnplayedItemCount"))) + "/" + str(self.db.get(id + ".RecursiveItemCount")) + ")"
         else:
-            listItemName = db.get(id + '.Name')
-            if(addCounts and db.get(id + ".RecursiveItemCount") != 'None' and db.get(id + ".UnplayedItemCount") != '' and item_type != "Movie"):
-                listItemName = listItemName + " (" + str(int(db.get(id + ".RecursiveItemCount")) - int(db.get(id + ".UnplayedItemCount"))) + "/" + str(db.get(id + ".RecursiveItemCount")) + ")"
+            listItemName = self.db.get(id + '.Name')
+            if(addCounts and self.db.get(id + ".RecursiveItemCount") != 'None' and self.db.get(id + ".UnplayedItemCount") != '' and item_type != "Movie"):
+                listItemName = listItemName + " (" + str(int(self.db.get(id + ".RecursiveItemCount")) - int(self.db.get(id + ".UnplayedItemCount"))) + "/" + str(self.db.get(id + ".RecursiveItemCount")) + ")"
         listItem = xbmcgui.ListItem(listItemName, iconImage=thumbPath, thumbnailImage=thumbPath)
         details['title'] =  listItemName
         self.printDebug("Setting thumbnail as " + thumbPath, level=2)
         
-        listItem.setProperty("complete_percentage", db.get(id + "CompletePercentage"))          
+        listItem.setProperty("complete_percentage", self.db.get(id + "CompletePercentage"))          
        
         #Set the properties of the item, such as summary, name, season, etc
         if ( not folder):
-            listItem.setProperty('TotalTime', str(db.get(id + ".Duration")))
-            listItem.setProperty('ResumeTime', str(db.get(id + ".ResumeTime")))
+            listItem.setProperty('TotalTime', str(self.db.get(id + ".Duration")))
+            listItem.setProperty('ResumeTime', str(self.db.get(id + ".ResumeTime")))
         
-        listItem.setArt({'poster':db.get(id + ".poster")})
-        listItem.setArt({'tvshow.poster':db.get(id + ".tvshow.poster")})
-        listItem.setArt({'clearlogo':db.get(id + ".Logo")})
-        listItem.setArt({'discart':db.get(id + ".Disc")})
-        listItem.setArt({'banner':db.get(id + ".Banner")})
-        listItem.setArt({'clearart':db.get(id + ".Art")})
-        listItem.setArt({'landscape':db.get(id + ".Thumb")})
+        listItem.setArt({'poster':self.db.get(id + ".poster")})
+        listItem.setArt({'tvshow.poster':self.db.get(id + ".tvshow.poster")})
+        listItem.setArt({'clearlogo':self.db.get(id + ".Logo")})
+        listItem.setArt({'discart':self.db.get(id + ".Disc")})
+        listItem.setArt({'banner':self.db.get(id + ".Banner")})
+        listItem.setArt({'clearart':self.db.get(id + ".Art")})
+        listItem.setArt({'landscape':self.db.get(id + ".Thumb")})
         
-        listItem.setProperty('fanart_image', db.get(id + ".Backdrop"))
-        listItem.setProperty('small_poster', db.get(id + ".Primary2"))
-        listItem.setProperty('tiny_poster', db.get(id + ".Primary4"))
-        listItem.setProperty('medium_poster', db.get(id + ".Primary3"))
-        listItem.setProperty('small_fanartimage', db.get(id + ".Backdrop2"))
-        listItem.setProperty('medium_fanartimage', db.get(id + ".Backdrop3"))
-        listItem.setProperty('medium_landscape', db.get(id + ".Thumb3"))
-        listItem.setProperty('fanart_noindicators', db.get(id + ".BackdropNoIndicators"))
+        listItem.setProperty('fanart_image', self.db.get(id + ".Backdrop"))
+        listItem.setProperty('small_poster', self.db.get(id + ".Primary2"))
+        listItem.setProperty('tiny_poster', self.db.get(id + ".Primary4"))
+        listItem.setProperty('medium_poster', self.db.get(id + ".Primary3"))
+        listItem.setProperty('small_fanartimage', self.db.get(id + ".Backdrop2"))
+        listItem.setProperty('medium_fanartimage', self.db.get(id + ".Backdrop3"))
+        listItem.setProperty('medium_landscape', self.db.get(id + ".Thumb3"))
+        listItem.setProperty('fanart_noindicators', self.db.get(id + ".BackdropNoIndicators"))
        
         menuItems = self.addContextMenu(details, extraData, folder)
         if(len(menuItems) > 0):
@@ -211,61 +209,60 @@ class List():
         else:
             listItem.setInfo( type = extraData.get('type','Video'), infoLabels = details )
         
-        videoInfoLabels["duration"] = db.get(id + ".Duration")
+        videoInfoLabels["duration"] = self.db.get(id + ".Duration")
 
         userData=API().getUserData(item)
         videoInfoLabels["playcount"] = userData.get("PlayCount")
         if (userData.get("Favorite") == 'True'):
             videoInfoLabels["top250"] = "1"    
             
-        videoInfoLabels["mpaa"] = db.get(id + ".OfficialRating")
-        videoInfoLabels["rating"] = db.get(id + ".CommunityRating")
-        videoInfoLabels["year"] = db.get(id + ".ProductionYear")
-        videoInfoLabels["date"] = db.get(id + ".DateCreated")
-        listItem.setProperty('CriticRating', db.get(id + ".CriticRating"))
+        videoInfoLabels["mpaa"] = self.db.get(id + ".OfficialRating")
+        videoInfoLabels["rating"] = self.db.get(id + ".CommunityRating")
+        videoInfoLabels["year"] = self.db.get(id + ".ProductionYear")
+        videoInfoLabels["date"] = self.db.get(id + ".DateCreated")
+        listItem.setProperty('CriticRating', self.db.get(id + ".CriticRating"))
         listItem.setProperty('ItemType', item_type)
 
 
-        videoInfoLabels["director"] = db.get(id + ".Director")
-        videoInfoLabels["writer"] = db.get(id + ".Writer")
-        videoInfoLabels["studio"] = db.get(id + ".Studio")
-        videoInfoLabels["genre"] = db.get(id + ".Genre")
+        videoInfoLabels["director"] = self.db.get(id + ".Director")
+        videoInfoLabels["writer"] = self.db.get(id + ".Writer")
+        videoInfoLabels["studio"] = self.db.get(id + ".Studio")
+        videoInfoLabels["genre"] = self.db.get(id + ".Genre")
 
-        videoInfoLabels["premiered"] = db.get('premieredate')
+        videoInfoLabels["premiered"] = self.db.get('premieredate')
         
         videoInfoLabels["episode"] = details.get('episode')
         videoInfoLabels["season"] = details.get('season') 
         listItem.setInfo('video', videoInfoLabels)
 
-        listItem.setProperty('TotalTime', db.get(id + '.TotalTime'))
-        listItem.setProperty('TotalSeasons',db.get(id + '.TotalSeasons'))
-        listItem.setProperty('TotalEpisodes',db.get(id + '.TotalEpisodes'))
-        listItem.setProperty('WatchedEpisodes',db.get(id + '.WatchedEpisodes'))
-        listItem.setProperty('UnWatchedEpisodes',db.get(id + '.UnWatchedEpisodes'))
-        listItem.setProperty('NumEpisodes',db.get(id + '.NumEpisodes'))
+        listItem.setProperty('TotalTime', self.db.get(id + '.TotalTime'))
+        listItem.setProperty('TotalSeasons',self.db.get(id + '.TotalSeasons'))
+        listItem.setProperty('TotalEpisodes',self.db.get(id + '.TotalEpisodes'))
+        listItem.setProperty('WatchedEpisodes',self.db.get(id + '.WatchedEpisodes'))
+        listItem.setProperty('UnWatchedEpisodes',self.db.get(id + '.UnWatchedEpisodes'))
+        listItem.setProperty('NumEpisodes',self.db.get(id + '.NumEpisodes'))
         
         pluginCastLink = "plugin://plugin.video.xbmb3c?mode=" + str(_MODE_CAST_LIST) + "&id=" + id
         listItem.setProperty('CastPluginLink', pluginCastLink)
         listItem.setProperty('ItemGUID', guiid)
         listItem.setProperty('id', id)
-        listItem.setProperty('Video3DFormat', db.get(id + '.Video3DFormat'))
+        listItem.setProperty('Video3DFormat', self.db.get(id + '.Video3DFormat'))
 
         listItem.addStreamInfo('video', 
-                                    {'duration' : db.get(id + '.Duration'), 
-                                     'aspect'   : db.get(id + '.AspectRatio'),
-                                     'codec'    : db.get(id + '.VideoCodec'), 
-                                     'width'    : db.get(id + '.Width'), 
-                                     'height'   : db.get(id + '.Height')})
+                                    {'duration' : self.db.get(id + '.Duration'), 
+                                     'aspect'   : self.db.get(id + '.AspectRatio'),
+                                     'codec'    : self.db.get(id + '.VideoCodec'), 
+                                     'width'    : self.db.get(id + '.Width'), 
+                                     'height'   : self.db.get(id + '.Height')})
         listItem.addStreamInfo('audio', 
-                                    {'codec'    : db.get(id + '.AudioCodec'),
-                                     'channels' : db.get(id + '.Channels')})            
+                                    {'codec'    : self.db.get(id + '.AudioCodec'),
+                                     'channels' : self.db.get(id + '.Channels')})            
         menuItems = self.addContextMenu(details, userData, folder, id=id)
         if(len(menuItems) > 0):
             listItem.addContextMenuItems( menuItems, True )
         return listItem
 
     def slowItem(self, item, pluginhandle):
-        db = Database()
         id = item.get('Id')
         guiid = id
         dbid = id
@@ -284,7 +281,7 @@ class List():
         tvInfo=API().getTVInfo(item, userData)
         
         mode = _MODE_GETCONTENT
-        if db.get("viewType")=="":
+        if self.db.get("viewType")=="":
             self.setViewType(item, pluginhandle)
         folder=item.get("IsFolder")
  
@@ -378,17 +375,17 @@ class List():
         if (userData.get("Favorite") == 'True'):
             videoInfoLabels["top250"] = "1"    
             
-        videoInfoLabels["mpaa"] =  db.get(dbid + ".OfficialRating")
+        videoInfoLabels["mpaa"] =  self.db.get(dbid + ".OfficialRating")
         CommunityRating=item.get("CommunityRating")
         if CommunityRating != None:
             videoInfoLabels["rating"] = CommunityRating
         else:
-            videoInfoLabels["rating"] = db.get(dbid + ".CommunityRating")
+            videoInfoLabels["rating"] = self.db.get(dbid + ".CommunityRating")
         
         if (item.get("ProductionYear") != None):
             videoInfoLabels["year"] = str(item.get("ProductionYear"))
         else:
-            videoInfoLabels["year"] = db.get(dbid + ".ProductionYear")
+            videoInfoLabels["year"] = self.db.get(dbid + ".ProductionYear")
         videoInfoLabels["date"] = API().getDate(item)
         listItem.setProperty('CriticRating', str(item.get("CriticRating")))
         listItem.setProperty('ItemType', item_type)
@@ -396,8 +393,8 @@ class List():
 
         videoInfoLabels["director"] = people.get("Director")
         videoInfoLabels["writer"] = people.get("Writer")
-        videoInfoLabels["studio"] = db.get(dbid + ".Studio")
-        videoInfoLabels["genre"] = db.get(dbid + ".Genre")
+        videoInfoLabels["studio"] = self.db.get(dbid + ".Studio")
+        videoInfoLabels["genre"] = self.db.get(dbid + ".Genre")
         videoInfoLabels["tracknumber"] = str(item.get("IndexNumber"))
         videoInfoLabels["premiered"] = API().getPremiereDate(item)
         videoInfoLabels["episode"] = tvInfo.get('Episode')
@@ -431,45 +428,44 @@ class List():
         return listItem        
 
     def setViewType(self, item, pluginhandle):
-        db = Database()
         if item.get("Type") == "Movie":
             xbmcplugin.setContent(pluginhandle, 'movies')
-            db.set("viewType", "_MOVIES")
+            self.db.set("viewType", "_MOVIES")
         elif item.get("Type") == "BoxSet":
             xbmcplugin.setContent(pluginhandle, 'movies')
-            db.set("viewType", "_BOXSETS")
+            self.db.set("viewType", "_BOXSETS")
         elif item.get("Type") == "Series":
             xbmcplugin.setContent(pluginhandle, 'tvshows')
-            db.set("viewType", "_SERIES")
+            self.db.set("viewType", "_SERIES")
         elif item.get("Type") == "Season":
             xbmcplugin.setContent(pluginhandle, 'seasons')
-            db.set("viewType", "_SEASONS")
+            self.db.set("viewType", "_SEASONS")
             guiid = item.get("SeriesId")
         elif item.get("Type") == "Episode":
             xbmcplugin.setContent(pluginhandle, 'episodes')
-            db.set("viewType", "_EPISODES")
+            self.db.set("viewType", "_EPISODES")
             guiid = item.get("SeriesId")
         elif item.get("Type") == "MusicArtist":
             xbmcplugin.setContent(pluginhandle, 'artists')
-            db.set("viewType", "_MUSICARTISTS")
+            self.db.set("viewType", "_MUSICARTISTS")
         elif item.get("Type") == "MusicAlbum":
             xbmcplugin.setContent(pluginhandle, 'albums')
-            db.set("viewType", "_MUSICTALBUMS")
+            self.db.set("viewType", "_MUSICTALBUMS")
         elif item.get("Type") == "Audio":
             xbmcplugin.setContent(pluginhandle, 'songs')
-            db.set("viewType", "_MUSICTRACKS")
+            self.db.set("viewType", "_MUSICTRACKS")
             xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_TRACKNUM)
             xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_NONE)
         else:
-            db.set("viewType", "_MOVIES")
+            self.db.set("viewType", "_MOVIES")
         if __settings__.getSetting('useKodiSorting') == "true":
-            if item.get("Type") == "Episode" and db.get("allowSort") != "false":
+            if item.get("Type") == "Episode" and self.db.get("allowSort") != "false":
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_EPISODE)
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_RATING)
-            elif item.get("Type") != "Audio" and db.get("allowSort") != "false":
+            elif item.get("Type") != "Audio" and self.db.get("allowSort") != "false":
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_SORT_TITLE_IGNORE_THE)
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_VIDEO_YEAR)
                 xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_GENRE)
@@ -605,7 +601,6 @@ class List():
 
     def processChannels(self, url, results, progress, pluginhandle):
         self.printDebug("== ENTER: processChannels ==")
-        db = Database()
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
         downloadUtils = DownloadUtils()
@@ -704,13 +699,13 @@ class List():
                      'Overlay'      : overlay,
                      'playcount'    : str(playCount)}
             
-            db.set("viewType", "")
+            self.db.set("viewType", "")
             if item.get("Type") == "ChannelVideoItem":
                 xbmcplugin.setContent(pluginhandle, 'movies')
-                db.set("viewType", "_CHANNELS")
+                self.db.set("viewType", "_CHANNELS")
             elif item.get("Type") == "ChannelAudioItem":
                 xbmcplugin.setContent(pluginhandle, 'songs')
-                db.set("viewType", "_MUSICTRACKS")
+                self.db.set("viewType", "_MUSICTRACKS")
                      
             try:
                 tempDuration = str(int(item.get("RunTimeTicks", "0"))/(10000000*60))
@@ -776,7 +771,6 @@ class List():
 
     def processPlaylists(self, url, results, progress, pluginhandle):
         self.printDebug("== ENTER: processPlaylists ==")
-        db = Database()
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
         downloadUtils = DownloadUtils()
@@ -792,7 +786,7 @@ class List():
         item_count = len(result)
         current_item = 1;
         xbmcplugin.setContent(pluginhandle, 'movies')
-        db.set("viewType", "_MOVIES")            
+        self.db.set("viewType", "_MOVIES")            
 
         for item in result:
             id=str(item.get("Id")).encode('utf-8')
@@ -859,7 +853,7 @@ class List():
 
     def processGenres(self, url, results, progress, content, pluginhandle):
         self.printDebug("== ENTER: processGenres ==")
-        db = Database()
+
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
         downloadUtils = DownloadUtils()
@@ -880,7 +874,7 @@ class List():
 
         item_count = len(result)
         current_item = 1;
-        db.set("viewType", "_MOVIES")            
+        self.db.set("viewType", "_MOVIES")            
         
         for item in result:
             id=str(item.get("Id")).encode('utf-8')
@@ -945,7 +939,6 @@ class List():
 
     def processArtists(self, url, results, progress, pluginhandle):
         self.printDebug("== ENTER: processArtists ==")
-        db = Database()
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
         downloadUtils = DownloadUtils()
@@ -966,7 +959,7 @@ class List():
 
         item_count = len(result)
         current_item = 1;
-        db.set("viewType", "_MUSICARTISTS")            
+        self.db.set("viewType", "_MUSICARTISTS")            
         for item in result:
             id=str(item.get("Id")).encode('utf-8')
             type=item.get("Type").encode('utf-8')
@@ -1035,7 +1028,6 @@ class List():
 
     def processStudios(self, url, results, progress, content, pluginhandle):
         self.printDebug("== ENTER: processStudios ==")
-        db = Database()
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
         downloadUtils = DownloadUtils()
@@ -1056,7 +1048,7 @@ class List():
 
         item_count = len(result)
         current_item = 1;
-        db.set("viewType", "_MOVIES")            
+        self.db.set("viewType", "_MOVIES")            
         for item in result:
             id=str(item.get("Id")).encode('utf-8')
             type=item.get("Type").encode('utf-8')
@@ -1127,7 +1119,6 @@ class List():
 
     def processPeople(self, url, results, progress, content, pluginhandle):
         self.printDebug("== ENTER: processPeople ==")
-        db = Database()
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
         downloadUtils = DownloadUtils()
@@ -1148,7 +1139,7 @@ class List():
 
         item_count = len(result)
         current_item = 1;
-        db.set("viewType", "_MOVIES")
+        self.db.set("viewType", "_MOVIES")
         for item in result:
             id=str(item.get("Id")).encode('utf-8')
             type=item.get("Type").encode('utf-8')
@@ -1380,7 +1371,7 @@ class List():
 
     def addContextMenu(self, details, userData, folder, id=''):
         self.printDebug("Building Context Menus", level=2)
-        db = Database()
+
         commands = []
         if id == '':
             id = userData.get('id')
@@ -1388,14 +1379,14 @@ class List():
             playcount=userData.get("playcount")
             favorite=userData.get('favorite')
         else:
-            title=db.get(id + '.Name')       
+            title=self.db.get(id + '.Name')       
             playcount=userData.get('PlayCount')
             favorite=userData.get('Favorite')
 
         WINDOW = xbmcgui.Window( 10000 )        
         userid = WINDOW.getProperty("userid")
-        mb3Host = db.get("mb3Host")
-        mb3Port = db.get("mb3Port")
+        mb3Host = self.db.get("mb3Host")
+        mb3Port = self.db.get("mb3Port")
         
         if id != None:
             watchedurl = 'http://' + mb3Host + ':' + mb3Port + '/mediabrowser/Users/' + userid + '/PlayedItems/' + id
