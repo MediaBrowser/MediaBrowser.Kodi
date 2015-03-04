@@ -295,14 +295,14 @@ def getViewCollections():
     userid = downloadUtils.getUserId()
     
     if(userid == None or len(userid) == 0):
-        return {}
+        return []
     
     try:
         jsonData = downloadUtils.downloadUrl("http://" + MB_server + "/mediabrowser/Users/" + userid + "/Views?format=json&ImageTypeLimit=1")
     except Exception, msg:
         error = "Get connect : " + str(msg)
         xbmc.log (error)
-        return {}        
+        return []
     
     printDebug("getViewCollections jsonData : " + jsonData, level=2)
     result = json.loads(jsonData)
