@@ -148,6 +148,8 @@ class PlayUtils():
            return '1000000'
        
     def fileExists(self, result):
+        if(result == None or result.get("Path") == None):
+            return False
         path=result.get("Path").encode('utf-8')
         xbmc.log("Checking existence of : " + path)
         if os.path.exists(path) == True:
