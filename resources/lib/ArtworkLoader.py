@@ -523,12 +523,21 @@ class ArtworkRotationThread(threading.Thread):
         userid = downloadUtils.getUserId()
         self.logMsg("updateCollectionArtLinks UserID : " + userid)
         
-        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/Root?format=json"
+        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Views?Fields=CollectionType,RecursiveItemCount&format=json"
         jsonData = downloadUtils.downloadUrl(userUrl, suppress=True, popup=1 )
         if(jsonData == ""):
             self.logMsg("No Json Data")
             return
             
+        result = json.loads(jsonData)
+        
+        '''
+        userUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/Root?format=json"
+        jsonData = downloadUtils.downloadUrl(userUrl, suppress=True, popup=1 )
+        if(jsonData == ""):
+            self.logMsg("No Json Data")
+            return
+        
         self.logMsg("updateCollectionArtLinks UserData : " + str(jsonData), 2)
         result = json.loads(jsonData)
         
@@ -543,7 +552,13 @@ class ArtworkRotationThread(threading.Thread):
             self.logMsg("No Json Data")
             return
         result = json.loads(jsonData)
+        '''
+                
+        self.logMsg("VIEW_DATA:" + str(result))
         result = result.get("Items")
+        
+        if(result == None):
+            result = []
     
         artLinks = {}
         collection_count = 0
@@ -557,8 +572,8 @@ class ArtworkRotationThread(threading.Thread):
             childCount = item.get("RecursiveItemCount")
             self.logMsg("updateCollectionArtLinks Name : " + name, level=1)
             self.logMsg("updateCollectionArtLinks RecursiveItemCount : " + str(childCount), level=1)
-            if(childCount == None or childCount == 0):
-                continue
+            #if(childCount == None or childCount == 0):
+            #    continue
             
             self.logMsg("updateCollectionArtLinks Processing Collection : " + name + " of type : " + collectionType, level=2)
 
@@ -567,7 +582,7 @@ class ArtworkRotationThread(threading.Thread):
             timeNow = time.time()
             contentUrl = "plugin://plugin.video.xbmb3c?mode=16&ParentId=" + item.get("Id") + "&CollectionType=" + collectionType + "&SessionId=(" + str(timeNow) + ")"
             actionUrl = ("ActivateWindow(VideoLibrary, plugin://plugin.video.xbmb3c/?mode=21&ParentId=" + item.get("Id") + "&Name=" + name + ",return)").encode('utf-8')
-            xbmc.log("COLLECTION actionUrl: " + actionUrl)
+            self.logMsg("COLLECTION actionUrl: " + actionUrl)
             WINDOW.setProperty("xbmb3c_collection_menuitem_name_" + str(collection_count), name)
             WINDOW.setProperty("xbmb3c_collection_menuitem_action_" + str(collection_count), actionUrl)
             WINDOW.setProperty("xbmb3c_collection_menuitem_collection_" + str(collection_count), name)
