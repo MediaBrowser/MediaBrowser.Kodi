@@ -19,9 +19,6 @@ from Reporting import Reporting
 
 _MODE_BASICPLAY=12
 
-#define our global download utils
-downloadUtils = DownloadUtils()
-
 class ArtworkRotationThread(threading.Thread):
 
     movie_art_links = []
@@ -521,7 +518,8 @@ class ArtworkRotationThread(threading.Thread):
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')    
         
-        # get the user ID       
+        # get the user ID
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
         self.logMsg("updateCollectionArtLinks UserID : " + userid)
         
@@ -819,6 +817,7 @@ class ArtworkRotationThread(threading.Thread):
         userName = addonSettings.getSetting('username')     
         
         # get the user ID
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
         self.logMsg("updateTypeArtLinks UserID : " + userid)
 
@@ -1288,6 +1287,7 @@ class ArtworkRotationThread(threading.Thread):
         mb3Port = addonSettings.getSetting('port')
         userName = addonSettings.getSetting('username')
                    
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
         itemUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items/" + id + "?Fields=ParentId,Overview&format=json"
         
