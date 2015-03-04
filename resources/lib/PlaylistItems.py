@@ -15,9 +15,6 @@ from DownloadUtils import DownloadUtils
 _MODE_BASICPLAY=12
 _MODE_ITEM_DETAILS=17
 
-#define our global download utils
-downloadUtils = DownloadUtils()
-
 class PlaylistItemUpdaterThread(threading.Thread):
 
     logLevel = 0
@@ -81,6 +78,7 @@ class PlaylistItemUpdaterThread(threading.Thread):
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')     
         
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()  
        
         playlistsUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?&SortBy=SortName&Fields=Path,Genres,MediaStreams,Overview,ShortOverview,CriticRatingSummary&Recursive=true&SortOrder=Ascending&IncludeItemTypes=Playlist&mediatype=video&format=json"

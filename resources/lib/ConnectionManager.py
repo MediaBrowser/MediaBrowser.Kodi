@@ -15,7 +15,6 @@ import sys
 import socket
 
 #define our global download utils
-downloadUtils = DownloadUtils()
 logLevel = 1
 ###########################################################################
 class ConnectionManager():
@@ -70,6 +69,7 @@ class ConnectionManager():
         # get a list of users
         self.printDebug ("Getting user list")
         jsonData = None
+        downloadUtils = DownloadUtils()
         try:
             jsonData = downloadUtils.downloadUrl(server_address + ":" + server_port + "/mediabrowser/Users/Public?format=json")
         except Exception, msg:

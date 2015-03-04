@@ -18,9 +18,6 @@ import time
 from Utils import PlayUtils
 from DownloadUtils import DownloadUtils
 
-#define our global download utils
-downloadUtils = DownloadUtils()
-
 class ThemeMediaThread(threading.Thread):
 
     playingTheme = False
@@ -88,6 +85,7 @@ class ThemeMediaThread(threading.Thread):
     def updateThemeMedia(self):
         self.logMsg("updateThemeMedia Called")
         
+        downloadUtils = DownloadUtils()
         addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         
         mb3Host = addonSettings.getSetting('ipaddress')

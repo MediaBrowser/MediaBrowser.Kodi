@@ -21,9 +21,6 @@ import os
 
 __settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
 
-#define our global download utils
-downloadUtils = DownloadUtils()
-
 class SkinHelperThread(threading.Thread):
 
     logLevel = 0
@@ -341,6 +338,7 @@ class SkinHelperThread(threading.Thread):
     
     def SetMB3WindowViewsProperties(self, filter=None, shared=False ):
         self.logMsg("[MB3 SkinHelper] setting skin properties...")
+        downloadUtils = DownloadUtils()
         try:
             userid = downloadUtils.getUserId()
     

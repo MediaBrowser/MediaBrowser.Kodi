@@ -14,9 +14,6 @@ from DownloadUtils import DownloadUtils
 
 _MODE_BASICPLAY=12
 
-#define our global download utils
-downloadUtils = DownloadUtils()
-
 class InfoUpdaterThread(threading.Thread):
 
     logLevel = 0
@@ -79,6 +76,7 @@ class InfoUpdaterThread(threading.Thread):
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')        
         
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
         self.logMsg("updateInfo UserID : " + userid)
         

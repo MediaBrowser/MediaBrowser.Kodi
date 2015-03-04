@@ -17,16 +17,6 @@ from Database import Database
 from urlparse import urlparse
 
 
-logLevel = 1
-__settings__ = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-__addon__       = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-
-CP_ADD_URL = 'XBMC.RunPlugin(plugin://plugin.video.couchpotato_manager/movies/add?title=%s)'
-
-__cwd__ = __settings__.getAddonInfo('path')
-PLUGINPATH = xbmc.translatePath( os.path.join( __cwd__) )
-__language__     = __addon__.getLocalizedString
-
 class API():
     
     def getPeople(self, item):

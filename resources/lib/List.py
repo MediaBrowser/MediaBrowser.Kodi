@@ -33,7 +33,6 @@ PLUGINPATH = xbmc.translatePath( os.path.join( __cwd__) )
 __language__     = __addon__.getLocalizedString
 
 #define our global download utils
-downloadUtils = DownloadUtils()
 db = Database()
 
 # EXPERIMENTAL    
@@ -63,7 +62,10 @@ class List():
         self.printDebug("Processing secondary menus")
         xbmcplugin.setContent(pluginhandle, 'movies')
         server = self.getServerFromURL(url)
+        
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
+        db = Database()
         
         detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks,Metascore,SeriesStudio,AirTime,SeasonUserData"
         if(__settings__.getSetting('includeStreamInfo') == "true"):
@@ -132,7 +134,8 @@ class List():
                 dirItems.append([u, listItem, False])
         return dirItems
 
-    def fastItem(self, item, pluginhandle):            
+    def fastItem(self, item, pluginhandle):      
+        db = Database()    
         isFolder = "false" #fix
         premieredate = ""
         id = item.get('Id')
@@ -261,7 +264,8 @@ class List():
             listItem.addContextMenuItems( menuItems, True )
         return listItem
 
-    def slowItem(self, item, pluginhandle):            
+    def slowItem(self, item, pluginhandle):
+        db = Database()
         id = item.get('Id')
         guiid = id
         dbid = id
@@ -285,7 +289,8 @@ class List():
         folder=item.get("IsFolder")
  
         #Create the ListItem that will be displayed
-        thumbPath=downloadUtils.getArtwork(item, "Primary")
+        downloadUtils = DownloadUtils()
+        thumbPath = downloadUtils.getArtwork(item, "Primary")
         
         addCounts = __settings__.getSetting('addCounts') == 'true'
         
@@ -426,6 +431,7 @@ class List():
         return listItem        
 
     def setViewType(self, item, pluginhandle):
+        db = Database()
         if item.get("Type") == "Movie":
             xbmcplugin.setContent(pluginhandle, 'movies')
             db.set("viewType", "_MOVIES")
@@ -480,6 +486,8 @@ class List():
         self.printDebug("== ENTER: processSearch ==")
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
+        
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
         xbmcplugin.setContent(pluginhandle, 'movies')
         detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
@@ -597,8 +605,10 @@ class List():
 
     def processChannels(self, url, results, progress, pluginhandle):
         self.printDebug("== ENTER: processChannels ==")
+        db = Database()
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
         xbmcplugin.setContent(pluginhandle, 'movies')
         detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
@@ -766,8 +776,10 @@ class List():
 
     def processPlaylists(self, url, results, progress, pluginhandle):
         self.printDebug("== ENTER: processPlaylists ==")
+        db = Database()
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
         xbmcplugin.setContent(pluginhandle, 'movies')
         detailsString = ""          
@@ -847,8 +859,10 @@ class List():
 
     def processGenres(self, url, results, progress, content, pluginhandle):
         self.printDebug("== ENTER: processGenres ==")
+        db = Database()
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
         xbmcplugin.setContent(pluginhandle, 'movies')
         detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
@@ -931,8 +945,10 @@ class List():
 
     def processArtists(self, url, results, progress, pluginhandle):
         self.printDebug("== ENTER: processArtists ==")
+        db = Database()
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
         xbmcplugin.setContent(pluginhandle, 'movies')
         detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
@@ -1019,8 +1035,10 @@ class List():
 
     def processStudios(self, url, results, progress, content, pluginhandle):
         self.printDebug("== ENTER: processStudios ==")
+        db = Database()
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
         xbmcplugin.setContent(pluginhandle, 'movies')
         detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
@@ -1109,8 +1127,10 @@ class List():
 
     def processPeople(self, url, results, progress, content, pluginhandle):
         self.printDebug("== ENTER: processPeople ==")
+        db = Database()
         parsed = urlparse(url)
         parsedserver,parsedport=parsed.netloc.split(':')
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
         xbmcplugin.setContent(pluginhandle, 'movies')
         detailsString = "Path,Genres,Studios,CumulativeRunTimeTicks"
@@ -1360,6 +1380,7 @@ class List():
 
     def addContextMenu(self, details, userData, folder, id=''):
         self.printDebug("Building Context Menus", level=2)
+        db = Database()
         commands = []
         if id == '':
             id = userData.get('id')
@@ -1449,11 +1470,14 @@ class List():
         WINDOW.setProperty("addshowname", "false")
         WINDOW.setProperty("currenturl", url)
         WINDOW.setProperty("currentpluginhandle", str(pluginhandle))
+        downloadUtils = DownloadUtils()
         if 'ParentId' in url:
             dirUrl = url.replace('items?ParentId=','Items/')
             splitUrl = dirUrl.split('&')
             dirUrl = splitUrl[0] + '?format=json'
             jsonData = downloadUtils.downloadUrl(dirUrl)
+            if(jsonData == ""):
+                return
             result = json.loads(jsonData)
             title = result.get("Name")
             WINDOW.setProperty("heading", title)

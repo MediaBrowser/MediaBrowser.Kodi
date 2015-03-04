@@ -16,10 +16,6 @@ from Database import Database
 _MODE_BASICPLAY = 12
 _MODE_ITEM_DETAILS=17
 
-# define our global download utils
-downloadUtils = DownloadUtils()
-db = Database()
-
 class RandomInfoUpdaterThread(threading.Thread):
 
     logLevel = 0
@@ -83,6 +79,7 @@ class RandomInfoUpdaterThread(threading.Thread):
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')     
         
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
         self.logMsg("updateRandomMovies UserID : " + userid)
         
@@ -101,6 +98,7 @@ class RandomInfoUpdaterThread(threading.Thread):
         if(result == None):
             result = []
             
+        db = Database()
         WINDOW = xbmcgui.Window(10000)
 
         item_count = 1

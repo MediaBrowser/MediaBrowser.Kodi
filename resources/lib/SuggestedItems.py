@@ -16,10 +16,6 @@ from Database import Database
 _MODE_BASICPLAY=12
 _MODE_ITEM_DETAILS=17
 
-#define our global download utils
-downloadUtils = DownloadUtils()
-db = Database()
-
 class SuggestedUpdaterThread(threading.Thread):
 
     logLevel = 0
@@ -82,6 +78,9 @@ class SuggestedUpdaterThread(threading.Thread):
         mb3Host = addonSettings.getSetting('ipaddress')
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')     
+        
+        downloadUtils = DownloadUtils()
+        db = Database()
         
         userid = downloadUtils.getUserId()
         self.logMsg("updateSuggested UserID : " + userid)

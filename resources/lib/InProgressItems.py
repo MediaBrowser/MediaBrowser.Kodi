@@ -15,10 +15,6 @@ from Database import Database
 
 _MODE_BASICPLAY=12
 
-#define our global download utils
-downloadUtils = DownloadUtils()
-db = Database()
-
 class InProgressUpdaterThread(threading.Thread):
 
     logLevel = 0
@@ -82,6 +78,7 @@ class InProgressUpdaterThread(threading.Thread):
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')     
         
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
         self.logMsg("InProgress UserName : " + userName + " UserID : " + userid)
         
@@ -98,6 +95,7 @@ class InProgressUpdaterThread(threading.Thread):
         if(result == None):
             result = []
             
+        db = Database()
         WINDOW = xbmcgui.Window( 10000 )
 
         item_count = 1

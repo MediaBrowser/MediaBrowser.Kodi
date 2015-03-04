@@ -14,10 +14,6 @@ from DownloadUtils import DownloadUtils
 from Database import Database
 _MODE_BASICPLAY=12
 
-#define our global download utils
-downloadUtils = DownloadUtils()
-db = Database()
-
 class NextUpUpdaterThread(threading.Thread):
 
     logLevel = 0
@@ -80,6 +76,7 @@ class NextUpUpdaterThread(threading.Thread):
         mb3Port = addonSettings.getSetting('port')    
         userName = addonSettings.getSetting('username')     
         
+        downloadUtils = DownloadUtils()
         userid = downloadUtils.getUserId()
         self.logMsg("updateNextUp UserID : " + userid)
         
@@ -99,6 +96,8 @@ class NextUpUpdaterThread(threading.Thread):
         if(result == None):
             result = []   
 
+        db = Database()
+            
         item_count = 1
         for item in result:
             title = "Missing Title"
