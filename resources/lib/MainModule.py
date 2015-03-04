@@ -823,7 +823,9 @@ def getXbmcVersion():
     version = 0.0
     jsonData = xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "method": "Application.GetProperties", "params": {"properties": ["version", "name"]}, "id": 1 }') 
     
-    result = json.loads(jsonData)
+    result = {}
+    if(jsonData != ""):
+        result = json.loads(jsonData)
     
     try:
         result = result.get("result")
@@ -850,7 +852,10 @@ def getCastList(pluginName, handle, params):
     # get the cast list for an item
     jsonData = downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + params.get("id") + "?format=json", suppress=False, popup=1 )    
     printDebug("CastList(Items) jsonData: " + jsonData, 2)
-    result = json.loads(jsonData)
+    
+    result = {}
+    if(jsonData != ""):
+        result = json.loads(jsonData)
 
     people = result.get("People")
     
@@ -990,7 +995,10 @@ def getWigetContent(pluginName, handle, params):
     # get the recent items
     jsonData = downloadUtils.downloadUrl(itemsUrl, suppress=True, popup=1 )
     printDebug("Recent(Items) jsonData: " + jsonData, 2)
-    result = json.loads(jsonData)
+    
+    result = {}
+    if(jsonData != ""):
+        result = json.loads(jsonData)
     
     result = result.get("Items")
     if(result == None):

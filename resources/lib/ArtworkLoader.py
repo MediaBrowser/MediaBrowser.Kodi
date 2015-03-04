@@ -582,8 +582,11 @@ class ArtworkRotationThread(threading.Thread):
             # Process movies and series
             self.logMsg("[XBMB3C ArtworkLoader get Collection Images Movies and Series]")
             collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?&SortOrder=Descending&ParentId=" + item.get("Id") + "&IncludeItemTypes=Movie,Series,MusicVideo&Fields=ParentId,Overview&SortOrder=Descending&Recursive=true&CollapseBoxSetItems=false&format=json"
-            jsonData = downloadUtils.downloadUrl(collectionUrl, suppress=True, popup=0 )  
-            collectionResult = json.loads(jsonData)
+            jsonData = downloadUtils.downloadUrl(collectionUrl, suppress=True, popup=0 )
+            
+            collectionResult = {}
+            if(jsonData != ""):  
+                collectionResult = json.loads(jsonData)
 
             self.logMsg("[XBMB3C ArtworkLoader COLLECTION] -- " + item.get("Name") + " -- " + collectionUrl)
 
@@ -656,8 +659,11 @@ class ArtworkRotationThread(threading.Thread):
             # Process collection item Photos
             self.logMsg("[XBMB3C ArtworkLoader get Collection Images Photos]")
             collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?Limit=20&SortOrder=Descending&ParentId=" + item.get("Id") + "&IncludeItemTypes=Photo&Fields=ParentId,Overview&SortOrder=Descending&Recursive=true&CollapseBoxSetItems=false&format=json"
-            jsonData = downloadUtils.downloadUrl(collectionUrl, suppress=True, popup=0 )  
-            collectionResult = json.loads(jsonData)
+            jsonData = downloadUtils.downloadUrl(collectionUrl, suppress=True, popup=0 )
+            
+            collectionResult = {}
+            if(jsonData != ""):
+                collectionResult = json.loads(jsonData)
 
             self.logMsg("[XBMB3C ArtworkLoader COLLECTION] -- " + item.get("Name") + " -- " + collectionUrl)
 
@@ -719,8 +725,11 @@ class ArtworkRotationThread(threading.Thread):
             # Process collection item Music and all Other
             self.logMsg("[XBMB3C ArtworkLoader get Collection Images Other]")
             collectionUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/items?&SortOrder=Descending&ParentId=" + item.get("Id") + "&IncludeItemTypes=MusicArtist,MusicAlbum,Audio&Fields=ParentId,Overview&SortOrder=Descending&Recursive=true&CollapseBoxSetItems=false&format=json"
-            jsonData = downloadUtils.downloadUrl(collectionUrl, suppress=True, popup=0 )  
-            collectionResult = json.loads(jsonData)
+            jsonData = downloadUtils.downloadUrl(collectionUrl, suppress=True, popup=0 )
+            
+            collectionResult = {}
+            if(jsonData != ""):
+                collectionResult = json.loads(jsonData)
 
             self.logMsg("[XBMB3C ArtworkLoader COLLECTION] -- " + item.get("Name") + " -- " + collectionUrl)
 
