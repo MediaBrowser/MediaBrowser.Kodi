@@ -15,7 +15,6 @@ from uuid import uuid4 as uuid4
 from ClientInformation import ClientInformation
 import encodings
 import time
-import traceback
 
 class DownloadUtils():
 
@@ -27,88 +26,71 @@ class DownloadUtils():
     TotalUrlCalls = 0
 
     def __init__(self, *args):
-        
-        # Internal variables
-        self.window = xbmcgui.Window( 10000 )
-        self.addonId = ClientInformation().getAddonId()
-        self.addon = xbmcaddon.Addon(id=self.addonId)
-        self.addonName = self.addon.getAddonInfo('name').upper()
-        self.getString = self.addon.getLocalizedString
-
-        # Verify and set log level
-        level = self.addon.getSetting('logLevel')        
+        self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        self.getString = self.addonSettings.getLocalizedString
+        level = self.addonSettings.getSetting('logLevel')        
         self.logLevel = 0
-        
-        if level != None:
+        if(level != None):
             self.logLevel = int(level)
-        
-        if self.logLevel == 2:
+        if(self.logLevel == 2):
             self.LogCalls = True
 
-
     def logMsg(self, msg, level = 1):
-        
-        className = self.__class__.__name__
-        addonName = self.addonName
-        
-        if self.logLevel >= level:
+        if(self.logLevel >= level):
             try:
-                xbmc.log("%s %s -> %s" % (addonName, className, str(msg)))
+                xbmc.log("XBMB3C DownloadUtils -> " + str(msg))
             except UnicodeEncodeError:
                 try:
-                    xbmc.log("%s %s -> %s" % (addonName, className, str(msg.encode('utf-8'))))
+                    xbmc.log("XBMB3C DownloadUtils -> " + str(msg.encode('utf-8')))
                 except: pass
 
-
     def getServer(self):
-
-        addon = self.addon
-        host = addon.getSetting('ipaddress')
-        port = addon.getSetting('port')
-
+        port = self.addonSettings.getSetting('port')
+        host = self.addonSettings.getSetting('ipaddress')    
         return host + ":" + port
-    
     
     def getUserId(self, suppress=True):
 
-        WINDOW = self.window
-        addon = self.addon
-        getString = self.getString
-        username = addon.getSetting('username')
-        userId = WINDOW.getProperty('userid' + username)
+        WINDOW = xbmcgui.Window( 10000 )
+        self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        port = self.addonSettings.getSetting('port')
+        host = self.addonSettings.getSetting('ipaddress')
+        userName = self.addonSettings.getSetting('username')
+        
+        userid = WINDOW.getProperty("userid" + userName)
 
-        if (userId != None and userId != ""):
-            self.logMsg("Returning saved UserID: %s Username: %s" % (userId, username))
-            return userId
+        if(userid != None and userid != ""):
+            self.logMsg("DownloadUtils -> Returning saved UserID : " + userid + "UserName: " + userName)
+            return userid
     
-        self.logMsg("Looking for username: " + username)
+        self.logMsg("Looking for user name: " + userName)
 
         authOk = self.authenticate()
-
-        if authOk == "":
-            if suppress == False:
-                xbmcgui.Dialog().ok(getString(30044), getString(30044))
+        if(authOk == ""):
+            if(suppress == False):
+                xbmcgui.Dialog().ok(self.getString(30044), self.getString(30044))
             return ""
 
-        if (userId == "" and suppress == False):
-            xbmcgui.Dialog().ok(getString(30045), getString(30045))
+        userid = WINDOW.getProperty("userid"+ userName)
+        if(userid == "" and suppress == False):
+            xbmcgui.Dialog().ok(self.getString(30045),self.getString(30045))
 
-        self.logMsg("userid: " + userId)         
+        self.logMsg("userid : " + userid)         
         self.postcapabilities()
         
-        return userId
-        
+        return userid
         
     def postcapabilities(self):
-        
-        # Set Capabilities
-        server = self.getServer()
-        deviceId = ClientInformation().getMachineId()
-
         self.logMsg("postcapabilities called")
         
+        # Set Capabilities
+        mb3Port = self.addonSettings.getSetting('port')
+        mb3Host = self.addonSettings.getSetting('ipaddress')
+        clientInfo = ClientInformation()
+        machineId = clientInfo.getMachineId()
+        
         # get session id
-        url = "http://" + server + "/mediabrowser/Sessions?DeviceId=" + deviceId + "&format=json"
+        url = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Sessions?DeviceId=" + machineId + "&format=json"
         self.logMsg("Session URL : " + url);
         jsonData = self.downloadUrl(url)
         self.logMsg("Session JsonData : " + jsonData)
@@ -121,7 +103,7 @@ class DownloadUtils():
         playableMediaTypes = "Audio,Video,Photo"
         supportedCommands = "Play,Playstate,DisplayContent,GoHome,SendString,GoToSettings,DisplayMessage,PlayNext"
         
-        url = "http://" + server + "/mediabrowser/Sessions/Capabilities?Id=" + sessionId + "&PlayableMediaTypes=" + playableMediaTypes + "&SupportedCommands=" + supportedCommands + "&SupportsMediaControl=True"
+        url = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Sessions/Capabilities?Id=" + sessionId + "&PlayableMediaTypes=" + playableMediaTypes + "&SupportedCommands=" + supportedCommands
         
         postData = {}
         #postData["Id"] = sessionId;
@@ -132,76 +114,61 @@ class DownloadUtils():
         self.logMsg("Capabilities Data : " + stringdata)
         
         self.downloadUrl(url, postBody=stringdata, type="POST")
-        
 
-    def authenticate(self): 
-        
-        WINDOW = self.window
-        addon = self.addon
-        server = self.getServer()
-        username = addon.getSetting('username').lower()
-        token = WINDOW.getProperty('AccessToken' + username)
-
-        # Verify if there's an access token saved for the user
-        if (token != None and token != ""):
-            self.logMsg("Returning saved AccessToken for user: %s Token: %s" % (username, token))
+    def authenticate(self):    
+        WINDOW = xbmcgui.Window( 10000 )
+        self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        token = WINDOW.getProperty("AccessToken"+self.addonSettings.getSetting('username'))
+        if(token != None and token != ""):
+            self.logMsg("DownloadUtils -> Returning saved AccessToken for user : " + self.addonSettings.getSetting('username') + " token: "+ token)
             return token
         
-        # Verify if there's server information saved
-        if len(server) < 2:
+        port = self.addonSettings.getSetting("port")
+        host = self.addonSettings.getSetting("ipaddress")
+        if(host == None or host == "" or port == None or port == ""):
             return ""
-        
-        # If there's no token saved, authenticate user  
-        url = "http://" + server + "/mediabrowser/Users/AuthenticateByName?format=json"
+            
+        url = "http://" + self.addonSettings.getSetting("ipaddress") + ":" + self.addonSettings.getSetting("port") + "/mediabrowser/Users/AuthenticateByName?format=json"
     
         clientInfo = ClientInformation()
-        headers = clientInfo.getHeader()
-        
-        sha1 = hashlib.sha1(addon.getSetting('password'))
-        sha1 = sha1.hexdigest()
-        
-        accessToken = addon.getSetting('token').lower()
+        txt_mac = clientInfo.getMachineId()
+        version = clientInfo.getVersion()
 
-        if username in accessToken:
-            # Correct token is detected
-            accessToken = accessToken.strip(username)
-            self.logMsg("User already authenticated: " + accessToken)
-            WINDOW.setProperty('AccessToken' + username, accessToken)
-            WINDOW.setProperty('userid' + username, addon.getSetting('userid'))
-            
+        deviceName = self.addonSettings.getSetting('deviceName')
+        deviceName = deviceName.replace("\"", "_")
+
+        authString = "Mediabrowser Client=\"Kodi\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+        headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}
+        
+        if self.addonSettings.getSetting('password') !=None and  self.addonSettings.getSetting('password') !='':   
+            sha1 = hashlib.sha1(self.addonSettings.getSetting('password'))
+            sha1 = sha1.hexdigest()
+        else:
+            sha1 = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
+        
+        messageData = "username=" + self.addonSettings.getSetting('username') + "&password=" + sha1
+
+        resp = self.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
+
+        accessToken = None
+        try:
+            result = json.loads(resp)
+            accessToken = result.get("AccessToken")
+        except:
+            pass
+
+        if(accessToken != None):
+            self.logMsg("User Authenticated : " + accessToken)
+            WINDOW.setProperty("AccessToken"+self.addonSettings.getSetting('username'), accessToken)
+            WINDOW.setProperty("userid"+self.addonSettings.getSetting('username'), result.get("User").get("Id"))
             return accessToken
         else:
-            # Authenticate user
-            messageData = "username=" + username + "&password=" + sha1
-            resp = self.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
-    
-            accessToken = None
-            result = None
-            try:
-                result = json.loads(resp)
-                accessToken = result.get('AccessToken')
-            except:
-                pass
-
-            if result != None and accessToken != None:
-                self.logMsg("User Authenticated : " + accessToken)
-                addon.setSetting('token', username + accessToken)
-                WINDOW.setProperty('AccessToken' + username, accessToken)
-                WINDOW.setProperty('userid' + username, result.get('User').get('Id'))
-                addon.setSetting('userid', result.get('User').get('Id'))
-                
-                return accessToken
-    
-            else:
-                self.logMsg("User NOT Authenticated")
-                WINDOW.setProperty('AccessToken' + username, "")
-                
-                return ""
-
+            self.logMsg("User NOT Authenticated")
+            WINDOW.setProperty("AccessToken"+self.addonSettings.getSetting('username'), "")
+            return ""            
 
     def getArtwork(self, data, type, index = "0", userParentInfo = False):
 
-        addon = self.addon
         id = data.get("Id")
         getSeriesData = False
         userData = data.get("UserData") 
@@ -210,7 +177,7 @@ class DownloadUtils():
             if data.get("Type") == "Season" or data.get("Type")== "Episode":
                 id = data.get("SeriesId")
                 getSeriesData = True
-        elif type == "poster" and data.get("Type") == "Episode" and addon.getSetting('useSeasonPoster')=='true': # Change the Id to the Season to get the season poster
+        elif type == "poster" and data.get("Type") == "Episode" and self.addonSettings.getSetting('useSeasonPoster')=='true': # Change the Id to the Season to get the season poster
             id = data.get("SeasonId")
         if type == "poster" or type == "tvshow.poster": # Now that the Ids are right, change type to MB3 name
             type="Primary"
@@ -257,7 +224,7 @@ class DownloadUtils():
         played = "0"
         totalbackdrops = 0
 
-        if addon.getSetting('showArtIndicators')=='true': # add watched, unplayedcount and percentage played indicators to posters
+        if self.addonSettings.getSetting('showArtIndicators')=='true': # add watched, unplayedcount and percentage played indicators to posters
             if (originalType =="Primary" or  originalType =="Backdrop" or  originalType =="Banner") and data.get("Type") != "Episode":
                 if originalType =="Backdrop" and index == "0" and data.get("BackdropImageTags") != None:
                   totalbackdrops = len(data.get("BackdropImageTags"))
@@ -267,17 +234,17 @@ class DownloadUtils():
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
 
-                    if UnWatched <> 0 and addon.getSetting('showUnplayedIndicators')=='true':
+                    if UnWatched <> 0 and self.addonSettings.getSetting('showUnplayedIndicators')=='true':
                         query = query + "&UnplayedCount=" + str(UnWatched)
 
 
-                    if(userData != None and userData.get("Played") == True and addon.getSetting('showWatchedIndicators')=='true'):
+                    if(userData != None and userData.get("Played") == True and self.addonSettings.getSetting('showWatchedIndicators')=='true'):
                         query = query + "&AddPlayedIndicator=true"
 
                     PlayedPercentage = 0 if userData.get("PlayedPercentage")==None else userData.get("PlayedPercentage")
                     if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
                         PlayedPercentage = userData.get("PlayedPercentage")
-                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and addon.getSetting('showPlayedPrecentageIndicators')=='true':
+                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                         played = str(PlayedPercentage)
 
             elif originalType =="Primary2":
@@ -285,16 +252,16 @@ class DownloadUtils():
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
 
-                    if UnWatched <> 0 and addon.getSetting('showUnplayedIndicators')=='true':
+                    if UnWatched <> 0 and self.addonSettings.getSetting('showUnplayedIndicators')=='true':
                         query = query + "&UnplayedCount=" + str(UnWatched)
 
-                    if(userData != None and userData.get("Played") == True and addon.getSetting('showWatchedIndicators')=='true'):
+                    if(userData != None and userData.get("Played") == True and self.addonSettings.getSetting('showWatchedIndicators')=='true'):
                         query = query + "&AddPlayedIndicator=true"
 
                     PlayedPercentage = 0 if userData.get("PlayedPercentage")==None else userData.get("PlayedPercentage")
                     if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
                         PlayedPercentage = userData.get("PlayedPercentage")
-                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and addon.getSetting('showPlayedPrecentageIndicators')=='true':
+                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                         played = str(PlayedPercentage)
                         
                     height = "338"
@@ -305,16 +272,16 @@ class DownloadUtils():
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
 
-                    if UnWatched <> 0 and addon.getSetting('showUnplayedIndicators')=='true':
+                    if UnWatched <> 0 and self.addonSettings.getSetting('showUnplayedIndicators')=='true':
                         query = query + "&UnplayedCount=" + str(UnWatched)
 
-                    if(userData != None and userData.get("Played") == True and addon.getSetting('showWatchedIndicators')=='true'):
+                    if(userData != None and userData.get("Played") == True and self.addonSettings.getSetting('showWatchedIndicators')=='true'):
                         query = query + "&AddPlayedIndicator=true"
 
                     PlayedPercentage = 0 if userData.get("PlayedPercentage")==None else userData.get("PlayedPercentage")
                     if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
                         PlayedPercentage = userData.get("PlayedPercentage")
-                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and addon.getSetting('showPlayedPrecentageIndicators')=='true':
+                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                         played = str(PlayedPercentage)
                         
                    
@@ -324,16 +291,16 @@ class DownloadUtils():
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
 
-                    if UnWatched <> 0 and addon.getSetting('showUnplayedIndicators')=='true':
+                    if UnWatched <> 0 and self.addonSettings.getSetting('showUnplayedIndicators')=='true':
                         query = query + "&UnplayedCount=" + str(UnWatched)
 
-                    if(userData != None and userData.get("Played") == True and addon.getSetting('showWatchedIndicators')=='true'):
+                    if(userData != None and userData.get("Played") == True and self.addonSettings.getSetting('showWatchedIndicators')=='true'):
                         query = query + "&AddPlayedIndicator=true"
 
                     PlayedPercentage = 0 if userData.get("PlayedPercentage")==None else userData.get("PlayedPercentage")
                     if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
                         PlayedPercentage = userData.get("PlayedPercentage")
-                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and addon.getSetting('showPlayedPrecentageIndicators')=='true':
+                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                         played = str(PlayedPercentage)
                         
                     height = "270"
@@ -344,16 +311,16 @@ class DownloadUtils():
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
 
-                    if UnWatched <> 0 and addon.getSetting('showUnplayedIndicators')=='true':
+                    if UnWatched <> 0 and self.addonSettings.getSetting('showUnplayedIndicators')=='true':
                         query = query + "&UnplayedCount=" + str(UnWatched)
 
-                    if(userData != None and userData.get("Played") == True and addon.getSetting('showWatchedIndicators')=='true'):
+                    if(userData != None and userData.get("Played") == True and self.addonSettings.getSetting('showWatchedIndicators')=='true'):
                         query = query + "&AddPlayedIndicator=true"
 
                     PlayedPercentage = 0 if userData.get("PlayedPercentage")==None else userData.get("PlayedPercentage")
                     if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
                         PlayedPercentage = userData.get("PlayedPercentage")
-                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and addon.getSetting('showPlayedPrecentageIndicators')=='true':
+                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                         played = str(PlayedPercentage)
                         
                     height = "410"
@@ -369,16 +336,16 @@ class DownloadUtils():
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
 
-                    if UnWatched <> 0 and addon.getSetting('showUnplayedIndicators')=='true':
+                    if UnWatched <> 0 and self.addonSettings.getSetting('showUnplayedIndicators')=='true':
                         query = query + "&UnplayedCount=" + str(UnWatched)
 
-                    if(userData != None and userData.get("Played") == True and addon.getSetting('showWatchedIndicators')=='true'):
+                    if(userData != None and userData.get("Played") == True and self.addonSettings.getSetting('showWatchedIndicators')=='true'):
                         query = query + "&AddPlayedIndicator=true"
 
                     PlayedPercentage = 0 if userData.get("PlayedPercentage")==None else userData.get("PlayedPercentage")
                     if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
                         PlayedPercentage = userData.get("PlayedPercentage")
-                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and addon.getSetting('showPlayedPrecentageIndicators')=='true':
+                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                         played = str(PlayedPercentage)
                         
                     height = "370"
@@ -393,16 +360,16 @@ class DownloadUtils():
 
                     UnWatched = 0 if userData.get("UnplayedItemCount")==None else userData.get("UnplayedItemCount")        
 
-                    if UnWatched <> 0 and addon.getSetting('showUnplayedIndicators')=='true':
+                    if UnWatched <> 0 and self.addonSettings.getSetting('showUnplayedIndicators')=='true':
                         query = query + "&UnplayedCount=" + str(UnWatched)
 
-                    if(userData != None and userData.get("Played") == True and addon.getSetting('showWatchedIndicators')=='true'):
+                    if(userData != None and userData.get("Played") == True and self.addonSettings.getSetting('showWatchedIndicators')=='true'):
                         query = query + "&AddPlayedIndicator=true"
 
                     PlayedPercentage = 0 if userData.get("PlayedPercentage")==None else userData.get("PlayedPercentage")
                     if PlayedPercentage == 0 and userData!=None and userData.get("PlayedPercentage")!=None :
                         PlayedPercentage = userData.get("PlayedPercentage")
-                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and addon.getSetting('showPlayedPrecentageIndicators')=='true':
+                    if (PlayedPercentage != 100 or PlayedPercentage) != 0 and self.addonSettings.getSetting('showPlayedPrecentageIndicators')=='true':
                         played = str(PlayedPercentage)
                         
                     height = "910"
@@ -414,15 +381,17 @@ class DownloadUtils():
                 index = str(randrange(0,totalbackdrops))
         # use the local image proxy server that is made available by this addons service
         
-        server = self.getServer()
+        port = self.addonSettings.getSetting('port')
+        host = self.addonSettings.getSetting('ipaddress')
+        server = host + ":" + port
         
-        if addon.getSetting('compressArt')=='true':
+        if self.addonSettings.getSetting('compressArt')=='true':
             query = query + "&Quality=90"
         
         if imageTag == None:
             imageTag = "e3ab56fe27d389446754d0fb04910a34"
         artwork = "http://" + server + "/mediabrowser/Items/" + str(id) + "/Images/" + type + "/" + index + "/" + imageTag + "/original/" + width + "/" + height + "/" + played + "?" + query
-        if addon.getSetting('disableCoverArt')=='true':
+        if self.addonSettings.getSetting('disableCoverArt')=='true':
             artwork = artwork + "&EnableImageEnhancers=false"
         
         self.logMsg("getArtwork : " + artwork, level=2)
@@ -436,47 +405,52 @@ class DownloadUtils():
                 artwork=''        
         
         return artwork
-        
     
     def getUserArtwork(self, data, type, index = "0"):
 
-        id = data.get('Id')
-        server = self.getServer()
+        id = data.get("Id")
+
+        port = self.addonSettings.getSetting('port')
+        host = self.addonSettings.getSetting('ipaddress')
+        server = host + ":" + port
 
         artwork = "http://" + server + "/mediabrowser/Users/" + str(id) + "/Images/" + type  + "?Format=original"
        
-        return artwork
-        
+        return artwork                  
 
     def imageUrl(self, id, type, index, width, height):
     
-        server = self.getServer()
+        port = self.addonSettings.getSetting('port')
+        host = self.addonSettings.getSetting('ipaddress')
+        server = host + ":" + port
         
         return "http://" + server + "/mediabrowser/Items/" + str(id) + "/Images/" + type + "/" + str(index) + "/e3ab56fe27d389446754d0fb04910a34/original/" + str(width) + "/" + str(height) + "/0"
     
-    
     def getAuthHeader(self, authenticate=True):
-        
         clientInfo = ClientInformation()
-        headers = clientInfo.getHeader()
+        txt_mac = clientInfo.getMachineId()
+        version = clientInfo.getVersion()
         
-        if authenticate == False:  
+        deviceName = self.addonSettings.getSetting('deviceName')
+        deviceName = deviceName.replace("\"", "_")
+
+        if(authenticate == False):
+            authString = "MediaBrowser Client=\"Kodi\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+            headers = {"Accept-encoding": "gzip", "Accept-Charset" : "UTF-8,*", "Authorization" : authString}        
             return headers
-        
         else:
             userid = self.getUserId()
-            headers = clientInfo.getHeader()
+            authString = "MediaBrowser UserId=\"" + userid + "\",Client=\"Kodi\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
+            headers = {"Accept-encoding": "gzip", "Accept-Charset" : "UTF-8,*", "Authorization" : authString}        
+                
             authToken = self.authenticate()
-
+            if(authToken != ""):
+                headers["X-MediaBrowser-Token"] = authToken
+                    
+            self.logMsg("Authentication Header : " + str(headers))
             return headers
         
-        
     def downloadUrl(self, url, suppress=False, postBody=None, type="GET", popup=0, authenticate=True ):
-        
-        WINDOW = self.window
-        addon = self.addon
-        getString = self.getString
-
         self.logMsg("== ENTER: getURL ==")
         
         self.TotalUrlCalls = self.TotalUrlCalls + 1
@@ -546,31 +520,25 @@ class DownloadUtils():
                 self.logMsg("====== 200 finished ======", level=2)
 
             elif ( int(data.status) == 301 ) or ( int(data.status) == 302 ):
-                try: 
-                    conn.close()
-                except: 
-                    pass
+                try: conn.close()
+                except: pass
                 return data.getheader('Location')
 
             elif int(data.status) == 401:
                 error = "HTTP response error: " + str(data.status) + " " + str(data.reason)
                 xbmc.log(error)
-                addon.setSetting('token', "")
-                addon.setSetting('userid', "")
                 
+                WINDOW = xbmcgui.Window(10000)
                 timeStamp = WINDOW.getProperty("XBMB3C_LAST_USER_ERROR")
                 if(timeStamp == None or timeStamp == ""):
                     timeStamp = "0"
                     
                 if((int(timeStamp) + 10) < int(time.time())):
-                    xbmcgui.Dialog().ok(getString(30135), getString(30044))
+                    xbmcgui.Dialog().ok(self.getString(30135), self.getString(30044))
                     WINDOW.setProperty("XBMB3C_LAST_USER_ERROR", str(int(time.time())))
                 
-                try: 
-                    conn.close()
-                except: 
-                    pass
-                    
+                try: conn.close()
+                except: pass
                 return ""
                 
             elif int(data.status) >= 400:
@@ -580,30 +548,25 @@ class DownloadUtils():
                     if popup == 0:
                         xbmc.executebuiltin("XBMC.Notification(URL error: "+ str(data.reason) +",)")
                     else:
-                        xbmcgui.Dialog().ok(getString(30135),server)
-                try: 
-                    conn.close()
-                except: 
-                    pass
+                        xbmcgui.Dialog().ok(self.getString(30135),server)
+                try: conn.close()
+                except: pass
                 return ""
             else:
                 link = ""
         except Exception, msg:
             error = "Unable to connect to " + str(server) + " : " + str(msg)
             xbmc.log(error)
-            stack = traceback.format_exc()
-            self.logMsg(stack)
             if suppress is False:
+                xbmc.log("Suppress is False, displaying user message: popup=" + str(popup))
                 if popup == 0:
-                    xbmc.executebuiltin("XBMC.Notification(: Connection Error: Error connecting to server,)")
+                    xbmc.executebuiltin("XBMC.Notification(: URL error: Unable to connect to server,)")
                 else:
-                    xbmcgui.Dialog().ok(getString(30204), str(msg))
-            pass
+                    xbmcgui.Dialog().ok("",self.getString(30204))
+                raise
         else:
-            try: 
-                conn.close()
-            except: 
-                pass
+            try: conn.close()
+            except: pass
 
         return link
         
