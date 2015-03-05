@@ -89,7 +89,10 @@ class DataManager():
         return validatorString
 
     def loadJasonData(self, jsonData):
-        return json.loads(jsonData)        
+        if(jsonData == ""):
+            return {}
+        else:
+            return json.loads(jsonData)
         
     def GetContent(self, url):
     
