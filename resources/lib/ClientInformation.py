@@ -3,66 +3,35 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
+
 class ClientInformation():
-    
-    def __init__(self):
-        
-        # Internal variables
-        self.window = xbmcgui.Window( 10000 )
-        self.addonId = self.getAddonId()
-        self.addon =  xbmcaddon.Addon(id=self.addonId)
-        self.addonName = self.addon.getAddonInfo('name').upper()
-        
-        # Preparation for headers
-        self.deviceName = self.addon.getSetting('deviceName').replace("\\", "_")
-        self.deviceId = self.window.getProperty('deviceId')
-        self.username = self.addon.getSetting('username')
-        self.version = self.addon.getAddonInfo('version')
-    
-    
-    def getAddonId(self):
-        
-        # If addon Id is ever changed...
-        addonId = "plugin.video.xbmb3c"
-        
-        return addonId
-        
-        
+
     def getMachineId(self):
+    
+        WINDOW = xbmcgui.Window( 10000 )
         
-        # Shortcut variables
-        WINDOW = self.window
-        className = self.__class__.__name__
-        addon = self.addon
-        addonName = self.addonName
-        deviceId = self.deviceId
+        clientId = WINDOW.getProperty("client_id")
+        self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
+        if(clientId == None or clientId == ""):
+            xbmc.log("CLIENT_ID - > No Client ID in WINDOW")
+            clientId = self.addonSettings.getSetting('client_id')
         
-        # Verify if deviceId is already loaded from Settings
-        if deviceId == "":
-
-            deviceId = addon.getSetting('deviceId')
-        
-            # Verify if deviceId exists in settings
-            if deviceId == "":
-                
-                xbmc.log("%s %s -> DeviceId not found in Settings" % (addonName, className))
-                
-                # Generate deviceId
-                guid = uuid4()
-                deviceId = str("%012X" % guid).lower()
-                xbmc.log("%s %s -> New deviceId : %s" % (addonName, className, deviceId))
-                
-                # Set deviceId to window and addon settings
-                WINDOW.setProperty('deviceId', deviceId)
-                addon.setSetting('deviceId', deviceId)
-            
+            if(clientId == None or clientId == ""):
+                xbmc.log("CLIENT_ID - > No Client ID in SETTINGS")
+                uuid = uuid4()
+                clientId = str("%012X" % uuid)
+                WINDOW.setProperty("client_id", clientId)
+                self.addonSettings.setSetting('client_id', clientId)
+                xbmc.log("CLIENT_ID - > New Client ID : " + clientId)
             else:
+                WINDOW.setProperty('client_id', clientId)
+                xbmc.log("CLIENT_ID - > Client ID saved to WINDOW from Settings : " + clientId)
                 
-                # deviceId already exists, set to window
-                WINDOW.setProperty('deviceId', deviceId)
-                xbmc.log("%s %s -> DeviceId saved to Window from Settings : %s" % (addonName, className, deviceId))
-
-        return deviceId
+        return clientId
+        
+    def getVersion(self):
+        version = xbmcaddon.Addon(id="plugin.video.xbmb3c").getAddonInfo("version")
+        return version
         
         
     def getPlatform(self):
@@ -81,35 +50,3 @@ class ClientInformation():
             return "Linux/Android"
 
         return "Unknown"
-    
-    
-    def getVersion(self):
-        
-        # Get the version of Mediabrowser add-on
-        version = self.version
-        
-        return version
-
-    
-    def getHeader(self):
-        
-        # Shortcut variables
-        WINDOW = self.window
-        deviceName = self.deviceName
-        deviceId = self.getMachineId()
-        version = self.version
-        username = self.username
-        
-        userId = ""
-        token = ""
-
-        # Verify if userId is currently used
-        if WINDOW.getProperty('userid' + username) != "":
-            userId = 'UserId="%s",' % WINDOW.getProperty('userid' + username)
-
-        # Verify if token for userId has been returned
-        if WINDOW.getProperty('AccessToken' + username) != "":
-            token = WINDOW.getProperty('AccessToken' + username)
-            
-        # Authorization=Mediabrowser, Device Name, Device Id, Version. Optional: UserId, Token
-        return {'Accept-Charset':'UTF-8,*', 'Accept-encoding':'gzip', 'Authorization':'Mediabrowser Client="Kodi", Device="' + deviceName + '", DeviceId="' + deviceId + '", ' + userId + ' Version="' + version + '"', 'X-Mediabrowser-Token': token}
