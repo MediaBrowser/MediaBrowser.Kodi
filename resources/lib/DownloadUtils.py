@@ -15,6 +15,7 @@ from uuid import uuid4 as uuid4
 from ClientInformation import ClientInformation
 import encodings
 import time
+import traceback
 
 class DownloadUtils():
 
@@ -150,6 +151,7 @@ class DownloadUtils():
 
         resp = self.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
 
+        result = None
         accessToken = None
         try:
             result = json.loads(resp)
@@ -157,7 +159,7 @@ class DownloadUtils():
         except:
             pass
 
-        if(accessToken != None):
+        if(result != None and accessToken != None):
             self.logMsg("User Authenticated : " + accessToken)
             WINDOW.setProperty("AccessToken"+self.addonSettings.getSetting('username'), accessToken)
             WINDOW.setProperty("userid"+self.addonSettings.getSetting('username'), result.get("User").get("Id"))
@@ -476,11 +478,12 @@ class DownloadUtils():
             self.logMsg("server = "+str(server), level=2)
             self.logMsg("urlPath = "+str(urlPath), level=2)
             
-            conn = httplib.HTTPConnection(server, timeout=20)
+            conn = httplib.HTTPConnection(server, timeout=5)
             
             head = self.getAuthHeader(authenticate)
             self.logMsg("HEADERS : " + str(head), level=1)
 
+            # make the connection and send the request
             if(postBody != None):
                 head["Content-Type"] = "application/x-www-form-urlencoded"
                 head["Content-Length"] = str(len(postBody))
@@ -489,19 +492,26 @@ class DownloadUtils():
             else:
                 conn.request(method=type, url=urlPath, headers=head)
 
-            tries=0
-            while tries<=10:
+            # get the response
+            tries = 0
+            while tries <= 4:
                 try:
                     data = conn.getresponse()
                     break
                 except:
-                    xbmc.sleep(1000)
-                    tries+=1
-            if tries==11:
+                    # TODO: we need to work out which errors we can just quit trying immediately
+                    if(xbmc.abortRequested == True):
+                        return ""
+                    xbmc.sleep(100)
+                    if(xbmc.abortRequested == True):
+                        return ""                    
+                    tries += 1
+            if tries == 5:
                 data = conn.getresponse()
             
             self.logMsg("GET URL HEADERS : " + str(data.getheaders()), level=2)
 
+            # process the response
             contentType = "none"
             if int(data.status) == 200:
                 retData = data.read()
@@ -520,8 +530,10 @@ class DownloadUtils():
                 self.logMsg("====== 200 finished ======", level=2)
 
             elif ( int(data.status) == 301 ) or ( int(data.status) == 302 ):
-                try: conn.close()
-                except: pass
+                try: 
+                    conn.close()
+                except: 
+                    pass
                 return data.getheader('Location')
 
             elif int(data.status) == 401:
@@ -537,8 +549,10 @@ class DownloadUtils():
                     xbmcgui.Dialog().ok(self.getString(30135), self.getString(30044))
                     WINDOW.setProperty("XBMB3C_LAST_USER_ERROR", str(int(time.time())))
                 
-                try: conn.close()
-                except: pass
+                try: 
+                    conn.close()
+                except: 
+                    pass
                 return ""
                 
             elif int(data.status) >= 400:
@@ -549,28 +563,45 @@ class DownloadUtils():
                         xbmc.executebuiltin("XBMC.Notification(URL error: "+ str(data.reason) +",)")
                     else:
                         xbmcgui.Dialog().ok(self.getString(30135),server)
-                try: conn.close()
-                except: pass
+                try: 
+                    conn.close()
+                except: 
+                    pass
                 return ""
             else:
                 link = ""
         except Exception, msg:
             error = "Unable to connect to " + str(server) + " : " + str(msg)
             xbmc.log(error)
+            stack = self.FormatException()
+            self.logMsg(stack)
             if suppress is False:
-                xbmc.log("Suppress is False, displaying user message: popup=" + str(popup))
                 if popup == 0:
-                    xbmc.executebuiltin("XBMC.Notification(: URL error: Unable to connect to server,)")
+                    xbmc.executebuiltin("XBMC.Notification(: Connection Error: Error connecting to server,)")
                 else:
-                    xbmcgui.Dialog().ok("",self.getString(30204))
-                raise
+                    xbmcgui.Dialog().ok(getString(30204), str(msg))
+            pass
         else:
-            try: conn.close()
-            except: pass
+            try: 
+                conn.close()
+            except: 
+                pass
 
         return link
         
-        
+    def FormatException(self):
+        exception_list = traceback.format_stack()
+        exception_list = exception_list[:-2]
+        exception_list.extend(traceback.format_tb(sys.exc_info()[2]))
+        exception_list.extend(traceback.format_exception_only(sys.exc_info()[0], sys.exc_info()[1]))
+
+        exception_str = "Traceback (most recent call last):\n"
+        exception_str += "".join(exception_list)
+        # Removing the last \n
+        exception_str = exception_str[:-1]
+
+        return exception_str          
+    
     def __del__(self):
         return
         # xbmc.log("\rURL_REQUEST_REPORT : Total Calls : " + str(self.TotalUrlCalls) + "\r" + self.TrackLog)

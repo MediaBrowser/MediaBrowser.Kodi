@@ -22,7 +22,7 @@ class Reporting(threading.Thread):
         try:
             self.ReportStats()
         except:
-            tb = traceback.format_exc()
+            tb = self.FormatException()
             xbmc.log("Error reporting stats to server")
             xbmc.log(tb)
     
@@ -38,7 +38,7 @@ class Reporting(threading.Thread):
             dataFile.write(stringdata)
             dataFile.close()
         except:
-            tb = traceback.format_exc()
+            tb = self.FormatException()
             xbmc.log("Could not save last session stats")
             xbmc.log(tb)    
         
@@ -55,14 +55,14 @@ class Reporting(threading.Thread):
             stats = json.loads(jsonData)        
             return stats
         except:
-            tb = traceback.format_exc()
+            tb = self.FormatException()
             xbmc.log("Could not load last session stats")
             xbmc.log(tb)
             return {}
         
     def ReportError(self):
     
-        stack = traceback.format_exc()
+        stack = self.FormatException()
         
         downloadUtils = DownloadUtils()
 
@@ -152,4 +152,17 @@ class Reporting(threading.Thread):
             return "last_session_" + name.lower() + "=" + "0"
         else:
             return "last_session_" + name.lower() + "=" + urllib.quote_plus(str(stats.get(name)))
+        
+    def FormatException(self):
+        exception_list = traceback.format_stack()
+        exception_list = exception_list[:-2]
+        exception_list.extend(traceback.format_tb(sys.exc_info()[2]))
+        exception_list.extend(traceback.format_exception_only(sys.exc_info()[0], sys.exc_info()[1]))
+
+        exception_str = "Traceback (most recent call last):\n"
+        exception_str += "".join(exception_list)
+        # Removing the last \n
+        exception_str = exception_str[:-1]
+
+        return exception_str  
         
