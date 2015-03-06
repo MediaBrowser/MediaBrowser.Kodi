@@ -39,6 +39,9 @@ class ConnectionManager():
 
     def checkServer(self):
         
+        WINDOW = xbmcgui.Window( 10000 )
+        WINDOW.setProperty("Server_Checked", "True")
+        
         self.printDebug ("XBMB3C Connection Manager Called")
         self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
         port = self.addonSettings.getSetting('port')

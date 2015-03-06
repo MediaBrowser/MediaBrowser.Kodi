@@ -767,57 +767,6 @@ def getContent( url, pluginhandle ):
         progress.close()
     
     return
-
-def loadJasonData(jsonData):
-    return json.loads(jsonData)
-
-    
-def getServerFromURL( url ):
-    '''
-    Simply split the URL up and get the server portion, sans port
-    @ input: url, woth or without protocol
-    @ return: the URL server
-    '''
-    if url[0:4] == "http":
-        return url.split('/')[2]
-    else:
-        return url.split('/')[0]
-
-def getLinkURL( url, pathData, server ):
-    '''
-        Investigate the passed URL and determine what is required to
-        turn it into a usable URL
-        @ input: url, XML data and PM server address
-        @ return: Usable http URL
-    '''
-    printDebug("== ENTER: getLinkURL ==")
-    path=pathData.get('key','')
-    printDebug("Path is " + path)
-
-    if path == '':
-        printDebug("Empty Path")
-        return
-
-    #If key starts with http, then return it
-    if path[0:4] == "http":
-        printDebug("Detected http link")
-        return path
-
-    #If key starts with a / then prefix with server address
-    elif path[0] == '/':
-        printDebug("Detected base path link")
-        return 'http://%s%s' % ( server, path )
-
-    elif path[0:5] == "rtmp:":
-        printDebug("Detected  link")
-        return path
-
-    #Any thing else is assumed to be a relative path and is built on existing url
-    else:
-        printDebug("Detected relative link")
-        return "%s/%s" % ( url, path )
-
-    return url
         
 def getXbmcVersion():
     version = 0.0
@@ -1278,14 +1227,14 @@ def MainEntryPoint():
     elif mode == _MODE_SHOW_SEARCH:
         showSearch(sys.argv[0], int(sys.argv[1]), params)        
     elif mode == _MODE_SHOW_PARENT_CONTENT:
-        checkService()
         ConnectionManager().checkServer()
+        checkService()
         pluginhandle = int(sys.argv[1])
         showParentContent(sys.argv[0], int(sys.argv[1]), params)
     else:
         
-        checkService()
         ConnectionManager().checkServer()
+        checkService()
         
         pluginhandle = int(sys.argv[1])
 
