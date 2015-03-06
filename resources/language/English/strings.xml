@@ -119,8 +119,8 @@
     <string id="30133">Debug logging enabled.</string>
     <string id="30134">This will affect performance.</string>
     <string id="30135">Error</string>
-    <string id="30136">XBMB3C service is not running</string>
-    <string id="30137">Please restart XBMC</string>
+    <string id="30136">Monitoring service is not running</string>
+    <string id="30137">If you have just installed please restart Kodi</string>
     <string id="30138">Search</string>
     
     <string id="30139">Enable Theme Music (Requires Restart)</string>

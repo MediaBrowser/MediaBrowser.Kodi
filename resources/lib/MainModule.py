@@ -1163,7 +1163,7 @@ def checkService():
     while(timeStamp == ""):
         timeStamp = xbmcgui.Window(10000).getProperty("XBMB3C_Service_Timestamp")
         loops = loops + 1
-        if(loops == 40):
+        if(loops == 15):
             printDebug("XBMB3C Service Not Running, no time stamp, exiting", 0)
             xbmcgui.Dialog().ok(__language__(30135), __language__(30136), __language__(30137))
             sys.exit()

@@ -76,6 +76,8 @@ class Monitor():
 
     def ServiceEntryPoint(self):
 
+        xbmcgui.Window(10000).setProperty("XBMB3C_Service_Timestamp", str(int(time.time())))
+        
         # auth the service
         try:
             downloadUtils = DownloadUtils()
