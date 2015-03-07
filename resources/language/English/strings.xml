@@ -223,6 +223,9 @@
     <string id="30225">Use Kodi Sorting</string>
     <string id="30226">Runtime</string>
     
+    <string id="30227">Random Movies</string>
+    <string id="30228">Random Episodes</string>
+    
 	<!-- Default views -->
     <string id="30300">Active</string>              
     <string id="30301">Clear Settings</string>              

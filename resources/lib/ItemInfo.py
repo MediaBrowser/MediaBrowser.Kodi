@@ -7,6 +7,7 @@ import json as json
 import urllib
 from DownloadUtils import DownloadUtils
 from BackgroundData import BackgroundDataUpdaterThread
+from Database import Database
 
 _MODE_BASICPLAY=12
 _MODE_CAST_LIST=14
@@ -39,7 +40,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         host = __settings__.getSetting('ipaddress')
         server = host + ":" + port
         self.server = server         
-        
+        db = Database()
         userid = self.downloadUtils.getUserId()
         self.userid = userid
        
@@ -54,7 +55,7 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         name = item.get("Name")
         image = self.downloadUtils.getArtwork(item, "poster")
         fanArt = self.downloadUtils.getArtwork(item, "BackdropNoIndicators")
-        discart = self.downloadUtils.getArtwork(item, "Disc")
+        discart = db.get(id +".Disc")
         # calculate the percentage complete
         userData = item.get("UserData")
         cappedPercentage = 0
@@ -388,14 +389,17 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
                   self.getControl(3093).setVisible(False)
                 else:
                   self.getControl(3091).setVisible(False)
-                  art = self.downloadUtils.getArtwork(item, "Art")
+                  art = db.get(id +".Art")
                   if (artImageControl != None):
                       if art != '':
                           self.getControl(3092).setImage(art)
                           self.getControl(3093).setVisible(False)
                       else:
                           self.getControl(3092).setVisible(False)
-                          thumb = self.downloadUtils.getArtwork(item2, "Thumb")
+                          if (type == "Episode"):
+                              thumb = db.get(item.get("SeriesId") +".Thumb")
+                          else:
+                              thumb = db.get(id +".Thumb")
                           if (thumbImageControl != None):
                               if thumb != '':
                                   self.getControl(3093).setImage(thumb)
@@ -409,6 +413,12 @@ class ItemInfo(xbmcgui.WindowXMLDialog):
         if(type == "Episode"):
             # null_pointer - I have removed this in favor of letting the user chose from the setting and using the "poster" type in the above image url create
             #image = self.downloadUtils.getArtwork(seriesitem, "Primary")
+            seriesimage = db.get(item.get("SeriesId") + ".Primary3")
+            try:
+                self.getControl(3099).setImage(seriesimage)
+            except:
+                pass
+            
             self.getControl(3009).setImage(image)
             if(cappedPercentage != None):
                 self.getControl(3010).setImage("Progress\progress_" + str(cappedPercentage) + ".png")

@@ -282,6 +282,9 @@ def getCollections():
     collections.append({'title':__language__(30211), 'sectype' : 'std.music', 'section' : 'music'  , 'address' : MB_server , 'path' : '/mediabrowser/MusicGenres?SortBy=SortName&Fields=AudioInfo&Recursive=true&IncludeItemTypes=Audio,MusicVideo&SortOrder=Ascending&userid=' + userid + '&format=json&ImageTypeLimit=1','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':'' })
     collections.append({'title':__language__(30223), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Views?format=json&ImageTypeLimit=1' ,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     
+    collections.append({'title':__language__(30227), 'sectype' : 'std.movies', 'section' : 'movies'  , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?Limit=10&Recursive=true&SortBy=Random&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IncludeItemTypes=Movie&format=json&ImageTypeLimit=1','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    collections.append({'title':__language__(30228), 'sectype' : 'std.tvshows', 'section' : 'tvshows' , 'address' : MB_server , 'path' : '/mediabrowser/Users/' + userid + '/Items?Limit=10&Recursive=true&SortBy=Random&Fields=' + detailsString + '&SortOrder=Descending&Filters=IsUnplayed,IsNotFolder&IsVirtualUnaired=false&IsMissing=False&IncludeItemTypes=Episode&format=json&ImageTypeLimit=1','thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
+    
     collections.append({'title':__language__(30198)                 , 'sectype' : 'std.search', 'section' : 'search'  , 'address' : MB_server , 'path' : '/mediabrowser/Search/Hints?' + userid,'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
     
     collections.append({'title':__language__(30199)                 , 'sectype' : 'std.setviews', 'section' : 'setviews'  , 'address' : 'SETVIEWS', 'path': 'SETVIEWS', 'thumb':'', 'poster':'', 'fanart_image':'', 'guiid':''})
@@ -329,7 +332,8 @@ def getViewCollections():
                     'poster'            : downloadUtils.getArtwork(item,"Primary") ,
                     'sectype'           : section,
                     'section'           : section,
-                    'id'             : item.get("Id")})
+                    'hasfolders'        : item.get("HasDynamicCategories"),
+                    'id'                : item.get("Id")})
    
          
     return collections
