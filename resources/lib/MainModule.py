@@ -519,8 +519,9 @@ def setRecommendedMBSettings(skin):
             addonSettings.setSetting('includePeople', 'false')
             addonSettings.setSetting('showArtIndicators', 'true')
             addonSettings.setSetting('includeOverview', 'true')
-            addonSettings.setSetting('selectAction', '1') 
-
+            addonSettings.setSetting('selectAction', '1')
+        elif skin == "ZEPHYR":
+            addonSettings.setSetting('useKodiSorting', 'true')
 def skin( filter=None, shared=False ):
     printDebug("== ENTER: skin() ==")
     
