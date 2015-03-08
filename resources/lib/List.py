@@ -1472,5 +1472,5 @@ class List():
             result = json.loads(jsonData)
             title = result.get("Name")
             WINDOW.setProperty("heading", title)
-        if 'IncludeItemTypes=Episode' in url:
+        if 'IncludeItemTypes=Episode' in url and __settings__.getSetting('addShowName') == 'true':
             WINDOW.setProperty("addshowname", "true")

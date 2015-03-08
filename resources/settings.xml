@@ -19,8 +19,7 @@
 		<setting id="resumeJumpBack" type="number" label="30114" default="10" visible="true" enable="true" />
 		<setting id="autoPlaySeason" type="bool" label="30216" default="false" visible="true" enable="true" />
 		<setting id="addCounts" type="bool" label="30116" default="true" visible="true" enable="true" />
-		<setting id="addSeasonNumber" type="bool" label="30162" default="false" visible="true" enable="true" />
-		<setting id="addEpisodeNumber" type="bool" label="30119" default="true" visible="true" enable="true" />
+		<setting id="addShowName" type="bool" label="30234" default="false" visible="true" enable="true" />
 		<setting id="addResumePercent" type="bool" label="30118" default="true" visible="true" enable="true" />
 		<setting id="flattenSeasons" type="bool" label="30163" default="false" visible="true" enable="true" />
 		<setting id="autoEnterSingle" type="bool" label="30001" default="true" visible="true" enable="true" />
