@@ -579,7 +579,7 @@ class DownloadUtils():
                 if popup == 0:
                     xbmc.executebuiltin("XBMC.Notification(: Connection Error: Error connecting to server,)")
                 else:
-                    xbmcgui.Dialog().ok(getString(30204), str(msg))
+                    xbmcgui.Dialog().ok(self.getString(30204), str(msg))
             pass
         else:
             try: 

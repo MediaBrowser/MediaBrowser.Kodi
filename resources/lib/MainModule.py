@@ -440,6 +440,7 @@ def displaySections(pluginhandle):
                   'thumb'        : '' }
     
     # Add collections
+    list = List()
     collections = getCollections()
     for collection in collections:
         title=collection.get('title', 'Unknown')
@@ -452,22 +453,22 @@ def displaySections(pluginhandle):
         extraData['guiid'] = collection['guiid']
         s_url = 'http://%s%s' % ( collection['address'], path)
         printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
-        dirItems.append(List().addGUIItem(s_url, details, extraData))
+        dirItems.append(list.addGUIItem(s_url, details, extraData))
         if collection.get('recent_path') != None:
             details = {'title' : __language__(30220).encode('utf-8') + title }
             s_url = 'http://%s%s' % ( collection['address'], collection['recent_path'])
             printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
-            dirItems.append(List().addGUIItem(s_url, details, extraData))
+            dirItems.append(list.addGUIItem(s_url, details, extraData))
 
             details = {'title' : __language__(30221).encode('utf-8') + title }
             s_url = 'http://%s%s' % ( collection['address'], collection['inprogress_path'])
             printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
-            dirItems.append(List().addGUIItem(s_url, details, extraData))
+            dirItems.append(list.addGUIItem(s_url, details, extraData))
             if collection.get('section') == "tvshows":
                 details = {'title' : __language__(30222).encode('utf-8') + title }
                 s_url = 'http://%s%s' % ( collection['address'], collection['nextepisodes_path'])
                 printDebug("addGUIItem:" + str(s_url) + str(details) + str(extraData))
-                dirItems.append(List().addGUIItem(s_url, details, extraData))            
+                dirItems.append(list.addGUIItem(s_url, details, extraData))            
         
     #All XML entries have been parsed and we are ready to allow the user to browse around.  So end the screen listing.
     xbmcplugin.addDirectoryItems(pluginhandle, dirItems)
