@@ -9,7 +9,7 @@
     <string id="30007">Network Username: </string>
     <string id="30008">Network Password: </string>
     <string id="30009">Transcode: </string>
-    <string id="30010">Enable performance profiling</string>
+    <string id="30010">Enable Performance Profiling</string>
     <string id="30011">Local caching system</string>
 
     <string id="30014">MediaBrowser</string>
@@ -225,6 +225,12 @@
     
     <string id="30227">Random Movies</string>
     <string id="30228">Random Episodes</string>
+    
+    <string id="30229">Skin Compatibility Warning</string>
+    <string id="30230">Your current skin is not fully compatible.</string>
+    <string id="30231">For a better experience use a skin from the forum.</string>
+    <string id="30232">http://tinyurl.com/knfus2x</string>
+    <string id="30233">Don't Show Skin Compatibility Message</string>
     
 	<!-- Default views -->
     <string id="30300">Active</string>              

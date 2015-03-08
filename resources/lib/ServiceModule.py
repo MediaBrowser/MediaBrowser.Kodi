@@ -74,6 +74,19 @@ class Monitor():
                 except UnicodeEncodeError:
                     xbmc.log("XBMB3C " + str(level) + " -> " + str(msg.encode('utf-8')))
 
+                    
+    def SkinCompatibilityMessage(self):
+        return_value = xbmcgui.Dialog().yesno(
+            self.settings.getLocalizedString(30229), 
+            self.settings.getLocalizedString(30230), 
+            self.settings.getLocalizedString(30231),
+            self.settings.getLocalizedString(30232),
+            nolabel = "Ok",
+            yeslabel = "Dont Show Again")
+        if return_value:
+            xbmc.log("ignoring skin compatibility message forever")
+            self.settings.setSetting("skinMessageIgnored", "true")
+            
     def ServiceEntryPoint(self):
 
         xbmcgui.Window(10000).setProperty("XBMB3C_Service_Timestamp", str(int(time.time())))
@@ -191,6 +204,9 @@ class Monitor():
         
         xbmc.log("XBMB3C Service -> Starting Service")
         
+        whenStarted = datetime.today()
+        skinMessageShown = False
+        
         while not xbmc.abortRequested:
             if xbmc.Player().isPlaying():
                 try:
@@ -221,7 +237,16 @@ class Monitor():
                 except Exception, e:
                     xbmc.log("XBMB3C Service -> Exception in Playback Monitor Service : " + str(e))
                     pass
-        
+            else:
+                if(skinMessageShown == False):
+                    timeSinceStart = (datetime.today() - whenStarted).seconds
+                    if(timeSinceStart > 10):
+                        skinMessageShown = True
+                        skinIsCompatible = xbmcgui.Window(10000).getProperty("SkinIsCompatible")
+                        skinMessageIgnored = self.settings.getSetting("skinMessageIgnored")
+                        if(skinIsCompatible != "true" and skinMessageIgnored != "true"):
+                            self.SkinCompatibilityMessage()    
+            
             xbmc.sleep(1000)
             xbmcgui.Window(10000).setProperty("XBMB3C_Service_Timestamp", str(int(time.time())))
         
