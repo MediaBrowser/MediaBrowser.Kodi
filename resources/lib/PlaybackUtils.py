@@ -66,7 +66,9 @@ class PlaybackUtils():
         resume = 0
         
         id = urlParts[1]
-        jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json&ImageTypeLimit=1", suppress=False, popup=1 )     
+        jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json&ImageTypeLimit=1", suppress=False, popup=1 )
+        if(jsonData == ""):
+            return
         result = json.loads(jsonData)
         
         # Is this a strm placeholder ?
@@ -114,13 +116,17 @@ class PlaybackUtils():
         # check for any intros first
         jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "/Intros?format=json&ImageTypeLimit=1", suppress=False, popup=1 )     
         self.logMsg("Intros jsonData: " + jsonData)
+        if(jsonData == ""):
+            return        
         result = json.loads(jsonData)
                    
          # do not add intros when resume is invoked
         if result.get("Items") != None and (seekTime == 0 or resume_result == 1):
           for item in result.get("Items"):
             id = item.get("Id")
-            jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json&ImageTypeLimit=1", suppress=False, popup=1 )     
+            jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json&ImageTypeLimit=1", suppress=False, popup=1 )
+            if(jsonData == ""):
+                return            
             result = json.loads(jsonData)
             playurl = PlayUtils().getPlayUrl(server, id, result)
             self.logMsg("Play URL: " + playurl)    
@@ -166,7 +172,9 @@ class PlaybackUtils():
             playlist.add(playurl, listItem)
        
         id = urlParts[1]
-        jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json&ImageTypeLimit=1", suppress=False, popup=1 )     
+        jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json&ImageTypeLimit=1", suppress=False, popup=1 )   
+        if(jsonData == ""):
+            return    
         self.logMsg("Play jsonData: " + jsonData)
         result = json.loads(jsonData)
         playurl = PlayUtils().getPlayUrl(server, id, result)
@@ -226,11 +234,15 @@ class PlaybackUtils():
             # add remaining unplayed episodes if applicable
             seasonId = result.get("SeasonId")
             jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items?ParentId=" + seasonId + "&ImageTypeLimit=1&StartIndex=1&SortBy=SortName&SortOrder=Ascending&Filters=IsUnPlayed&IncludeItemTypes=Episode&IsVirtualUnaired=false&Recursive=true&IsMissing=False&format=json", suppress=False, popup=1 )     
+            if(jsonData == ""):
+                return
             result = json.loads(jsonData)
             if result.get("Items") != None:
               for item in result.get("Items"):
                 id = item.get("Id")
-                jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json&ImageTypeLimit=1", suppress=False, popup=1 )     
+                jsonData = self.downloadUtils.downloadUrl("http://" + server + "/mediabrowser/Users/" + userid + "/Items/" + id + "?format=json&ImageTypeLimit=1", suppress=False, popup=1 )
+                if(jsonData == ""):
+                    return
                 result = json.loads(jsonData)
                 playurl = PlayUtils().getPlayUrl(server, id, result)
                 self.logMsg("Play URL: " + playurl)    

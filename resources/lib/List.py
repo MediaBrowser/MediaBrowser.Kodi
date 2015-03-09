@@ -82,8 +82,9 @@ class List():
             if result[0].get("Type") == "Season":
                 url="http://" + server + "/mediabrowser/Users/" + userid + "/items?ParentId=" + result[0].get("Id") + '&IsVirtualUnAired=false&IsMissing=false&Fields=' + detailsString + '&SortBy=SortName&format=json&ImageTypeLimit=1'
                 jsonData = downloadUtils.downloadUrl(url, suppress=False, popup=1 )
-                results = json.loads(jsonData)
-                result=results.get("Items")
+                if(jsonData != ""):
+                    results = json.loads(jsonData)
+                    result = results.get("Items")
         item_count = len(result)
         current_item = 1;
         self.setWindowHeading(url, pluginhandle)

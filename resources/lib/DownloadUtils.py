@@ -31,7 +31,7 @@ class DownloadUtils():
         self.getString = self.addonSettings.getLocalizedString
         level = self.addonSettings.getSetting('logLevel')        
         self.logLevel = 0
-        if(level != None):
+        if(level != None and level != ""):
             self.logLevel = int(level)
         if(self.logLevel == 2):
             self.LogCalls = True
