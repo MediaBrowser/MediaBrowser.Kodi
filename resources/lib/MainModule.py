@@ -227,6 +227,9 @@ def getCollections():
             else:
                 itemDetailsString=getDetailsString(fast=False)                
             
+            collapseBoxSets = ""
+            if __settings__.getSetting('collapseBoxSets')=='true':
+                collapseBoxSets = "&CollapseBoxSetItems=true"
             
             collections.append( {'title'      : Name,
                     'address'           : MB_server ,
@@ -236,7 +239,7 @@ def getCollections():
                     'sectype'           : section,
                     'section'           : section,
                     'guiid'             : item.get("Id"),
-                    'path'              : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json&ImageTypeLimit=1'),
+                    'path'              : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json' + collapseBoxSets + '&ImageTypeLimit=1'),
                     'collapsed_path'    : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&IsVirtualUnaired=false&IsMissing=False&Fields=' + detailsString + '&SortOrder='+__settings__.getSetting('sortorderfor'+urllib.quote(Name))+'&SortBy='+__settings__.getSetting('sortbyfor'+urllib.quote(Name))+'&Genres=&format=json&CollapseBoxSetItems=true&ImageTypeLimit=1'),
                     'recent_path'       : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") + '&Limit=' + __settings__.getSetting("numRecentMovies") +'&Recursive=true&SortBy=DateCreated&Fields=' + itemDetailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsUnplayed&ExcludeLocationTypes=Virtual&format=json&ImageTypeLimit=1'),
                     'inprogress_path'   : ('/mediabrowser/Users/' + userid + '/items?ParentId=' + item.get("Id") +'&Recursive=true&SortBy=DatePlayed&Fields=' + itemDetailsString + '&SortOrder=Descending&Filters=IsNotFolder,IsResumable&Filters=IsNotFolder,IsUnplayed&IsVirtualUnaired=false&IsMissing=False&ExcludeLocationTypes=Virtual&format=json&ImageTypeLimit=1'),
@@ -1059,13 +1062,17 @@ def showParentContent(pluginName, handle, params):
     detailsString = getDetailsString(fast=isFast)
     userid = downloadUtils.getUserId()
     
+    collapseBoxSets = ""
+    if __settings__.getSetting('collapseBoxSets')=='true':
+        collapseBoxSets = "&CollapseBoxSetItems=true"
+    
     contentUrl = (
         "http://" + server +
         "/mediabrowser/Users/" + userid + "/items?ParentId=" + parentId +
         "&IsVirtualUnaired=false" +
         "&IsMissing=False" +
         "&Fields=" + detailsString +
-        "&format=json")
+        "&format=json" + collapseBoxSets)
     
     printDebug("showParentContent Content Url : " + str(contentUrl), 1)
     
