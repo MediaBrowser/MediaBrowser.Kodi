@@ -896,8 +896,11 @@ class ArtworkRotationThread(threading.Thread):
         # load TV BG links
         tvUrl = "http://" + mb3Host + ":" + mb3Port + "/mediabrowser/Users/" + userid + "/Items?Fields=ParentId,Overview&CollapseBoxSetItems=false&Recursive=true&IncludeItemTypes=Series&format=json"
 
-        jsonData = downloadUtils.downloadUrl(tvUrl, suppress=True, popup=1 ) 
-        result = json.loads(jsonData)        
+        jsonData = downloadUtils.downloadUrl(tvUrl, suppress=True, popup=1 )
+        
+        result = {}
+        if(jsonData != ""):
+            result = json.loads(jsonData)        
         
         result = result.get("Items")
         if(result == None):

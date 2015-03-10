@@ -158,6 +158,8 @@ class PlayUtils():
     
     # Works out if the network quality can play directly or if transcoding is needed
     def isLocalPath(self, result):
+        if(result == None or result.get("Path") == None):
+            return False    
         path=result.get("Path").encode('utf-8')
         playurl = path
         if playurl != None:
