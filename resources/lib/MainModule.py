@@ -769,6 +769,9 @@ def getContent( url, pluginhandle ):
             viewIdInt = int(viewId)
             xbmc.executebuiltin("Container.SetViewMode(%s)" % viewIdInt)
             
+    WINDOW = xbmcgui.Window( 10000 )
+    WINDOW.setProperty("Xbmb3cContent", "true")
+    
     xbmcplugin.endOfDirectory(pluginhandle, cacheToDisc=False)
     
     if(progress != None):
