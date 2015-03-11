@@ -61,7 +61,13 @@ class DownloadUtils():
         userid = WINDOW.getProperty("userid" + userName)
 
         if(userid != None and userid != ""):
-            self.logMsg("DownloadUtils -> Returning saved UserID : " + userid + "UserName: " + userName)
+            self.logMsg("DownloadUtils -> Returning saved (WINDOW) UserID : " + userid + "UserName: " + userName)
+            return userid
+            
+        userid = self.addonSettings.getSetting("userid" + userName)
+        if(userid != None and userid != ""):
+            WINDOW.setProperty("userid" + userName, userid)
+            self.logMsg("DownloadUtils -> Returning saved (SETTING) UserID : " + userid + "UserName: " + userName)
             return userid
     
         self.logMsg("Looking for user name: " + userName)
@@ -72,11 +78,11 @@ class DownloadUtils():
                 xbmcgui.Dialog().ok(self.getString(30044), self.getString(30044))
             return ""
 
-        userid = WINDOW.getProperty("userid"+ userName)
+        userid = WINDOW.getProperty("userid" + userName)
         if(userid == "" and suppress == False):
             xbmcgui.Dialog().ok(self.getString(30045),self.getString(30045))
 
-        self.logMsg("userid : " + userid)         
+        self.logMsg("userid : " + userid)
         self.postcapabilities()
         
         return userid
@@ -116,57 +122,71 @@ class DownloadUtils():
         
         self.downloadUrl(url, postBody=stringdata, type="POST")
 
-    def authenticate(self):    
-        WINDOW = xbmcgui.Window( 10000 )
+    def authenticate(self, retreive=True):
+    
+        WINDOW = xbmcgui.Window(10000)
         self.addonSettings = xbmcaddon.Addon(id='plugin.video.xbmb3c')
-        token = WINDOW.getProperty("AccessToken"+self.addonSettings.getSetting('username'))
+        username = self.addonSettings.getSetting('username')
+        
+        token = WINDOW.getProperty("AccessToken" + username)
         if(token != None and token != ""):
-            self.logMsg("DownloadUtils -> Returning saved AccessToken for user : " + self.addonSettings.getSetting('username') + " token: "+ token)
+            self.logMsg("DownloadUtils -> Returning saved (WINDOW) AccessToken for user:" + username + " token:" + token)
             return token
+        
+        token = self.addonSettings.getSetting("AccessToken" + username)
+        if(token != None and token != ""):
+            WINDOW.setProperty("AccessToken" + username, token)
+            self.logMsg("DownloadUtils -> Returning saved (SETTINGS) AccessToken for user:" + username + " token:" + token)
+            return token        
         
         port = self.addonSettings.getSetting("port")
         host = self.addonSettings.getSetting("ipaddress")
-        if(host == None or host == "" or port == None or port == ""):
+        if(host == None or host == "" or host == "<none>" or port == None or port == ""):
             return ""
-            
-        url = "http://" + self.addonSettings.getSetting("ipaddress") + ":" + self.addonSettings.getSetting("port") + "/mediabrowser/Users/AuthenticateByName?format=json"
+        
+        if(retreive == False):
+            return ""
+        
+        url = "http://" + host + ":" + port + "/mediabrowser/Users/AuthenticateByName?format=json"
     
         clientInfo = ClientInformation()
         txt_mac = clientInfo.getMachineId()
         version = clientInfo.getVersion()
-
-        deviceName = self.addonSettings.getSetting('deviceName')
-        deviceName = deviceName.replace("\"", "_")
-
-        authString = "Mediabrowser Client=\"Kodi\",Device=\"" + deviceName + "\",DeviceId=\"" + txt_mac + "\",Version=\"" + version + "\""
-        headers = {'Accept-encoding': 'gzip', 'Authorization' : authString}
         
-        if self.addonSettings.getSetting('password') !=None and  self.addonSettings.getSetting('password') !='':   
-            sha1 = hashlib.sha1(self.addonSettings.getSetting('password'))
+        password = xbmcgui.Dialog().input("Enter Password for user : " + username)
+        if (password != ""):   
+            sha1 = hashlib.sha1(password)
             sha1 = sha1.hexdigest()
         else:
             sha1 = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
         
-        messageData = "username=" + self.addonSettings.getSetting('username') + "&password=" + sha1
+        messageData = "username=" + username + "&password=" + sha1
 
-        resp = self.downloadUrl(url, postBody=messageData, type="POST", authenticate=False, suppress=True)
+        resp = self.downloadUrl(url, postBody=messageData, type="POST", authenticate=False)
 
         result = None
         accessToken = None
         try:
+            xbmc.log("Auth_Reponce: " + str(resp))
             result = json.loads(resp)
             accessToken = result.get("AccessToken")
         except:
             pass
 
         if(result != None and accessToken != None):
+            userID = result.get("User").get("Id")
             self.logMsg("User Authenticated : " + accessToken)
-            WINDOW.setProperty("AccessToken"+self.addonSettings.getSetting('username'), accessToken)
-            WINDOW.setProperty("userid"+self.addonSettings.getSetting('username'), result.get("User").get("Id"))
+            WINDOW.setProperty("AccessToken" + username, accessToken)
+            WINDOW.setProperty("userid" + username, userID)
+            self.addonSettings.setSetting("AccessToken" + username, accessToken)
+            self.addonSettings.setSetting("userid" + username, userID)
             return accessToken
         else:
             self.logMsg("User NOT Authenticated")
-            WINDOW.setProperty("AccessToken"+self.addonSettings.getSetting('username'), "")
+            WINDOW.setProperty("AccessToken" + username, "")
+            WINDOW.setProperty("userid" + username, "")
+            self.addonSettings.setSetting("AccessToken" + username, "")
+            self.addonSettings.setSetting("userid" + username, "")
             return ""            
 
     def getArtwork(self, data, type, index = "0", userParentInfo = False):
@@ -454,6 +474,13 @@ class DownloadUtils():
         
     def downloadUrl(self, url, suppress=False, postBody=None, type="GET", popup=0, authenticate=True ):
         self.logMsg("== ENTER: getURL ==")
+
+        if(authenticate == True and suppress == True):
+            token = self.authenticate(retreive=False)
+            if(token == ""):
+                return ""
+        
+        suppress = False
         
         self.TotalUrlCalls = self.TotalUrlCalls + 1
         if(self.LogCalls):
@@ -540,15 +567,14 @@ class DownloadUtils():
                 error = "HTTP response error: " + str(data.status) + " " + str(data.reason)
                 xbmc.log(error)
                 
+                username = self.addonSettings.getSetting("username")
                 WINDOW = xbmcgui.Window(10000)
-                timeStamp = WINDOW.getProperty("XBMB3C_LAST_USER_ERROR")
-                if(timeStamp == None or timeStamp == ""):
-                    timeStamp = "0"
-                    
-                if((int(timeStamp) + 10) < int(time.time())):
-                    xbmcgui.Dialog().ok(self.getString(30135), self.getString(30044))
-                    WINDOW.setProperty("XBMB3C_LAST_USER_ERROR", str(int(time.time())))
+                WINDOW.setProperty("AccessToken" + username, "")
+                WINDOW.setProperty("userid" + username, "")
+                self.addonSettings.setSetting("AccessToken" + username, "")
+                self.addonSettings.setSetting("userid" + username, "")
                 
+                xbmcgui.Dialog().ok(self.getString(30135), self.getString(30044), "Reason : " + str(data.reason))
                 try: 
                     conn.close()
                 except: 

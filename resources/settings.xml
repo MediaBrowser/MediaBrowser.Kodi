@@ -3,9 +3,7 @@
 	<category label="30014"> <!-- MediaBrowser -->
 		<setting id="ipaddress" type="text" label="30000" default="&lt;none&gt;" visible="true" enable="true" />
 		<setting id="port" type="text" label="30030" default="8096" visible="true" enable="true" />
-		<setting type="sep" />
 		<setting id="username" type="text" label="30024" />
-		<setting id="password" type="text" option="hidden" label="30025" />
 	</category>
 	<category label="30015"> <!-- Network -->
 		<setting id="smbusername" type="text" label="30007" default="" visible="true" enable="true" />
