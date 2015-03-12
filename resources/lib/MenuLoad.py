@@ -120,13 +120,10 @@ class LoadMenuOptionsThread(threading.Thread):
                 menuItem = menuItem + 1             
             
         for x in range(menuItem, menuItem+10):
-                WINDOW.setProperty("xbmb3c_menuitem_name_" + str(x), "")
-                WINDOW.setProperty("xbmb3c_menuitem_action_" + str(x), "")
+                WINDOW.clearProperty("xbmb3c_menuitem_name_" + str(x))
+                WINDOW.clearProperty("xbmb3c_menuitem_action_" + str(x))
+                WINDOW.clearProperty("xbmb3c_menuitem_collection_" + str(x))
                 self.logMsg("xbmb3c_menuitem_name_" + str(x) + " : ")
                 self.logMsg("xbmb3c_menuitem_action_" + str(x) + " : ")
                 self.logMsg("xbmb3c_menuitem_collection_" + str(x) + " : ")
                 
-
-            
-
-    

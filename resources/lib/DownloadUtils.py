@@ -502,13 +502,17 @@ class DownloadUtils():
             urlPath = "/"+"/".join(url.split('/')[urlsplit:])
 
             self.logMsg("DOWNLOAD_URL = " + url)
-            self.logMsg("server = "+str(server), level=2)
-            self.logMsg("urlPath = "+str(urlPath), level=2)
+            self.logMsg("server = " + str(server))
+            self.logMsg("urlPath = " + str(urlPath))
             
-            conn = httplib.HTTPConnection(server, timeout=5)
+            if(server[0:1] == ":" or server[-1:] == ":"):
+                self.logMsg("No server host or port set in url")
+                return ""
             
             head = self.getAuthHeader(authenticate)
             self.logMsg("HEADERS : " + str(head), level=1)
+            
+            conn = httplib.HTTPConnection(server, timeout=5)
 
             # make the connection and send the request
             if(postBody != None):
@@ -584,6 +588,8 @@ class DownloadUtils():
             elif int(data.status) >= 400:
                 error = "HTTP response error: " + str(data.status) + " " + str(data.reason)
                 xbmc.log(error)
+                stack = self.FormatException()
+                self.logMsg(stack)                
                 if suppress is False:
                     if popup == 0:
                         xbmc.executebuiltin("XBMC.Notification(URL error: "+ str(data.reason) +",)")

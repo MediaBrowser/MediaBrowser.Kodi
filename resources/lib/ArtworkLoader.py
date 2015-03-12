@@ -803,6 +803,12 @@ class ArtworkRotationThread(threading.Thread):
 
             collection_count = collection_count + 1
 
+        for x in range(collection_count, collection_count+15):
+            WINDOW.clearProperty("xbmb3c_collection_menuitem_name_" + str(x))
+            WINDOW.clearProperty("xbmb3c_collection_menuitem_action_" + str(x))
+            WINDOW.clearProperty("xbmb3c_collection_menuitem_collection_" + str(x))
+            WINDOW.clearProperty("xbmb3c_collection_menuitem_content_" + str(x))            
+            
         # build global link list
         final_global_art = []
         

@@ -176,7 +176,7 @@ class List():
         details['title'] =  listItemName
         self.printDebug("Setting thumbnail as " + thumbPath, level=2)
         
-        listItem.setProperty("complete_percentage", self.db.get(id + "CompletePercentage"))          
+        listItem.setProperty("complete_percentage", self.db.get(id + ".CompletePercentage"))          
        
         #Set the properties of the item, such as summary, name, season, etc
         if ( not folder):
