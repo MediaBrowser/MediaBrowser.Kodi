@@ -153,7 +153,23 @@ class DownloadUtils():
         txt_mac = clientInfo.getMachineId()
         version = clientInfo.getVersion()
         
-        password = xbmcgui.Dialog().input("Enter Password for user : " + username)
+        # get user info
+        jsonData = self.downloadUrl("http://" + host + ":" + port + "/mediabrowser/Users/Public?format=json", authenticate=False)
+        users = []
+        if(jsonData != ""):
+            users = json.loads(jsonData)
+        userHasPassword = False
+        for user in users:
+            name = user.get("Name")
+            if(username == name):
+                if(user.get("HasPassword") == True):
+                    userHasPassword = True
+                break
+        
+        password = ""
+        if(userHasPassword):
+            password = xbmcgui.Dialog().input("Enter Password for user : " + username)
+            
         if (password != ""):   
             sha1 = hashlib.sha1(password)
             sha1 = sha1.hexdigest()
