@@ -38,7 +38,6 @@ from DownloadUtils import DownloadUtils
 from BackgroundData import BackgroundDataUpdaterThread
 from Utils import PlayUtils
 from SkinHelperThread import SkinHelperThread
-from Reporting import Reporting
 
 ###########################################################################  
 ##Start of Service
@@ -97,11 +96,7 @@ class Monitor():
             downloadUtils.authenticate()
         except Exception, e:
             pass
-            
-        reporting = Reporting()
-        if self.settings.getSetting('reportMetrics') == "true":
-            reporting.start()
-            
+                        
         # start some worker threads
         if self.settings.getSetting('useSkinHelper') == "true":
             skinHelperThread = SkinHelperThread()
@@ -251,10 +246,7 @@ class Monitor():
             xbmcgui.Window(10000).setProperty("XBMB3C_Service_Timestamp", str(int(time.time())))
         
         xbmc.log("XBMB3C Service -> Stopping Service")
-        
-        stats = service.GetPlayStats()
-        reporting.SaveLastStats(stats)
-        
+               
         # stop all worker threads
         if(newWebSocketThread != None):
             newWebSocketThread.stopClient()    
@@ -412,14 +404,7 @@ class Service( xbmc.Player ):
         playedFor = datetime.today() - started
         minutesRun = int(playedFor.seconds / 60)
         #xbmc.log("PLAYED_FOR ITEM " + itemType + " played for : " + str(minutesRun))
-        
-        if(itemType != None and len(itemType) != 0):
-            if(self.playStats.get(itemType) != None):
-                count = self.playStats.get(itemType) + minutesRun
-                self.playStats[itemType] = count
-            else:
-                self.playStats[itemType] = minutesRun
-        
+               
         # send the stop action
         url = ("http://%s:%s/mediabrowser/Sessions/Playing/Stopped" % (addonSettings.getSetting('ipaddress'), addonSettings.getSetting('port')))     
         url = url + "?itemId=" + item_id
@@ -486,7 +471,7 @@ class Service( xbmc.Player ):
                     self.played_information[currentFile]["paused"] = "true"
                 self.reportPlayback(currentFile)
         except Exception, msg:
-            Reporting().ReportError()
+            xbmcgui.Dialog().ok("Error", str(msg))
             raise           
     
     def onPlayBackResumed( self ):
@@ -499,7 +484,7 @@ class Service( xbmc.Player ):
                     self.played_information[currentFile]["paused"] = "false"
                 self.reportPlayback(currentFile)
         except Exception, msg:
-            Reporting().ReportError()
+            xbmcgui.Dialog().ok("Error", str(msg))
             raise              
     
     def onPlayBackSeek( self, time, seekOffset ):
@@ -510,7 +495,7 @@ class Service( xbmc.Player ):
                 currentFile = xbmc.Player().getPlayingFile()
                 self.reportPlayback(currentFile)
         except Exception, msg:
-            Reporting().ReportError()
+            xbmcgui.Dialog().ok("Error", str(msg))
             raise            
         
     def onPlayBackStarted( self ):
@@ -572,15 +557,7 @@ class Service( xbmc.Player ):
                 
                 self.printDebug("XBMB3C Service -> ADDING_FILE : " + currentFile)
                 self.printDebug("XBMB3C Service -> ADDING_FILE : " + str(self.played_information))
-
-                # log some playback stats                   
-                if(playMethod != None and len(playMethod) != 0):
-                    if(self.playStats.get(playMethod) != None):
-                        count = self.playStats.get(playMethod) + 1
-                        self.playStats[playMethod] = count
-                    else:
-                        self.playStats[playMethod] = 1
-                
+               
                 # set current position
                 playTime = xbmc.Player().getTime()
                 if(self.played_information.get(currentFile) != None):
@@ -588,11 +565,8 @@ class Service( xbmc.Player ):
                     
                 self.reportPlayback(currentFile)
         except Exception, msg:
-            Reporting().ReportError()
+            xbmcgui.Dialog().ok("Error", str(msg))
             raise                
-            
-    def GetPlayStats(self):
-        return self.playStats
         
     def onPlayBackEnded( self ):
         # Will be called when xbmc stops playing a file
@@ -600,7 +574,7 @@ class Service( xbmc.Player ):
         try:
             self.stopAll()
         except Exception, msg:
-            Reporting().ReportError()
+            xbmcgui.Dialog().ok("Error", str(msg))
             raise
 
     def onPlayBackStopped( self ):
@@ -609,7 +583,7 @@ class Service( xbmc.Player ):
         try:
             self.stopAll()
         except Exception, msg:
-            Reporting().ReportError()
+            xbmcgui.Dialog().ok("Error", str(msg))
             raise
             
             

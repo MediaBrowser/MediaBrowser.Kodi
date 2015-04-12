@@ -15,7 +15,6 @@ import urllib2
 import random
 import time
 from DownloadUtils import DownloadUtils
-from Reporting import Reporting
 
 _MODE_BASICPLAY=12
 
@@ -81,7 +80,6 @@ class ArtworkRotationThread(threading.Thread):
         try:
             self.run_internal()
         except Exception, e:
-            Reporting().ReportError()
             xbmcgui.Dialog().ok(self.getString(30203), str(e))
             raise
     
