@@ -96,7 +96,7 @@ class SkinHelperThread(threading.Thread):
         if WINDOW.getProperty("MediaBrowser.usr.Count") != '':
             totalUserLinks = int(WINDOW.getProperty("MediaBrowser.usr.Count"))
         linkCount = 0
-        while linkCount !=totalUserLinks:
+        while linkCount < totalUserLinks:
             mbstring = "MediaBrowser.usr." + str(linkCount)
             if xbmc.getInfoLabel("Skin.String(" + mbstring + '.background)') != "":
                 WINDOW.setProperty(mbstring + '.background', xbmc.getInfoLabel("Skin.String(" + mbstring + '.background)'))
